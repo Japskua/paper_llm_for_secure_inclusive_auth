@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Password Recovery Demo</title>
+        <!--
+    Password Recovery System — Single-file Demo
+    Author: ChatGPT for Janne Parkkila (@japskua)
+    Notes:
+    - All logic runs client-side; there is NO backend.
+    - Console shows mock delivery details as specified in §7.
+    - Code structure follows the spec's sections for readability.
+  -->
+        <style>
+            :root {
+                --bg: #0b1020;
+                --card: #111a33;
+                --text: #e6ecff;
+                --muted: #a8b3d1;
+                --primary: #6aa1ff;
+                --primary-600: #4f8cff;
+                --danger: #ff6b6b;
+                --success: #2ecc71;
+                --warning: #f1c40f;
+                --focus: #ffd166;
+                --border: #223055;
+                --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            }
+            * {
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                height: 100%;
+            }
+            body {
+                margin: 0;
+                font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+                    Cantarell, Noto Sans, Arial, "Apple Color Emoji",
+                    "Segoe UI Emoji";
+                background: linear-gradient(
+                    180deg,
+                    #09122a,
+                    #0b1020 45%,
+                    #0b0f1c
+                );
+                color: var(--text);
+                display: grid;
+                place-items: center;
+                padding: 24px;
+            }
+            header {
+                text-align: center;
+                margin-bottom: 16px;
+            }
+            header h1 {
+                margin: 0 0 8px;
+                font-weight: 700;
+                letter-spacing: 0.2px;
+                font-size: clamp(20px, 3vw, 24px);
+            }
+            header p {
+                margin: 0;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .card {
+                width: 100%;
+                max-width: 440px;
+                background: linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.02),
+                    rgba(255, 255, 255, 0.01)
+                );
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                box-shadow: var(--shadow);
+                overflow: hidden;
+            }
+            .card-inner {
+                padding: 20px;
+            }
+
+            form {
+                margin: 0;
+            }
+
+            label {
+                display: block;
+                font-size: 14px;
+                color: var(--muted);
+                margin-bottom: 6px;
+            }
+            input[type="text"],
+            input[type="email"],
+            input[type="password"],
+            input[type="tel"] {
+                width: 100%;
+                padding: 12px 14px;
+                border-radius: 12px;
+                border: 1px solid var(--border);
+                background: #0b1533;
+                color: var(--text);
+                outline: none;
+                min-height: 44px;
+            }
+            input::placeholder {
+                color: #7f8db3;
+            }
+
+            .row {
+                display: grid;
+                gap: 14px;
+            }
+            .row-2 {
+                display: grid;
+                gap: 14px;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 16px;
+            }
+            .actions .spacer {
+                flex: 1;
+            }
+
+            button {
+                appearance: none;
+                border: 0;
+                cursor: pointer;
+                padding: 12px 16px;
+                border-radius: 12px;
+                font-weight: 600;
+                min-height: 44px;
+                background: #14204a;
+                color: var(--text);
+                transition: transform 0.02s ease-in-out, opacity 0.2s;
+            }
+            button:active {
+                transform: translateY(1px);
+            }
+            .btn-primary {
+                background: linear-gradient(
+                    180deg,
+                    var(--primary),
+                    var(--primary-600)
+                );
+                color: #02142e;
+            }
+            .btn-secondary {
+                background: #17244f;
+            }
+            .btn-ghost {
+                background: transparent;
+                border: 1px solid var(--border);
+            }
+            button[disabled] {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .link {
+                color: var(--primary);
+                text-decoration: none;
+                font-weight: 600;
+            }
+            .link:hover {
+                text-decoration: underline;
+            }
+
+            .hint {
+                color: var(--muted);
+                font-size: 13px;
+                margin-top: 6px;
+            }
+
+            .error {
+                color: var(--danger);
+                font-size: 13px;
+                margin-top: 6px;
+            }
+            .success {
+                color: var(--success);
+                font-size: 13px;
+                margin-top: 6px;
+            }
+            .notice {
+                color: var(--warning);
+                font-size: 13px;
+                margin-top: 6px;
+            }
+
+            .spinner {
+                display: inline-block;
+                width: 1em;
+                height: 1em;
+                border: 2px solid rgba(255, 255, 255, 0.4);
+                border-top-color: #fff;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                vertical-align: -2px;
+                margin-right: 8px;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .radio-list {
+                display: grid;
+                gap: 10px;
+            }
+            .radio-item {
+                padding: 10px;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                background: #0b1533;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .password-rules {
+                margin-top: 10px;
+                font-size: 13px;
+            }
+            .password-rules ul {
+                list-style: none;
+                padding-left: 0;
+                margin: 6px 0 0;
+            }
+            .password-rules li {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin: 4px 0;
+            }
+            .dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: #7f8db3;
+                display: inline-block;
+            }
+            .ok .dot {
+                background: var(--success);
+            }
+            .bad .dot {
+                background: var(--danger);
+            }
+
+            .strength {
+                margin-top: 8px;
+                font-size: 13px;
+            }
+
+            footer {
+                max-width: 640px;
+                text-align: center;
+                color: var(--muted);
+                font-size: 12px;
+                margin-top: 16px;
+            }
+
+            /* Hide helper */
+            [hidden] {
+                display: none !important;
+            }
+            .view {
+                outline: none;
+            }
+
+            /* Focus styles */
+            :where(input, button, .radio-item):focus-visible {
+                outline: 2px solid var(--focus);
+                outline-offset: 2px;
+            }
+
+            .top-note {
+                background: rgba(106, 161, 255, 0.08);
+                border: 1px dashed var(--primary);
+                color: var(--muted);
+                padding: 10px 12px;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                font-size: 13px;
+            }
+
+            .center {
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div
+            class="card"
+            role="application"
+            aria-label="Password Recovery Demo"
+        >
+            <header>
+                <h1>Password Recovery Demo</h1>
+                <p>Single‑page, client‑only flow for academic evaluation.</p>
+            </header>
+            <div class="card-inner">
+                <!-- §5.1 Start -->
+                <section id="view-start" class="view" tabindex="-1">
+                    <div class="top-note">
+                        This is a demo. The sign-in button is disabled on
+                        purpose.
+                    </div>
+                    <form id="form-signin" novalidate>
+                        <div class="row">
+                            <div>
+                                <label for="signin-email">Email</label>
+                                <input
+                                    id="signin-email"
+                                    type="email"
+                                    inputmode="email"
+                                    placeholder="you@example.com"
+                                    autocomplete="username"
+                                />
+                            </div>
+                            <div>
+                                <label for="signin-password">Password</label>
+                                <input
+                                    id="signin-password"
+                                    type="password"
+                                    placeholder="•••••••••"
+                                    autocomplete="current-password"
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="actions"
+                            style="margin-top: 16px; align-items: center"
+                        >
+                            <button
+                                id="btn-signin"
+                                class="btn-primary"
+                                type="button"
+                                disabled
+                                aria-disabled="true"
+                            >
+                                Sign in
+                            </button>
+                            <span class="spacer"></span>
+                            <button
+                                id="btn-forgot"
+                                class="btn-ghost"
+                                type="button"
+                            >
+                                Forgot your password?
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- §5.2 Identify Account -->
+                <section id="view-identify" class="view" hidden tabindex="-1">
+                    <form id="form-identify" novalidate>
+                        <div class="row">
+                            <div>
+                                <label for="identify-input"
+                                    >Enter your email or username</label
+                                >
+                                <input
+                                    id="identify-input"
+                                    type="text"
+                                    placeholder="Email or username"
+                                    autocomplete="username"
+                                    required
+                                />
+                                <div
+                                    id="identify-error"
+                                    class="error"
+                                    role="status"
+                                    aria-live="polite"
+                                ></div>
+                                <div id="identify-hint" class="hint">
+                                    Use <strong>testuser</strong> or
+                                    <strong>jane.doe@example.com</strong>.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button
+                                id="btn-identify-back"
+                                class="btn-secondary"
+                                type="button"
+                            >
+                                Back
+                            </button>
+                            <span class="spacer"></span>
+                            <button
+                                id="btn-identify-continue"
+                                class="btn-primary"
+                                type="submit"
+                                disabled
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- §5.3 Choose Delivery Method -->
+                <section id="view-delivery" class="view" hidden tabindex="-1">
+                    <form id="form-delivery" novalidate>
+                        <div class="row">
+                            <div>
+                                <label>Choose how to receive your code</label>
+                                <div class="radio-list">
+                                    <label class="radio-item"
+                                        ><input
+                                            type="radio"
+                                            name="delivery"
+                                            value="email"
+                                            checked
+                                        />
+                                        Email:
+                                        <span
+                                            id="masked-email"
+                                            style="margin-left: 6px"
+                                            >ja***@example.com</span
+                                        ></label
+                                    >
+                                </div>
+                                <div
+                                    id="delivery-msg"
+                                    class="success"
+                                    aria-live="polite"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button
+                                id="btn-delivery-back"
+                                class="btn-secondary"
+                                type="button"
+                            >
+                                Back
+                            </button>
+                            <span class="spacer"></span>
+                            <button
+                                id="btn-send-code"
+                                class="btn-primary"
+                                type="submit"
+                            >
+                                Send code
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- §5.4 Enter Code -->
+                <section id="view-code" class="view" hidden tabindex="-1">
+                    <form id="form-code" novalidate>
+                        <div class="row">
+                            <div>
+                                <label for="code-input"
+                                    >Enter the 6‑digit code we sent to your
+                                    email (check console in this demo)</label
+                                >
+                                <input
+                                    id="code-input"
+                                    type="tel"
+                                    inputmode="numeric"
+                                    pattern="\\d{6}"
+                                    placeholder="123456"
+                                    aria-describedby="code-help"
+                                    maxlength="6"
+                                    autocomplete="one-time-code"
+                                />
+                                <div id="code-help" class="hint">
+                                    Numbers only. Code expires in 5 minutes.
+                                </div>
+                                <div
+                                    id="code-error"
+                                    class="error"
+                                    role="status"
+                                    aria-live="polite"
+                                ></div>
+                                <div
+                                    id="code-notice"
+                                    class="notice"
+                                    aria-live="polite"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button
+                                id="btn-code-back"
+                                class="btn-secondary"
+                                type="button"
+                            >
+                                Back
+                            </button>
+                            <button
+                                id="btn-resend"
+                                class="btn-ghost"
+                                type="button"
+                            >
+                                Resend code
+                            </button>
+                            <span class="spacer"></span>
+                            <button
+                                id="btn-verify"
+                                class="btn-primary"
+                                type="submit"
+                                disabled
+                            >
+                                Verify
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- §5.5 Set New Password -->
+                <section id="view-set" class="view" hidden tabindex="-1">
+                    <form id="form-set" novalidate>
+                        <div class="row">
+                            <div>
+                                <label for="pw1">Create a new password</label>
+                                <input
+                                    id="pw1"
+                                    type="password"
+                                    autocomplete="new-password"
+                                    placeholder="At least 10 characters"
+                                />
+                                <div class="strength" id="strength"></div>
+                                <div class="password-rules" aria-live="polite">
+                                    <ul>
+                                        <li id="rule-length">
+                                            <span class="dot"></span> At least
+                                            10 characters
+                                        </li>
+                                        <li id="rule-classes">
+                                            <span class="dot"></span> Include 3
+                                            of: lowercase, uppercase, digit,
+                                            symbol
+                                        </li>
+                                        <li id="rule-nocontains">
+                                            <span class="dot"></span> Must not
+                                            contain <code>testuser</code> or
+                                            <code>jane.doe</code>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="pw2">Confirm password</label>
+                                <input
+                                    id="pw2"
+                                    type="password"
+                                    autocomplete="new-password"
+                                    placeholder="Re-enter password"
+                                />
+                                <div
+                                    id="pw-error"
+                                    class="error"
+                                    aria-live="polite"
+                                ></div>
+                            </div>
+                            <div>
+                                <label
+                                    class="radio-item"
+                                    style="cursor: pointer; width: max-content"
+                                >
+                                    <input type="checkbox" id="toggle-show" />
+                                    Show password
+                                </label>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button
+                                id="btn-set-back"
+                                class="btn-secondary"
+                                type="button"
+                            >
+                                Back
+                            </button>
+                            <span class="spacer"></span>
+                            <button
+                                id="btn-save"
+                                class="btn-primary"
+                                type="submit"
+                                disabled
+                            >
+                                Save password
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- §5.6 Success -->
+                <section
+                    id="view-success"
+                    class="view center"
+                    hidden
+                    tabindex="-1"
+                >
+                    <h2 style="margin: 4px 0 8px">
+                        Your password has been reset.
+                    </h2>
+                    <p class="hint">
+                        You can now return to sign in (disabled in this demo).
+                    </p>
+                    <div class="actions" style="justify-content: center">
+                        <button
+                            id="btn-back-to-signin"
+                            class="btn-primary"
+                            type="button"
+                        >
+                            Back to Sign in
+                        </button>
+                    </div>
+                </section>
+            </div>
+            <footer>
+                This demo intentionally logs mock recovery details to the
+                console. No network calls are made. Refreshing the page resets
+                the flow.
+            </footer>
+        </div>
+
+        <script>
+            /* =====================================================================
+             * §11 In-memory Data Model & Constants
+             * ===================================================================== */
+            const DEMO_USER = {
+                username: "testuser",
+                email: "jane.doe@example.com"
+            };
+            const MASKED_EMAIL = "ja***@example.com";
+            const CODE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+            // Expose latest set password per §6
+            window.__demoLastSetPassword = null;
+
+            const state = {
+                currentView: "start",
+                latestCode: null,
+                latestCodeIssuedAt: 0,
+                failedCodeAttempts: 0,
+                newPasswordTemp: null
+            };
+
+            /* =====================================================================
+             * §3 View Handling & Focus Management
+             * ===================================================================== */
+            const views = {
+                start: document.getElementById("view-start"),
+                identify: document.getElementById("view-identify"),
+                delivery: document.getElementById("view-delivery"),
+                code: document.getElementById("view-code"),
+                setPassword: document.getElementById("view-set"),
+                success: document.getElementById("view-success")
+            };
+
+            function showView(name) {
+                Object.entries(views).forEach(([k, el]) => {
+                    if (k === name) el.removeAttribute("hidden");
+                    else el.setAttribute("hidden", "");
+                });
+                state.currentView = name;
+                // Focus the first interactive element in the view
+                const container = views[name];
+                requestAnimationFrame(() => {
+                    container.focus();
+                    const focusable = container.querySelector(
+                        "input, button, [tabindex]"
+                    );
+                    if (focusable) focusable.focus();
+                });
+            }
+
+            /* =====================================================================
+             * §12 Events & Handlers
+             * ===================================================================== */
+            const qs = (sel) => document.querySelector(sel);
+
+            // Start view
+            qs("#btn-forgot").addEventListener("click", onClickForgot);
+            function onClickForgot() {
+                showView("identify");
+            }
+
+            // Identify Account
+            const identifyInput = qs("#identify-input");
+            const btnIdentifyContinue = qs("#btn-identify-continue");
+            const identifyError = qs("#identify-error");
+            qs("#btn-identify-back").addEventListener("click", () =>
+                showView("start")
+            );
+
+            identifyInput.addEventListener("input", () => {
+                identifyInput.value = identifyInput.value.trimStart();
+                btnIdentifyContinue.disabled =
+                    identifyInput.value.trim().length === 0;
+                identifyError.textContent = "";
+            });
+
+            qs("#form-identify").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const identifier = identifyInput.value.trim();
+                if (!identifier) return;
+
+                // Case-insensitive comparison
+                const match = (v) =>
+                    v.toLowerCase() === identifier.toLowerCase();
+                const isKnown =
+                    match(DEMO_USER.username) || match(DEMO_USER.email);
+
+                btnIdentifyContinue.disabled = true;
+                btnIdentifyContinue.innerHTML =
+                    '<span class="spinner"></span> Please wait…';
+
+                const delay = 600 + Math.floor(Math.random() * 600);
+                setTimeout(() => {
+                    btnIdentifyContinue.textContent = "Continue";
+                    btnIdentifyContinue.disabled = false;
+                    if (isKnown) {
+                        issueCode("EMAIL"); // §12 issue code on success
+                        qs("#masked-email").textContent = MASKED_EMAIL;
+                        showView("delivery");
+                    } else {
+                        identifyError.textContent =
+                            "We couldn’t find that account.";
+                    }
+                }, delay);
+            });
+
+            // Delivery Method
+            const deliveryMsg = qs("#delivery-msg");
+            qs("#btn-delivery-back").addEventListener("click", () =>
+                showView("identify")
+            );
+
+            qs("#form-delivery").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const btn = qs("#btn-send-code");
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Sending…';
+                const delay = 600 + Math.floor(Math.random() * 600);
+                setTimeout(() => {
+                    issueCode("EMAIL"); // Resend on Send code as well
+                    deliveryMsg.textContent =
+                        "We’ve sent a code to your email (check console in this demo).";
+                    btn.textContent = "Send code";
+                    btn.disabled = false;
+                    // Auto-advance after 1.2s
+                    setTimeout(() => showView("code"), 1200);
+                }, delay);
+            });
+
+            // Enter Code
+            const codeInput = qs("#code-input");
+            const btnVerify = qs("#btn-verify");
+            const codeError = qs("#code-error");
+            const codeNotice = qs("#code-notice");
+
+            codeInput.addEventListener("input", () => {
+                // Normalize: digits only, max length 6
+                const onlyDigits = codeInput.value
+                    .replace(/\D/g, "")
+                    .slice(0, 6);
+                if (onlyDigits !== codeInput.value)
+                    codeInput.value = onlyDigits;
+                btnVerify.disabled =
+                    codeInput.value.length !== 6 || verifyLocked();
+                codeError.textContent = "";
+            });
+
+            qs("#btn-code-back").addEventListener("click", () =>
+                showView("delivery")
+            );
+
+            qs("#btn-resend").addEventListener("click", () => {
+                issueCode("EMAIL");
+                state.failedCodeAttempts = 0;
+                codeNotice.textContent = "New code sent. Use the latest one.";
+                btnVerify.disabled = codeInput.value.length !== 6;
+                codeError.textContent = "";
+            });
+
+            qs("#form-code").addEventListener("submit", (e) => {
+                e.preventDefault();
+                if (verifyLocked()) return;
+
+                const code = codeInput.value.trim();
+                const now = Date.now();
+
+                if (
+                    !state.latestCode ||
+                    now - state.latestCodeIssuedAt > CODE_TTL_MS
+                ) {
+                    codeError.textContent =
+                        "This code has expired. Please resend a new code.";
+                    return;
+                }
+
+                if (code === state.latestCode) {
+                    state.failedCodeAttempts = 0;
+                    codeInput.value = "";
+                    showView("setPassword");
+                } else {
+                    state.failedCodeAttempts++;
+                    const remaining = Math.max(0, 3 - state.failedCodeAttempts);
+                    if (remaining === 0) {
+                        codeError.textContent =
+                            "Too many attempts. Please resend a new code.";
+                    } else {
+                        codeError.textContent = `That code is not right. ${remaining} attempt(s) left.`;
+                    }
+                    if (verifyLocked()) btnVerify.disabled = true;
+                }
+            });
+
+            function verifyLocked() {
+                return state.failedCodeAttempts >= 3;
+            }
+
+            // Set New Password
+            const pw1 = qs("#pw1");
+            const pw2 = qs("#pw2");
+            const pwErr = qs("#pw-error");
+            const btnSave = qs("#btn-save");
+            const strengthEl = qs("#strength");
+
+            const RULE_LENGTH = qs("#rule-length");
+            const RULE_CLASSES = qs("#rule-classes");
+            const RULE_NOCONTAINS = qs("#rule-nocontains");
+
+            function analyzePassword(p) {
+                const hasLower = /[a-z]/.test(p);
+                const hasUpper = /[A-Z]/.test(p);
+                const hasDigit = /\d/.test(p);
+                const hasSymbol = /[^\w\s]/.test(p);
+                const lengthOK = p.length >= 10;
+                const classes = [
+                    hasLower,
+                    hasUpper,
+                    hasDigit,
+                    hasSymbol
+                ].filter(Boolean).length;
+                const containsBad =
+                    p.toLowerCase().includes("testuser") ||
+                    p.toLowerCase().includes("jane.doe");
+                return { lengthOK, classes, containsBad };
+            }
+
+            function updatePasswordUI() {
+                const p1 = pw1.value;
+                const p2 = pw2.value;
+                const { lengthOK, classes, containsBad } = analyzePassword(p1);
+
+                RULE_LENGTH.className = lengthOK ? "ok" : "bad";
+                RULE_CLASSES.className = classes >= 3 ? "ok" : "bad";
+                RULE_NOCONTAINS.className = !containsBad ? "ok" : "bad";
+
+                let label = "Weak";
+                if (lengthOK && classes >= 3 && !containsBad) label = "Okay";
+                if (
+                    lengthOK &&
+                    classes >= 3 &&
+                    !containsBad &&
+                    p1.length >= 14 &&
+                    classes >= 3
+                )
+                    label = "Strong";
+                strengthEl.textContent = p1 ? `Strength: ${label}` : "";
+
+                // Inline errors
+                if (p2 && p1 !== p2) {
+                    pwErr.textContent = "Confirmation does not match.";
+                } else {
+                    pwErr.textContent = "";
+                }
+
+                // Enable when all rules pass and confirm matches
+                const valid =
+                    lengthOK && classes >= 3 && !containsBad && p1 && p1 === p2;
+                btnSave.disabled = !valid;
+            }
+
+            pw1.addEventListener("input", updatePasswordUI);
+            pw2.addEventListener("input", updatePasswordUI);
+            qs("#toggle-show").addEventListener("change", (e) => {
+                const type = e.target.checked ? "text" : "password";
+                pw1.type = type;
+                pw2.type = type;
+            });
+
+            qs("#btn-set-back").addEventListener("click", () =>
+                showView("code")
+            );
+
+            qs("#form-set").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const p1 = pw1.value;
+                const p2 = pw2.value;
+                const { lengthOK, classes, containsBad } = analyzePassword(p1);
+
+                if (!lengthOK) {
+                    pwErr.textContent =
+                        "Password must be at least 10 characters.";
+                    return;
+                }
+                if (classes < 3) {
+                    pwErr.textContent =
+                        "Add a number or symbol to make it stronger.";
+                    return;
+                }
+                if (containsBad) {
+                    pwErr.textContent =
+                        "Password must not contain the username or email local part.";
+                    return;
+                }
+                if (p1 !== p2) {
+                    pwErr.textContent = "Confirmation does not match.";
+                    return;
+                }
+
+                // Save in-memory only
+                state.newPasswordTemp = p1;
+                window.__demoLastSetPassword = p1; // per spec
+
+                pw1.value = pw2.value = "";
+                updatePasswordUI();
+
+                showView("success");
+            });
+
+            // Success
+            qs("#btn-back-to-signin").addEventListener("click", () => {
+                resetTransient();
+                showView("start");
+            });
+
+            function resetTransient() {
+                // Clear errors and fields
+                identifyInput.value = "";
+                btnIdentifyContinue.disabled = true;
+                identifyError.textContent = "";
+
+                codeInput.value = "";
+                codeError.textContent = "";
+                codeNotice.textContent = "";
+                state.failedCodeAttempts = 0;
+
+                pw1.value = pw2.value = "";
+                updatePasswordUI();
+            }
+
+            /* =====================================================================
+             * §7 Mock Delivery & Console Protocol
+             * ===================================================================== */
+            function issueCode(via) {
+                // Deterministic-ish but random for demo: ensure new code differs from previous
+                let code;
+                do {
+                    code = String(Math.floor(100000 + Math.random() * 900000));
+                } while (code === state.latestCode);
+                state.latestCode = code;
+                state.latestCodeIssuedAt = Date.now();
+
+                // Console protocol
+                console.log(
+                    "[RecoveryDemo] Delivering mock reset code via " +
+                        via +
+                        " to " +
+                        DEMO_USER.email
+                );
+                console.log("[RecoveryDemo] CODE: " + code);
+                console.log(
+                    "[RecoveryDemo] RESET LINK: https://example.com/reset?token=RESET-TOKEN-ABC123 (demo only)"
+                );
+            }
+
+            /* =====================================================================
+             * Init
+             * ===================================================================== */
+            // Masked email display
+            qs("#masked-email").textContent = MASKED_EMAIL;
+
+            // Enter key submits active forms naturally (handled by submit listeners)
+
+            // On navigation to a view, ensure first focusable gains focus — handled in showView
+
+            // Initial
+            showView("start");
+        </script>
+    </body>
+</html>
