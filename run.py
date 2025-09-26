@@ -260,12 +260,26 @@ g.add_node("tasker", tasker_node)
 g.add_node("coder", coder_node)
 g.add_node("evaluator", evaluator_node)
 
+# static edges
 g.add_edge("tasker", "coder")
 g.add_edge("coder", "evaluator")
-g.add_edge("evaluator", "tasker")
+
+
+# conditional branch after evaluator
+def _next_after_evaluator(state: State) -> str:
+    return "end" if state.get("done") else "tasker"
+
+
+g.add_conditional_edges(
+    "evaluator",
+    _next_after_evaluator,
+    {
+        "end": END,
+        "tasker": "tasker",
+    },
+)
 
 g.set_entry_point("tasker")
-g.set_finish_point(END)
 
 app = g.compile()
 
