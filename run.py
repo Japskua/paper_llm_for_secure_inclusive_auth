@@ -13,6 +13,8 @@ from provider import make_three_llms
 # Load secrets from .env
 load_dotenv()
 
+# OWN FUNCTIONS
+
 
 def normalize_content(content) -> str:
     """Normalize LangChain response content to a plain string."""
@@ -22,6 +24,174 @@ def normalize_content(content) -> str:
             for part in content
         )
     return str(content)
+
+
+# ---- Token accounting helpers ----
+
+
+def extract_usage(resp) -> tuple[int, int, int]:
+    """
+    Return (input_tokens, output_tokens, cached_input_tokens).
+    We try several LangChain / provider metadata layouts.
+    Missing fields default to 0.
+    """
+    inp = outp = cached = 0
+
+    # Newer LangChain: usage_metadata
+    um = getattr(resp, "usage_metadata", None)
+    if isinstance(um, dict):
+        inp = int(um.get("input_tokens") or um.get("prompt_tokens") or 0)
+        outp = int(um.get("output_tokens") or um.get("completion_tokens") or 0)
+        # OpenAI (via LC) sometimes exposes:
+        cached = int(
+            um.get("cache_creation_input_tokens")
+            or um.get("cache_read_input_tokens")
+            or um.get("prompt_cached_tokens")
+            or 0
+        )
+
+    # response_metadata.token_usage
+    rm = getattr(resp, "response_metadata", None)
+    if isinstance(rm, dict):
+        tu = rm.get("token_usage") or rm.get("usage")
+        if isinstance(tu, dict):
+            # Prompt/Input
+            inp = int(tu.get("input_tokens") or tu.get("prompt_tokens") or inp)
+            outp = int(tu.get("output_tokens") or tu.get("completion_tokens") or outp)
+            cached = int(
+                tu.get("cache_creation_input_tokens")
+                or tu.get("cache_read_input_tokens")
+                or tu.get("prompt_cached_tokens")
+                or cached
+            )
+
+    return inp, outp, cached
+
+
+# Global token counters (kept in-memory; also logged per-iter)
+TOK = {
+    "tasker": {"input": 0, "output": 0, "cached_input": 0},
+    "coder": {"input": 0, "output": 0, "cached_input": 0},
+    "evaluator": {"input": 0, "output": 0, "cached_input": 0},
+    "total": {"input": 0, "output": 0, "cached_input": 0},
+}
+
+
+def add_usage(agent: str, it: int, ot: int, cit: int):
+    TOK[agent]["input"] += it
+    TOK[agent]["output"] += ot
+    TOK[agent]["cached_input"] += cit
+    TOK["total"]["input"] += it
+    TOK["total"]["output"] += ot
+    TOK["total"]["cached_input"] += cit
+
+
+def _getenv_float(name: str):
+    v = os.getenv(name)
+    if not v:
+        return None
+    try:
+        return float(v)
+    except Exception:
+        return None
+
+
+def _resolve_rate_per_1M(primary_key: str):
+    """
+    Resolve a price per 1M tokens.
+    """
+    per_m = _getenv_float(primary_key)
+    if per_m is not None:
+        return per_m
+    return None
+
+
+def load_pricing():
+    """
+    Load pricing (USD per 1M tokens). Supports:
+      - Global defaults: PRICE_INPUT_PER_1M, PRICE_CACHED_INPUT_PER_1M, PRICE_OUTPUT_PER_1M
+      - Per-role overrides: PRICE_{ROLE}_{TYPE}_PER_1M
+      - Fallback to *_PER_1K auto-scaled ×1000
+    Returns: (pricing_dict, missing_reason_str or None)
+    """
+
+    def role_rates(role: str):
+        rin = _resolve_rate_per_1M(f"PRICE_{role.upper()}_INPUT_PER_1M")
+        rcin = _resolve_rate_per_1M(f"PRICE_{role.upper()}_CACHED_INPUT_PER_1M")
+        rout = _resolve_rate_per_1M(f"PRICE_{role.upper()}_OUTPUT_PER_1M")
+        return rin, rcin, rout
+
+    default_in = _resolve_rate_per_1M("PRICE_INPUT_PER_1M")
+    default_cin = _resolve_rate_per_1M("PRICE_CACHED_INPUT_PER_1M")
+    default_out = _resolve_rate_per_1M("PRICE_OUTPUT_PER_1M")
+
+    pr = {
+        "default": {"in": default_in, "cached_in": default_cin, "out": default_out},
+        "tasker": {"in": None, "cached_in": None, "out": None},
+        "coder": {"in": None, "cached_in": None, "out": None},
+        "evaluator": {"in": None, "cached_in": None, "out": None},
+    }
+    for role in ("tasker", "coder", "evaluator"):
+        ri, rci, ro = role_rates(role)
+        pr[role]["in"] = ri
+        pr[role]["cached_in"] = rci
+        pr[role]["out"] = ro
+
+    # Do we have enough info? At least defaults with any nonzero, or any role override present
+    have_defaults = any(
+        [(default_in or 0) > 0, (default_cin or 0) > 0, (default_out or 0) > 0]
+    )
+    have_any_role = any(
+        (pr[r]["in"] or pr[r]["cached_in"] or pr[r]["out"])
+        for r in ("tasker", "coder", "evaluator")
+    )
+
+    if not have_defaults and not have_any_role:
+        return pr, "Pricing info is missing from environment; could not compute cost."
+
+    return pr, None
+
+
+def compute_cost_usd_per_1M(pricing, usage_by_agent):
+    """
+    Compute cost given pricing dict (per 1M tokens) and usage_by_agent like TOK.
+    Includes cached_input tokens when a rate is provided (else falls back to default.cached_in or 0).
+    """
+
+    def rate(role: str, kind: str):  # kind: 'in' | 'cached_in' | 'out'
+        r = pricing.get(role, {})
+        val = r.get(kind)
+        if val is None:
+            val = pricing["default"].get(kind)
+        return float(val or 0.0)
+
+    details = {}
+    total = 0.0
+    for role in ("tasker", "coder", "evaluator"):
+        it = usage_by_agent[role]["input"]
+        cit = usage_by_agent[role]["cached_input"]
+        ot = usage_by_agent[role]["output"]
+
+        r_in = rate(role, "in")
+        r_cin = rate(role, "cached_in")
+        r_out = rate(role, "out")
+
+        cost = (
+            (it / 1_000_000.0) * r_in
+            + (cit / 1_000_000.0) * r_cin
+            + (ot / 1_000_000.0) * r_out
+        )
+        details[role] = {
+            "input_tokens": it,
+            "cached_input_tokens": cit,
+            "output_tokens": ot,
+            "rate_input_per_1M": r_in,
+            "rate_cached_input_per_1M": r_cin,
+            "rate_output_per_1M": r_out,
+            "cost_usd": round(cost, 6),
+        }
+        total += cost
+    return details, round(total, 6)
 
 
 # ======================
@@ -130,6 +300,19 @@ vprint(
     f"EVALUATOR={_model_name(llm_eval)}",
 )
 
+pricing, pricing_missing = load_pricing()
+if args.verbose:
+    if pricing_missing:
+        vprint("PRICING:", pricing_missing)
+    else:
+        vprint(
+            "PRICING (USD per 1M):",
+            f"default in={pricing['default']['in']}, cached_in={pricing['default']['cached_in']}, out={pricing['default']['out']}",
+            f"tasker in={pricing['tasker']['in']}, cached_in={pricing['tasker']['cached_in']}, out={pricing['tasker']['out']}",
+            f"coder in={pricing['coder']['in']}, cached_in={pricing['coder']['cached_in']}, out={pricing['coder']['out']}",
+            f"evaluator in={pricing['evaluator']['in']}, cached_in={pricing['evaluator']['cached_in']}, out={pricing['evaluator']['out']}",
+        )
+
 
 # ======================
 # STATE SCHEMA
@@ -183,6 +366,14 @@ def tasker_node(state: State) -> State:
             {"role": "user", "content": user_msg},
         ]
     )
+    # Token usage
+    it, ot, cit = extract_usage(resp)
+    add_usage("tasker", it, ot, cit)
+    if args.verbose:
+        vprint(
+            f"[iter {state.get('iter','?')}] TASKER tokens: input={it}, cached_input={cit}, output={ot}"
+        )
+
     # Normalize resp.content to str
     text = normalize_content(resp.content)
     if args.verbose:
@@ -224,6 +415,14 @@ def coder_node(state: State) -> State:
             {"role": "user", "content": user_msg},
         ]
     )
+    # Token usage
+    it, ot, cit = extract_usage(resp)
+    add_usage("coder", it, ot, cit)
+    if args.verbose:
+        vprint(
+            f"[iter {state.get('iter','?')}] CODER tokens: input={it}, cached_input={cit}, output={ot}"
+        )
+
     # Normalize resp.content to str
     text = normalize_content(resp.content)
 
@@ -272,6 +471,14 @@ def evaluator_node(state: State) -> State:
             {"role": "user", "content": user_msg},
         ]
     )
+
+    # Token usage
+    it, ot, cit = extract_usage(resp)
+    add_usage("evaluator", it, ot, cit)
+    if args.verbose:
+        vprint(
+            f"[iter {state.get('iter','?')}] EVALUATOR tokens: input={it}, cached_input={cit}, output={ot}"
+        )
 
     # Normalize resp.content to str
     text = normalize_content(resp.content)
@@ -367,6 +574,8 @@ app = g.compile()
 # ======================
 logf = open(os.path.join(args.output, "log.jsonl"), "a", encoding="utf-8")
 statef = open(os.path.join(args.output, "state.jsonl"), "a", encoding="utf-8")
+# Token usage tracking
+prev_totals = {"input": 0, "output": 0}
 
 for i in range(MAX_ITERS):
     vprint(f"==== Iteration {i+1}/{MAX_ITERS} ====")
@@ -375,8 +584,17 @@ for i in range(MAX_ITERS):
     state = cast(State, app.invoke(state))  # safe cast
     t1 = time.time()
     dur = round(t1 - t0, 2)
+
+    # Compute iteration deltas
+    delta_in = TOK["total"]["input"] - prev_totals["input"]
+    delta_out = TOK["total"]["output"] - prev_totals["output"]
+    prev_totals["input"] = TOK["total"]["input"]
+    prev_totals["output"] = TOK["total"]["output"]
+
     vprint(
-        f"[iter {i+1}] cycle duration: {dur}s, done={state['done']}, tasks={len(state['task_list'])}"
+        f"[iter {i+1}] cycle duration: {dur}s, "
+        f"done={state['done']}, tasks={len(state['task_list'])}, "
+        f"tokens(in={delta_in}, out={delta_out})"
     )
 
     # Minimal log (performance + summary)
@@ -386,7 +604,13 @@ for i in range(MAX_ITERS):
                 "iter": i + 1,
                 "done": state["done"],
                 "task_list": state["task_list"],
-                "duration_s": round(t1 - t0, 2),
+                "duration_s": dur,
+                "tokens_iter": {"input": delta_in, "output": delta_out},
+                "tokens_cumulative": {
+                    "input": TOK["total"]["input"],
+                    "output": TOK["total"]["output"],
+                },
+                "tokens_by_agent": TOK,  # snapshot
             },
             ensure_ascii=False,
         )
@@ -402,6 +626,54 @@ for i in range(MAX_ITERS):
     if state["done"]:
         break
 
+# Close the logging file handles
 logf.close()
 statef.close()
+
+
+# ---- Final token & cost summary file ----
+summary = {
+    "total_input_tokens": TOK["total"]["input"],
+    "total_cached_input_tokens": TOK["total"]["cached_input"],
+    "total_output_tokens": TOK["total"]["output"],
+    "by_agent": TOK,
+}
+# Compute cost if pricing available
+if pricing_missing:
+    summary["cost_computation"] = {
+        "status": "pricing_missing",
+        "message": pricing_missing,
+    }
+    total_cost = None
+else:
+    cost_details, total_cost = compute_cost_usd_per_1M(pricing, TOK)
+    summary["cost_computation"] = {
+        "status": "ok",
+        "total_cost_usd": total_cost,
+        "details": cost_details,
+        "pricing_units": "USD per 1M tokens",
+    }
+
+
+summary_path = os.path.join(args.output, "tokens_summary.json")
+with open(summary_path, "w", encoding="utf-8") as f:
+    json.dump(summary, f, ensure_ascii=False, indent=2)
+
 print("Finished. See workspace artifacts.")
+
+if total_cost is not None:
+    print(
+        "Token usage — "
+        f"input: {TOK['total']['input']}, "
+        f"cached input: {TOK['total']['cached_input']}, "
+        f"output: {TOK['total']['output']}.\n"
+        f"Estimated cost: ${total_cost:.4f} USD (see {summary_path})"
+    )
+else:
+    print(
+        "Token usage — "
+        f"input: {TOK['total']['input']}, "
+        f"cached input: {TOK['total']['cached_input']}, "
+        f"output: {TOK['total']['output']}.\n"
+        "Cost not computed: pricing info is missing in environment (see tokens_summary.json)."
+    )
