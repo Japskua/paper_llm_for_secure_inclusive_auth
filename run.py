@@ -174,19 +174,31 @@ def coder_node(state: State) -> State:
     end = text.find("</FILE>")
     code = text[start + 6 : end] if start != -1 and end != -1 else text
     state["code_html"] = code
-    pathlib.Path(args.output, "index.html").write_text(state["code_html"])
+
+    # --- Save artifacts ---
+    # Latest
+    pathlib.Path(args.output, "index.html").write_text(
+        state["code_html"], encoding="utf-8"
+    )
+
+    # Versioned (use the current iteration from state; default to 0 if missing)
+    iter_no = int(state.get("iter", 0))
+    versioned_name = f"index_iter{iter_no}.html"
+    pathlib.Path(args.output, versioned_name).write_text(
+        state["code_html"], encoding="utf-8"
+    )
+
     return state
 
 
 def evaluator_node(state: State) -> State:
     user_msg = f"""Evaluate the current artifact.
+        Requirements:
+        {requirements}
 
-Requirements:
-{requirements}
-
-index.html:
-{state['code_html']}
-"""
+        index.html:
+        {state['code_html']}
+    """
     resp = llm_eval.invoke(
         [
             {"role": "system", "content": SYSTEM_EVAL},
@@ -198,7 +210,14 @@ index.html:
     text = normalize_content(resp.content)
 
     state["evaluator_md"] = text
-    pathlib.Path(args.output, "evaluator_report.md").write_text(text)
+
+    # --- Save artifacts ---
+    # Latest
+    pathlib.Path(args.output, "evaluator_report.md").write_text(text, encoding="utf-8")
+    # Versioned
+    iter_no = int(state.get("iter", 0))
+    versioned_name = f"evaluator_report_iter{iter_no}.md"
+    pathlib.Path(args.output, versioned_name).write_text(text, encoding="utf-8")
 
     # Parse DECISION
     decision = "FAIL"
