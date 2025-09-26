@@ -254,12 +254,15 @@ app = g.compile()
 # RUN LOOP
 # ======================
 logf = open(os.path.join(args.output, "log.jsonl"), "a", encoding="utf-8")
+statef = open(os.path.join(args.output, "state.jsonl"), "a", encoding="utf-8")
 
 for i in range(MAX_ITERS):
     t0 = time.time()
     state["iter"] = i + 1
     state = cast(State, app.invoke(state))  # safe cast
     t1 = time.time()
+
+    # Minimal log (performance + summary)
     logf.write(
         json.dumps(
             {
@@ -273,9 +276,15 @@ for i in range(MAX_ITERS):
         + "\n"
     )
     logf.flush()
+
+    # Full state snapshot
+    statef.write(json.dumps(state, ensure_ascii=False) + "\n")
+    statef.flush()
+
     print(f"Iter {i+1} done. done={state['done']}, tasks={len(state['task_list'])}")
     if state["done"]:
         break
 
 logf.close()
+statef.close()
 print("Finished. See workspace artifacts.")
