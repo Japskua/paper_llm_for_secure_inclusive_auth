@@ -10,4 +10,5 @@ uv run python run.py \
   --requirements requirements/password_recovery/password_recovery_no_inclusivity.md \
   --output workspace/password_recovery/case_2
   --max-iters 8
+  --verbose
 ```

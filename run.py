@@ -5,7 +5,7 @@ import os
 import pathlib
 import argparse
 from dotenv import load_dotenv
-from typing import Dict, Any, List, TypedDict, cast
+from typing import List, TypedDict, cast
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
 from provider import make_three_llms
@@ -47,8 +47,35 @@ parser.add_argument(
     default=8,
     help="Maximum number of loop iterations (default: 8)",
 )
+parser.add_argument(
+    "-v",
+    "--verbose",
+    action="store_true",
+    help="Verbose debug output (show prompts, responses, and timing).",
+)
 
 args = parser.parse_args()
+
+
+# Printer
+def vprint(*msg):
+    if args.verbose:
+        # nice timestamped prefix
+        import datetime as _dt
+
+        print(f"[{_dt.datetime.now().strftime('%H:%M:%S')}]", *msg, flush=True)
+
+
+vprint(
+    "CONFIG:",
+    f"tasker={args.tasker}",
+    f"coder={args.coder}",
+    f"eval={args.eval_}",
+    f"requirements={args.requirements}",
+    f"output={args.output}",
+    f"criteria={'(none)' if not args.criteria else args.criteria}",
+    f"max_iters={args.max_iters}",
+)
 
 # Validate files
 for p in [args.tasker, args.coder, args.eval_, args.requirements]:
@@ -87,6 +114,21 @@ MAX_ITERS = args.max_iters
 # MODELS
 # ======================
 llm_tasker, llm_coder, llm_eval = make_three_llms(temperature=0.0)
+
+
+# Try to print model names if available (LangChain wrappers vary)
+def _model_name(llm):
+    return (
+        getattr(llm, "model_name", None) or getattr(llm, "model", None) or "(unknown)"
+    )
+
+
+vprint(
+    "LLMs:",
+    f"TASKER={_model_name(llm_tasker)}",
+    f"CODER={_model_name(llm_coder)}",
+    f"EVALUATOR={_model_name(llm_eval)}",
+)
 
 
 # ======================
@@ -132,6 +174,9 @@ def tasker_node(state: State) -> State:
         {state.get('evaluator_md','(none yet)')}
         Current tasks: {json.dumps(state.get('task_list', []), ensure_ascii=False)}
     """
+    # Get some debug output
+    vprint(f"[iter {state.get('iter', '?')}] TASKER: invoking")
+
     resp = llm_tasker.invoke(
         [
             {"role": "system", "content": SYSTEM_TASKER},
@@ -140,14 +185,22 @@ def tasker_node(state: State) -> State:
     )
     # Normalize resp.content to str
     text = normalize_content(resp.content)
+    if args.verbose:
+        # show only first 400 chars to avoid spam
+        preview = (text[:400] + "…") if len(text) > 400 else text
+        vprint(f"[iter {state.get('iter','?')}] TASKER output (preview): {preview}")
 
     try:
         data = json.loads(text)
     except json.JSONDecodeError as e:
+        vprint(f"[iter {state.get('iter','?')}] TASKER JSON ERROR. Raw:\n{text}")
         raise ValueError(f"Tasker did not return valid JSON. Got:\n{text}") from e
 
     state["task_list"] = data.get("task_list", [])
     state["done"] = bool(data.get("done", False))
+    vprint(
+        f"[iter {state.get('iter','?')}] TASKER: tasks={len(state['task_list'])}, done={state['done']}"
+    )
     return state
 
 
@@ -160,6 +213,11 @@ def coder_node(state: State) -> State:
         Current index.html (edit in-place and return FULL FILE):
         {state['code_html']}
     """
+    # Some debugging
+    vprint(
+        f"[iter {state.get('iter','?')}] CODER: invoking with {len(state['task_list'])} task(s)"
+    )
+
     resp = llm_coder.invoke(
         [
             {"role": "system", "content": SYSTEM_CODER},
@@ -188,6 +246,12 @@ def coder_node(state: State) -> State:
         state["code_html"], encoding="utf-8"
     )
 
+    if args.verbose:
+        vprint(
+            f"[iter {iter_no}] CODER: wrote index.html and index_iter{iter_no}.html "
+            f"(chars={len(state['code_html'])})"
+        )
+
     return state
 
 
@@ -199,6 +263,9 @@ def evaluator_node(state: State) -> State:
         index.html:
         {state['code_html']}
     """
+    # Some debugging
+    vprint(f"[iter {state.get('iter','?')}] EVALUATOR: invoking")
+
     resp = llm_eval.invoke(
         [
             {"role": "system", "content": SYSTEM_EVAL},
@@ -227,6 +294,14 @@ def evaluator_node(state: State) -> State:
                 decision = "PASS"
             break
 
+    if args.verbose:
+        # show a couple of tasks to confirm flow
+        preview_tasks = state.get("task_list", [])[:3]
+        vprint(
+            f"[iter {iter_no}] EVALUATOR: decision={decision}, "
+            f"current tasks sample={preview_tasks}"
+        )
+
     if decision == "PASS":
         state["done"] = True
         state["task_list"] = []
@@ -249,6 +324,10 @@ def evaluator_node(state: State) -> State:
                 elif ln.strip() == "":
                     break
         state["task_list"] = tasks or state["task_list"]
+        if args.verbose:
+            vprint(
+                f"[iter {iter_no}] EVALUATOR: parsed NEW_TASKS={len(state['task_list'])}"
+            )
     return state
 
 
@@ -290,10 +369,15 @@ logf = open(os.path.join(args.output, "log.jsonl"), "a", encoding="utf-8")
 statef = open(os.path.join(args.output, "state.jsonl"), "a", encoding="utf-8")
 
 for i in range(MAX_ITERS):
+    vprint(f"==== Iteration {i+1}/{MAX_ITERS} ====")
     t0 = time.time()
     state["iter"] = i + 1
     state = cast(State, app.invoke(state))  # safe cast
     t1 = time.time()
+    dur = round(t1 - t0, 2)
+    vprint(
+        f"[iter {i+1}] cycle duration: {dur}s, done={state['done']}, tasks={len(state['task_list'])}"
+    )
 
     # Minimal log (performance + summary)
     logf.write(
