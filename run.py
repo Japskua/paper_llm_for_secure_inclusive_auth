@@ -8,12 +8,34 @@ from dotenv import load_dotenv
 from typing import List, TypedDict, cast
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
+from langchain_core.exceptions import OutputParserException
+from httpx import HTTPError, ReadTimeout
 from provider import make_three_llms
 
 # Load secrets from .env
 load_dotenv()
 
 # OWN FUNCTIONS
+
+
+def safe_invoke(llm, messages, who: str, iter_no: int):
+    vprint(f"[iter {iter_no}] {who}: invoking")
+    try:
+        resp = llm.invoke(messages)
+        return resp
+    except (ReadTimeout, HTTPError) as e:
+        print(f"[FATAL] {who} request failed: {e}")
+        # Persist a crash marker so you see *something* in the folder
+        pathlib.Path(args.output, f"CRASH_{who}_iter{iter_no}.txt").write_text(
+            str(e), encoding="utf-8"
+        )
+        raise
+    except Exception as e:
+        print(f"[FATAL] {who} unexpected error: {e}")
+        pathlib.Path(args.output, f"CRASH_{who}_iter{iter_no}.txt").write_text(
+            str(e), encoding="utf-8"
+        )
+        raise
 
 
 def normalize_content(content) -> str:
@@ -360,11 +382,14 @@ def tasker_node(state: State) -> State:
     # Get some debug output
     vprint(f"[iter {state.get('iter', '?')}] TASKER: invoking")
 
-    resp = llm_tasker.invoke(
+    resp = safe_invoke(
+        llm_tasker,
         [
             {"role": "system", "content": SYSTEM_TASKER},
             {"role": "user", "content": user_msg},
-        ]
+        ],
+        "TASKER",
+        int(state.get("iter", 0)),
     )
     # Token usage
     it, ot, cit = extract_usage(resp)
@@ -409,11 +434,14 @@ def coder_node(state: State) -> State:
         f"[iter {state.get('iter','?')}] CODER: invoking with {len(state['task_list'])} task(s)"
     )
 
-    resp = llm_coder.invoke(
+    resp = safe_invoke(
+        llm_coder,
         [
             {"role": "system", "content": SYSTEM_CODER},
             {"role": "user", "content": user_msg},
-        ]
+        ],
+        "CODER",
+        iter_no=state.get("iter", 0),
     )
     # Token usage
     it, ot, cit = extract_usage(resp)
@@ -465,11 +493,14 @@ def evaluator_node(state: State) -> State:
     # Some debugging
     vprint(f"[iter {state.get('iter','?')}] EVALUATOR: invoking")
 
-    resp = llm_eval.invoke(
+    resp = safe_invoke(
+        llm_eval,
         [
             {"role": "system", "content": SYSTEM_EVAL},
             {"role": "user", "content": user_msg},
-        ]
+        ],
+        "EVALUATOR",
+        int(state.get("iter", 0)),
     )
 
     # Token usage
@@ -577,6 +608,9 @@ statef = open(os.path.join(args.output, "state.jsonl"), "a", encoding="utf-8")
 # Token usage tracking
 prev_totals = {"input": 0, "output": 0}
 
+print(
+    "Starting loop… (if this hangs, a network call is stuck; use --verbose and check CRASH_* files)"
+)
 for i in range(MAX_ITERS):
     vprint(f"==== Iteration {i+1}/{MAX_ITERS} ====")
     t0 = time.time()

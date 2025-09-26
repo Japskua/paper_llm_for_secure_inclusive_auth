@@ -50,7 +50,13 @@ def make_llm(role: str, temperature: float = 0.0):
         if not api_key:
             raise RuntimeError("Missing OPENAI_API_KEY for provider=openai")
         # ChatOpenAI picks up env var, but pass explicitly for clarity
-        return ChatOpenAI(model=model, temperature=temperature, api_key=api_key)
+        return ChatOpenAI(
+            model=model,
+            temperature=temperature,
+            api_key=api_key,
+            timeout=60,
+            max_retries=1,
+        )
 
     if provider == "openrouter":
         api_key = _get("OPENROUTER_API_KEY")
@@ -72,6 +78,8 @@ def make_llm(role: str, temperature: float = 0.0):
             api_key=api_key,
             base_url="https://openrouter.ai/api/v1",
             default_headers=default_headers or None,
+            timeout=60,
+            max_retries=1,
         )
 
     if provider == "anthropic":
@@ -82,7 +90,13 @@ def make_llm(role: str, temperature: float = 0.0):
         api_key = _get("ANTHROPIC_API_KEY")
         if not api_key:
             raise RuntimeError("Missing ANTHROPIC_API_KEY for provider=anthropic")
-        return ChatAnthropic(model=model, temperature=temperature, api_key=api_key)
+        return ChatAnthropic(
+            model=model,
+            temperature=temperature,
+            api_key=api_key,
+            timeout=60,
+            max_retries=1,
+        )
 
     raise ValueError(f"Unknown LLM_PROVIDER: {provider}")
 
