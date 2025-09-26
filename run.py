@@ -5,13 +5,24 @@ import os
 import pathlib
 import argparse
 from dotenv import load_dotenv
-from typing import Dict, Any
+from typing import Dict, Any, List, TypedDict, cast
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
 from provider import make_three_llms
 
 # Load secrets from .env
 load_dotenv()
+
+
+def normalize_content(content) -> str:
+    """Normalize LangChain response content to a plain string."""
+    if isinstance(content, list):
+        return "".join(
+            part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in content
+        )
+    return str(content)
+
 
 # ======================
 # CLI ARGUMENTS
@@ -29,6 +40,12 @@ parser.add_argument("--requirements", required=True, help="Path to requirements.
 parser.add_argument("--output", required=True, help="Output folder for artifacts")
 parser.add_argument(
     "--criteria", required=False, help="Optional path to inclusivity rubric file"
+)
+parser.add_argument(
+    "--max-iters",
+    type=int,
+    default=8,
+    help="Maximum number of loop iterations (default: 8)",
 )
 
 args = parser.parse_args()
@@ -63,21 +80,8 @@ if args.criteria:
 # ======================
 # CONFIG
 # ======================
-MAX_ITERS = 8
+MAX_ITERS = args.max_iters
 
-# Toggle inclusivity for Case 3/4
-INCLUSIVITY = False  # set True for inclusivity cases
-
-# Paths
-RUN_DIR = "workspace/run_001"
-REQ_PATH = "experiments/requirements_no_inclusion.md"  # change for Case 3/4
-
-os.makedirs(RUN_DIR, exist_ok=True)
-
-# ======================
-# LOAD REQUIREMENTS
-# ======================
-requirements = pathlib.Path(REQ_PATH).read_text()
 
 # ======================
 # MODELS
@@ -85,20 +89,15 @@ requirements = pathlib.Path(REQ_PATH).read_text()
 llm_tasker, llm_coder, llm_eval = make_three_llms(temperature=0.0)
 
 
-INCLUSIVITY_NOTE = (
-    ""
-    if not INCLUSIVITY
-    else """
-Note: Apply the Inclusivity Rubric rigorously; include INCLUSIVITY_SCORES.
-"""
-)
-
-
 # ======================
-# STATE
+# STATE SCHEMA
 # ======================
-class S(dict):
-    """State wrapper so we can pass dict-like state through LangGraph."""
+class State(TypedDict):
+    code_html: str
+    task_list: List[str]
+    evaluator_md: str
+    done: bool
+    iter: int
 
 
 init_code = """<!doctype html>
@@ -114,91 +113,109 @@ init_code = """<!doctype html>
 </html>
 """
 
-state = S(code_html=init_code, task_list=[], evaluator_md="", done=False, iter=0)
+state: State = {
+    "code_html": init_code,
+    "task_list": [],
+    "evaluator_md": "",
+    "done": False,
+    "iter": 0,
+}
 
 
 # ======================
 # NODES
 # ======================
-def tasker_node(s: S):
+def tasker_node(state: State) -> State:
     user_msg = f"""Requirements:
-{requirements}
-Evaluator feedback:
-{s.get('evaluator_md','(none yet)')}
-Current tasks: {json.dumps(s.get('task_list', []), ensure_ascii=False)}
-"""
+        {requirements}
+        Evaluator feedback:
+        {state.get('evaluator_md','(none yet)')}
+        Current tasks: {json.dumps(state.get('task_list', []), ensure_ascii=False)}
+    """
     resp = llm_tasker.invoke(
         [
             {"role": "system", "content": SYSTEM_TASKER},
             {"role": "user", "content": user_msg},
         ]
     )
-    data = json.loads(resp.content)
-    s["task_list"] = data.get("task_list", [])
-    s["done"] = bool(data.get("done", False))
-    return s
+    # Normalize resp.content to str
+    text = normalize_content(resp.content)
+
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Tasker did not return valid JSON. Got:\n{text}") from e
+
+    state["task_list"] = data.get("task_list", [])
+    state["done"] = bool(data.get("done", False))
+    return state
 
 
-def coder_node(s: S):
-    tasks_str = "\n".join(f"- {t}" for t in s["task_list"]) or "(no tasks)"
+def coder_node(state: State) -> State:
+    tasks_str = "\n".join(f"- {t}" for t in state["task_list"]) or "(no tasks)"
     user_msg = f"""Requirements (for reference): {requirements}
-    Tasks to implement now:
-    {tasks_str}
+        Tasks to implement now:
+        {tasks_str}
 
-    Current index.html (edit in-place and return FULL FILE):
-    {s['code_html']}
+        Current index.html (edit in-place and return FULL FILE):
+        {state['code_html']}
     """
     resp = llm_coder.invoke(
         [
             {"role": "system", "content": SYSTEM_CODER},
             {"role": "user", "content": user_msg},
         ]
-    ).content
+    )
+    # Normalize resp.content to str
+    text = normalize_content(resp.content)
+
     # Extract between <FILE> ... </FILE>
-    start = resp.find("<FILE>")
-    end = resp.find("</FILE>")
-    code = resp[start + 6 : end] if start != -1 and end != -1 else resp
-    s["code_html"] = code
-    pathlib.Path(RUN_DIR, "index.html").write_text(s["code_html"])
-    return s
+    start = text.find("<FILE>")
+    end = text.find("</FILE>")
+    code = text[start + 6 : end] if start != -1 and end != -1 else text
+    state["code_html"] = code
+    pathlib.Path(args.output, "index.html").write_text(state["code_html"])
+    return state
 
 
-def evaluator_node(s: S):
+def evaluator_node(state: State) -> State:
     user_msg = f"""Evaluate the current artifact.
-
-{INCLUSIVITY_NOTE}
 
 Requirements:
 {requirements}
 
 index.html:
-{s['code_html']}
+{state['code_html']}
 """
     resp = llm_eval.invoke(
         [
             {"role": "system", "content": SYSTEM_EVAL},
             {"role": "user", "content": user_msg},
         ]
-    ).content
-    s["evaluator_md"] = resp
-    pathlib.Path(RUN_DIR, "evaluator_report.md").write_text(resp)
+    )
+
+    # Normalize resp.content to str
+    text = normalize_content(resp.content)
+
+    state["evaluator_md"] = text
+    pathlib.Path(args.output, "evaluator_report.md").write_text(text)
 
     # Parse DECISION
     decision = "FAIL"
-    for line in resp.splitlines():
+    for line in text.splitlines():
         if line.strip().upper().startswith("DECISION"):
             if "PASS" in line.upper():
                 decision = "PASS"
             break
 
     if decision == "PASS":
-        s["done"] = True
-        s["task_list"] = []
+        state["done"] = True
+        state["task_list"] = []
     else:
         # Parse NEW_TASKS
         tasks = []
         capture = False
-        for ln in resp.splitlines():
+        for ln in text.splitlines():
             if ln.strip().upper().startswith("NEW_TASKS"):
                 capture = True
                 continue
@@ -212,14 +229,14 @@ index.html:
                     tasks.append(clean)
                 elif ln.strip() == "":
                     break
-        s["task_list"] = tasks or s["task_list"]
-    return s
+        state["task_list"] = tasks or state["task_list"]
+    return state
 
 
 # ======================
 # GRAPH
 # ======================
-g = StateGraph(S)
+g = StateGraph(State)
 g.add_node("tasker", tasker_node)
 g.add_node("coder", coder_node)
 g.add_node("evaluator", evaluator_node)
@@ -236,12 +253,12 @@ app = g.compile()
 # ======================
 # RUN LOOP
 # ======================
-logf = open(os.path.join(RUN_DIR, "log.jsonl"), "a", encoding="utf-8")
+logf = open(os.path.join(args.output, "log.jsonl"), "a", encoding="utf-8")
 
 for i in range(MAX_ITERS):
     t0 = time.time()
     state["iter"] = i + 1
-    state = app.invoke(state)
+    state = cast(State, app.invoke(state))  # safe cast
     t1 = time.time()
     logf.write(
         json.dumps(
