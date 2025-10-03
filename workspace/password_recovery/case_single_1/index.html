@@ -1,0 +1,812 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Password Recovery Demo</title>
+  <style>
+    /* ========== Global & Layout (Req §4, §10) ========== */
+    :root{
+      --bg: #0f172a;
+      --card: #ffffff;
+      --text: #0b1020;
+      --muted: #5b6478;
+      --primary: #2563eb;
+      --primary-600:#1d4ed8;
+      --border:#e5e7eb;
+      --error:#dc2626;
+      --success:#16a34a;
+      --warning:#b45309;
+      --focus: #3b82f6;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+      color: var(--text);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    header{
+      width:100%;
+      max-width: 560px;
+      padding: 24px 16px 8px;
+      color:#e5e7eb;
+      text-align:center;
+    }
+    header h1{
+      margin:0;
+      font-size: 20px;
+      letter-spacing:.2px;
+    }
+    main{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      padding: 8px 16px 32px;
+    }
+    .card{
+      width:100%;
+      max-width: 440px; /* Req §4: max-width ~440px */
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      padding: 20px 20px 16px;
+    }
+    .card header.state-title{
+      padding: 4px 2px 8px;
+      border-bottom: 1px solid var(--border);
+      margin: -4px 0 16px;
+    }
+    .state-title h2{
+      margin:0;
+      font-size: 18px;
+    }
+    section[hidden]{display:none !important;}
+
+    /* Forms & Controls */
+    form{margin:0}
+    .field{margin-bottom:14px}
+    label{
+      display:block;
+      margin-bottom:6px;
+      font-size: 14px;
+      color: #111827;
+      font-weight: 600;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      width:100%;
+      padding: 12px 12px;
+      height: 44px; /* Req §4: 44px min */
+      border:1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    input:focus{
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+    .hint{
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .error{
+      color: var(--error);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    .notice{
+      color: var(--warning);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    .success{
+      color: var(--success);
+    }
+
+    /* Buttons */
+    .actions{display:flex; gap:8px; flex-wrap:wrap; margin-top: 10px;}
+    .btn{
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      min-height: 44px; /* Req §4 tap target */
+      font-size: 15px;
+      cursor: pointer;
+      transition: transform .02s ease-in-out, background-color .15s, color .15s, opacity .15s;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn-primary{
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover{background: var(--primary-600)}
+    .btn-secondary{
+      background: #f3f4f6;
+      color: #111827;
+      border: 1px solid var(--border);
+    }
+    .btn-link{
+      background: transparent;
+      color: var(--primary);
+      text-decoration: underline;
+      padding: 0;
+      min-height: 0;
+    }
+    .btn[disabled]{
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    /* Radios */
+    .radio-row{
+      display:flex; align-items:center; gap:10px;
+      border:1px solid var(--border);
+      padding:12px; border-radius:8px;
+    }
+    .radio-row input[type="radio"]{width:20px;height:20px}
+
+    /* Spinner and inline loading (Req §4 Loading) */
+    .inline-status{
+      display:flex; align-items:center; gap:8px;
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 8px;
+      min-height: 22px;
+    }
+    .spinner{
+      width:16px; height:16px;
+      border:2px solid #cbd5e1; border-right-color: transparent;
+      border-radius:50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Code input */
+    .code-input{
+      letter-spacing: 6px;
+      text-align: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    }
+
+    /* Password meter & checklist (Req §8) */
+    .meter{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:8px; margin: 6px 0 8px;
+    }
+    .meter .bar{
+      flex:1; height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden;
+    }
+    .meter .bar > span{
+      display:block; height: 100%; width: 0%;
+      background: var(--error);
+      transition: width .2s ease, background .2s ease;
+      border-radius: inherit;
+    }
+    .meter .label{min-width: 60px; font-size: 13px; color: var(--muted);}
+    ul.checklist{
+      padding-left: 20px;
+      margin: 8px 0 0;
+    }
+    ul.checklist li{
+      margin: 4px 0;
+      font-size: 14px;
+      color: #374151;
+    }
+    ul.checklist li.ok{ color: var(--success); }
+    ul.checklist li::marker{ color: #9ca3af; }
+    ul.checklist li.ok::marker{ color: var(--success); }
+
+    /* Success */
+    .success-wrap{
+      text-align:center; padding: 8px 4px 6px;
+    }
+    .big-check{
+      width:68px; height:68px; border-radius:50%;
+      display:inline-flex; align-items:center; justify-content:center;
+      background: #ecfdf5; color: var(--success);
+      font-size: 40px;
+      margin: 8px 0 10px;
+    }
+
+    footer{
+      width:100%; max-width:560px;
+      color:#cbd5e1; text-align:center;
+      padding: 10px 16px 24px;
+      font-size: 13px;
+    }
+    .muted{color:#9ca3af}
+  </style>
+</head>
+<body>
+  <!-- Header (Req §3) -->
+  <header>
+    <h1>Password Recovery Demo</h1>
+  </header>
+
+  <main>
+    <div class="card" role="region" aria-label="Password Recovery Card">
+      <!-- ========== Start (Req §5.1) ========== -->
+      <section id="view-start">
+        <header class="state-title"><h2>Welcome</h2></header>
+        <p class="hint">This is a client-only demo. Sign-in is intentionally disabled.</p>
+        <form id="formStart" novalidate>
+          <div class="field">
+            <label for="startEmail">Email</label>
+            <input id="startEmail" name="email" type="email" autocomplete="username" placeholder="you@example.com" />
+          </div>
+          <div class="field">
+            <label for="startPassword">Password</label>
+            <input id="startPassword" name="password" type="password" autocomplete="current-password" placeholder="••••••••••" />
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit" disabled aria-disabled="true" title="Disabled in this demo">Sign in</button>
+            <button id="btnForgot" class="btn btn-secondary" type="button" aria-describedby="demoNote">Forgot your password?</button>
+          </div>
+          <p id="demoNote" class="hint">Use the “Forgot your password?” button to try the recovery flow.</p>
+        </form>
+      </section>
+
+      <!-- ========== Identify Account (Req §5.2) ========== -->
+      <section id="view-identify" hidden>
+        <header class="state-title"><h2>Identify account</h2></header>
+        <form id="formIdentify" novalidate>
+          <div class="field">
+            <label for="identifyInput">Enter your email or username</label>
+            <input id="identifyInput" type="text" autocomplete="username email" placeholder="Email or username" />
+            <div id="identifyError" class="error" aria-live="polite"></div>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn btn-secondary" id="backToStart">Back</button>
+            <button type="submit" class="btn btn-primary" id="btnIdentifyContinue" disabled>Continue</button>
+          </div>
+          <div class="inline-status" aria-live="polite" id="identifyStatus"></div>
+        </form>
+      </section>
+
+      <!-- ========== Choose Delivery Method (Req §5.3) ========== -->
+      <section id="view-delivery" hidden>
+        <header class="state-title"><h2>Choose how to receive your code</h2></header>
+        <form id="formDelivery" novalidate>
+          <fieldset class="field" style="border:none; padding:0; margin:0">
+            <legend class="hint" style="margin-bottom:6px">Delivery method</legend>
+            <label class="radio-row">
+              <input type="radio" name="delivery" value="email" checked />
+              <span>Email: <strong id="maskedEmail">ja***@example.com</strong></span>
+            </label>
+          </fieldset>
+          <div class="actions">
+            <button type="button" class="btn btn-secondary" id="backToIdentify">Back</button>
+            <button type="submit" class="btn btn-primary" id="btnSendCode">Send code</button>
+          </div>
+          <div class="inline-status" aria-live="polite" id="deliveryStatus"></div>
+          <p class="hint">In this demo, the code is printed to the console.</p>
+        </form>
+      </section>
+
+      <!-- ========== Enter Code (Req §5.4) ========== -->
+      <section id="view-code" hidden>
+        <header class="state-title"><h2>Enter code</h2></header>
+        <p class="hint">Enter the 6-digit code we sent to your email (check console in this demo).</p>
+        <form id="formCode" novalidate>
+          <div class="field">
+            <label for="codeInput">6-digit code</label>
+            <input id="codeInput" class="code-input" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="6" placeholder="••••••" />
+            <div id="codeError" class="error" aria-live="polite"></div>
+            <div id="codeNotice" class="notice" aria-live="polite"></div>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn btn-secondary" id="backToDelivery">Back</button>
+            <button type="button" class="btn btn-secondary" id="btnResend">Resend code</button>
+            <button type="submit" class="btn btn-primary" id="btnVerify" disabled>Verify</button>
+          </div>
+          <div class="inline-status" aria-live="polite" id="codeStatus"></div>
+        </form>
+      </section>
+
+      <!-- ========== Set New Password (Req §5.5 & §8) ========== -->
+      <section id="view-setpassword" hidden>
+        <header class="state-title"><h2>Create a new password</h2></header>
+        <form id="formSetPassword" novalidate>
+          <div class="field">
+            <label for="newPassword">New password</label>
+            <input id="newPassword" type="password" autocomplete="new-password" placeholder="At least 10 characters" />
+          </div>
+          <div class="field">
+            <label for="confirmPassword">Confirm new password</label>
+            <input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Re-enter new password" />
+            <div id="confirmError" class="error" aria-live="polite"></div>
+          </div>
+          <div class="field" style="margin-top:-4px">
+            <label style="display:flex; align-items:center; gap:8px; font-weight:400">
+              <input type="checkbox" id="toggleShowPw" />
+              <span>Show password</span>
+            </label>
+          </div>
+
+          <!-- Strength meter -->
+          <div class="meter" aria-live="polite">
+            <div class="bar"><span id="meterFill" style="width:0%"></span></div>
+            <div class="label" id="meterLabel">Weak</div>
+          </div>
+          <!-- Checklist (Req §8) -->
+          <ul class="checklist" id="pwChecklist">
+            <li id="ruleLen">Password must be at least 10 characters.</li>
+            <li id="ruleClasses">Include at least 3 of: lowercase, uppercase, number, symbol.</li>
+            <li id="ruleNoUser">Do not include “testuser” or “jane.doe”.</li>
+            <li id="ruleMatch">Confirmation must exactly match.</li>
+          </ul>
+
+          <div class="actions">
+            <button type="button" class="btn btn-secondary" id="backToCode">Back</button>
+            <button type="submit" class="btn btn-primary" id="btnSavePassword" disabled>Save password</button>
+          </div>
+          <div class="inline-status" aria-live="polite" id="pwStatus"></div>
+        </form>
+      </section>
+
+      <!-- ========== Success (Req §5.6) ========== -->
+      <section id="view-success" hidden>
+        <div class="success-wrap">
+          <div class="big-check" aria-hidden="true">✓</div>
+          <h3>Your password has been reset.</h3>
+          <p class="hint">You can now sign in with your new password. (Sign-in is disabled in this demo.)</p>
+          <div class="actions" style="justify-content:center; margin-top:14px">
+            <button type="button" class="btn btn-primary" id="backToSignIn">Back to Sign in</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p class="muted">Security disclaimer: This is a mock, client-only demo. No real accounts, emails, or servers are used. Codes are intentionally printed to the browser console for this study.</p>
+    <p class="muted">Test account: username “testuser”, email “jane.doe@example.com”.</p>
+  </footer>
+
+  <script>
+    /* ============================================================
+     * Password Recovery System — Single-Page, Client-Only, Mocked
+     * Maps to Requirements sections via comments throughout.
+     * ============================================================
+     */
+
+    // ====== Constants & In-Memory Data Model (Req §6, §11)
+    const TEST_USER = {
+      username: "testuser",
+      email: "jane.doe@example.com"
+    };
+    const EMAIL_LOCAL = TEST_USER.email.split("@")[0]; // "jane.doe"
+    const CODE_TTL_MS = 5 * 60 * 1000; // 5 minutes (Req §9)
+
+    const state = {
+      user: { ...TEST_USER },
+      state: {
+        currentView: "start",
+        latestCode: null,
+        latestCodeIssuedAt: 0,
+        failedCodeAttempts: 0,
+        newPasswordTemp: null
+      }
+    };
+
+    // Expose last set password for inspection (Req §8)
+    window.__demoLastSetPassword = null;
+
+    // ====== Utilities (masking, focus, helpers) ======
+    // Mask email as "ja***@example.com" (Req §6)
+    function maskEmail(email){
+      const [local, domain] = email.split("@");
+      const prefix = local.slice(0, 2);
+      return `${prefix}***@${domain}`;
+    }
+
+    // Focus management: first interactive element (Req §4)
+    function focusFirstInteractive(sectionEl){
+      if(!sectionEl) return;
+      const target = sectionEl.querySelector(
+        'input, select, textarea, button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      // timeout to ensure element is visible in DOM
+      setTimeout(() => target && target.focus(), 0);
+    }
+
+    // Simulated delay between 600–1200ms (Req §4)
+    function simulatedDelay(){
+      const ms = 600 + Math.floor(Math.random() * 601);
+      return new Promise(res => setTimeout(res, ms));
+    }
+
+    // ====== Mock Delivery (Req §7)
+    const MockDelivery = {
+      issueCode(){
+        const code = String(Math.floor(100000 + Math.random() * 900000)); // 6-digit
+        state.state.latestCode = code;
+        state.state.latestCodeIssuedAt = Date.now();
+        this.logToConsole(code);
+        return code;
+      },
+      logToConsole(code){
+        // EXACT format per spec (Req §7)
+        console.log(`[RecoveryDemo] Delivering mock reset code via EMAIL to ${TEST_USER.email}`);
+        console.log(`[RecoveryDemo] CODE: ${code}`);
+        console.log(`[RecoveryDemo] RESET LINK: https://example.com/reset?token=RESET-TOKEN-ABC123 (demo only)`);
+      }
+    };
+
+    // ====== UI Routing (Req §3) ======
+    const views = {
+      start: document.getElementById('view-start'),
+      identify: document.getElementById('view-identify'),
+      delivery: document.getElementById('view-delivery'),
+      code: document.getElementById('view-code'),
+      setPassword: document.getElementById('view-setpassword'),
+      success: document.getElementById('view-success'),
+    };
+
+    function showView(name){
+      // Hide all, then show one (Req §3)
+      Object.values(views).forEach(v => v.setAttribute('hidden', ''));
+      const el = views[name];
+      if(el){ el.removeAttribute('hidden'); }
+      state.state.currentView = name;
+      focusFirstInteractive(el);
+    }
+
+    // ====== Event Handlers (Req §12) ======
+    function onClickForgot(){
+      clearIdentifyErrors();
+      document.getElementById('identifyInput').value = '';
+      document.getElementById('btnIdentifyContinue').disabled = true;
+      showView('identify');
+    }
+
+    function onSubmitIdentify(ev){
+      ev.preventDefault();
+      const input = document.getElementById('identifyInput');
+      const status = document.getElementById('identifyStatus');
+      const btn = document.getElementById('btnIdentifyContinue');
+      const identifier = (input.value || '').trim().toLowerCase();
+      clearIdentifyErrors();
+
+      if(!identifier){
+        setInlineError('identifyError', "Please enter your email or username.");
+        return;
+      }
+      btn.disabled = true;
+      status.innerHTML = '<span class="spinner" aria-hidden="true"></span> Please wait… Looking up account';
+      simulatedDelay().then(() => {
+        const match = (identifier === TEST_USER.username.toLowerCase()) ||
+                      (identifier === TEST_USER.email.toLowerCase());
+        if(match){
+          // Per §5.2: log code upon successful identify
+          MockDelivery.issueCode();
+          // Update masked email
+          document.getElementById('maskedEmail').textContent = maskEmail(TEST_USER.email);
+          status.textContent = '';
+          showView('delivery');
+          // Reset attempts for a new flow
+          state.state.failedCodeAttempts = 0;
+          document.getElementById('btnSendCode').disabled = false;
+          document.getElementById('deliveryStatus').textContent = '';
+        }else{
+          setInlineError('identifyError', "We couldn’t find that account.");
+          btn.disabled = false;
+          status.textContent = '';
+          input.focus();
+        }
+      });
+    }
+
+    function onClickSendCode(ev){
+      ev.preventDefault();
+      const btn = document.getElementById('btnSendCode');
+      const status = document.getElementById('deliveryStatus');
+      btn.disabled = true;
+      status.innerHTML = '<span class="spinner" aria-hidden="true"></span> Sending code…';
+      simulatedDelay().then(() => {
+        MockDelivery.issueCode(); // Per §5.3 re-send on "Send code"
+        status.innerHTML = 'We’ve sent a code to your email (check console in this demo).';
+        // Auto-advance to Enter Code after ~1.5s (Req §5.3)
+        setTimeout(() => {
+          document.getElementById('codeInput').value = '';
+          document.getElementById('codeError').textContent = '';
+          document.getElementById('codeNotice').textContent = '';
+          document.getElementById('btnVerify').disabled = true;
+          showView('code');
+        }, 1500);
+      });
+    }
+
+    function onSubmitCode(ev){
+      ev.preventDefault();
+      const input = document.getElementById('codeInput');
+      const codeStr = (input.value || '').trim();
+      const err = document.getElementById('codeError');
+      const notice = document.getElementById('codeNotice');
+      const status = document.getElementById('codeStatus');
+      clearCodeMessages();
+
+      // Lock state check
+      if(state.state.failedCodeAttempts >= 3){
+        err.textContent = "Too many attempts. Please resend a new code.";
+        document.getElementById('btnVerify').disabled = true;
+        return;
+      }
+
+      // Expiry check (Req §9)
+      if(!state.state.latestCode || (Date.now() - state.state.latestCodeIssuedAt) > CODE_TTL_MS){
+        err.textContent = "This code has expired. Please resend a new code.";
+        document.getElementById('btnVerify').disabled = true;
+        return;
+      }
+
+      // Basic format guard
+      if(codeStr.length !== 6){
+        err.textContent = "Please enter the 6-digit code.";
+        return;
+      }
+
+      // Compare with latest code (Req §7 latest only valid)
+      if(codeStr === state.state.latestCode){
+        status.innerHTML = '<span class="spinner" aria-hidden="true"></span> Verifying…';
+        simulatedDelay().then(() => {
+          status.textContent = '';
+          state.state.failedCodeAttempts = 0;
+          showView('setPassword');
+          // Prep password view
+          resetPasswordFormUI();
+        });
+      }else{
+        state.state.failedCodeAttempts += 1;
+        if(state.state.failedCodeAttempts >= 3){
+          err.textContent = "Too many attempts. Please resend a new code.";
+          document.getElementById('btnVerify').disabled = true;
+        }else{
+          err.textContent = "That code is incorrect.";
+        }
+      }
+    }
+
+    function onClickResend(){
+      const status = document.getElementById('codeStatus');
+      const notice = document.getElementById('codeNotice');
+      const err = document.getElementById('codeError');
+      const btnVerify = document.getElementById('btnVerify');
+      status.innerHTML = '<span class="spinner" aria-hidden="true"></span> Sending new code…';
+      // Simulate delay then issue a new code (Req §5.4)
+      simulatedDelay().then(() => {
+        MockDelivery.issueCode();
+        state.state.failedCodeAttempts = 0;
+        err.textContent = '';
+        status.textContent = '';
+        notice.textContent = 'New code sent. Use the latest one.';
+        btnVerify.disabled = document.getElementById('codeInput').value.trim().length !== 6;
+        document.getElementById('codeInput').focus();
+      });
+    }
+
+    function onSubmitNewPassword(ev){
+      ev.preventDefault();
+      const pw = document.getElementById('newPassword').value;
+      const pw2 = document.getElementById('confirmPassword').value;
+      const allOk = evaluatePasswordAndRender();
+      if(!allOk) return;
+
+      // Simulated save (in-memory only) (Req §5.5, §8)
+      state.state.newPasswordTemp = pw;
+      window.__demoLastSetPassword = pw;
+
+      document.getElementById('pwStatus').innerHTML = '<span class="spinner" aria-hidden="true"></span> Saving…';
+      simulatedDelay().then(() => {
+        document.getElementById('pwStatus').textContent = '';
+        showView('success');
+      });
+    }
+
+    function onClickBack(target){
+      // Clear transient errors when navigating back (Req §3)
+      if(target === 'start'){
+        resetFlowToStart();
+        return;
+      }
+      if(target === 'identify'){
+        clearIdentifyErrors();
+        showView('identify');
+        return;
+      }
+      if(target === 'delivery'){
+        document.getElementById('deliveryStatus').textContent = '';
+        showView('delivery');
+        return;
+      }
+      if(target === 'code'){
+        clearCodeMessages();
+        showView('code');
+        return;
+      }
+    }
+
+    // ====== Validation & Rendering Helpers ======
+    function setInlineError(id, message){
+      const el = document.getElementById(id);
+      el.textContent = message;
+    }
+    function clearIdentifyErrors(){
+      setInlineError('identifyError', '');
+      document.getElementById('identifyStatus').textContent = '';
+    }
+    function clearCodeMessages(){
+      document.getElementById('codeError').textContent = '';
+      document.getElementById('codeNotice').textContent = '';
+      document.getElementById('codeStatus').textContent = '';
+    }
+
+    // Code input formatting: allow only digits, allow paste (Req §5.4)
+    function normalizeCodeInput(){
+      const input = document.getElementById('codeInput');
+      const btn = document.getElementById('btnVerify');
+      const raw = (input.value || '');
+      const digits = raw.replace(/\D+/g, '').slice(0, 6);
+      if(raw !== digits) input.value = digits;
+      const locked = state.state.failedCodeAttempts >= 3;
+      const expired = !state.state.latestCode || (Date.now() - state.state.latestCodeIssuedAt) > CODE_TTL_MS;
+      btn.disabled = (digits.length !== 6) || locked || expired;
+    }
+
+    // Password strength & rules evaluation (Req §8)
+    function evaluatePasswordAndRender(){
+      const pw = document.getElementById('newPassword').value || '';
+      const pw2 = document.getElementById('confirmPassword').value || '';
+
+      const hasLower = /[a-z]/.test(pw);
+      const hasUpper = /[A-Z]/.test(pw);
+      const hasDigit = /[0-9]/.test(pw);
+      const hasSymbol = /[^A-Za-z0-9]/.test(pw);
+      const classes = [hasLower, hasUpper, hasDigit, hasSymbol].filter(Boolean).length;
+
+      const lenOK = pw.length >= 10;
+      const noUser = !pw.toLowerCase().includes(TEST_USER.username.toLowerCase())
+                  && !pw.toLowerCase().includes(EMAIL_LOCAL.toLowerCase());
+      const matchOK = pw2 === pw && pw.length > 0;
+
+      // Strength meter: Weak/Okay/Strong
+      let strength = 'Weak';
+      let pct = 25;
+      let color = 'var(--error)';
+      if(lenOK && classes >= 2){ strength = 'Okay'; pct = 60; color = '#f59e0b'; } // amber
+      if(lenOK && classes >= 3 && pw.length >= 12){ strength = 'Strong'; pct = 100; color = 'var(--success)'; }
+
+      const fill = document.getElementById('meterFill');
+      const label = document.getElementById('meterLabel');
+      fill.style.width = pct + '%';
+      fill.style.background = color;
+      label.textContent = strength;
+
+      // Checklist UI
+      toggleChecklist('ruleLen', lenOK);
+      toggleChecklist('ruleClasses', classes >= 3);
+      toggleChecklist('ruleNoUser', noUser);
+      toggleChecklist('ruleMatch', matchOK);
+
+      // Inline errors (examples in Req §8)
+      const confirmErr = document.getElementById('confirmError');
+      confirmErr.textContent = matchOK ? '' : 'Confirmation does not match.';
+      // Hints for improvement (non-blocking)
+      const pwStatus = document.getElementById('pwStatus');
+      if(!lenOK){
+        pwStatus.textContent = 'Password must be at least 10 characters.';
+      }else if(classes < 2){
+        pwStatus.textContent = 'Add a number or symbol to make it stronger.';
+      }else{
+        pwStatus.textContent = '';
+      }
+
+      const allValid = lenOK && (classes >= 3) && noUser && matchOK;
+      document.getElementById('btnSavePassword').disabled = !allValid;
+      return allValid;
+    }
+
+    function toggleChecklist(id, ok){
+      const el = document.getElementById(id);
+      if(ok) el.classList.add('ok'); else el.classList.remove('ok');
+    }
+
+    function resetPasswordFormUI(){
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+      document.getElementById('confirmError').textContent = '';
+      document.getElementById('pwStatus').textContent = '';
+      document.getElementById('btnSavePassword').disabled = true;
+      document.getElementById('meterFill').style.width = '0%';
+      document.getElementById('meterFill').style.background = 'var(--error)';
+      document.getElementById('meterLabel').textContent = 'Weak';
+      ['ruleLen','ruleClasses','ruleNoUser','ruleMatch'].forEach(id => document.getElementById(id).classList.remove('ok'));
+      document.getElementById('toggleShowPw').checked = false;
+      setPasswordVisibility(false);
+    }
+
+    function setPasswordVisibility(show){
+      const t = show ? 'text' : 'password';
+      document.getElementById('newPassword').type = t;
+      document.getElementById('confirmPassword').type = t;
+    }
+
+    function resetFlowToStart(){
+      // Reset transient UI state (Req §9 Refresh/reset behavior)
+      document.getElementById('formStart').reset();
+      document.getElementById('formIdentify').reset();
+      document.getElementById('formDelivery').reset();
+      document.getElementById('formCode').reset();
+      document.getElementById('formSetPassword').reset();
+
+      clearIdentifyErrors();
+      clearCodeMessages();
+      resetPasswordFormUI();
+
+      document.getElementById('btnIdentifyContinue').disabled = true;
+      document.getElementById('btnSendCode').disabled = false;
+      document.getElementById('btnVerify').disabled = true;
+
+      // Do not clear state.latestCode to allow inspecting console, but it is fine either way.
+      state.state.failedCodeAttempts = 0;
+      showView('start');
+    }
+
+    // ====== Wire-up (DOMContentLoaded) ======
+    (function init(){
+      // Start view
+      showView('start');
+
+      // Start actions (Req §5.1)
+      document.getElementById('btnForgot').addEventListener('click', onClickForgot);
+      document.getElementById('formStart').addEventListener('submit', (e) => e.preventDefault());
+
+      // Identify (Req §5.2)
+      document.getElementById('formIdentify').addEventListener('submit', onSubmitIdentify);
+      document.getElementById('identifyInput').addEventListener('input', (e)=>{
+        const has = (e.target.value || '').trim().length > 0;
+        document.getElementById('btnIdentifyContinue').disabled = !has;
+      });
+      document.getElementById('backToStart').addEventListener('click', ()=> onClickBack('start'));
+
+      // Delivery (Req §5.3)
+      document.getElementById('formDelivery').addEventListener('submit', onClickSendCode);
+      document.getElementById('backToIdentify').addEventListener('click', ()=> onClickBack('identify'));
+
+      // Code (Req §5.4)
+      document.getElementById('formCode').addEventListener('submit', onSubmitCode);
+      document.getElementById('codeInput').addEventListener('input', normalizeCodeInput);
+      document.getElementById('btnResend').addEventListener('click', onClickResend);
+      document.getElementById('backToDelivery').addEventListener('click', ()=> onClickBack('delivery'));
+
+      // Password (Req §5.5 & §8)
+      document.getElementById('formSetPassword').addEventListener('submit', onSubmitNewPassword);
+      document.getElementById('newPassword').addEventListener('input', evaluatePasswordAndRender);
+      document.getElementById('confirmPassword').addEventListener('input', evaluatePasswordAndRender);
+      document.getElementById('toggleShowPw').addEventListener('change', (e)=> setPasswordVisibility(e.target.checked));
+      document.getElementById('backToCode').addEventListener('click', ()=> onClickBack('code'));
+
+      // Success (Req §5.6)
+      document.getElementById('backToSignIn').addEventListener('click', ()=> onClickBack('start'));
+
+      // Set masked email shown in Delivery card (initial)
+      document.getElementById('maskedEmail').textContent = maskEmail(TEST_USER.email);
+
+      // Accessibility niceties: prevent Escape from doing anything (Req §4 Esc does nothing)
+      document.addEventListener('keydown', (e)=> {
+        if(e.key === 'Escape') { e.preventDefault(); }
+      });
+    })();
+  </script>
+</body>
+</html>
