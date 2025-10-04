@@ -21,7 +21,8 @@ The code is intentionally simple and reproducible:
 
 ## How it works
 
-High‑level flow (run.py):
+High‑level flow:
+The run.py entrypoint loads .env, parses CLI, and dispatches to app/pipeline/multi.py (multi-agent) or app/pipeline/single.py (single-agent).
 
 1. Tasker
     - Reads Requirements and last Evaluator feedback.
@@ -50,12 +51,24 @@ Artifacts per iteration:
 
 ## Repository layout (key files)
 
--   run.py — Orchestrates the Tasker→Coder→Evaluator loop with LangGraph.
+-   run.py — Thin entry point: loads .env, parses CLI, dispatches to pipelines
+-   app/
+    -   cli.py — CLI parsing and validation (mode-aware)
+    -   constants.py — Shared constants (INIT_CODE HTML skeleton)
+    -   utils/
+        -   io.py — vprint, safe_invoke, normalize_content (with crash markers)
+        -   tokens.py — TOK counters, add_usage, extract_usage
+        -   pricing.py — load_pricing, compute_cost_usd_per_1M
+        -   summary.py — finalize_summary (writes tokens_summary.json and prints usage/cost)
+    -   pipeline/
+        -   multi.py — Tasker → Coder → Evaluator loop (LangGraph), run_multi()
+        -   single.py — Single-agent programmer HITL loop, run_single()
 -   provider.py — Creates LLM clients for roles based on env (OpenAI, OpenRouter, Anthropic).
 -   prompts/
     -   prompt_tasker.txt — Enforces JSON output with task_list + done.
     -   prompt_coder.txt — Forces full index.html output within <FILE> tags.
     -   prompt_evaluator.txt — Yields a structured Markdown report incl. DECISION.
+    -   prompt_programmer_hitl.txt — System prompt for single-agent HITL.
     -   prompt_inclusivity_eval.txt — Provided but not wired by default (see Inclusivity note below).
 -   requirements/
     -   password_recovery/\*.md — Example requirement specs (with/without inclusivity).
