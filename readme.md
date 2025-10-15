@@ -1,14 +1,148 @@
 # Multi‑Agent HTML Builder with Evaluator Loop
 
+## Quick start
+
+Multi‑agent run (Tasker → Coder → Evaluator)
+Using uv:
+
+### Running the health scenarios
+
+#### Scenario 1 - Single agent with no inclusivity requirements
+
 ```bash
 uv run python run.py \
+  --mode single \
+  --programmer prompts/prompt_programmer_hitl.txt \
+  --requirements requirements/password_recovery_health/password_recovery_health_no_inclusivity.md \
+  --output workspace/password_recovery_health/case_1 \
+  -v
+```
+
+#### Scenario 2 - Multi-agents with no inclusivity requirements
+
+```bash
+uv run python run.py \
+  --mode multi \
+  --tasker prompts/prompt_tasker.txt \
+  --coder prompts/prompt_coder.txt \
+  --eval prompts/prompt_evaluator.txt \
+  --requirements requirements/password_recovery_health/password_recovery_health_no_inclusivity.md \
+  --output workspace/password_recovery_health/case_2 \
+  --max-iters 8 \
+  --verbose
+```
+
+#### Scenario 3 - Single agent with inclusivity requirements
+
+```bash
+uv run python run.py \
+  --mode single \
+  --programmer prompts/prompt_programmer_hitl.txt \
+  --requirements requirements/password_recovery_health/password_recovery_health_with_inclusivity.md \
+  --output workspace/password_recovery_health/case_3 \
+  -v
+```
+
+#### Scenario 4 - Multi-agents with inclusivity requirements
+
+```bash
+uv run python run.py \
+  --mode multi \
+  --tasker prompts/prompt_tasker.txt \
+  --coder prompts/prompt_coder.txt \
+  --eval prompts/prompt_evaluator.txt \
+  --requirements requirements/password_recovery_health/password_recovery_health_with_inclusivity.md \
+  --output workspace/password_recovery_health/case_4 \
+  --max-iters 8 \
+  --verbose
+```
+
+### Education case
+
+#### Scenario 1 - Single agent with no inclusivity requirements
+
+```bash
+uv run python run.py \
+  --mode single \
+  --programmer prompts/prompt_programmer_hitl.txt \
+  --requirements requirements/password_recovery_education/password_recovery_education_no_inclusivity.md \
+  --output workspace/password_recovery_education/case_1 \
+  -v
+```
+
+#### Scenario 2 - Multi-agents with no inclusivity requirements
+
+```bash
+uv run python run.py \
+  --mode multi \
+  --tasker prompts/prompt_tasker.txt \
+  --coder prompts/prompt_coder.txt \
+  --eval prompts/prompt_evaluator.txt \
+  --requirements requirements/password_recovery_education/password_recovery_education_no_inclusivity.md \
+  --output workspace/password_recovery_education/case_2 \
+  --max-iters 8 \
+  --verbose
+```
+
+#### Scenario 3 - Single agent with inclusivity requirements
+
+```bash
+uv run python run.py \
+  --mode single \
+  --programmer prompts/prompt_programmer_hitl.txt \
+  --requirements requirements/password_recovery_education/password_recovery_education_with_inclusivity.md \
+  --output workspace/password_recovery_education/case_3 \
+  -v
+```
+
+#### Scenario 4 - Multi-agents with inclusivity requirements
+
+```bash
+uv run python run.py \
+  --mode multi \
+  --tasker prompts/prompt_tasker.txt \
+  --coder prompts/prompt_coder.txt \
+  --eval prompts/prompt_evaluator.txt \
+  --requirements requirements/password_recovery_education/password_recovery_education_with_inclusivity.md \
+  --output workspace/password_recovery_education/case_4 \
+  --max-iters 8 \
+  --verbose
+```
+
+## Plain Python:
+
+```bash
+python run.py \
+  --mode multi \
   --tasker prompts/prompt_tasker.txt \
   --coder prompts/prompt_coder.txt \
   --eval prompts/prompt_evaluator.txt \
   --requirements requirements/password_recovery/password_recovery_no_inclusivity.md \
   --output workspace/password_recovery/case_2 \
-  --max-iters 8 \
-  --verbose
+  -v
+```
+
+Single‑agent programmer (HITL) run
+Using uv:
+
+```bash
+uv run python run.py \
+  --mode single \
+  --programmer prompts/prompt_programmer_hitl.txt \
+  --requirements requirements/password_recovery/password_recovery_no_inclusivity.md \
+  --output workspace/password_recovery/case_single_1 \
+  -v
+```
+
+Plain Python:
+
+```bash
+python run.py \
+  --mode single \
+  --programmer prompts/prompt_programmer_hitl.txt \
+  --requirements requirements/password_recovery/password_recovery_no_inclusivity.md \
+  --output workspace/password_recovery/case_single_1 \
+  -v
 ```
 
 This project runs a constrained, multi‑agent loop (Tasker → Coder → Evaluator) to iteratively build a single‑file web artifact (index.html) from a natural‑language Requirements document. It logs iterations, evaluator reports, token usage, and (optionally) estimated cost.
