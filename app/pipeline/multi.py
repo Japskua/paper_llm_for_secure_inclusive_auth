@@ -20,6 +20,7 @@ class State(TypedDict):
     evaluator_md: str
     done: bool
     iter: int
+    step: int
 
 
 def run_multi(args) -> None:
@@ -90,6 +91,7 @@ def run_multi(args) -> None:
         "evaluator_md": "",
         "done": False,
         "iter": 0,
+        "step": 0,
     }
 
     # NODES
@@ -101,7 +103,9 @@ def run_multi(args) -> None:
         Current tasks: {json.dumps(state.get('task_list', []), ensure_ascii=False)}
         """
         # Debug
-        vprint(f"[iter {state.get('iter', '?')}] TASKER: invoking")
+        state["step"] = int(state.get("step", 0)) + 1
+        prefix = f"[iter {state.get('iter','?')} | step {state.get('step','?')}]"
+        vprint(f"{prefix} TASKER: invoking")
         resp = safe_invoke(
             llm_tasker,
             [
@@ -116,25 +120,69 @@ def run_multi(args) -> None:
         add_usage("tasker", it, ot, cit)
         if args.verbose:
             vprint(
-                f"[iter {state.get('iter','?')}] TASKER tokens: input={it}, cached_input={cit}, output={ot}"
+                f"{prefix} TASKER tokens: input={it}, cached_input={cit}, output={ot}"
             )
 
         text = normalize_content(resp.content)
         if args.verbose:
             preview = (text[:400] + "…") if len(text) > 400 else text
-            vprint(f"[iter {state.get('iter','?')}] TASKER output (preview): {preview}")
+            vprint(f"{prefix} TASKER output (preview): {preview}")
 
         try:
             data = json.loads(text)
         except json.JSONDecodeError as e:
-            vprint(f"[iter {state.get('iter','?')}] TASKER JSON ERROR. Raw:\n{text}")
+            vprint(f"{prefix} TASKER JSON ERROR. Raw:\n{text}")
             raise ValueError(f"Tasker did not return valid JSON. Got:\n{text}") from e
 
-        state["task_list"] = data.get("task_list", [])
-        state["done"] = bool(data.get("done", False))
+        new_list = data.get("task_list", [])
+        # Evaluator is authoritative for 'done'; do not modify state['done'] here.
+        if new_list:
+            state["task_list"] = new_list
+        else:
+            # If Tasker returns empty tasks, retain existing tasks (e.g., from Evaluator NEW_TASKS)
+            state["task_list"] = state.get("task_list", [])
         vprint(
-            f"[iter {state.get('iter','?')}] TASKER: tasks={len(state['task_list'])}, done={state['done']}"
+            f"{prefix} TASKER: tasks={len(state['task_list'])}, done={state['done']}"
         )
+
+        # Write Tasker reports (latest and per-iteration)
+        iter_no = int(state.get("iter", 0))
+        step_no = int(state.get("step", 0))
+        report_md_lines = [
+            f"# TASKER REPORT — Iteration {iter_no} · Step {step_no}",
+            "",
+            "## SUMMARY",
+            f"- Tasks produced: {len(state['task_list'])}",
+            f"- Done: {state['done']}",
+            "",
+            "## RAW_OUTPUT",
+            "```",
+            text,
+            "```",
+            "",
+            "## PARSED_TASKS",
+        ]
+        if state["task_list"]:
+            report_md_lines.extend([f"- {t}" for t in state["task_list"]])
+        else:
+            report_md_lines.append("(none)")
+        report_md = "\n".join(report_md_lines)
+
+        latest_path = pathlib.Path(args.output, "tasker_report.md")
+        versioned_path = pathlib.Path(args.output, f"tasker_report_iter{iter_no}.md")
+        latest_path.write_text(report_md, encoding="utf-8")
+        if not versioned_path.exists():
+            versioned_path.write_text(report_md, encoding="utf-8")
+            if args.verbose:
+                vprint(
+                    f"{prefix} TASKER: wrote tasker_report.md and {versioned_path.name}"
+                )
+        else:
+            if args.verbose:
+                vprint(
+                    f"{prefix} TASKER: versioned exists, skipping overwrite of {versioned_path.name}"
+                )
+
         return state
 
     def coder_node(state: State) -> State:
@@ -146,9 +194,9 @@ def run_multi(args) -> None:
         Current index.html (edit in-place and return FULL FILE):
         {state['code_html']}
         """
-        vprint(
-            f"[iter {state.get('iter','?')}] CODER: invoking with {len(state['task_list'])} task(s)"
-        )
+        state["step"] = int(state.get("step", 0)) + 1
+        prefix = f"[iter {state.get('iter','?')} | step {state.get('step','?')}]"
+        vprint(f"{prefix} CODER: invoking with {len(state['task_list'])} task(s)")
 
         resp = safe_invoke(
             llm_coder,
@@ -163,7 +211,7 @@ def run_multi(args) -> None:
         add_usage("coder", it, ot, cit)
         if args.verbose:
             vprint(
-                f"[iter {state.get('iter','?')}] CODER tokens: input={it}, cached_input={cit}, output={ot}"
+                f"{prefix} CODER tokens: input={it}, cached_input={cit}, output={ot}"
             )
 
         text = normalize_content(resp.content)
@@ -183,7 +231,7 @@ def run_multi(args) -> None:
         )
         if args.verbose:
             vprint(
-                f"[iter {iter_no}] CODER: wrote index.html and index_iter{iter_no}.html (chars={len(state['code_html'])})"
+                f"{prefix} CODER: wrote index.html and index_iter{iter_no}.html (chars={len(state['code_html'])})"
             )
         return state
 
@@ -195,7 +243,9 @@ def run_multi(args) -> None:
         index.html:
         {state['code_html']}
         """
-        vprint(f"[iter {state.get('iter','?')}] EVALUATOR: invoking")
+        state["step"] = int(state.get("step", 0)) + 1
+        prefix = f"[iter {state.get('iter','?')} | step {state.get('step','?')}]"
+        vprint(f"{prefix} EVALUATOR: invoking")
         resp = safe_invoke(
             llm_eval,
             [
@@ -209,7 +259,7 @@ def run_multi(args) -> None:
         add_usage("evaluator", it, ot, cit)
         if args.verbose:
             vprint(
-                f"[iter {state.get('iter','?')}] EVALUATOR tokens: input={it}, cached_input={cit}, output={ot}"
+                f"{prefix} EVALUATOR tokens: input={it}, cached_input={cit}, output={ot}"
             )
 
         text = normalize_content(resp.content)
@@ -232,13 +282,15 @@ def run_multi(args) -> None:
         if args.verbose:
             preview_tasks = state.get("task_list", [])[:3]
             vprint(
-                f"[iter {iter_no}] EVALUATOR: decision={decision}, current tasks sample={preview_tasks}"
+                f"{prefix} EVALUATOR: decision={decision}, current tasks sample={preview_tasks}"
             )
 
         if decision == "PASS":
             state["done"] = True
             state["task_list"] = []
         else:
+            # Evaluator is authoritative: FAIL means we are not done.
+            state["done"] = False
             tasks = []
             capture = False
             for ln in text.splitlines():
@@ -258,7 +310,7 @@ def run_multi(args) -> None:
             state["task_list"] = tasks or state["task_list"]
             if args.verbose:
                 vprint(
-                    f"[iter {iter_no}] EVALUATOR: parsed NEW_TASKS={len(state['task_list'])}"
+                    f"{prefix} EVALUATOR: parsed NEW_TASKS={len(state['task_list'])}"
                 )
         return state
 
@@ -268,18 +320,18 @@ def run_multi(args) -> None:
     g.add_node("coder", coder_node)
     g.add_node("evaluator", evaluator_node)
 
+    # Always proceed Tasker -> Coder; Evaluator alone can set done=True (PASS)
     g.add_edge("tasker", "coder")
     g.add_edge("coder", "evaluator")
 
     def _next_after_evaluator(state: State) -> str:
-        return "end" if state.get("done") else "tasker"
+        return "end"
 
     g.add_conditional_edges(
         "evaluator",
         _next_after_evaluator,
         {
             "end": END,
-            "tasker": "tasker",
         },
     )
     g.set_entry_point("tasker")

@@ -179,6 +179,8 @@ Artifacts per iteration:
 -   workspace/<your_case>/index_iterN.html (versioned)
 -   workspace/<your_case>/evaluator_report.md (latest)
 -   workspace/<your_case>/evaluator_report_iterN.md (versioned)
+-   workspace/<your_case>/tasker_report.md (latest)
+-   workspace/<your_case>/tasker_report_iterN.md (versioned)
 -   workspace/<your_case>/log.jsonl (timing + token deltas per iter)
 -   workspace/<your_case>/state.jsonl (serialized state snapshots)
 -   workspace/<your_case>/tokens_summary.json (final token usage and optional cost)
@@ -314,6 +316,8 @@ In your chosen --output folder:
 -   index_iterN.html — artifact snapshot per iteration
 -   evaluator_report.md — latest evaluator Markdown
 -   evaluator_report_iterN.md — evaluator report per iteration
+-   tasker_report.md — latest Tasker Markdown
+-   tasker_report_iterN.md — per‑iteration Tasker Markdown
 -   log.jsonl — per‑iteration duration and token deltas
 -   state.jsonl — serialized state after each iteration
 -   tokens_summary.json — cumulative token usage and optional cost breakdown
