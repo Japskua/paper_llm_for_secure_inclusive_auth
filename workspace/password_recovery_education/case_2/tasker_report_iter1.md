@@ -1,52 +1,40 @@
 # TASKER REPORT — Iteration 1 · Step 1
 
 ## SUMMARY
-- Tasks produced: 18
-- Done: False
+- Raw tasks from Tasker: 12
+- Effective task_list after retention: 12
+- Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
 {
   "task_list": [
-    "Create index.html as a single self-contained file with semantic HTML structure.",
-    "Add inline CSS for basic layout and readable typography; avoid external assets.",
-    "Add inline JS only; do not perform any network requests.",
-    "Implement Step 1: a 'Request password reset' form with labeled email/username input and submit.",
-    "On submit, simulate sending a reset code via console.log using a fixed deterministic code.",
-    "After sending, reveal Step 2: a 'Enter verification code' form with labeled input and submit.",
-    "Validate the code strictly equals the deterministic mock value; show an inline error on mismatch and allow retry.",
-    "Provide a 'Resend code' control that logs the same deterministic code again.",
-    "On successful code verification, reveal Step 3: a 'Create new password' form with password and confirm fields.",
-    "Enforce clear strong-password rules (e.g., minimum length and character variety) with real-time guidance text.",
-    "Validate that password and confirmation match; show a specific inline error if they do not.",
-    "On valid submission, display a success screen stating the password was reset and provide a mock 'Log in' action.",
-    "Manage focus so the first field of each step is focused when that step becomes visible.",
-    "Ensure all forms and messages use semantic elements and accessible labels; expose status updates accessibly.",
-    "Add a 'Start over' control that returns the UI to Step 1 and clears state.",
-    "Add comments in HTML/CSS/JS mapping each section to this spec (single page, mocked delivery, deterministic values, non-production).",
-    "Log verification success and password reset events to console to simulate backend acknowledgement.",
-    "Confirm the page works fully offline and without any build step."
-  ],
-  "done": false
+    "Create index.html with semantic HTML structure (header, main, footer) and inline CSS and JS sections (Acceptance: file loads in a browser with no console errors).",
+    "Add a multi-step password recovery UI in main: Request Reset (email), Verify Code (code), Set New Password (new + confirm), and Success; only one step visible at a time (Acceptance: users can progress step-by-step client-side).",
+    "Implement deterministic mock verification code generation from the entered email and log the “sent” code via console.log on Request Reset (Acceptance: the same email always yields the same code and is printed).",
+    "Store the generated code client-side for the session and validate the user’s entered code against it (Acceptance: correct code advances; incorrect code shows an inline error).",
+    "Add client-side validation for email format, password rules, and matching confirmation with clear inline error messages (Acceptance: invalid inputs block progression and display readable feedback).",
+    "Provide password visibility toggles for both password fields and concise, plain-language instructions suitable for dyslexic users (Acceptance: toggles reveal/hide input and instructions are short and high-contrast).",
+    "Implement accessibility essentials: associated labels, aria-live regions for status/errors, proper button roles, and focus management between steps (Acceptance: screen readers announce changes and tab order works).",
+    "Apply inline, responsive, high-contrast styling with readable font sizes and generous spacing (Acceptance: renders legibly on mobile and desktop with WCAG-appropriate contrast).",
+    "Add a Restart/Start Over control that clears state and returns to the first step (Acceptance: clicking it resets inputs, errors, and step visibility).",
+    "Insert commented sections in the HTML/JS mapping to Purpose, Use-case, Deliverables, and Mocking requirements (Acceptance: comments reference these spec parts next to relevant code).",
+    "Log major actions and outcomes to the console (send, verify, reset success/failure) to aid evaluation (Acceptance: each action produces an informative console.log entry).",
+    "Ensure no external dependencies or network calls are used; all logic runs entirely in-browser (Acceptance: code audit shows no fetch/XHR/imports and app works offline)."
+  ]
 }
 ```
 
 ## PARSED_TASKS
-- Create index.html as a single self-contained file with semantic HTML structure.
-- Add inline CSS for basic layout and readable typography; avoid external assets.
-- Add inline JS only; do not perform any network requests.
-- Implement Step 1: a 'Request password reset' form with labeled email/username input and submit.
-- On submit, simulate sending a reset code via console.log using a fixed deterministic code.
-- After sending, reveal Step 2: a 'Enter verification code' form with labeled input and submit.
-- Validate the code strictly equals the deterministic mock value; show an inline error on mismatch and allow retry.
-- Provide a 'Resend code' control that logs the same deterministic code again.
-- On successful code verification, reveal Step 3: a 'Create new password' form with password and confirm fields.
-- Enforce clear strong-password rules (e.g., minimum length and character variety) with real-time guidance text.
-- Validate that password and confirmation match; show a specific inline error if they do not.
-- On valid submission, display a success screen stating the password was reset and provide a mock 'Log in' action.
-- Manage focus so the first field of each step is focused when that step becomes visible.
-- Ensure all forms and messages use semantic elements and accessible labels; expose status updates accessibly.
-- Add a 'Start over' control that returns the UI to Step 1 and clears state.
-- Add comments in HTML/CSS/JS mapping each section to this spec (single page, mocked delivery, deterministic values, non-production).
-- Log verification success and password reset events to console to simulate backend acknowledgement.
-- Confirm the page works fully offline and without any build step.
+- Create index.html with semantic HTML structure (header, main, footer) and inline CSS and JS sections (Acceptance: file loads in a browser with no console errors).
+- Add a multi-step password recovery UI in main: Request Reset (email), Verify Code (code), Set New Password (new + confirm), and Success; only one step visible at a time (Acceptance: users can progress step-by-step client-side).
+- Implement deterministic mock verification code generation from the entered email and log the “sent” code via console.log on Request Reset (Acceptance: the same email always yields the same code and is printed).
+- Store the generated code client-side for the session and validate the user’s entered code against it (Acceptance: correct code advances; incorrect code shows an inline error).
+- Add client-side validation for email format, password rules, and matching confirmation with clear inline error messages (Acceptance: invalid inputs block progression and display readable feedback).
+- Provide password visibility toggles for both password fields and concise, plain-language instructions suitable for dyslexic users (Acceptance: toggles reveal/hide input and instructions are short and high-contrast).
+- Implement accessibility essentials: associated labels, aria-live regions for status/errors, proper button roles, and focus management between steps (Acceptance: screen readers announce changes and tab order works).
+- Apply inline, responsive, high-contrast styling with readable font sizes and generous spacing (Acceptance: renders legibly on mobile and desktop with WCAG-appropriate contrast).
+- Add a Restart/Start Over control that clears state and returns to the first step (Acceptance: clicking it resets inputs, errors, and step visibility).
+- Insert commented sections in the HTML/JS mapping to Purpose, Use-case, Deliverables, and Mocking requirements (Acceptance: comments reference these spec parts next to relevant code).
+- Log major actions and outcomes to the console (send, verify, reset success/failure) to aid evaluation (Acceptance: each action produces an informative console.log entry).
+- Ensure no external dependencies or network calls are used; all logic runs entirely in-browser (Acceptance: code audit shows no fetch/XHR/imports and app works offline).

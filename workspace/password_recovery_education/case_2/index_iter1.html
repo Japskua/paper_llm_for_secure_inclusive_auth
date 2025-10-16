@@ -3,620 +3,626 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Password Recovery Demo — Client-Only, Mocked</title>
+  <title>Password Recovery (Mock, Client-Only)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Requirements mapping:
-       - Single file, client-only, no network requests
-       - Mocked delivery and deterministic verification values
-       - Not for production use
-  -->
+  <!-- Spec mapping: Deliverables — single HTML file with inline CSS & JS; Semantic HTML structure -->
   <style>
-    /* Requirements mapping: Inline CSS for basic layout and readable typography */
+    /* Spec mapping: Accessibility + High-contrast + Responsive styling */
     :root{
       --bg:#ffffff;
-      --ink:#161616;
-      --muted:#4a4a4a;
-      --accent:#0a7cff;
-      --ok:#1e8e3e;
-      --warn:#b00020;
-      --surface:#f5f7fb;
-      --ring:#5aa6ff;
-      --border:#d7dce5;
+      --text:#111111;
+      --muted:#333333;
+      --accent:#0b5fff;
+      --accent-contrast:#ffffff;
+      --error:#b00020;
+      --ok:#0a7a24;
+      --field:#f3f4f6;
+      --border:#1f2937;
+      --focus:#ffbf47; /* high-contrast focus outline */
+      --space:16px;
     }
+    *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:var(--bg);
-      color:var(--ink);
+      color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
       line-height:1.6;
-      font-size:18px; /* readable default for dyslexia-friendly sizing */
-      -webkit-font-smoothing:antialiased;
-      text-rendering:optimizeLegibility;
+      font-size:18px;
     }
+    header, main, footer{padding: clamp(12px, 2.5vw, 24px)}
     header{
-      border-bottom:1px solid var(--border);
-      background:var(--surface);
-    }
-    .wrap{
-      max-width: 56rem;
-      padding: 1rem;
-      margin: 0 auto;
-    }
-    h1,h2{
-      line-height:1.25;
-      margin:0.25rem 0 0.5rem 0;
-    }
-    .tag{
-      display:inline-block;
-      font-size:0.9rem;
-      color:var(--muted);
-    }
-    main{
-      padding:2rem 0 3rem;
-    }
-    section.step{
-      margin: 0 0 2rem 0;
-      padding: 1.25rem;
-      border:1px solid var(--border);
-      border-radius: 12px;
+      border-bottom:3px solid var(--border);
       background:#fff;
-      box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+      position:sticky; top:0; z-index:1;
     }
-    fieldset{
-      border:0;
-      padding:0;
+    header .bar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; max-width:860px; margin:0 auto;
+    }
+    h1{
+      font-size: clamp(20px, 3.5vw, 28px);
       margin:0;
+      letter-spacing:0.3px;
     }
-    legend{
-      font-weight:700;
-      margin-bottom:0.75rem;
-      font-size:1.15rem;
+    .subtext{
+      font-size: clamp(14px, 2.5vw, 16px);
+      color:var(--muted);
+      margin-top:6px;
     }
-    .field{
-      margin: 0 0 1rem 0;
+    .container{
+      max-width:860px; margin:0 auto;
     }
+    .card{
+      background:#fff; border:3px solid var(--border); border-radius:10px; padding: clamp(14px, 3vw, 28px); box-shadow: 0 6px 0 #00000010;
+    }
+    .steps{
+      display:grid; gap: clamp(12px,2vw,20px);
+    }
+    .step{ display:none; }
+    .step.active{ display:block; }
+    h2{
+      font-size: clamp(20px, 3vw, 24px);
+      margin:0 0 10px 0;
+    }
+    p{ margin:0 0 var(--space) 0}
+    ul{
+      margin: 0 0 var(--space) 1.2em;
+    }
+    li{ margin-bottom:8px }
     label{
-      display:block;
-      font-weight:600;
-      margin-bottom:0.25rem;
+      font-weight:600; display:block; margin-bottom:6px;
     }
-    input[type="text"],
     input[type="email"],
+    input[type="text"],
     input[type="password"]{
       width:100%;
-      font-size:1rem;
-      padding:0.75rem;
-      border:2px solid var(--border);
-      border-radius:10px;
+      background:var(--field);
+      border:3px solid var(--border);
+      border-radius:8px;
+      padding:14px 14px;
+      font-size:18px;
+      color:var(--text);
+    }
+    .field{
+      margin-bottom: clamp(14px, 3vw, 20px);
+    }
+    .with-toggle{
+      display:flex; align-items:stretch; gap:8px;
+    }
+    .toggle-btn{
+      white-space:nowrap;
       background:#fff;
-      color:var(--ink);
-    }
-    input:focus-visible{
-      outline: 3px solid var(--ring);
-      outline-offset: 2px;
-    }
-    .hint{
-      color:var(--muted);
-      font-size:0.95rem;
-      margin-top:0.25rem;
-    }
-    .row{
-      display:flex;
-      gap:0.75rem;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    button{
-      font-size:1rem;
-      padding:0.7rem 1rem;
-      border-radius:10px;
-      border:2px solid transparent;
-      background:var(--accent);
-      color:#fff;
+      border:3px solid var(--border);
+      color:var(--text);
+      border-radius:8px;
+      padding:0 12px;
+      font-weight:600;
       cursor:pointer;
+      min-width:70px;
     }
-    button.secondary{
-      background:#fff;
-      color:var(--ink);
-      border-color:var(--border);
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px;
+      padding:14px 18px;
+      font-size:18px;
+      font-weight:700;
+      border-radius:10px;
+      border:3px solid var(--border);
+      background:var(--accent);
+      color:var(--accent-contrast);
+      cursor:pointer;
+      min-height:48px;
+      text-align:center;
     }
-    button.link{
-      background:transparent;
-      color:var(--accent);
-      border:0;
-      padding:0.25rem 0.5rem;
+    .btn.secondary{
+      background:#fff; color:var(--text);
+    }
+    .btn.link{
+      background:transparent; border:0; color:var(--accent); padding:0; min-height:auto;
       text-decoration:underline;
     }
-    button:focus-visible{
-      outline: 3px solid var(--ring);
-      outline-offset: 2px;
-    }
-    .actions{
-      margin-top:0.5rem;
-      display:flex;
-      gap:0.75rem;
-      flex-wrap:wrap;
+    .btn:disabled{ opacity:.6; cursor:not-allowed }
+    .row{
+      display:flex; flex-wrap:wrap; gap:12px;
     }
     .error{
       color:#fff;
-      background:var(--warn);
-      padding:0.5rem 0.75rem;
+      background:var(--error);
+      border:3px solid var(--border);
       border-radius:8px;
-      font-size:0.95rem;
-      margin-top:0.5rem;
+      padding:10px 12px;
+      margin: 6px 0 0 0;
+      font-weight:700;
     }
-    .error-inline{
-      color:var(--warn);
-      font-weight:600;
-      margin-top:0.35rem;
-      font-size:0.95rem;
+    .help{
+      color:var(--muted);
+      font-size: 0.95rem;
+      margin-top:6px;
     }
     .status{
-      color:var(--ok);
-      background:#e9f6ee;
-      border:1px solid #ccebd7;
-      padding:0.5rem 0.75rem;
+      color:#fff;
+      background:var(--ok);
+      border:3px solid var(--border);
       border-radius:8px;
-      margin:0.75rem 0;
-      font-size:0.95rem;
+      padding:10px 12px;
+      margin: 10px 0;
+      font-weight:700;
     }
-    .guidance{
-      background: #f8fafc;
-      border:1px dashed var(--border);
-      border-radius:10px;
-      padding:0.75rem;
-      margin-top:0.5rem;
+    .code-box{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background:#101010;
+      color:#fff;
+      padding:8px 10px;
+      border-radius:8px;
+      border:3px solid #000;
+      display:inline-block;
     }
-    .rules{
-      list-style:none;
-      padding-left:0;
-      margin:0.25rem 0 0 0;
-      display:grid;
-      gap:0.25rem;
-    }
-    .rule{
-      display:flex;
-      align-items:center;
-      gap:0.5rem;
-      font-size:0.95rem;
-    }
-    .dot{
-      width:1.15rem;
-      height:1.15rem;
-      border-radius:50%;
-      display:inline-grid;
-      place-items:center;
-      font-weight:800;
-      font-size:0.8rem;
-      border:2px solid var(--border);
+    footer{
+      border-top:3px solid var(--border);
       color:var(--muted);
-      background:#fff;
+      font-size: 0.95rem;
     }
-    .rule.pass .dot{
-      border-color:#bfe6cb;
-      background:#e7f7ed;
-      color:var(--ok);
-      content:"";
+    /* Focus visible, high-contrast */
+    :focus{ outline: none }
+    :focus-visible{
+      outline:4px solid var(--focus);
+      outline-offset:2px;
+      border-radius:6px;
     }
-    .rule.pass .dot::before{ content:"✓"; }
-    .rule.fail .dot::before{ content:"•"; }
-    .visually-hidden{
-      position:absolute !important;
-      height:1px; width:1px;
-      overflow:hidden;
-      clip:rect(1px,1px,1px,1px);
-      white-space:nowrap;
+    /* Mobile spacing improvements */
+    @media (max-width:600px){
+      .row { flex-direction:column }
     }
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:0.5rem;
-    }
-    .startover{
-      display:inline-flex;
-      align-items:center;
-      gap:0.4rem;
-    }
-    .success{
-      border-color:#ccebd7;
-      background:#f7fcf9;
-    }
-    .footnote{
-      color:var(--muted);
-      font-size:0.9rem;
-      margin-top:1rem;
-    }
-    /* End inline CSS */
   </style>
 </head>
 <body>
+  <!-- Spec mapping: Purpose — A single-page, client-only mock password recovery flow for evaluation -->
   <header>
-    <div class="wrap topbar">
+    <div class="bar container">
       <div>
-        <h1>Password recovery</h1>
-        <div class="tag">Client-only demo • Works offline • Mocked delivery</div>
+        <h1>Password Recovery</h1>
+        <div class="subtext" id="hdrTip">
+          Short, clear steps. No server. For demo only.
+        </div>
       </div>
       <div>
-        <button id="startOverTop" class="secondary startover" type="button" aria-label="Start over and go back to step 1">
-          ⟲ Start over
-        </button>
+        <button id="restartBtn" type="button" class="btn secondary" aria-describedby="restartHelp">Start over</button>
+        <span id="restartHelp" class="visually-hidden"></span>
       </div>
+    </div>
+    <!-- Global live region for status/step announcements -->
+    <div class="container">
+      <div id="globalStatus" class="status" role="status" aria-live="polite" aria-atomic="true" style="display:none"></div>
     </div>
   </header>
 
-  <main id="app" class="wrap" aria-live="polite">
-    <!-- Requirements mapping: Accessible status updates (aria-live). -->
-    <p id="globalStatus" class="status" role="status" aria-live="polite" aria-atomic="true" hidden></p>
-
-    <!-- Step 1: Request password reset -->
-    <section id="step1" class="step" aria-labelledby="s1title">
-      <h2 id="s1title">Step 1 of 3 — Request password reset</h2>
-      <form id="formRequest" novalidate>
-        <fieldset>
-          <legend class="visually-hidden">Who needs a reset?</legend>
+  <main id="app" class="container">
+    <!-- Spec mapping: Use-case — Alex (dyslexia) needs simple, high-contrast, short steps -->
+    <section class="card steps" aria-label="Password recovery steps">
+      <!-- Step 1: Request Reset -->
+      <section class="step active" id="step-request" aria-labelledby="h-request">
+        <h2 id="h-request" tabindex="-1">1. Request a reset link</h2>
+        <p>Type your email. We will “send” a 6‑digit code. In this demo, see the code in the browser console.</p>
+        <form id="form-request" novalidate>
           <div class="field">
-            <label for="ident">Email or username</label>
-            <input id="ident" name="ident" type="text" autocomplete="username email"
-                   required aria-describedby="identHint identErr">
-            <p id="identHint" class="hint">We will send a 6-digit verification code (simulated) to continue.</p>
-            <p id="identErr" class="error-inline" role="alert" hidden></p>
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required
+                   aria-describedby="emailHelp"
+                   placeholder="name@example.edu">
+            <div id="emailHelp" class="help">Use your school email.</div>
+            <div id="emailError" class="error" role="alert" aria-live="assertive" style="display:none"></div>
           </div>
-        </fieldset>
-        <div class="actions">
-          <button type="submit">Send code</button>
-          <button type="button" id="s1StartOver" class="secondary">Clear</button>
-        </div>
-      </form>
-      <p class="footnote">Note: Delivery is simulated in the browser console for this demo. No emails are sent.</p>
-    </section>
+          <div class="row">
+            <button type="submit" class="btn" id="sendBtn">Send code</button>
+          </div>
+        </form>
+      </section>
 
-    <!-- Step 2: Enter verification code -->
-    <section id="step2" class="step" aria-labelledby="s2title" hidden>
-      <h2 id="s2title">Step 2 of 3 — Enter verification code</h2>
-      <p id="sendSummary" class="hint">A verification code was sent (simulated). Check your console to see it.</p>
-      <form id="formVerify" novalidate>
-        <fieldset>
-          <legend class="visually-hidden">Verify ownership with a code</legend>
+      <!-- Step 2: Verify Code -->
+      <section class="step" id="step-verify" aria-labelledby="h-verify" aria-hidden="true">
+        <h2 id="h-verify" tabindex="-1">2. Enter the code</h2>
+        <p>
+          We sent a 6‑digit code to: <strong id="verifyEmail" class="code-box" aria-live="polite"></strong>.
+          In this mock, open the console to see it.
+        </p>
+        <form id="form-verify" novalidate>
           <div class="field">
             <label for="code">6-digit code</label>
-            <input id="code" name="code" type="text" inputmode="numeric" pattern="^[0-9]{6}$"
-                   required aria-describedby="codeHint codeErr">
-            <p id="codeHint" class="hint">Enter the 6 digits exactly as provided.</p>
-            <p id="codeErr" class="error-inline" role="alert" hidden></p>
+            <input id="code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                   aria-describedby="codeHelp"
+                   placeholder="123456" required>
+            <div id="codeHelp" class="help">Only numbers. Exactly 6 digits.</div>
+            <div id="codeError" class="error" role="alert" aria-live="assertive" style="display:none"></div>
           </div>
-        </fieldset>
-        <div class="actions">
-          <button type="submit">Verify code</button>
-          <button type="button" id="resend" class="secondary">Resend code</button>
-          <button type="button" id="s2StartOver" class="link">Start over</button>
-        </div>
-      </form>
-    </section>
+          <div class="row">
+            <button type="submit" class="btn" id="verifyBtn">Verify code</button>
+            <button type="button" class="btn secondary" id="backToStartBtn">Start over</button>
+          </div>
+        </form>
+      </section>
 
-    <!-- Step 3: Create new password -->
-    <section id="step3" class="step" aria-labelledby="s3title" hidden>
-      <h2 id="s3title">Step 3 of 3 — Create a new password</h2>
-      <form id="formReset" novalidate>
-        <fieldset>
-          <legend class="visually-hidden">Choose a strong password</legend>
-
+      <!-- Step 3: Set New Password -->
+      <section class="step" id="step-password" aria-labelledby="h-password" aria-hidden="true">
+        <h2 id="h-password" tabindex="-1">3. Make a new password</h2>
+        <p>Keep it simple, but strong. Follow these three rules:</p>
+        <ul>
+          <li>At least 8 characters</li>
+          <li>At least 1 letter (a–z)</li>
+          <li>At least 1 number (0–9)</li>
+        </ul>
+        <form id="form-password" novalidate>
           <div class="field">
-            <label for="pw">New password</label>
-            <input id="pw" name="pw" type="password" autocomplete="new-password"
-                   required aria-describedby="pwGuide pwErr">
-            <div id="pwGuide" class="guidance" aria-live="polite">
-              <strong>Make it strong and memorable:</strong>
-              <ul class="rules" aria-label="Password must meet all of these rules">
-                <li id="ruleLength" class="rule fail"><span class="dot" aria-hidden="true"></span> At least 12 characters</li>
-                <li id="ruleLower" class="rule fail"><span class="dot" aria-hidden="true"></span> At least one lowercase letter</li>
-                <li id="ruleUpper" class="rule fail"><span class="dot" aria-hidden="true"></span> At least one uppercase letter</li>
-                <li id="ruleNumber" class="rule fail"><span class="dot" aria-hidden="true"></span> At least one number</li>
-                <li id="ruleSymbol" class="rule fail"><span class="dot" aria-hidden="true"></span> At least one symbol (e.g., ! @ # ?)</li>
-              </ul>
+            <label for="newPassword">New password</label>
+            <div class="with-toggle">
+              <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" required
+                     aria-describedby="pwHelp">
+              <button type="button" class="toggle-btn" data-target="newPassword" aria-pressed="false" aria-label="Show new password">Show</button>
             </div>
-            <p id="pwErr" class="error-inline" role="alert" hidden></p>
+            <div id="pwHelp" class="help">You can tap Show to check your typing.</div>
           </div>
 
           <div class="field">
-            <label for="confirm">Confirm new password</label>
-            <input id="confirm" name="confirm" type="password" autocomplete="new-password"
-                   required aria-describedby="confirmHint confirmErr">
-            <p id="confirmHint" class="hint">Re-type your new password exactly. You can copy and paste if that’s easier.</p>
-            <p id="confirmErr" class="error-inline" role="alert" hidden></p>
+            <label for="confirmPassword">Confirm new password</label>
+            <div class="with-toggle">
+              <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required
+                     aria-describedby="pw2Help">
+              <button type="button" class="toggle-btn" data-target="confirmPassword" aria-pressed="false" aria-label="Show confirmation password">Show</button>
+            </div>
+            <div id="pw2Help" class="help">Both passwords must match.</div>
+            <div id="pwError" class="error" role="alert" aria-live="assertive" style="display:none"></div>
           </div>
-        </fieldset>
-        <div class="actions">
-          <button type="submit">Save new password</button>
-          <button type="button" id="s3StartOver" class="secondary">Start over</button>
-        </div>
-      </form>
-    </section>
 
-    <!-- Success screen -->
-    <section id="success" class="step success" aria-labelledby="s4title" hidden>
-      <h2 id="s4title">Success! Your password was reset.</h2>
-      <p>You can now use your new password to log in.</p>
-      <div class="actions">
-        <button type="button" id="login">Log in</button>
-        <button type="button" id="again" class="secondary">Start over</button>
-      </div>
-      <p class="footnote">This is a mock flow. The “Log in” action is simulated in the console.</p>
+          <div class="row">
+            <button type="submit" class="btn" id="resetBtn">Save new password</button>
+            <button type="button" class="btn secondary" id="restartBtn2">Start over</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Step 4: Success -->
+      <section class="step" id="step-success" aria-labelledby="h-success" aria-hidden="true">
+        <h2 id="h-success" tabindex="-1">All set!</h2>
+        <p>Your password is updated. You can now log in.</p>
+        <div class="row">
+          <button type="button" class="btn" id="doneBtn">Finish</button>
+          <button type="button" class="btn secondary" id="restartBtn3">Start over</button>
+        </div>
+      </section>
     </section>
   </main>
 
-  <footer class="wrap">
-    <p class="footnote">
-      <!-- Requirements mapping: Comments clarifying non-production nature -->
-      This is a deterministic, client-only demo for academic evaluation. No real accounts are modified. No data leaves your browser.
-    </p>
+  <footer class="container">
+    <!-- Spec mapping: Mocking + No external calls -->
+    This demo runs fully in your browser. No network calls. Codes are mocked and printed to the console.
   </footer>
 
   <script>
-    /* Requirements mapping:
-       - Inline JS only, no network requests
-       - Deterministic mock code and simulated delivery via console.log
-       - Manage focus across steps; accessible status updates
-       - Not for production use
-    */
+    "use strict";
+    /* Spec mapping: Purpose + Mocking requirements
+       - Entire flow is client-only (no fetch/XHR/imports).
+       - Verification code is deterministically derived from email.
+       - “Delivery” is simulated via console.log.
+       - Major actions are logged for evaluators. */
 
-    // Deterministic mock verification code (strict equality required)
-    const MOCK_CODE = "424242";
+    // Utility: deterministic 6-digit code from email (stable across same email per session)
+    // Spec mapping: Mocking requirements — deterministic generation + console logging
+    function generateDeterministicCode(email){
+      const s = (email || "").trim().toLowerCase();
+      let hash = 5381;
+      for (let i = 0; i < s.length; i++){
+        hash = ((hash << 5) + hash) + s.charCodeAt(i); // djb2
+        hash |= 0;
+      }
+      const num = Math.abs(hash % 1000000);
+      return String(num).padStart(6, "0");
+    }
 
-    // Simple in-memory UI state (client-only)
+    // Simple validators
+    function isValidEmail(email){
+      // pragmatic email check; readable and strict enough for client validation
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+
+    function validatePassword(pw){
+      const errors = [];
+      if (!pw || pw.length < 8) errors.push("Use at least 8 characters.");
+      if (!/[a-zA-Z]/.test(pw)) errors.push("Include at least one letter (a–z).");
+      if (!/[0-9]/.test(pw)) errors.push("Include at least one number (0–9).");
+      return { ok: errors.length === 0, errors };
+    }
+
+    // State for the session
     const state = {
-      user: "",
-      codeSent: false,
-      verified: false,
+      email: null,
+      code: null,
+      verified: false
     };
 
-    // Element helpers
-    const $ = s => document.querySelector(s);
-    const stepEls = [$("#step1"), $("#step2"), $("#step3"), $("#success")];
-    const globalStatus = $("#globalStatus");
+    // DOM cache
+    const el = {};
+    function cacheDom(){
+      el.steps = document.querySelectorAll(".step");
+      el.globalStatus = document.getElementById("globalStatus");
 
-    // Utility: Show/hide steps and focus first interactive control
-    function showStep(id){
-      stepEls.forEach(sec => {
-        if(!sec) return;
-        const on = sec.id === id;
-        sec.hidden = !on;
-        if(on){
-          // Defer focus to allow rendering
-          setTimeout(() => focusFirst(sec), 0);
+      el.stepRequest = document.getElementById("step-request");
+      el.formRequest = document.getElementById("form-request");
+      el.email = document.getElementById("email");
+      el.emailError = document.getElementById("emailError");
+      el.sendBtn = document.getElementById("sendBtn");
+
+      el.stepVerify = document.getElementById("step-verify");
+      el.formVerify = document.getElementById("form-verify");
+      el.verifyEmail = document.getElementById("verifyEmail");
+      el.code = document.getElementById("code");
+      el.codeError = document.getElementById("codeError");
+      el.verifyBtn = document.getElementById("verifyBtn");
+      el.backToStartBtn = document.getElementById("backToStartBtn");
+
+      el.stepPassword = document.getElementById("step-password");
+      el.formPassword = document.getElementById("form-password");
+      el.newPassword = document.getElementById("newPassword");
+      el.confirmPassword = document.getElementById("confirmPassword");
+      el.pwError = document.getElementById("pwError");
+      el.resetBtn = document.getElementById("resetBtn");
+
+      el.stepSuccess = document.getElementById("step-success");
+      el.doneBtn = document.getElementById("doneBtn");
+
+      el.restartBtn = document.getElementById("restartBtn");
+      el.restartBtn2 = document.getElementById("restartBtn2");
+      el.restartBtn3 = document.getElementById("restartBtn3");
+      el.hRequest = document.getElementById("h-request");
+      el.hVerify = document.getElementById("h-verify");
+      el.hPassword = document.getElementById("h-password");
+      el.hSuccess = document.getElementById("h-success");
+    }
+
+    // Accessibility: Show only one step at a time, manage aria-hidden and focus
+    function showStep(stepId, announce){
+      el.steps.forEach(sec=>{
+        const isActive = (sec.id === stepId);
+        sec.classList.toggle("active", isActive);
+        sec.setAttribute("aria-hidden", isActive ? "false" : "true");
+      });
+
+      // Announce step change
+      if (announce){
+        setStatus(announce);
+      } else {
+        hideStatus();
+      }
+
+      // Focus management: focus heading of the active step
+      queueMicrotask(()=>{
+        const section = document.getElementById(stepId);
+        const heading = section.querySelector("h2");
+        if (heading){
+          heading.setAttribute("tabindex","-1");
+          heading.focus();
+        }
+        // Move focus to first field if appropriate
+        const firstInput = section.querySelector("input");
+        if (firstInput && stepId !== "step-success"){
+          // After a short delay to allow screen readers to announce heading first
+          setTimeout(()=>{ try{ firstInput.focus(); }catch(_){} }, 200);
         }
       });
     }
 
-    function focusFirst(root){
-      const focusable = root.querySelector('input, select, textarea, button, [tabindex]:not([tabindex="-1"])');
-      if(focusable){
-        focusable.focus();
-        if(focusable.setSelectionRange && focusable.type !== "password"){
-          const v = focusable.value || "";
-          focusable.setSelectionRange(v.length, v.length);
-        }
+    function setStatus(msg){
+      el.globalStatus.textContent = msg;
+      el.globalStatus.style.display = "block";
+    }
+    function hideStatus(){
+      el.globalStatus.style.display = "none";
+      el.globalStatus.textContent = "";
+    }
+
+    function clearErrors(){
+      [el.emailError, el.codeError, el.pwError].forEach(node=>{
+        if (!node) return;
+        node.style.display = "none";
+        node.textContent = "";
+      });
+    }
+
+    // Handlers
+
+    // Step 1: Request Reset
+    function onRequestSubmit(e){
+      e.preventDefault();
+      clearErrors();
+      const email = (el.email.value || "").trim();
+      console.log("[Action] Request reset submitted for:", email);
+
+      if (!isValidEmail(email)){
+        el.emailError.textContent = "Please enter a valid email like name@example.edu.";
+        el.emailError.style.display = "block";
+        console.log("[Outcome] Invalid email format; blocking progression.");
+        return;
       }
-    }
 
-    // Utility: Update accessible status message
-    function updateStatus(msg){
-      if(!msg){ globalStatus.hidden = true; globalStatus.textContent = ""; return; }
-      globalStatus.textContent = msg;
-      globalStatus.hidden = false;
-    }
-
-    // Utility: show field error text and mark invalid
-    function setFieldError(inputEl, errEl, message){
-      if(message){
-        inputEl.setAttribute("aria-invalid", "true");
-        errEl.textContent = message;
-        errEl.hidden = false;
-      }else{
-        inputEl.removeAttribute("aria-invalid");
-        errEl.textContent = "";
-        errEl.hidden = true;
-      }
-    }
-
-    // Mock: "send" code via console
-    function sendCode(){
-      state.codeSent = true;
-      const to = state.user || "(no identifier)";
-      console.log(`[Mock delivery] Verification code for ${to}: ${MOCK_CODE} (deterministic)`);
-      updateStatus("Verification code sent (simulated). Open your browser console to view it.");
-    }
-
-    // Mock: log verification success
-    function logVerificationSuccess(){
-      console.log("[Mock] Verification successful. Code matched deterministic value.");
-    }
-
-    // Mock: log password reset event
-    function logPasswordReset(){
-      console.log(`[Mock] Password reset completed for ${state.user}.`);
-    }
-
-    // Reset all UI and state
-    function resetAll(){
-      state.user = "";
-      state.codeSent = false;
+      // Generate deterministic code and persist in this session (sessionStorage + memory)
+      const code = generateDeterministicCode(email);
+      state.email = email;
+      state.code = code;
       state.verified = false;
-      updateStatus("");
-      // Clear forms and errors
-      $("#formRequest").reset();
-      $("#formVerify").reset();
-      $("#formReset").reset();
-      // Clear inline errors
-      setFieldError($("#ident"), $("#identErr"), "");
-      setFieldError($("#code"), $("#codeErr"), "");
-      setFieldError($("#pw"), $("#pwErr"), "");
-      setFieldError($("#confirm"), $("#confirmErr"), "");
-      // Reset guidance visuals
-      updatePasswordGuidance("");
-      // Show step 1
-      showStep("step1");
+      try{
+        sessionStorage.setItem("mockEmail", email);
+        sessionStorage.setItem("mockCode", code);
+      }catch(_){/* ignore storage issues */}
+
+      // Mock "sending" via console.log
+      console.log(`[Mock Delivery] Verification code for ${email}: ${code} (deterministic).`);
+
+      // Update verify step and advance
+      el.verifyEmail.textContent = email;
+      showStep("step-verify", "Code sent. Check the console for the 6-digit code.");
     }
 
-    // Password rule checks
-    function getPwChecks(pw){
-      return {
-        length: pw.length >= 12,
-        lower: /[a-z]/.test(pw),
-        upper: /[A-Z]/.test(pw),
-        number: /[0-9]/.test(pw),
-        symbol: /[^A-Za-z0-9]/.test(pw),
-      };
-    }
-
-    function updatePasswordGuidance(pw){
-      const checks = getPwChecks(pw);
-      toggleRule("#ruleLength", checks.length);
-      toggleRule("#ruleLower",  checks.lower);
-      toggleRule("#ruleUpper",  checks.upper);
-      toggleRule("#ruleNumber", checks.number);
-      toggleRule("#ruleSymbol", checks.symbol);
-      return checks;
-    }
-
-    function toggleRule(sel, ok){
-      const el = $(sel);
-      if(!el) return;
-      el.classList.remove("pass","fail");
-      el.classList.add(ok ? "pass" : "fail");
-    }
-
-    // Wire up Step 1
-    $("#formRequest").addEventListener("submit", (e)=>{
+    // Step 2: Verify Code
+    function onVerifySubmit(e){
       e.preventDefault();
-      const input = $("#ident");
-      const err = $("#identErr");
-      // Basic required validation
-      if(!input.value.trim()){
-        setFieldError(input, err, "Please enter your email or username.");
-        input.focus();
+      clearErrors();
+      const inputCode = (el.code.value || "").trim();
+      console.log("[Action] Verify code submitted:", inputCode);
+
+      const expected = state.code || sessionStorage.getItem("mockCode");
+      if (!/^\d{6}$/.test(inputCode)){
+        el.codeError.textContent = "Enter the 6-digit code. Numbers only.";
+        el.codeError.style.display = "block";
+        console.log("[Outcome] Code format invalid.");
         return;
       }
-      setFieldError(input, err, "");
-      state.user = input.value.trim();
-
-      // Send mocked code and go to Step 2
-      sendCode();
-      $("#sendSummary").textContent = `A verification code was sent (simulated) for “${state.user}”. Check your console to see it.`;
-      showStep("step2");
-    });
-
-    $("#s1StartOver").addEventListener("click", ()=>{
-      $("#formRequest").reset();
-      setFieldError($("#ident"), $("#identErr"), "");
-      updateStatus("");
-      $("#ident").focus();
-    });
-
-    // Wire up Step 2
-    $("#resend").addEventListener("click", ()=>{
-      // Re-log the same deterministic code
-      sendCode();
-      $("#code").focus();
-    });
-
-    $("#formVerify").addEventListener("submit", (e)=>{
-      e.preventDefault();
-      const codeInput = $("#code");
-      const codeErr = $("#codeErr");
-      const value = (codeInput.value || "").trim();
-
-      if(!/^\d{6}$/.test(value)){
-        setFieldError(codeInput, codeErr, "Enter the 6 digits exactly (e.g., 424242).");
-        codeInput.focus();
+      if (inputCode !== expected){
+        el.codeError.textContent = "That code does not match. Try again.";
+        el.codeError.style.display = "block";
+        console.log("[Outcome] Code verification failed. Expected:", expected, "Got:", inputCode);
         return;
       }
-      if(value !== MOCK_CODE){
-        setFieldError(codeInput, codeErr, "That code doesn’t match. Please try again or resend.");
-        codeInput.focus();
-        return;
-      }
-      setFieldError(codeInput, codeErr, "");
       state.verified = true;
-      logVerificationSuccess();
-      updateStatus("Code verified.");
-      showStep("step3");
-    });
+      console.log("[Outcome] Code verification passed.");
+      showStep("step-password", "Code verified. Set your new password.");
+    }
 
-    $("#s2StartOver").addEventListener("click", resetAll);
+    // Step 3: Set New Password
+    function onPasswordSubmit(e){
+      e.preventDefault();
+      clearErrors();
 
-    // Wire up Step 3
-    const pwInput = $("#pw");
-    const confirmInput = $("#confirm");
-    pwInput.addEventListener("input", ()=>{
-      const pw = pwInput.value;
-      updatePasswordGuidance(pw);
-      // Clear password-level error as user types
-      setFieldError(pwInput, $("#pwErr"), "");
-      // If confirm already has text, validate match in real time
-      if(confirmInput.value){
-        validateConfirm();
+      const pw = el.newPassword.value || "";
+      const pw2 = el.confirmPassword.value || "";
+      console.log("[Action] Password reset attempt.");
+
+      const v = validatePassword(pw);
+      const msgs = [];
+      if (!v.ok){ msgs.push(...v.errors); }
+      if (pw !== pw2){
+        msgs.push("Passwords do not match.");
       }
-    });
-    confirmInput.addEventListener("input", ()=>{
-      validateConfirm();
-    });
 
-    function validateConfirm(){
-      const errEl = $("#confirmErr");
-      if(confirmInput.value && pwInput.value !== confirmInput.value){
-        setFieldError(confirmInput, errEl, "Passwords do not match.");
-        return false;
-      }else{
-        setFieldError(confirmInput, errEl, "");
-        return true;
+      if (msgs.length){
+        el.pwError.innerHTML = msgs.map(m=>`• ${m}`).join(" ");
+        el.pwError.style.display = "block";
+        console.log("[Outcome] Password validation failed:", msgs);
+        return;
+      }
+      console.log("[Outcome] Password reset success (mock). No password is stored.");
+      // Clear sensitive fields
+      el.newPassword.value = "";
+      el.confirmPassword.value = "";
+      // Advance to success
+      showStep("step-success", "Password saved.");
+      // Clear code so it cannot be reused in this mock
+      state.code = null;
+      try{
+        sessionStorage.removeItem("mockCode");
+      }catch(_){}
+    }
+
+    // Start over: clear all state and go to first step
+    function startOver(){
+      console.log("[Action] Start over triggered. Clearing state.");
+      // Clear memory state
+      state.email = null;
+      state.code = null;
+      state.verified = false;
+
+      // Clear storage
+      try{
+        sessionStorage.removeItem("mockEmail");
+        sessionStorage.removeItem("mockCode");
+      }catch(_){}
+
+      // Reset forms and errors
+      clearErrors();
+      if (el.formRequest) el.formRequest.reset();
+      if (el.formVerify) el.formVerify.reset();
+      if (el.formPassword) el.formPassword.reset();
+
+      // Reset email shown
+      if (el.verifyEmail) el.verifyEmail.textContent = "";
+
+      // Reset toggles to hidden state
+      document.querySelectorAll(".toggle-btn").forEach(btn=>{
+        const id = btn.getAttribute("data-target");
+        const inp = id ? document.getElementById(id) : null;
+        if (inp){
+          inp.type = "password";
+          btn.setAttribute("aria-pressed","false");
+          btn.textContent = "Show";
+        }
+      });
+
+      // Go to first step
+      showStep("step-request", "Start again. Enter your email.");
+    }
+
+    // Password visibility toggles
+    function onToggleClick(e){
+      const btn = e.currentTarget;
+      const id = btn.getAttribute("data-target");
+      const input = document.getElementById(id);
+      if (!input) return;
+      const nowShown = input.type === "password" ? true : false;
+      input.type = nowShown ? "text" : "password";
+      btn.textContent = nowShown ? "Hide" : "Show";
+      btn.setAttribute("aria-pressed", nowShown ? "true" : "false");
+      btn.setAttribute("aria-label", (nowShown ? "Hide" : "Show") + " password");
+    }
+
+    // Restrict code input to digits
+    function digitsOnly(e){
+      const allowed = e.target.value.replace(/\D/g, '').slice(0, 6);
+      if (e.target.value !== allowed){
+        e.target.value = allowed;
       }
     }
 
-    $("#formReset").addEventListener("submit", (e)=>{
-      e.preventDefault();
-      const pwErr = $("#pwErr");
+    // Initialization
+    document.addEventListener("DOMContentLoaded", ()=>{
+      cacheDom();
 
-      const checks = updatePasswordGuidance(pwInput.value);
-      const allGood = checks.length && checks.lower && checks.upper && checks.number && checks.symbol;
-      if(!allGood){
-        setFieldError(pwInput, pwErr, "Please meet all password rules before continuing.");
-        pwInput.focus();
-        return;
-      }
-      if(!validateConfirm()){
-        confirmInput.focus();
-        return;
-      }
-      setFieldError(pwInput, pwErr, "");
-      // "Save" new password (mock)
-      logPasswordReset();
-      updateStatus("Your password was reset.");
-      showStep("success");
+      // Wire up forms
+      el.formRequest.addEventListener("submit", onRequestSubmit);
+      el.formVerify.addEventListener("submit", onVerifySubmit);
+      el.formPassword.addEventListener("submit", onPasswordSubmit);
+
+      // Wire up toggles
+      document.querySelectorAll(".toggle-btn").forEach(btn=>{
+        btn.addEventListener("click", onToggleClick);
+      });
+
+      // Wire up restart buttons
+      el.restartBtn.addEventListener("click", startOver);
+      el.restartBtn2.addEventListener("click", startOver);
+      el.restartBtn3.addEventListener("click", startOver);
+      el.backToStartBtn.addEventListener("click", startOver);
+      el.doneBtn.addEventListener("click", ()=> {
+        console.log("[Action] Finish clicked. Demo complete.");
+        startOver();
+      });
+
+      // Input helpers
+      el.code.addEventListener("input", digitsOnly);
+
+      // Restore email/code if present in this tab session
+      try{
+        const savedEmail = sessionStorage.getItem("mockEmail");
+        const savedCode = sessionStorage.getItem("mockCode");
+        if (savedEmail && savedCode){
+          state.email = savedEmail;
+          state.code = savedCode;
+          el.email.value = savedEmail;
+          console.log("[Info] Restored session for:", savedEmail, "with deterministic code.");
+        }
+      }catch(_){}
+
+      // Initial status
+      showStep("step-request");
     });
-
-    $("#s3StartOver").addEventListener("click", resetAll);
-
-    // Success actions
-    $("#login").addEventListener("click", ()=>{
-      console.log(`[Mock] Log in with new password for ${state.user}.`);
-      updateStatus("Login simulated. This demo ends here.");
-      // Optionally, go back to step 1 to mimic a redirect
-      showStep("step1");
-    });
-    $("#again").addEventListener("click", resetAll);
-
-    // Top Start Over
-    $("#startOverTop").addEventListener("click", resetAll);
-
-    // Initial focus
-    showStep("step1");
-
-    // Console banner for clarity
-    console.log("=== Password Recovery Demo (Client-only, deterministic) ===");
-    console.log(`Deterministic verification code is: ${MOCK_CODE}`);
-    console.log("No network calls are made; all actions are simulated here in the console.");
   </script>
 </body>
 </html>

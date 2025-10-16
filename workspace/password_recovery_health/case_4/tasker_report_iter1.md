@@ -1,68 +1,56 @@
 # TASKER REPORT — Iteration 1 · Step 1
 
 ## SUMMARY
-- Tasks produced: 26
-- Done: False
+- Raw tasks from Tasker: 20
+- Effective task_list after retention: 20
+- Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
 {
   "task_list": [
-    "Create a single index.html file using semantic HTML with inline CSS and JS, including top-level comments mapping sections to the spec.",
-    "Add a clear page title and short intro that outlines the step-by-step password recovery flow.",
-    "Implement a visible progress indicator showing steps (Identify, Verify, New Password, Done) that updates as the user advances.",
-    "Build Step 1 UI to collect email or username with concise instructions and a primary Continue action.",
-    "On Step 1 submission, simulate sending a deterministic verification code via console.log and record progress in local storage.",
-    "Display confirmation after Step 1 that a code was sent without indicating whether the account exists.",
-    "Build Step 2 UI to enter the verification code with clear labeling and brief guidance.",
-    "Add a Resend Code action that logs the same deterministic code again without timers or limits.",
-    "Validate the entered verification code deterministically and show clear, inline success or error feedback.",
-    "Build Step 3 UI to create a new password with show/hide toggles and a confirm password field.",
-    "Provide simple, plain-language password guidance and inline validation for match and minimum rules.",
-    "On successful password submission, advance to Step 4 and clear sensitive inputs from memory and UI.",
-    "Build Step 4 confirmation UI with next-step guidance and a button to restart the flow.",
-    "Persist current step and key inputs in local storage so users can pause and resume.",
-    "Restore persisted state on load and move focus to the current step heading.",
-    "Use high-contrast, low-distraction styling with generous spacing and large tap targets.",
-    "Write microcopy that is concise, consistent, and ADHD-friendly across all steps.",
-    "Provide a Help option available on every step with brief tips and contact placeholders.",
-    "Include Back and Cancel controls that allow navigation without losing context and never auto-advance.",
-    "Add ARIA roles, labels, and live regions for progress and validation messages.",
-    "Manage focus on step changes to the step heading and prevent disorienting scroll jumps.",
-    "Ensure the flow runs entirely client-side with no network calls and remains a single file.",
-    "Add a Start Over action that confirms, clears local storage, and returns to Step 1.",
-    "Insert inline comments in HTML/CSS/JS linking each part to inclusivity and mocking requirements.",
-    "Create a brief testing checklist as comments and manually verify happy path and error cases.",
-    "Ensure all controls are keyboard-accessible and follow a logical tab order without traps."
-  ],
-  "done": false
+    "Create index.html as a single self-contained file with semantic HTML, inline CSS/JS scaffolding, and top-level comments mapping to the spec.",
+    "Add a four-step recovery flow (Identify, Verify Code, New Password, Done) with a visible progress indicator showing 1/4 to 4/4.",
+    "Implement Step 1 form to collect username or email with clear instructions, inline validation, and disabled Continue until valid.",
+    "On Step 1 Continue, simulate sending a recovery code by console.logging a fixed deterministic code (e.g., 246810) and advance to Step 2 with feedback.",
+    "Provide a Resend Code action on Step 2 that re-logs the same deterministic code to the console and confirms resend without timers.",
+    "Implement Step 2 input for a 6-digit code; validate against the fixed code and show inline error on mismatch, proceed on match.",
+    "Implement Step 3 new password form with strength indicator, confirmation field, and plain-language rules; block weak or mismatched passwords.",
+    "Implement Step 4 success screen with confirmation, next-step guidance, and buttons to restart or go to a placeholder login.",
+    "Persist current step and inputs locally so reloading restores the user to the last step with prior values.",
+    "Add a Save and return later action on all steps that saves state and shows a reassuring, non-timed confirmation.",
+    "Add a contextual Help panel accessible from every step with brief guidance and a contact placeholder; ensure keyboard accessibility.",
+    "Apply clear, high-contrast, low-clutter styling with large readable text and visible focus outlines meeting WCAG AA contrast.",
+    "Add ARIA roles and an aria-live region so success and error messages are announced to assistive technologies.",
+    "Include Back buttons to return to the previous step without losing entered data.",
+    "Add a Start over control that clears saved progress and returns to Step 1.",
+    "Ensure there are no time-based behaviors (no timeouts or code expiry) to avoid pressure.",
+    "Insert inline comments linking code sections to inclusivity, mocking, and deliverables requirements.",
+    "Verify the app runs fully offline with no network requests and that delivery/verification use console.log and the fixed code.",
+    "Implement keyboard navigation support including a skip-to-content link and logical tab order.",
+    "Add a brief manual test checklist as HTML comments at the end of the file."
+  ]
 }
 ```
 
 ## PARSED_TASKS
-- Create a single index.html file using semantic HTML with inline CSS and JS, including top-level comments mapping sections to the spec.
-- Add a clear page title and short intro that outlines the step-by-step password recovery flow.
-- Implement a visible progress indicator showing steps (Identify, Verify, New Password, Done) that updates as the user advances.
-- Build Step 1 UI to collect email or username with concise instructions and a primary Continue action.
-- On Step 1 submission, simulate sending a deterministic verification code via console.log and record progress in local storage.
-- Display confirmation after Step 1 that a code was sent without indicating whether the account exists.
-- Build Step 2 UI to enter the verification code with clear labeling and brief guidance.
-- Add a Resend Code action that logs the same deterministic code again without timers or limits.
-- Validate the entered verification code deterministically and show clear, inline success or error feedback.
-- Build Step 3 UI to create a new password with show/hide toggles and a confirm password field.
-- Provide simple, plain-language password guidance and inline validation for match and minimum rules.
-- On successful password submission, advance to Step 4 and clear sensitive inputs from memory and UI.
-- Build Step 4 confirmation UI with next-step guidance and a button to restart the flow.
-- Persist current step and key inputs in local storage so users can pause and resume.
-- Restore persisted state on load and move focus to the current step heading.
-- Use high-contrast, low-distraction styling with generous spacing and large tap targets.
-- Write microcopy that is concise, consistent, and ADHD-friendly across all steps.
-- Provide a Help option available on every step with brief tips and contact placeholders.
-- Include Back and Cancel controls that allow navigation without losing context and never auto-advance.
-- Add ARIA roles, labels, and live regions for progress and validation messages.
-- Manage focus on step changes to the step heading and prevent disorienting scroll jumps.
-- Ensure the flow runs entirely client-side with no network calls and remains a single file.
-- Add a Start Over action that confirms, clears local storage, and returns to Step 1.
-- Insert inline comments in HTML/CSS/JS linking each part to inclusivity and mocking requirements.
-- Create a brief testing checklist as comments and manually verify happy path and error cases.
-- Ensure all controls are keyboard-accessible and follow a logical tab order without traps.
+- Create index.html as a single self-contained file with semantic HTML, inline CSS/JS scaffolding, and top-level comments mapping to the spec.
+- Add a four-step recovery flow (Identify, Verify Code, New Password, Done) with a visible progress indicator showing 1/4 to 4/4.
+- Implement Step 1 form to collect username or email with clear instructions, inline validation, and disabled Continue until valid.
+- On Step 1 Continue, simulate sending a recovery code by console.logging a fixed deterministic code (e.g., 246810) and advance to Step 2 with feedback.
+- Provide a Resend Code action on Step 2 that re-logs the same deterministic code to the console and confirms resend without timers.
+- Implement Step 2 input for a 6-digit code; validate against the fixed code and show inline error on mismatch, proceed on match.
+- Implement Step 3 new password form with strength indicator, confirmation field, and plain-language rules; block weak or mismatched passwords.
+- Implement Step 4 success screen with confirmation, next-step guidance, and buttons to restart or go to a placeholder login.
+- Persist current step and inputs locally so reloading restores the user to the last step with prior values.
+- Add a Save and return later action on all steps that saves state and shows a reassuring, non-timed confirmation.
+- Add a contextual Help panel accessible from every step with brief guidance and a contact placeholder; ensure keyboard accessibility.
+- Apply clear, high-contrast, low-clutter styling with large readable text and visible focus outlines meeting WCAG AA contrast.
+- Add ARIA roles and an aria-live region so success and error messages are announced to assistive technologies.
+- Include Back buttons to return to the previous step without losing entered data.
+- Add a Start over control that clears saved progress and returns to Step 1.
+- Ensure there are no time-based behaviors (no timeouts or code expiry) to avoid pressure.
+- Insert inline comments linking code sections to inclusivity, mocking, and deliverables requirements.
+- Verify the app runs fully offline with no network requests and that delivery/verification use console.log and the fixed code.
+- Implement keyboard navigation support including a skip-to-content link and logical tab order.
+- Add a brief manual test checklist as HTML comments at the end of the file.

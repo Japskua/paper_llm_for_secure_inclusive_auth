@@ -1,34 +1,26 @@
 # TASKER REPORT — Iteration 4 · Step 10
 
 ## SUMMARY
-- Tasks produced: 9
-- Done: False
+- Raw tasks from Tasker: 5
+- Effective task_list after retention: 5
+- Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
 {
   "task_list": [
-    "Ensure header text/background color contrast meets WCAG AA (≥4.5:1 for normal text).",
-    "Ensure primary button text/background color contrast meets WCAG AA (≥4.5:1 for normal text).",
-    "Verify text contrast for all status and alert variants and adjust styles to meet WCAG AA (≥4.5:1).",
-    "Replace the invalid inputmode=\"latin\" on the recovery code input with a valid value (e.g., inputmode=\"text\") or remove it.",
-    "Set autocomplete=\"username\" on the identifier input (use a single, valid token).",
-    "Change the identifier input's inputmode from \"email\" to \"text\" to support usernames and emails.",
-    "Add autocapitalize=\"off\" and autocorrect=\"off\" to the recovery code input.",
-    "Add autocapitalize=\"off\" and autocorrect=\"off\" to the password and confirm-password inputs.",
-    "Embed the Acceptance Criteria (§14) within the HTML (e.g., as a commented list) to enable evaluation."
-  ],
-  "done": false
+    "Update styles so the primary action button text has ≥4.5:1 contrast against its background; verify with a contrast checker.",
+    "Ensure the secondary action button text (and border if applicable) on white has ≥4.5:1 contrast; verify with a contrast checker.",
+    "For #toggle-pw, set aria-label to “Show new password” when the field is masked and “Hide new password” when visible, updating on each toggle.",
+    "For #toggle-confirm, set aria-label to “Show confirm password” when the field is masked and “Hide confirm password” when visible, updating on each toggle.",
+    "Set aria-invalid=\"true\" on #identifier, #code, #new-password, and #confirm-password when validation fails, and remove or set to \"false\" when valid."
+  ]
 }
 ```
 
 ## PARSED_TASKS
-- Ensure header text/background color contrast meets WCAG AA (≥4.5:1 for normal text).
-- Ensure primary button text/background color contrast meets WCAG AA (≥4.5:1 for normal text).
-- Verify text contrast for all status and alert variants and adjust styles to meet WCAG AA (≥4.5:1).
-- Replace the invalid inputmode="latin" on the recovery code input with a valid value (e.g., inputmode="text") or remove it.
-- Set autocomplete="username" on the identifier input (use a single, valid token).
-- Change the identifier input's inputmode from "email" to "text" to support usernames and emails.
-- Add autocapitalize="off" and autocorrect="off" to the recovery code input.
-- Add autocapitalize="off" and autocorrect="off" to the password and confirm-password inputs.
-- Embed the Acceptance Criteria (§14) within the HTML (e.g., as a commented list) to enable evaluation.
+- Update styles so the primary action button text has ≥4.5:1 contrast against its background; verify with a contrast checker.
+- Ensure the secondary action button text (and border if applicable) on white has ≥4.5:1 contrast; verify with a contrast checker.
+- For #toggle-pw, set aria-label to “Show new password” when the field is masked and “Hide new password” when visible, updating on each toggle.
+- For #toggle-confirm, set aria-label to “Show confirm password” when the field is masked and “Hide confirm password” when visible, updating on each toggle.
+- Set aria-invalid="true" on #identifier, #code, #new-password, and #confirm-password when validation fails, and remove or set to "false" when valid.

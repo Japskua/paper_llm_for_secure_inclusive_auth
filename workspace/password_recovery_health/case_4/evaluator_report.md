@@ -1,25 +1,30 @@
 SUMMARY:
-The provided index.html implements a complete, single-file, client-only password recovery flow with mocked verification via console.log. It follows semantic HTML, inline CSS/JS, clear step-by-step UX, and ADHD-friendly inclusivity principles (no timeouts, clear progress, persistent state, simple language, help accessible). Accessibility is addressed with ARIA roles, live regions, focus management, and large tap targets. No network calls are used. The flow avoids revealing account existence and clears sensitive inputs appropriately.
+The artifact is a single, self-contained index.html implementing a clear, 4-step, client-only password recovery flow with deterministic mocking, strong accessibility affordances, and ADHD-friendly UX. It uses semantic HTML, inline CSS/JS, console-based “delivery,” progress persistence via localStorage, and helpful guidance at each step. No back-end or time-based behavior is used. Overall, it meets the stated requirements and inclusivity goals.
 
 FUNCTIONAL_CHECK:
-- Single file with semantic HTML, inline CSS & JS; no build step required: PASS — One index.html with inline styles and scripts; no external dependencies.
-- Client-only logic; no network calls; mocked delivery via console.log with deterministic values: PASS — generateCode() is deterministic; sendOrResendCode() logs to console.
-- Four-step flow (Identify, Verify, New Password, Done) with visible progress indicator and manual advancement: PASS — Steps 1–4 implemented; progress nav updates and announces via aria-live.
-- Step 1: Collect email/username; validate required; proceed without revealing account existence: PASS — Required validation; advances with privacy-preserving messaging (“if the account exists”).
-- Step 2: Enter 6-digit code; sanitize to digits; validate against deterministic code; resend uses same code; clear feedback: PASS — inputmode numeric, sanitization, deterministic compare, resend logs same code; inline/live feedback provided.
-- Step 3: Create new password; min 8 chars; confirm match; show/hide toggles; inline validation; clear sensitive inputs: PASS — Validations enforced; show/hide buttons with aria-pressed; clearSensitive() clears code/passwords before Step 4.
-- Step 4: Confirmation, next steps, ability to restart: PASS — Confirmation text; Back and Start over present with confirmation.
-- State persistence and restoration (pause/return) for orientation; focus management on step headings: PASS — localStorage persists step, identifier, entered code; fillFromState restores; focusHeading() sets focus on headings.
-- ADHD-friendly UX: simple steps, consistent language, progress and reminders, no timeouts, low distraction, easy help access: PASS — Clear microcopy, no timers, global/inline status messages, persistent Help details, minimal visual clutter.
-- Accessibility: keyboard-friendly, clear focus outlines, ARIA roles/live regions, large tap targets, no traps: PASS — Roles on landmarks; live regions (#global-status SR-only, visible mirror aria-hidden); input aria-invalid; 44px buttons; Escape closes Help.
-- Privacy and safety: Do not reveal account existence; start-over clears state with confirm; sensitive fields not repopulated: PASS — Messaging avoids leakage; passwords never persisted; start-over clears localStorage with confirmation.
-- Comments mapping to spec and testing checklist included: PASS — Header includes mapping; detailed testing checklist at bottom.
+- AC1 Single-file deliverable with inline CSS & JS and no build step: PASS — One index.html with all logic and styles inline.
+- AC2 Spec-mapping comments present: PASS — Labeled comments such as [Inclusivity], [Mocking], [Flow], [Accessibility], [Persistence] appear throughout.
+- AC3 Client-only with deterministic mocked recovery: PASS — FIXED_CODE="246810"; sending/resending and login are simulated via console.log; no network calls.
+- AC4 Four-step flow with visible progress and aria-current: PASS — Steps 1–4 rendered with 1/4..4/4 labels; aria-current is updated per step.
+- AC5 Step 1 Identify with validation and clear feedback: PASS — Email/username validated; inline errors, aria-invalid, and disabled Continue until valid; clear hint text.
+- AC6 Step 2 Code entry with resend and validation: PASS — 6-digit numeric enforced; wrong code yields inline error; resend logs code and updates status; back navigation available.
+- AC7 Step 3 New password with rules, strength, and confirm: PASS — Live rules checklist, strength meter, matching confirm; Continue disabled until valid.
+- AC8 Step 4 Completion with next step guidance: PASS — Success message and clear next action (“Go to login (placeholder)”).
+- AC9 Persistence: Save & return later and auto-save: PASS — localStorage persists step and inputs; explicit Save shows a persistent reassurance note; state restored on reload.
+- AC10 Accessibility fundamentals: PASS — Semantic landmarks (header/nav/main/section/aside/footer), skip link, visible focus, live regions for status/alert, focus sent to step heading, labels and aria-describedby on fields.
+- AC11 ADHD-friendly UX (simple steps, clear language, no time pressure, visible progress, back, reminders): PASS — Clear short instructions, no timers, progress always visible, back buttons preserve inputs, reassuring notes.
+- AC12 Reduced cognitive load (clean UI, high contrast, large text): PASS — 18px base font, high-contrast palette, low clutter, clear buttons.
+- AC13 Help options easy and accessible at any stage: PASS — Global Help button and per-step “Need help?” open a keyboard-accessible dialog; ESC closes; focus returns to trigger.
+- AC14 No timeouts or countdowns; user-paced: PASS — No time-based behavior anywhere.
+- AC15 Ability to restart and clear progress: PASS — “Start over” clears localStorage and returns to Step 1 with status announcement.
+- AC16 Back navigation without data loss: PASS — State is saved on input; going back preserves prior values.
 
 FAILING_ITEMS:
-- None found against the provided Requirements.
+- None observed against the stated requirements and derived acceptance criteria. Note: As a best-practice improvement (not a requirement), the Help dialog does not trap focus; users can tab to background content while it is open.
 
 NEW_TASKS:
-- None.
+- None required. Optional improvement:
+  1) Add focus trapping within the Help dialog to prevent tabbing into the background while it is open.
 
 DECISION:
 PASS

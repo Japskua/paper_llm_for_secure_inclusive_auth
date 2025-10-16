@@ -181,6 +181,7 @@ This loop executes up to --max-iters iterations or until the Evaluator returns P
     -   DECISION=FAIL → state.done=False and NEW_TASKS are parsed and fed to the next iteration.
 -   Defensive PASS hard-stop: After each triplet, the outer loop also inspects the latest evaluator_report content; if it contains DECISION: PASS, it forces done=True and writes a PASS_MARKER file in the output directory. This belt-and-suspenders guard guarantees termination even if state becomes desynchronized.
 -   Tasker behavior: Tasker only updates task_list when it returns a non-empty list; if it returns an empty list, the previous tasks are retained. Tasker does not toggle done.
+-   Evaluator NEW_TASKS filtering: sentinel entries like "None", "None.", "N/A", or "No tasks" are dropped to avoid phantom tasks. If nothing remains, the next iteration receives an empty task list.
 -   Logging clarity: Each node invocation increments an inner step counter and prefixes logs with “[iter N | step K]”. Tasker report titles include the same prefix.
 
 Artifacts per iteration:
@@ -212,7 +213,7 @@ Artifacts per iteration:
         -   single.py — Single-agent programmer HITL loop, run_single()
 -   provider.py — Creates LLM clients for roles based on env (OpenAI, OpenRouter, Anthropic).
 -   prompts/
-    -   prompt_tasker.txt — Enforces JSON output with task_list + done.
+    -   prompt_tasker.txt — Enforces JSON output with task_list only (no done).
     -   prompt_coder.txt — Forces full index.html output within <FILE> tags.
     -   prompt_evaluator.txt — Yields a structured Markdown report incl. DECISION.
     -   prompt_programmer_hitl.txt — System prompt for single-agent HITL.

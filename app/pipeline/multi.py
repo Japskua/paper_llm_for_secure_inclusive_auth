@@ -141,19 +141,20 @@ def run_multi(args) -> None:
         else:
             # If Tasker returns empty tasks, retain existing tasks (e.g., from Evaluator NEW_TASKS)
             state["task_list"] = state.get("task_list", [])
-        vprint(
-            f"{prefix} TASKER: tasks={len(state['task_list'])}, done={state['done']}"
-        )
+        vprint(f"{prefix} TASKER: effective tasks={len(state['task_list'])}")
 
         # Write Tasker reports (latest and per-iteration)
         iter_no = int(state.get("iter", 0))
         step_no = int(state.get("step", 0))
+        raw_count = len(new_list)
+        eff_count = len(state["task_list"])
         report_md_lines = [
             f"# TASKER REPORT — Iteration {iter_no} · Step {step_no}",
             "",
             "## SUMMARY",
-            f"- Tasks produced: {len(state['task_list'])}",
-            f"- Done: {state['done']}",
+            f"- Raw tasks from Tasker: {raw_count}",
+            f"- Effective task_list after retention: {eff_count}",
+            "- Note: Evaluator decides termination; Tasker.done is ignored.",
             "",
             "## RAW_OUTPUT",
             "```",
@@ -272,17 +273,12 @@ def run_multi(args) -> None:
         versioned_name = f"evaluator_report_iter{iter_no}.md"
         pathlib.Path(args.output, versioned_name).write_text(text, encoding="utf-8")
 
-        decision = "FAIL"
-        for line in text.splitlines():
-            if line.strip().upper().startswith("DECISION"):
-                if "PASS" in line.upper():
-                    decision = "PASS"
-                break
+        decision = _parse_decision(text)
 
         if args.verbose:
             preview_tasks = state.get("task_list", [])[:3]
             vprint(
-                f"{prefix} EVALUATOR: decision={decision}, current tasks sample={preview_tasks}"
+                f"{prefix} EVALUATOR: parsed decision={decision}, current tasks sample={preview_tasks}"
             )
 
         if decision == "PASS":
@@ -291,6 +287,11 @@ def run_multi(args) -> None:
         else:
             # Evaluator is authoritative: FAIL means we are not done.
             state["done"] = False
+
+            # Parse NEW_TASKS and filter out sentinel non-tasks.
+            def _is_sentinel_task(s: str) -> bool:
+                return s.strip().lower() in {"none", "none.", "n/a", "no tasks", ""}
+
             tasks = []
             capture = False
             for ln in text.splitlines():
@@ -304,13 +305,15 @@ def run_multi(args) -> None:
                             if ln.strip()[0].isdigit()
                             else ln.lstrip("- ").strip()
                         )
-                        tasks.append(clean)
+                        if not _is_sentinel_task(clean):
+                            tasks.append(clean)
                     elif ln.strip() == "":
                         break
-            state["task_list"] = tasks or state["task_list"]
+            # Use evaluator-provided tasks directly (no retention of stale tasks).
+            state["task_list"] = tasks
             if args.verbose:
                 vprint(
-                    f"{prefix} EVALUATOR: parsed NEW_TASKS={len(state['task_list'])}"
+                    f"{prefix} EVALUATOR: parsed NEW_TASKS={len(tasks)} (after filtering)"
                 )
         return state
 
@@ -337,13 +340,29 @@ def run_multi(args) -> None:
     g.set_entry_point("tasker")
     app = g.compile()
 
-    # Belt-and-suspenders PASS detection from evaluator_md
+    # PASS/FAIL parsing helpers
+    def _parse_decision(md: str) -> str:
+        lines = [ln.strip() for ln in (md or "").splitlines()]
+        for i, ln in enumerate(lines):
+            if ln.upper().startswith("DECISION"):
+                # Same-line variant: "DECISION: PASS" / "DECISION: FAIL"
+                if ":" in ln:
+                    val = ln.split(":", 1)[1].strip().upper()
+                    if val in {"PASS", "FAIL"}:
+                        return val
+                # Next non-empty line variant:
+                j = i + 1
+                while j < len(lines) and lines[j] == "":
+                    j += 1
+                if j < len(lines):
+                    nxt = lines[j].upper()
+                    if nxt in {"PASS", "FAIL"}:
+                        return nxt
+                break
+        return "FAIL"
+
     def _pass_from_md(md: str) -> bool:
-        for ln in (md or "").splitlines():
-            u = ln.strip().upper()
-            if u.startswith("DECISION") and "PASS" in u:
-                return True
-        return False
+        return _parse_decision(md) == "PASS"
 
     # RUN LOOP
     logf = open(os.path.join(args.output, "log.jsonl"), "a", encoding="utf-8")
