@@ -1,0 +1,672 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Password Recovery (Mock, Client-Only)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Spec mapping: Deliverables — single HTML file with inline CSS & JS; Semantic HTML structure -->
+  <style>
+    /* Spec mapping: Accessibility + High-contrast + Responsive styling */
+    :root{
+      --bg:#ffffff;
+      --text:#111111;
+      --muted:#333333;
+      --accent:#0b5fff;
+      --accent-contrast:#ffffff;
+      --error:#b00020;
+      --ok:#0a7a24;
+      --field:#f3f4f6;
+      --border:#1f2937;
+      --focus:#ffbf47; /* high-contrast focus outline */
+      --space:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      line-height:1.6;
+      font-size:18px;
+    }
+    header, main, footer{padding: clamp(12px, 2.5vw, 24px)}
+    header{
+      border-bottom:3px solid var(--border);
+      background:#fff;
+      position:sticky; top:0; z-index:1;
+    }
+    header .bar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; max-width:860px; margin:0 auto;
+    }
+    h1{
+      font-size: clamp(20px, 3.5vw, 28px);
+      margin:0;
+      letter-spacing:0.3px;
+    }
+    .subtext{
+      font-size: clamp(14px, 2.5vw, 16px);
+      color:var(--muted);
+      margin-top:6px;
+    }
+    .container{
+      max-width:860px; margin:0 auto;
+    }
+    .card{
+      background:#fff; border:3px solid var(--border); border-radius:10px; padding: clamp(14px, 3vw, 28px); box-shadow: 0 6px 0 #00000010;
+    }
+    .steps{
+      display:grid; gap: clamp(12px,2vw,20px);
+    }
+    .step{ display:none; }
+    .step.active{ display:block; }
+    h2{
+      font-size: clamp(20px, 3vw, 24px);
+      margin:0 0 10px 0;
+    }
+    p{ margin:0 0 var(--space) 0}
+    ul{
+      margin: 0 0 var(--space) 1.2em;
+    }
+    li{ margin-bottom:8px }
+    label{
+      font-weight:600; display:block; margin-bottom:6px;
+    }
+    input[type="email"],
+    input[type="text"],
+    input[type="password"]{
+      width:100%;
+      background:var(--field);
+      border:3px solid var(--border);
+      border-radius:8px;
+      padding:14px 14px;
+      font-size:18px;
+      color:var(--text);
+    }
+    .field{
+      margin-bottom: clamp(14px, 3vw, 20px);
+    }
+    .with-toggle{
+      display:flex; align-items:stretch; gap:8px;
+    }
+    .toggle-btn{
+      white-space:nowrap;
+      background:#fff;
+      border:3px solid var(--border);
+      color:var(--text);
+      border-radius:8px;
+      padding:0 12px;
+      font-weight:600;
+      cursor:pointer;
+      min-width:70px;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px;
+      padding:14px 18px;
+      font-size:18px;
+      font-weight:700;
+      border-radius:10px;
+      border:3px solid var(--border);
+      background:var(--accent);
+      color:var(--accent-contrast);
+      cursor:pointer;
+      min-height:48px;
+      text-align:center;
+    }
+    .btn.secondary{
+      background:#fff; color:var(--text);
+    }
+    .btn.link{
+      background:transparent; border:0; color:var(--accent); padding:0; min-height:auto;
+      text-decoration:underline;
+    }
+    .btn:disabled{ opacity:.6; cursor:not-allowed }
+    .row{
+      display:flex; flex-wrap:wrap; gap:12px;
+    }
+    .error{
+      color:#fff;
+      background:var(--error);
+      border:3px solid var(--border);
+      border-radius:8px;
+      padding:10px 12px;
+      margin: 6px 0 0 0;
+      font-weight:700;
+    }
+    .help{
+      color:var(--muted);
+      font-size: 0.95rem;
+      margin-top:6px;
+    }
+    .status{
+      color:#fff;
+      background:var(--ok);
+      border:3px solid var(--border);
+      border-radius:8px;
+      padding:10px 12px;
+      margin: 10px 0;
+      font-weight:700;
+    }
+    .code-box{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background:#101010;
+      color:#fff;
+      padding:8px 10px;
+      border-radius:8px;
+      border:3px solid #000;
+      display:inline-block;
+    }
+    footer{
+      border-top:3px solid var(--border);
+      color:var(--muted);
+      font-size: 0.95rem;
+    }
+    /* Focus visible, high-contrast */
+    :focus{ outline: none }
+    :focus-visible{
+      outline:4px solid var(--focus);
+      outline-offset:2px;
+      border-radius:6px;
+    }
+    /* Spec mapping: Utility — Screen-reader-only helper for accessible descriptions (not display:none) */
+    .visually-hidden{
+      position:absolute !important;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0 0 0 0);
+      clip-path: inset(50%);
+      border:0;
+      white-space:nowrap;
+    }
+    /* Mobile spacing improvements */
+    @media (max-width:600px){
+      .row { flex-direction:column }
+    }
+  </style>
+</head>
+<body>
+  <!-- Spec mapping: Purpose — A single-page, client-only mock password recovery flow for evaluation -->
+  <header>
+    <div class="bar container">
+      <div>
+        <h1>Password Recovery</h1>
+        <div class="subtext" id="hdrTip">
+          Short, clear steps. No server. For demo only.
+        </div>
+      </div>
+      <div>
+        <button id="restartBtn" type="button" class="btn secondary" aria-describedby="restartHelp">Start over</button>
+        <!-- Spec mapping: Accessibility — Hidden helper text for assistive tech users (dyslexia-friendly guidance) -->
+        <span id="restartHelp" class="visually-hidden">Start over clears all steps and fields, returning to step 1. No information is sent anywhere.</span>
+      </div>
+    </div>
+    <!-- Global live region for status/step announcements -->
+    <div class="container">
+      <div id="globalStatus" class="status" role="status" aria-live="polite" aria-atomic="true" style="display:none"></div>
+    </div>
+  </header>
+
+  <main id="app" class="container">
+    <!-- Spec mapping: Use-case — Alex (dyslexia) needs simple, high-contrast, short steps -->
+    <section class="card steps" aria-label="Password recovery steps">
+      <!-- Step 1: Request Reset -->
+      <section class="step active" id="step-request" aria-labelledby="h-request">
+        <h2 id="h-request" tabindex="-1">1. Request a reset link</h2>
+        <p>Type your email. We will “send” a 6‑digit code. In this demo, see the code in the browser console.</p>
+        <form id="form-request" novalidate>
+          <div class="field">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required
+                   aria-describedby="emailHelp"
+                   placeholder="name@example.edu">
+            <div id="emailHelp" class="help">Use your school email.</div>
+            <div id="emailError" class="error" role="alert" aria-live="assertive" style="display:none"></div>
+          </div>
+          <div class="row">
+            <button type="submit" class="btn" id="sendBtn">Send code</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Step 2: Verify Code -->
+      <section class="step" id="step-verify" aria-labelledby="h-verify" aria-hidden="true">
+        <h2 id="h-verify" tabindex="-1">2. Enter the code</h2>
+        <p>
+          We sent a 6‑digit code to: <strong id="verifyEmail" class="code-box" aria-live="polite"></strong>.
+          In this mock, open the console to see it.
+        </p>
+        <form id="form-verify" novalidate>
+          <div class="field">
+            <label for="code">6-digit code</label>
+            <input id="code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                   aria-describedby="codeHelp"
+                   placeholder="123456" required>
+            <div id="codeHelp" class="help">Only numbers. Exactly 6 digits.</div>
+            <div id="codeError" class="error" role="alert" aria-live="assertive" style="display:none"></div>
+          </div>
+          <div class="row">
+            <button type="submit" class="btn" id="verifyBtn">Verify code</button>
+            <button type="button" class="btn secondary" id="backToStartBtn">Start over</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Step 3: Set New Password -->
+      <section class="step" id="step-password" aria-labelledby="h-password" aria-hidden="true">
+        <h2 id="h-password" tabindex="-1">3. Make a new password</h2>
+        <p>Keep it simple, but strong. Follow these three rules:</p>
+        <ul>
+          <li>At least 8 characters</li>
+          <li>At least 1 letter (a–z)</li>
+          <li>At least 1 number (0–9)</li>
+        </ul>
+        <form id="form-password" novalidate>
+          <div class="field">
+            <label for="newPassword">New password</label>
+            <div class="with-toggle">
+              <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" required
+                     aria-describedby="pwHelp">
+              <button type="button" class="toggle-btn" data-target="newPassword" aria-pressed="false" aria-label="Show new password">Show</button>
+            </div>
+            <div id="pwHelp" class="help">You can tap Show to check your typing.</div>
+          </div>
+
+          <div class="field">
+            <label for="confirmPassword">Confirm new password</label>
+            <div class="with-toggle">
+              <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required
+                     aria-describedby="pw2Help">
+              <button type="button" class="toggle-btn" data-target="confirmPassword" aria-pressed="false" aria-label="Show confirmation password">Show</button>
+            </div>
+            <div id="pw2Help" class="help">Both passwords must match.</div>
+            <div id="pwError" class="error" role="alert" aria-live="assertive" style="display:none"></div>
+          </div>
+
+          <div class="row">
+            <button type="submit" class="btn" id="resetBtn">Save new password</button>
+            <button type="button" class="btn secondary" id="restartBtn2">Start over</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Step 4: Success -->
+      <section class="step" id="step-success" aria-labelledby="h-success" aria-hidden="true">
+        <h2 id="h-success" tabindex="-1">All set!</h2>
+        <p>Your password is updated. You can now log in.</p>
+        <div class="row">
+          <button type="button" class="btn" id="doneBtn">Finish</button>
+          <button type="button" class="btn secondary" id="restartBtn3">Start over</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="container">
+    <!-- Spec mapping: Mocking + No external calls -->
+    This demo runs fully in your browser. No network calls. Codes are mocked and printed to the console.
+  </footer>
+
+  <!-- Section 14: Acceptance Criteria
+       Explicit, numbered, testable criteria mapped to Requirements -->
+  <!--
+  1. Single file: Deliver exactly one index.html containing all HTML, inline CSS, and inline JS. No build step.
+  2. Client-only: The app performs all logic in-browser; there are zero network calls (no fetch/XHR/imports to remote).
+  3. Use-case fit: Flow is broken into short, simple steps suitable for a dyslexic student (clear headings, minimal text).
+  4. Semantic structure: Uses header, main, footer, section, form, label, button appropriately.
+  5. Four steps present: (1) Request reset, (2) Verify code, (3) Set new password, (4) Success; only one step visible at a time.
+  6. Deterministic code: A 6-digit numeric code is deterministically derived from the email and stored in session state.
+  7. Mock delivery: On requesting a reset, the code is output via console.log, not sent anywhere.
+  8. No persistence of password: New password is validated client-side and not stored or sent; inputs are cleared after success.
+  9. Validation messages: Invalid email, bad code format/mismatch, and password rule failures show error alerts with role="alert".
+ 10. Password rules enforced: Minimum 8 chars, at least one letter, at least one number; confirmation must match.
+ 11. Accessibility announcements: A polite aria-live region announces step changes/status messages.
+ 12. Keyboard/focus: The current step's heading receives focus when steps change; focus-visible outline is high-contrast.
+ 13. Visibility toggles: Show/Hide buttons toggle password fields and update aria-pressed and labels accordingly.
+ 14. Restart behavior: Any “Start over” button resets state, clears sessionStorage email/code, resets forms, and returns to Step 1.
+ 15. Utility class: .visually-hidden is defined using the standard screen-reader-only pattern (not display:none).
+ 16. Hidden helper: #restartHelp contains concise explanatory text, is visually hidden, and is referenced by #restartBtn via aria-describedby.
+ 17. Robust aria-describedby: If #restartHelp is missing at runtime, #restartBtn’s aria-describedby is removed to avoid empty references.
+ 18. Spec mapping comments: Code contains inline comments that map implementation parts to the Requirements for evaluator traceability.
+ 19. Demo notice: UI text indicates the demo nature (“No server”, “Mock”, “Console”) to prevent misunderstanding.
+  -->
+
+  <script>
+    "use strict";
+    /* Spec mapping: Purpose + Mocking requirements
+       - Entire flow is client-only (no fetch/XHR/imports).
+       - Verification code is deterministically derived from email.
+       - “Delivery” is simulated via console.log.
+       - Major actions are logged for evaluators. */
+
+    // Utility: deterministic 6-digit code from email (stable across same email per session)
+    // Spec mapping: Mocking requirements — deterministic generation + console logging
+    function generateDeterministicCode(email){
+      const s = (email || "").trim().toLowerCase();
+      let hash = 5381;
+      for (let i = 0; i < s.length; i++){
+        hash = ((hash << 5) + hash) + s.charCodeAt(i); // djb2
+        hash |= 0;
+      }
+      const num = Math.abs(hash % 1000000);
+      return String(num).padStart(6, "0");
+    }
+
+    // Simple validators
+    function isValidEmail(email){
+      // pragmatic email check; readable and strict enough for client validation
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+
+    function validatePassword(pw){
+      const errors = [];
+      if (!pw || pw.length < 8) errors.push("Use at least 8 characters.");
+      if (!/[a-zA-Z]/.test(pw)) errors.push("Include at least one letter (a–z).");
+      if (!/[0-9]/.test(pw)) errors.push("Include at least one number (0–9).");
+      return { ok: errors.length === 0, errors };
+    }
+
+    // State for the session
+    const state = {
+      email: null,
+      code: null,
+      verified: false
+    };
+
+    // DOM cache
+    const el = {};
+    function cacheDom(){
+      el.steps = document.querySelectorAll(".step");
+      el.globalStatus = document.getElementById("globalStatus");
+
+      el.stepRequest = document.getElementById("step-request");
+      el.formRequest = document.getElementById("form-request");
+      el.email = document.getElementById("email");
+      el.emailError = document.getElementById("emailError");
+      el.sendBtn = document.getElementById("sendBtn");
+
+      el.stepVerify = document.getElementById("step-verify");
+      el.formVerify = document.getElementById("form-verify");
+      el.verifyEmail = document.getElementById("verifyEmail");
+      el.code = document.getElementById("code");
+      el.codeError = document.getElementById("codeError");
+      el.verifyBtn = document.getElementById("verifyBtn");
+      el.backToStartBtn = document.getElementById("backToStartBtn");
+
+      el.stepPassword = document.getElementById("step-password");
+      el.formPassword = document.getElementById("form-password");
+      el.newPassword = document.getElementById("newPassword");
+      el.confirmPassword = document.getElementById("confirmPassword");
+      el.pwError = document.getElementById("pwError");
+      el.resetBtn = document.getElementById("resetBtn");
+
+      el.stepSuccess = document.getElementById("step-success");
+      el.doneBtn = document.getElementById("doneBtn");
+
+      el.restartBtn = document.getElementById("restartBtn");
+      el.restartBtn2 = document.getElementById("restartBtn2");
+      el.restartBtn3 = document.getElementById("restartBtn3");
+      el.hRequest = document.getElementById("h-request");
+      el.hVerify = document.getElementById("h-verify");
+      el.hPassword = document.getElementById("h-password");
+      el.hSuccess = document.getElementById("h-success");
+    }
+
+    // Accessibility: Show only one step at a time, manage aria-hidden and focus
+    function showStep(stepId, announce){
+      el.steps.forEach(sec=>{
+        const isActive = (sec.id === stepId);
+        sec.classList.toggle("active", isActive);
+        sec.setAttribute("aria-hidden", isActive ? "false" : "true");
+      });
+
+      // Announce step change
+      if (announce){
+        setStatus(announce);
+      } else {
+        hideStatus();
+      }
+
+      // Focus management: focus heading of the active step
+      queueMicrotask(()=>{
+        const section = document.getElementById(stepId);
+        const heading = section.querySelector("h2");
+        if (heading){
+          heading.setAttribute("tabindex","-1");
+          heading.focus();
+        }
+        // Move focus to first field if appropriate
+        const firstInput = section.querySelector("input");
+        if (firstInput && stepId !== "step-success"){
+          // After a short delay to allow screen readers to announce heading first
+          setTimeout(()=>{ try{ firstInput.focus(); }catch(_){} }, 200);
+        }
+      });
+    }
+
+    function setStatus(msg){
+      el.globalStatus.textContent = msg;
+      el.globalStatus.style.display = "block";
+    }
+    function hideStatus(){
+      el.globalStatus.style.display = "none";
+      el.globalStatus.textContent = "";
+    }
+
+    function clearErrors(){
+      [el.emailError, el.codeError, el.pwError].forEach(node=>{
+        if (!node) return;
+        node.style.display = "none";
+        node.textContent = "";
+      });
+    }
+
+    // Handlers
+
+    // Step 1: Request Reset
+    function onRequestSubmit(e){
+      e.preventDefault();
+      clearErrors();
+      const email = (el.email.value || "").trim();
+      console.log("[Action] Request reset submitted for:", email);
+
+      if (!isValidEmail(email)){
+        el.emailError.textContent = "Please enter a valid email like name@example.edu.";
+        el.emailError.style.display = "block";
+        console.log("[Outcome] Invalid email format; blocking progression.");
+        return;
+      }
+
+      // Generate deterministic code and persist in this session (sessionStorage + memory)
+      const code = generateDeterministicCode(email);
+      state.email = email;
+      state.code = code;
+      state.verified = false;
+      try{
+        sessionStorage.setItem("mockEmail", email);
+        sessionStorage.setItem("mockCode", code);
+      }catch(_){/* ignore storage issues */}
+
+      // Mock "sending" via console.log
+      console.log(`[Mock Delivery] Verification code for ${email}: ${code} (deterministic).`);
+
+      // Update verify step and advance
+      el.verifyEmail.textContent = email;
+      showStep("step-verify", "Code sent. Check the console for the 6-digit code.");
+    }
+
+    // Step 2: Verify Code
+    function onVerifySubmit(e){
+      e.preventDefault();
+      clearErrors();
+      const inputCode = (el.code.value || "").trim();
+      console.log("[Action] Verify code submitted:", inputCode);
+
+      const expected = state.code || sessionStorage.getItem("mockCode");
+      if (!/^\d{6}$/.test(inputCode)){
+        el.codeError.textContent = "Enter the 6-digit code. Numbers only.";
+        el.codeError.style.display = "block";
+        console.log("[Outcome] Code format invalid.");
+        return;
+      }
+      if (inputCode !== expected){
+        el.codeError.textContent = "That code does not match. Try again.";
+        el.codeError.style.display = "block";
+        console.log("[Outcome] Code verification failed. Expected:", expected, "Got:", inputCode);
+        return;
+      }
+      state.verified = true;
+      console.log("[Outcome] Code verification passed.");
+      showStep("step-password", "Code verified. Set your new password.");
+    }
+
+    // Step 3: Set New Password
+    function onPasswordSubmit(e){
+      e.preventDefault();
+      clearErrors();
+
+      const pw = el.newPassword.value || "";
+      const pw2 = el.confirmPassword.value || "";
+      console.log("[Action] Password reset attempt.");
+
+      const v = validatePassword(pw);
+      const msgs = [];
+      if (!v.ok){ msgs.push(...v.errors); }
+      if (pw !== pw2){
+        msgs.push("Passwords do not match.");
+      }
+
+      if (msgs.length){
+        el.pwError.innerHTML = msgs.map(m=>`• ${m}`).join(" ");
+        el.pwError.style.display = "block";
+        console.log("[Outcome] Password validation failed:", msgs);
+        return;
+      }
+      console.log("[Outcome] Password reset success (mock). No password is stored.");
+      // Clear sensitive fields
+      el.newPassword.value = "";
+      el.confirmPassword.value = "";
+      // Advance to success
+      showStep("step-success", "Password saved.");
+      // Clear code so it cannot be reused in this mock
+      state.code = null;
+      try{
+        sessionStorage.removeItem("mockCode");
+      }catch(_){}
+    }
+
+    // Start over: clear all state and go to first step
+    function startOver(){
+      console.log("[Action] Start over triggered. Clearing state.");
+      // Clear memory state
+      state.email = null;
+      state.code = null;
+      state.verified = false;
+
+      // Clear storage
+      try{
+        sessionStorage.removeItem("mockEmail");
+        sessionStorage.removeItem("mockCode");
+      }catch(_){}
+
+      // Reset forms and errors
+      clearErrors();
+      if (el.formRequest) el.formRequest.reset();
+      if (el.formVerify) el.formVerify.reset();
+      if (el.formPassword) el.formPassword.reset();
+
+      // Reset email shown
+      if (el.verifyEmail) el.verifyEmail.textContent = "";
+
+      // Reset toggles to hidden state
+      document.querySelectorAll(".toggle-btn").forEach(btn=>{
+        const id = btn.getAttribute("data-target");
+        const inp = id ? document.getElementById(id) : null;
+        if (inp){
+          inp.type = "password";
+          btn.setAttribute("aria-pressed","false");
+          btn.textContent = "Show";
+        }
+      });
+
+      // Go to first step
+      showStep("step-request", "Start again. Enter your email.");
+    }
+
+    // Password visibility toggles
+    function onToggleClick(e){
+      const btn = e.currentTarget;
+      const id = btn.getAttribute("data-target");
+      const input = document.getElementById(id);
+      if (!input) return;
+      const nowShown = input.type === "password" ? true : false;
+      input.type = nowShown ? "text" : "password";
+      btn.textContent = nowShown ? "Hide" : "Show";
+      btn.setAttribute("aria-pressed", nowShown ? "true" : "false");
+      btn.setAttribute("aria-label", (nowShown ? "Hide" : "Show") + " password");
+    }
+
+    // Restrict code input to digits
+    function digitsOnly(e){
+      const allowed = e.target.value.replace(/\D/g, '').slice(0, 6);
+      if (e.target.value !== allowed){
+        e.target.value = allowed;
+      }
+    }
+
+    // Initialization
+    document.addEventListener("DOMContentLoaded", ()=>{
+      cacheDom();
+
+      // Wire up forms
+      el.formRequest.addEventListener("submit", onRequestSubmit);
+      el.formVerify.addEventListener("submit", onVerifySubmit);
+      el.formPassword.addEventListener("submit", onPasswordSubmit);
+
+      // Wire up toggles
+      document.querySelectorAll(".toggle-btn").forEach(btn=>{
+        btn.addEventListener("click", onToggleClick);
+      });
+
+      // Wire up restart buttons
+      el.restartBtn.addEventListener("click", startOver);
+      el.restartBtn2.addEventListener("click", startOver);
+      el.restartBtn3.addEventListener("click", startOver);
+      el.backToStartBtn.addEventListener("click", startOver);
+      el.doneBtn.addEventListener("click", ()=> {
+        console.log("[Action] Finish clicked. Demo complete.");
+        startOver();
+      });
+
+      // Input helpers
+      el.code.addEventListener("input", digitsOnly);
+
+      // Restore email/code if present in this tab session
+      try{
+        const savedEmail = sessionStorage.getItem("mockEmail");
+        const savedCode = sessionStorage.getItem("mockCode");
+        if (savedEmail && savedCode){
+          state.email = savedEmail;
+          state.code = savedCode;
+          el.email.value = savedEmail;
+          console.log("[Info] Restored session for:", savedEmail, "with deterministic code.");
+        }
+      }catch(_){}
+
+      // Spec mapping: Accessibility guard — ensure aria-describedby does not reference missing content
+      const restartHelpEl = document.getElementById("restartHelp");
+      if (!restartHelpEl && el.restartBtn){
+        el.restartBtn.removeAttribute("aria-describedby");
+      }
+
+      // Initial status
+      showStep("step-request");
+    });
+  </script>
+</body>
+</html>

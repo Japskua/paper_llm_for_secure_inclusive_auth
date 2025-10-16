@@ -1,0 +1,877 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Password Recovery and Submission Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Requirements mapping: Deliverables -> One file, semantic HTML, inline CSS & JS -->
+  <style>
+    /* Requirements mapping: Inclusivity -> readable defaults (large font, high contrast, spacing, no all-caps/italics) */
+    :root{
+      --bg:#ffffff;
+      --text:#111111;
+      --muted:#444444;
+      --accent:#0a66ff;
+      --good:#1a7f37;
+      --bad:#b3261e;
+      --border:#dddddd;
+      --focus:#ff8c00;
+      --card:#f7f8fa;
+    }
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      font-size:18px; /* >=16px */
+      line-height:1.6; /* >=1.5 */
+    }
+    body.readable{
+      font-size:20px;
+      line-height:1.8;
+      letter-spacing:0.02em;
+      word-spacing:0.08em;
+    }
+    header, main, footer{
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    h1, h2, h3{
+      margin: 0.25rem 0 0.5rem;
+      font-weight: 700;
+    }
+    p{
+      margin: 0.25rem 0 0.75rem;
+    }
+    ul{
+      margin: 0.25rem 0 0.75rem 1.25rem;
+    }
+    .banner{
+      background: #fff6e5;
+      border: 2px solid #ffd27a;
+      color: #5b3d00;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.75rem;
+    }
+    .banner strong{
+      font-weight: 700;
+    }
+    .controls-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.5rem;
+      align-items:center;
+      justify-content: space-between;
+      margin-top:0.75rem;
+    }
+    .left-controls, .right-controls{
+      display:flex;
+      gap:0.5rem;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .switch{
+      display:inline-flex;
+      align-items:center;
+      gap:0.4rem;
+    }
+    button, input, select, textarea{
+      font: inherit;
+    }
+    button, .btn{
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button.secondary{
+      background: #e6e6e6;
+      color: #111;
+    }
+    button.linklike{
+      background: transparent;
+      color: var(--accent);
+      text-decoration: underline;
+      padding: 0.25rem 0.25rem;
+    }
+    button:disabled{
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    input[type="text"], input[type="email"], input[type="password"]{
+      width: 100%;
+      padding: 0.55rem 0.6rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+    }
+    input[type="file"]{
+      padding: 0.4rem 0;
+    }
+    label{
+      font-weight: 600;
+      display:block;
+      margin-bottom: 0.25rem;
+    }
+    .hint{
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+    }
+    .field{
+      margin: 0.75rem 0 1rem;
+    }
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 0.5rem 0 1rem;
+    }
+    nav.stepbar{
+      margin-top: 0.5rem;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+    }
+    .step-heading{
+      font-weight:700;
+    }
+    .actions{
+      display:flex;
+      gap:0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+    .row{
+      display:flex;
+      gap:0.5rem;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .spaced{
+      margin-top: 0.75rem;
+    }
+    .status{
+      margin-top: 0.5rem;
+      min-height: 1.2rem;
+    }
+    .status .error{
+      color: var(--bad);
+      font-weight:600;
+    }
+    .status .ok{
+      color: var(--good);
+      font-weight:600;
+    }
+    .checklist{
+      list-style: none;
+      padding: 0;
+      margin: 0.25rem 0 0.75rem 0;
+    }
+    .checklist li{
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      padding: 0.25rem 0;
+    }
+    .check{
+      width: 0.9rem;
+      height: 0.9rem;
+      border-radius: 999px;
+      border: 2px solid var(--border);
+      display:inline-block;
+      background: #fff;
+    }
+    .check.pass{
+      background: var(--good);
+      border-color: var(--good);
+    }
+    .sr-only{
+      position: absolute !important;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0);
+      white-space: nowrap; border: 0;
+    }
+    .helper-row{
+      display:flex;
+      gap:0.5rem;
+      align-items:center;
+      margin-top: 0.25rem;
+    }
+    .inline-btn{
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--accent);
+    }
+    /* Requirements mapping: keyboard navigable + visible focus */
+    :focus-visible{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    a{
+      color: var(--accent);
+    }
+    footer{
+      color: var(--muted);
+      font-size: 0.95rem;
+      padding-bottom: 2rem;
+    }
+    .upload-result{
+      padding: 0.5rem 0.75rem;
+      border-left: 4px solid var(--good);
+      background: #eef9f0;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Requirements mapping: Semantic sections (header, main, footer) -->
+  <header>
+    <h1>Password recovery and submission</h1>
+    <!-- Requirements mapping: Deadline banner showing time left until local midnight -->
+    <div class="banner" aria-live="polite" aria-atomic="true">
+      <span aria-hidden="true">⏰</span>
+      <strong>Time left today:</strong>
+      <span id="deadline-text">--:--:--</span>
+      <span class="hint">(to local midnight)</span>
+    </div>
+
+    <!-- Requirements mapping: Readable mode toggle + global Read Aloud/Copy controls -->
+    <div class="controls-row">
+      <div class="left-controls">
+        <label class="switch">
+          <input type="checkbox" id="readableToggle" aria-describedby="readableDesc">
+          <span>Readable mode</span>
+        </label>
+        <span id="readableDesc" class="hint">Bigger text and extra spacing.</span>
+      </div>
+      <div class="right-controls" aria-label="Assistive controls">
+        <button id="readAloudBtn" class="inline-btn" type="button">Read aloud</button>
+        <button id="copyTextBtn" class="inline-btn" type="button" hidden>Copy text</button>
+      </div>
+    </div>
+
+    <!-- Requirements mapping: ARIA live region for status messages (polite) -->
+    <div id="live" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+  </header>
+
+  <main id="app" tabindex="-1">
+    <!-- Filled by JS -->
+  </main>
+
+  <footer>
+    <!-- Requirements mapping: Concise, plain-language copy -->
+    <p>Demo only. Everything runs in your browser. No data is sent.</p>
+  </footer>
+
+  <script>
+    // Requirements mapping: Minimal inline JS state management and step navigation
+    const app = document.getElementById('app');
+    const live = document.getElementById('live');
+    const readableToggle = document.getElementById('readableToggle');
+    const readAloudBtn = document.getElementById('readAloudBtn');
+    const copyTextBtn = document.getElementById('copyTextBtn');
+
+    const Steps = ['Email', 'Code', 'Reset password', 'Login', 'Course'];
+    const state = {
+      step: 0,
+      email: '',
+      code: '',        // deterministic per email
+      newPassword: '',
+      lastUploadInfo: ''
+    };
+
+    // Requirements mapping: Readable mode toggle persists
+    const READABLE_KEY = 'demo-readable-mode';
+    function applyReadableMode(fromStorage) {
+      const on = fromStorage ?? (localStorage.getItem(READABLE_KEY) === 'on');
+      readableToggle.checked = on;
+      document.body.classList.toggle('readable', on);
+    }
+    readableToggle.addEventListener('change', () => {
+      const on = readableToggle.checked;
+      document.body.classList.toggle('readable', on);
+      localStorage.setItem(READABLE_KEY, on ? 'on' : 'off');
+      announce(on ? 'Readable mode on.' : 'Readable mode off.');
+    });
+    applyReadableMode();
+
+    // Requirements mapping: Deadline banner with live countdown
+    const deadlineEl = document.getElementById('deadline-text');
+    function nextMidnight() {
+      const now = new Date();
+      const next = new Date(now);
+      next.setHours(24,0,0,0);
+      return next;
+    }
+    function formatHHMMSS(ms) {
+      if (ms < 0) ms = 0;
+      const total = Math.floor(ms / 1000);
+      const h = String(Math.floor(total / 3600)).padStart(2,'0');
+      const m = String(Math.floor((total % 3600)/60)).padStart(2,'0');
+      const s = String(total % 60).padStart(2,'0');
+      return `${h}:${m}:${s}`;
+    }
+    function updateCountdown() {
+      const now = new Date();
+      let target = nextMidnight();
+      let diff = target - now;
+      if (diff < 0) {
+        target = nextMidnight();
+        diff = target - now;
+      }
+      deadlineEl.textContent = formatHHMMSS(diff);
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Requirements mapping: Global Read Aloud button with fallback Copy Text
+    function supportsSpeech() {
+      return 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+    }
+    function getCurrentInstructionText() {
+      const list = document.querySelector('#instructions');
+      if (!list) return '';
+      return Array.from(list.querySelectorAll('li')).map(li => li.textContent.trim()).join('. ');
+    }
+    function readAloud() {
+      const text = getCurrentInstructionText() || 'No instructions on screen.';
+      if (supportsSpeech()) {
+        try {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = navigator.language || 'en-US';
+          u.rate = 1.0;
+          window.speechSynthesis.speak(u);
+          announce('Reading instructions.');
+        } catch(e) {
+          copyInstructions();
+        }
+      } else {
+        copyInstructions();
+      }
+    }
+    function copyInstructions() {
+      const text = getCurrentInstructionText();
+      if (!text) {
+        announce('Nothing to copy.');
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          announce('Instructions copied.');
+        }).catch(() => {
+          fallbackCopy(text);
+        });
+      } else {
+        fallbackCopy(text);
+      }
+    }
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly','');
+      ta.style.position = 'absolute';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); announce('Instructions copied.'); }
+      catch(e){ announce('Copy failed.'); }
+      document.body.removeChild(ta);
+    }
+    function setupAssistButtons() {
+      const hasSpeech = supportsSpeech();
+      readAloudBtn.hidden = !hasSpeech;
+      copyTextBtn.hidden = hasSpeech; // show copy if speech unavailable
+      readAloudBtn.addEventListener('click', readAloud);
+      copyTextBtn.addEventListener('click', copyInstructions);
+    }
+    setupAssistButtons();
+
+    // Requirements mapping: ARIA live region helper
+    function announce(msg){
+      live.textContent = msg;
+    }
+
+    // Requirements mapping: Deterministic 6-digit recovery code from email
+    function codeForEmail(email) {
+      const s = (email || '').trim().toLowerCase();
+      let hash = 0;
+      for (let i = 0; i < s.length; i++) {
+        hash = (hash * 31 + s.charCodeAt(i)) % 1000000;
+      }
+      return String(hash).padStart(6, '0');
+    }
+
+    function sendCodeForCurrentEmail(reason = 'sent') {
+      state.code = codeForEmail(state.email);
+      const message = `Recovery code ${reason} for ${state.email}: ${state.code}`;
+      console.log(message); // Requirements mapping: Log key mock events -> code sent
+      announce('Code sent. Check the console.');
+    }
+
+    function setFocusTo(selector){
+      const el = app.querySelector(selector);
+      if (el) el.focus();
+    }
+
+    function render() {
+      const totalSteps = Steps.length;
+      // Step-specific instruction bullets (≤5 short bullets)
+      const instructionsMap = {
+        0: [
+          'Enter your email',
+          'We will show a 6‑digit code in the console',
+          'Keep this page open',
+          'Click Send code'
+        ],
+        1: [
+          'Open the console to see your code',
+          'Type the 6 digits',
+          'Click Verify',
+          'Need it again? Click Resend'
+        ],
+        2: [
+          'Create a new password',
+          'Follow the checklist',
+          'Confirm it matches',
+          'Click Save password'
+        ],
+        3: [
+          'Your email is filled',
+          'Enter your new password',
+          'Click Log in'
+        ],
+        4: [
+          'Pick your file',
+          'Click Upload',
+          'Wait for the success message'
+        ]
+      };
+      const stepName = Steps[state.step];
+
+      app.innerHTML = `
+        <!-- Requirements mapping: Step indicator with short bullet instructions -->
+        <nav class="stepbar" aria-label="Progress">
+          <div class="step-heading">Step ${state.step+1} of ${totalSteps}: ${stepName}</div>
+          <ul id="instructions">
+            ${instructionsMap[state.step].map(i => `<li>${i}</li>`).join('')}
+          </ul>
+        </nav>
+
+        ${renderStepContent(state.step)}
+      `;
+
+      // autofocus for the first control of each step
+      setTimeout(() => {
+        const auto = app.querySelector('[data-autofocus]');
+        if (auto) auto.focus();
+      }, 0);
+    }
+
+    function renderStepContent(step){
+      switch(step){
+        case 0: return emailStep();
+        case 1: return codeStep();
+        case 2: return resetStep();
+        case 3: return loginStep();
+        case 4: return courseStep();
+        default: return '<p>Unknown step.</p>';
+      }
+    }
+
+    // Requirements mapping: Back and Start over on each step
+    function navButtonsHtml({backDisabled=false} = {}){
+      return `
+        <div class="actions">
+          <button type="button" class="secondary" id="backBtn" ${backDisabled ? 'disabled' : ''}>Back</button>
+          <button type="button" class="secondary" id="startOverBtn">Start over</button>
+        </div>
+      `;
+    }
+    function attachNavHandlers(){
+      const backBtn = document.getElementById('backBtn');
+      const startOverBtn = document.getElementById('startOverBtn');
+      if (backBtn){
+        backBtn.addEventListener('click', () => {
+          if (state.step > 0) {
+            state.step -= 1;
+            render();
+          }
+        });
+      }
+      if (startOverBtn){
+        startOverBtn.addEventListener('click', () => {
+          const keepReadable = localStorage.getItem(READABLE_KEY);
+          state.step = 0;
+          state.email = '';
+          state.code = '';
+          state.newPassword = '';
+          state.lastUploadInfo = '';
+          render();
+          if (keepReadable) localStorage.setItem(READABLE_KEY, keepReadable);
+          announce('Start over.');
+        });
+      }
+    }
+
+    // Requirements mapping: Email step
+    function emailStep(){
+      return `
+        <section class="card" aria-labelledby="emailTitle">
+          <h2 id="emailTitle">Email</h2>
+          <form id="emailForm" novalidate>
+            <div class="field">
+              <label for="emailInput">Email address</label>
+              <input id="emailInput" name="email" type="text" autocomplete="email" placeholder="you@example.edu" value="${escapeHtml(state.email)}" data-autofocus aria-describedby="emailHint">
+              <div id="emailHint" class="hint">Any text is okay here for the demo.</div>
+            </div>
+            <div class="actions">
+              <button id="sendCodeBtn" type="submit">Send code</button>
+            </div>
+            <div class="status" id="emailStatus"></div>
+          </form>
+          ${navButtonsHtml({backDisabled:true})}
+        </section>
+      `;
+    }
+
+    function wireEmailStep(){
+      const form = document.getElementById('emailForm');
+      const input = document.getElementById('emailInput');
+      const status = document.getElementById('emailStatus');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const val = input.value.trim();
+        if (!val){
+          status.innerHTML = `<span class="error">Enter your email.</span>`;
+          announce('Enter your email.');
+          input.focus();
+          return;
+        }
+        state.email = val;
+        sendCodeForCurrentEmail('sent');
+        status.innerHTML = `<span class="ok">Code sent. Check the console.</span>`;
+        state.step = 1;
+        render();
+      });
+      attachNavHandlers();
+    }
+
+    // Requirements mapping: Code step with single 6-digit input, verify and resend
+    function codeStep(){
+      return `
+        <section class="card" aria-labelledby="codeTitle">
+          <h2 id="codeTitle">Enter code</h2>
+          <form id="codeForm" novalidate>
+            <div class="field">
+              <label for="codeInput">6-digit code</label>
+              <input id="codeInput" name="code" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" data-autofocus aria-describedby="codeHint">
+              <div id="codeHint" class="hint">Tip: open the console to see the code.</div>
+            </div>
+            <div class="actions">
+              <button id="verifyBtn" type="submit">Verify</button>
+              <button id="resendBtn" type="button" class="secondary">Resend</button>
+            </div>
+            <div class="status" id="codeStatus"></div>
+          </form>
+          ${navButtonsHtml()}
+        </section>
+      `;
+    }
+
+    function wireCodeStep(){
+      const input = document.getElementById('codeInput');
+      const status = document.getElementById('codeStatus');
+      const form = document.getElementById('codeForm');
+      const resend = document.getElementById('resendBtn');
+
+      // keep digits only
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/\D+/g,'').slice(0,6);
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const entered = input.value.trim();
+        console.log(`Verify attempt for ${state.email}: entered ${entered}`); // Requirements mapping: log verify attempts
+        if (entered === state.code){
+          status.innerHTML = `<span class="ok">Code accepted.</span>`;
+          announce('Code accepted.');
+          state.step = 2;
+          render();
+        } else {
+          status.innerHTML = `<span class="error">Wrong code.</span>`;
+          announce('Wrong code.');
+          input.focus();
+          input.select();
+        }
+      });
+      resend.addEventListener('click', () => {
+        sendCodeForCurrentEmail('re-sent');
+        status.innerHTML = `<span class="ok">Code re-sent. Check the console.</span>`;
+        document.getElementById('codeInput').focus();
+      });
+
+      attachNavHandlers();
+    }
+
+    // Requirements mapping: Reset Password step with show/hide toggles and live checklist
+    function resetStep(){
+      return `
+        <section class="card" aria-labelledby="resetTitle">
+          <h2 id="resetTitle">Make a new password</h2>
+          <form id="resetForm" novalidate>
+            <div class="field">
+              <label for="newPass">New password</label>
+              <div class="row">
+                <input id="newPass" name="newPass" type="password" autocomplete="new-password" data-autofocus aria-describedby="passHint">
+                <button type="button" class="inline-btn" id="toggleNew">Show</button>
+              </div>
+              <div id="passHint" class="hint">Use at least 8 characters, with letters and a number.</div>
+            </div>
+
+            <div class="field">
+              <label for="confirmPass">Confirm password</label>
+              <div class="row">
+                <input id="confirmPass" name="confirmPass" type="password" autocomplete="new-password" aria-describedby="confirmHint">
+                <button type="button" class="inline-btn" id="toggleConfirm">Show</button>
+              </div>
+              <div id="confirmHint" class="hint">Re‑type the same password.</div>
+            </div>
+
+            <div class="card" aria-live="polite" aria-atomic="true">
+              <h3 style="margin-top:0;">Checklist</h3>
+              <ul class="checklist" id="rulesList">
+                <li><span class="check" data-rule="len"></span><span>At least 8 characters</span></li>
+                <li><span class="check" data-rule="letter"></span><span>Has a letter</span></li>
+                <li><span class="check" data-rule="number"></span><span>Has a number</span></li>
+                <li><span class="check" data-rule="spaces"></span><span>No spaces</span></li>
+              </ul>
+            </div>
+
+            <div class="actions">
+              <button id="savePassBtn" type="submit">Save password</button>
+            </div>
+            <div class="status" id="resetStatus"></div>
+          </form>
+          ${navButtonsHtml()}
+        </section>
+      `;
+    }
+
+    function passRules(p) {
+      return {
+        len: p.length >= 8,
+        letter: /[A-Za-z]/.test(p),
+        number: /[0-9]/.test(p),
+        spaces: !/\s/.test(p)
+      };
+    }
+
+    function wireResetStep(){
+      const newPass = document.getElementById('newPass');
+      const confirmPass = document.getElementById('confirmPass');
+      const toggleNew = document.getElementById('toggleNew');
+      const toggleConfirm = document.getElementById('toggleConfirm');
+      const rulesList = document.getElementById('rulesList');
+      const status = document.getElementById('resetStatus');
+      const form = document.getElementById('resetForm');
+
+      function updateChecklist() {
+        const rules = passRules(newPass.value);
+        rulesList.querySelectorAll('.check').forEach(dot => {
+          const key = dot.getAttribute('data-rule');
+          const pass = !!rules[key];
+          dot.classList.toggle('pass', pass);
+          dot.setAttribute('aria-label', pass ? 'Pass' : 'Fail');
+        });
+      }
+      newPass.addEventListener('input', updateChecklist);
+      updateChecklist();
+
+      function toggleVis(input, btn){
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.textContent = show ? 'Hide' : 'Show';
+        btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+        input.focus();
+      }
+      toggleNew.addEventListener('click', () => toggleVis(newPass, toggleNew));
+      toggleConfirm.addEventListener('click', () => toggleVis(confirmPass, toggleConfirm));
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const p1 = newPass.value;
+        const p2 = confirmPass.value;
+        const rules = passRules(p1);
+        const ok = Object.values(rules).every(Boolean);
+        if (!ok){
+          status.innerHTML = `<span class="error">Meet all checklist items.</span>`;
+          announce('Please meet all checklist items.');
+          newPass.focus();
+          return;
+        }
+        if (p1 !== p2){
+          status.innerHTML = `<span class="error">Passwords do not match.</span>`;
+          announce('Passwords do not match.');
+          confirmPass.focus();
+          return;
+        }
+        state.newPassword = p1;
+        console.log(`Password reset for ${state.email}`); // Requirements mapping: log password reset
+        status.innerHTML = `<span class="ok">Password saved.</span>`;
+        announce('Password saved.');
+        state.step = 3;
+        render();
+      });
+
+      attachNavHandlers();
+    }
+
+    // Requirements mapping: Login step prefilled with email
+    function loginStep(){
+      return `
+        <section class="card" aria-labelledby="loginTitle">
+          <h2 id="loginTitle">Log in</h2>
+          <form id="loginForm" novalidate>
+            <div class="field">
+              <label for="loginEmail">Email</label>
+              <input id="loginEmail" name="loginEmail" type="text" value="${escapeHtml(state.email)}" readonly aria-describedby="loginEmailHint" data-autofocus>
+              <div id="loginEmailHint" class="hint">We use the email you entered.</div>
+            </div>
+            <div class="field">
+              <label for="loginPass">Password</label>
+              <input id="loginPass" name="loginPass" type="password" autocomplete="current-password" aria-describedby="loginPassHint">
+              <div id="loginPassHint" class="hint">Enter the new password you just set.</div>
+            </div>
+            <div class="actions">
+              <button id="loginBtn" type="submit">Log in</button>
+            </div>
+            <div class="status" id="loginStatus"></div>
+          </form>
+          ${navButtonsHtml()}
+        </section>
+      `;
+    }
+
+    function wireLoginStep(){
+      const form = document.getElementById('loginForm');
+      const pass = document.getElementById('loginPass');
+      const status = document.getElementById('loginStatus');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (pass.value === state.newPassword){
+          console.log(`Login success for ${state.email}`); // Requirements mapping: log login
+          status.innerHTML = `<span class="ok">Logged in.</span>`;
+          announce('Logged in.');
+          state.step = 4;
+          render();
+        } else {
+          status.innerHTML = `<span class="error">Wrong password.</span>`;
+          announce('Wrong password.');
+          pass.focus();
+          pass.select();
+        }
+      });
+      attachNavHandlers();
+    }
+
+    // Requirements mapping: Course page with upload control; simulated upload success
+    function courseStep(){
+      return `
+        <section class="card" aria-labelledby="courseTitle">
+          <h2 id="courseTitle">Course page</h2>
+          <div class="card" role="region" aria-labelledby="courseCardTitle">
+            <h3 id="courseCardTitle" style="margin-top:0;">CS101: Intro to AI</h3>
+            <p>Upload your assignment here.</p>
+            <div class="field">
+              <label for="fileInput">Your file</label>
+              <input id="fileInput" type="file" aria-describedby="fileHint" data-autofocus>
+              <div id="fileHint" class="hint">Pick the correct file before upload.</div>
+            </div>
+            <div class="actions">
+              <button id="uploadBtn" type="button">Upload</button>
+            </div>
+            <div id="uploadResult" class="upload-result" style="display:none;"></div>
+          </div>
+          ${navButtonsHtml()}
+        </section>
+      `;
+    }
+
+    function wireCourseStep(){
+      const btn = document.getElementById('uploadBtn');
+      const input = document.getElementById('fileInput');
+      const result = document.getElementById('uploadResult');
+      btn.addEventListener('click', () => {
+        const file = input.files && input.files[0];
+        if (!file){
+          result.style.display = 'none';
+          announce('Choose a file first.');
+          return;
+        }
+        const when = new Date().toLocaleString();
+        const msg = `Uploaded ${file.name} at ${when}`;
+        console.log(`Upload success for ${state.email}: ${file.name} at ${when}`); // Requirements mapping: log upload
+        result.textContent = msg;
+        result.style.display = 'block';
+        announce('Upload complete.');
+      });
+      attachNavHandlers();
+    }
+
+    // Requirements mapping: keyboard + focus: after render, wire step-specific handlers
+    function afterRenderWire(step){
+      switch(step){
+        case 0: wireEmailStep(); break;
+        case 1: wireCodeStep(); break;
+        case 2: wireResetStep(); break;
+        case 3: wireLoginStep(); break;
+        case 4: wireCourseStep(); break;
+      }
+    }
+
+    // Utility to escape HTML in values
+    function escapeHtml(str){
+      return String(str || '').replace(/[&<>"']/g, s => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+      }[s]));
+    }
+
+    // Initial code send if step 1 is reached via state (not in this demo, but safe)
+    function ensureCodeReady(){
+      if (state.step >= 1 && !state.code && state.email){
+        sendCodeForCurrentEmail('sent');
+      }
+    }
+
+    // Initial render
+    render();
+    afterRenderWire(state.step);
+    // Observe mutations to re-wire after each render
+    const originalRender = render;
+    render = function(){
+      originalRender.apply(this, arguments);
+      afterRenderWire(state.step);
+      ensureCodeReady();
+    };
+  </script>
+</body>
+</html>
