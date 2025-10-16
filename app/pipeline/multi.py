@@ -337,6 +337,14 @@ def run_multi(args) -> None:
     g.set_entry_point("tasker")
     app = g.compile()
 
+    # Belt-and-suspenders PASS detection from evaluator_md
+    def _pass_from_md(md: str) -> bool:
+        for ln in (md or "").splitlines():
+            u = ln.strip().upper()
+            if u.startswith("DECISION") and "PASS" in u:
+                return True
+        return False
+
     # RUN LOOP
     logf = open(os.path.join(args.output, "log.jsonl"), "a", encoding="utf-8")
     statef = open(os.path.join(args.output, "state.jsonl"), "a", encoding="utf-8")
@@ -351,6 +359,19 @@ def run_multi(args) -> None:
         state["iter"] = i + 1
         state_local = cast(State, app.invoke(state))  # safe cast
         state.update(state_local)
+        # Belt-and-suspenders: if evaluator reports PASS, force done=True
+        try:
+            if _pass_from_md(state.get("evaluator_md", "")):
+                state["done"] = True
+                # Write a marker file once for auditability
+                marker = os.path.join(args.output, "PASS_MARKER")
+                if not os.path.exists(marker):
+                    pathlib.Path(marker).write_text(
+                        "evaluator decision PASS\n", encoding="utf-8"
+                    )
+        except Exception:
+            # Non-fatal; keep running with evaluator-set state
+            pass
         t1 = time.time()
         dur = round(t1 - t0, 2)
 

@@ -160,8 +160,8 @@ The run.py entrypoint loads .env, parses CLI, and dispatches to app/pipeline/mul
 
 1. Tasker
     - Reads Requirements and last Evaluator feedback.
-    - Produces strict JSON: { "task_list": [...], "done": boolean }.
-    - done=true only when all acceptance criteria are satisfied.
+    - Produces strict JSON: { "task_list": [...] }.
+    - Note: Evaluator is authoritative for termination; Tasker does not toggle done. If Tasker returns an empty task_list, previous tasks are retained.
 2. Coder
     - Receives the current tasks and the current index.html.
     - Returns the full, updated index.html wrapped between <FILE> ... </FILE>.
@@ -173,6 +173,16 @@ The run.py entrypoint loads .env, parses CLI, and dispatches to app/pipeline/mul
 
 This loop executes up to --max-iters iterations or until the Evaluator returns PASS. Each role is an LLM instance (potentially the same or different models). The graph and state machine are implemented with LangGraph.
 
+### Iteration semantics and termination behavior
+
+-   One outer iteration runs exactly one Tasker → Coder → Evaluator triplet. The graph ends after the Evaluator node; the outer loop advances the iteration counter.
+-   Evaluator is authoritative on completion:
+    -   DECISION=PASS → state.done=True and the loop terminates. Tasks are cleared.
+    -   DECISION=FAIL → state.done=False and NEW_TASKS are parsed and fed to the next iteration.
+-   Defensive PASS hard-stop: After each triplet, the outer loop also inspects the latest evaluator_report content; if it contains DECISION: PASS, it forces done=True and writes a PASS_MARKER file in the output directory. This belt-and-suspenders guard guarantees termination even if state becomes desynchronized.
+-   Tasker behavior: Tasker only updates task_list when it returns a non-empty list; if it returns an empty list, the previous tasks are retained. Tasker does not toggle done.
+-   Logging clarity: Each node invocation increments an inner step counter and prefixes logs with “[iter N | step K]”. Tasker report titles include the same prefix.
+
 Artifacts per iteration:
 
 -   workspace/<your_case>/index.html (latest)
@@ -180,10 +190,11 @@ Artifacts per iteration:
 -   workspace/<your_case>/evaluator_report.md (latest)
 -   workspace/<your_case>/evaluator_report_iterN.md (versioned)
 -   workspace/<your_case>/tasker_report.md (latest)
--   workspace/<your_case>/tasker_report_iterN.md (versioned)
+-   workspace/<your_case>/tasker_report_iterN.md (versioned, first-write-only per iteration)
 -   workspace/<your_case>/log.jsonl (timing + token deltas per iter)
 -   workspace/<your_case>/state.jsonl (serialized state snapshots)
 -   workspace/<your_case>/tokens_summary.json (final token usage and optional cost)
+-   workspace/<your_case>/PASS_MARKER (created when the evaluator returns PASS; aids auditability and confirms hard-stop)
 
 ## Repository layout (key files)
 

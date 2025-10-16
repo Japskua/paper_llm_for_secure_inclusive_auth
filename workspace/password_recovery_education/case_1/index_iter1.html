@@ -1,0 +1,1011 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Password Recovery (Mock, Client-Only)</title>
+  <!--
+    Password Recovery System — Requirements (Single-Page, Client-Only, Mocked)
+
+    Purpose
+    - Self-contained single HTML file
+    - All logic in-browser; “delivery” via console.log
+    - Deterministic mock values
+    - Not for production
+
+    Deliverables
+    - One file: index.html
+    - Semantic HTML, inline CSS & JS
+    - Commented sections mapping to this spec
+
+    Use-case description
+    - Alex (student with dyslexia) must quickly reset password and submit assignment.
+    - Design prioritizes clarity, error recovery, and guidance through steps.
+    - Simulates post-login task (finding course and uploading file).
+
+    Notes
+    - No external network requests or servers.
+    - Accessibility and good UX emphasized.
+  -->
+  <style>
+    /* =========================================================
+       [Purpose] Base styles for semantic layout and accessibility
+       ========================================================= */
+    :root{
+      --bg: #f7f9fc;
+      --panel: #ffffff;
+      --text: #1c1e21;
+      --muted: #5a6772;
+      --accent: #3b82f6;
+      --accent-2:#0ea5e9;
+      --danger:#dc2626;
+      --success:#16a34a;
+      --warning:#ca8a04;
+      --border:#d7dde5;
+      --focus:#ffbf47;
+      --radius: 12px;
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
+      --font: system-ui, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0f172a;
+        --panel:#0b1220;
+        --text:#e5eefc;
+        --muted:#a5b4cf;
+        --border:#1e293b;
+        --shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+    }
+    body{
+      margin:0;
+      font-family: var(--font);
+      background: radial-gradient(1000px 600px at 10% -10%, rgba(59,130,246,0.06), transparent 60%),
+                  radial-gradient(800px 500px at 90% 10%, rgba(14,165,233,0.07), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      line-height:1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    .container{
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    header{
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(8px);
+      background: color-mix(in srgb, var(--bg) 80%, transparent);
+      border-bottom: 1px solid var(--border);
+      z-index: 5;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:40px;height:40px;
+      border-radius:10px;
+      background: conic-gradient(from 200deg, var(--accent), var(--accent-2));
+      box-shadow: 0 6px 16px rgba(59,130,246,0.45);
+    }
+    h1{
+      font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+      margin:0;
+    }
+    nav.tools{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background: var(--panel);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      transition: transform .06s ease, box-shadow .15s ease, background .15s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0); }
+    .btn.primary{
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      color:#fff;
+      border-color: transparent;
+      box-shadow: 0 6px 16px rgba(59,130,246,0.45);
+    }
+    .btn.ghost{
+      background: transparent;
+    }
+    .btn[disabled]{ opacity:.6; cursor:not-allowed; }
+    .switch{
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .switch input{ accent-color: var(--accent); }
+    main{
+      padding-block: clamp(16px, 4vw, 36px);
+    }
+    .panel{
+      background: var(--panel);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(16px, 3vw, 28px);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:18px;
+    }
+    .progress{
+      height:10px;
+      background: linear-gradient(90deg, rgba(59,130,246,0.2), rgba(14,165,233,0.2));
+      border-radius: 999px;
+      overflow:hidden;
+      border:1px solid var(--border);
+    }
+    .progress > span{
+      display:block; height:100%; width:0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width .3s ease;
+    }
+    .steps{
+      display:flex; flex-wrap:wrap; gap:8px;
+      list-style:none; padding:0; margin:0;
+    }
+    .steps li{
+      padding:6px 10px; border:1px dashed var(--border); border-radius:999px;
+      font-size:.95rem; color:var(--muted); background: color-mix(in srgb, var(--panel) 80%, transparent);
+    }
+    .steps li[aria-current="step"]{
+      border-style:solid; color:var(--text); font-weight:600;
+    }
+
+    /* Forms */
+    form{ display:grid; gap:14px; }
+    label{ font-weight:600; }
+    input[type="text"], input[type="email"], input[type="password"], input[type="tel"], select{
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background: #fff0; /* transparent for light/dark */
+      color:var(--text);
+      outline:none;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    input:focus, select:focus{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+    .hint{ color:var(--muted); font-size:.95rem; }
+    .error{ color:var(--danger); }
+    .success{ color:var(--success); }
+    .warning{ color:var(--warning); }
+    .field-row{ display:flex; gap:8px; align-items:center; }
+    .inline-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .input-inline{
+      display:flex; align-items:center; gap:8px;
+      background: color-mix(in srgb, var(--panel) 85%, transparent);
+      border:1px solid var(--border);
+      border-radius:10px; padding: 6px 8px;
+    }
+    .input-inline input{ border:none; flex:1; padding:8px; }
+    .small{ font-size:.92rem; }
+    .sr-only{
+      position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    }
+    .kpi{
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      padding:8px; border-radius:10px; background: color-mix(in srgb, var(--panel) 85%, transparent);
+      border:1px solid var(--border);
+    }
+    .badge{
+      display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted);
+      background: color-mix(in srgb, var(--panel) 85%, transparent);
+      font-size:.85rem;
+    }
+    .req-list{ list-style: none; padding-left:0; margin:8px 0 0 0; display:grid; gap:6px; }
+    .req-list li{ display:flex; align-items:center; gap:8px; }
+    .req-list .ok{ color:var(--success); }
+    .req-list .no{ color:var(--muted); }
+
+    /* Password strength meter */
+    .meter{ height:10px; background:#e6eaf2; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+    .meter > i{ display:block; height:100%; width:0%; background: linear-gradient(90deg,#ef4444,#f59e0b,#22c55e); transition: width .25s ease; }
+
+    /* Portal mock */
+    .portal-grid{ display:grid; grid-template-columns: 1fr; gap:18px; }
+    .tile{
+      padding:14px; border:1px solid var(--border); border-radius:12px; background: color-mix(in srgb, var(--panel) 92%, transparent);
+    }
+    .upload{
+      border:2px dashed var(--border);
+      border-radius:12px; padding:20px; text-align:center;
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+    }
+
+    /* Easy Read (Use-case: dyslexia support) */
+    .easy-read{
+      font-size: 18.5px;
+      letter-spacing: .015em;
+      word-spacing: .05em;
+      line-height: 1.65;
+    }
+    .easy-read h1, .easy-read h2, .easy-read h3{ letter-spacing: .01em; }
+    .easy-read .btn{ padding:12px 16px; }
+    .easy-read input, .easy-read select{ padding:14px 16px; }
+    .easy-read :focus{ outline: 3px solid var(--focus); outline-offset: 2px; }
+
+    /* High contrast theme toggle */
+    .theme-high-contrast{
+      --bg:#000;
+      --panel:#000;
+      --text:#fff;
+      --muted:#cbd5e1;
+      --border:#334155;
+      --accent:#38bdf8;
+      --accent-2:#06b6d4;
+      --focus:#fde047;
+    }
+    .theme-high-contrast .panel{ box-shadow:none; }
+    .theme-high-contrast .logo{ box-shadow:none; }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      *{ transition:none !important; scroll-behavior: auto !important; }
+    }
+
+    /* Skip link */
+    .skip-link{
+      position:absolute; left:8px; top:-100px;
+      background: var(--accent); color:#fff; padding:8px 10px; border-radius:8px; z-index:999;
+    }
+    .skip-link:focus{ top:8px; }
+
+    /* Code inputs */
+    .code-inputs{
+      display:flex; gap:8px; justify-content:flex-start; align-items:center;
+    }
+    .code-inputs input{
+      width: 48px; text-align:center; font-size:1.1rem; letter-spacing:.08em; font-family: var(--mono);
+    }
+
+    /* Footer */
+    footer{
+      border-top:1px solid var(--border);
+      color:var(--muted);
+      padding:20px 0 60px;
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header>
+    <div class="container topbar" role="banner">
+      <div class="brand">
+        <div aria-hidden="true" class="logo"></div>
+        <div>
+          <h1>Password Recovery (Mock)</h1>
+          <p class="hint small" id="subtitle">Client-only demo. Codes are logged to your console. No data leaves this page.</p>
+        </div>
+      </div>
+      <nav class="tools" aria-label="Accessibility and help">
+        <!-- [Use-case] Dyslexia-friendly toggles -->
+        <button id="easyReadBtn" class="btn" aria-pressed="false" title="Increase readability (spacing, size)">Easy Read</button>
+        <button id="contrastBtn" class="btn" aria-pressed="false" title="High contrast theme">High Contrast</button>
+        <button id="speakBtn" class="btn" aria-pressed="false" title="Read instructions aloud">Read Aloud</button>
+        <button id="helpBtn" class="btn ghost" title="Open help tips">Help</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="container" tabindex="-1">
+    <!-- [Purpose] Progress overview -->
+    <section aria-labelledby="progressTitle" class="panel" style="margin-bottom:16px;">
+      <h2 id="progressTitle" class="sr-only">Progress</h2>
+      <div class="grid">
+        <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+        <ul class="steps" role="list" aria-label="Steps">
+          <li id="stepLabel1" aria-current="step">1. Identify</li>
+          <li id="stepLabel2">2. Verify</li>
+          <li id="stepLabel3">3. New password</li>
+          <li id="stepLabel4">4. Done</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- [Deliverables] All sections in a single page; we show/hide per step -->
+    <section id="step-1" class="panel" aria-labelledby="s1-title" data-step="1">
+      <h2 id="s1-title">Step 1 of 4 — Identify your account</h2>
+      <p class="hint">Enter your school email or username. We will generate a 6‑digit recovery code and “send” it via console for this demo.</p>
+      <form id="identifyForm" novalidate>
+        <div>
+          <label for="identifier">Email or username</label>
+          <div class="input-inline">
+            <input id="identifier" name="identifier" type="text" inputmode="email" autocomplete="username"
+                   placeholder="e.g., alex@example.edu or a.smith23" required aria-describedby="idHelp" />
+            <button id="clearId" class="btn" type="button" aria-label="Clear input">✕</button>
+          </div>
+          <p id="idHelp" class="hint small">Tip: Open the browser console to see the code (Ctrl/Cmd+Shift+J). The code is deterministic per identifier.</p>
+          <p id="idError" class="error small" role="alert" aria-live="polite"></p>
+        </div>
+        <div class="inline-actions">
+          <button id="sendCode" class="btn primary" type="submit" disabled>Send code</button>
+          <span class="badge" aria-live="polite" id="deliveryNote">Waiting for input…</span>
+        </div>
+      </form>
+    </section>
+
+    <section id="step-2" class="panel" aria-labelledby="s2-title" hidden data-step="2">
+      <h2 id="s2-title">Step 2 of 4 — Enter the 6‑digit code</h2>
+      <div class="kpi" role="status" aria-live="polite">
+        <div>We “sent” a code to your account (simulated). Check the console for the code.</div>
+        <code class="badge small" aria-label="Identifier" id="idEcho"></code>
+      </div>
+      <form id="codeForm" novalidate>
+        <fieldset>
+          <legend class="sr-only">Verification code</legend>
+          <div class="hint" id="codeTip">Enter the 6 digits. We ignore spaces and dashes.</div>
+          <div class="code-inputs" aria-describedby="codeTip">
+            <input maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 1" />
+            <input maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 2" />
+            <input maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 3" />
+            <input maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 4" />
+            <input maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 5" />
+            <input maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Digit 6" />
+          </div>
+          <p id="codeError" class="error small" role="alert" aria-live="assertive"></p>
+        </fieldset>
+        <div class="inline-actions">
+          <button id="verifyBtn" class="btn primary" type="submit" disabled>Verify</button>
+          <button id="pasteBtn" class="btn" type="button">Paste code</button>
+          <button id="resendBtn" class="btn" type="button">Resend</button>
+          <span class="badge small" id="resendNote" aria-live="polite"></span>
+        </div>
+      </form>
+    </section>
+
+    <section id="step-3" class="panel" aria-labelledby="s3-title" hidden data-step="3">
+      <h2 id="s3-title">Step 3 of 4 — Create a new password</h2>
+      <p class="hint">Use a strong, easy-to-remember passphrase. You can show the password or generate a suggestion.</p>
+      <form id="passwordForm" novalidate>
+        <div>
+          <label for="newPassword">New password</label>
+          <div class="input-inline">
+            <input id="newPassword" name="newPassword" type="password" autocomplete="new-password"
+                   aria-describedby="pwHelp pwReq" required />
+            <button class="btn" type="button" id="togglePw" aria-pressed="false" aria-controls="newPassword">Show</button>
+          </div>
+          <p id="pwHelp" class="hint small">Avoid using your name or email. Consider a 3–5 word passphrase with separators.</p>
+          <div class="meter" aria-hidden="true"><i id="pwMeter"></i></div>
+          <ul id="pwReq" class="req-list small">
+            <li id="reqLen" class="no">• At least 12 characters</li>
+            <li id="reqVar" class="no">• Use at least 3 of: lowercase, UPPERCASE, numbers, symbols</li>
+            <li id="reqCommon" class="no">• Not a common/breached password</li>
+          </ul>
+          <p id="capsLockMsg" class="warning small" role="alert" aria-live="polite" hidden>Caps Lock is on.</p>
+        </div>
+
+        <div>
+          <label for="confirmPassword">Type it again</label>
+          <div class="input-inline">
+            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password"
+                   aria-describedby="matchHint" required />
+            <button class="btn" type="button" id="toggleConfirm" aria-pressed="false" aria-controls="confirmPassword">Show</button>
+          </div>
+          <p id="matchHint" class="hint small">We’ll tell you where it differs if it doesn’t match.</p>
+          <p id="mismatch" class="error small" role="alert" aria-live="assertive"></p>
+        </div>
+
+        <div class="inline-actions">
+          <button id="genPass" class="btn" type="button">Suggest passphrase</button>
+          <button id="copyPass" class="btn" type="button">Copy</button>
+          <button id="updateBtn" class="btn primary" type="submit" disabled>Update password</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="step-4" class="panel" aria-labelledby="s4-title" hidden data-step="4">
+      <h2 id="s4-title">Step 4 of 4 — Password updated</h2>
+      <div class="kpi">
+        <span class="success">Success! Your password has been reset.</span>
+        <span class="badge">For demo only — no server involved.</span>
+      </div>
+      <div class="inline-actions" style="margin-top:8px">
+        <button id="loginBtn" class="btn primary" type="button">Log in now</button>
+        <button id="restartBtn" class="btn" type="button">Start over</button>
+      </div>
+    </section>
+
+    <!-- [Use-case] After logging in, help Alex find course and upload -->
+    <section id="portal" class="panel" aria-labelledby="portal-title" hidden>
+      <h2 id="portal-title">Mock Portal — Quick Navigation to Submit Assignment</h2>
+      <div class="portal-grid">
+        <div class="tile">
+          <h3>Find your course</h3>
+          <div class="field-row">
+            <label for="courseSelect" class="sr-only">Course</label>
+            <select id="courseSelect">
+              <option>AI 101 — Intro to Artificial Intelligence</option>
+              <option>CS 241 — Data Structures</option>
+              <option>ENG 140 — Academic Writing</option>
+              <option>MATH 210 — Linear Algebra</option>
+            </select>
+            <button class="btn" id="goAssignments" type="button">Go to Assignments</button>
+          </div>
+          <p class="hint small">We’ll jump straight to the “Assignment Upload” section.</p>
+        </div>
+
+        <div class="tile">
+          <h3>Assignment Upload</h3>
+          <div class="upload" id="dropZone" tabindex="0" aria-label="File upload drop zone">
+            <p>Drop your file here, or choose a file.</p>
+            <input id="fileInput" type="file" accept=".pdf,.doc,.docx,.zip" />
+            <p class="hint small">Accepted: PDF, DOC, DOCX, ZIP. Max 50 MB (not enforced in mock).</p>
+            <div class="meter" aria-hidden="true" style="margin-top:10px"><i id="uploadMeter"></i></div>
+            <p id="uploadMsg" class="hint small" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="tile">
+          <h3>Deadline helper</h3>
+          <p class="hint">Time until midnight: <strong id="countdown" aria-live="polite">--:--:--</strong></p>
+          <p class="hint small">Tip: You can still replace your upload until the deadline.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live region for polite updates -->
+    <div id="live" class="sr-only" role="status" aria-live="polite"></div>
+
+    <!-- [Purpose] Help / guidance -->
+    <dialog id="helpDialog" aria-labelledby="helpTitle">
+      <form method="dialog" style="max-width: 640px;">
+        <h2 id="helpTitle">Help and tips</h2>
+        <ul>
+          <li>Easy Read increases spacing and font size for better readability.</li>
+          <li>Open the browser console to see your mock recovery code.</li>
+          <li>You can paste the 6‑digit code with spaces or dashes — we clean it.</li>
+          <li>Use a passphrase like three simple words with symbols, e.g., "green-apple-clouds!".</li>
+          <li>If passwords don’t match, we show where they differ.</li>
+          <li>No information leaves this page; this is a simulation for evaluation.</li>
+        </ul>
+        <div class="inline-actions" style="margin-top:10px">
+          <button class="btn primary">Close</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <footer class="container">
+    <p>Academic evaluation demo. Codes are deterministic and printed to the console. No servers or external calls.</p>
+  </footer>
+
+  <script>
+    /* =========================================================
+       [Purpose] Deterministic mock “delivery” and utilities
+       ========================================================= */
+    const $ = (sel, ctx=document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+    const state = {
+      step: 1,
+      identifier: '',
+      expectedCode: '',
+      speechOn: false
+    };
+
+    function announce(msg){
+      const live = $('#live');
+      live.textContent = '';
+      // force DOM update for assistive tech
+      setTimeout(()=> live.textContent = msg, 10);
+    }
+
+    // Deterministic 6-digit code based on identifier (stable hash % 1e6)
+    function codeForIdentifier(id){
+      let h = 0 >>> 0;
+      const s = (id || '').trim().toLowerCase();
+      for (let i=0;i<s.length;i++){
+        h = (((h << 5) - h) + s.charCodeAt(i)) >>> 0; // h = h*31 + char
+      }
+      const mod = h % 1000000;
+      return String(mod).padStart(6,'0');
+    }
+
+    function mockSendCode(id){
+      const code = codeForIdentifier(id);
+      // Simulate delivery via console.log as required
+      console.log('[mock] Recovery code for', `"${id}"`, 'is:', code, '(deterministic)');
+      announce('A 6 digit code was sent. Check console.');
+      return code;
+    }
+
+    function setStep(n, {focus=true}={}){
+      state.step = n;
+      // Panels
+      $$('[data-step]').forEach(sec => sec.hidden = Number(sec.dataset.step) !== n);
+      if (n === 4){
+        $('#portal').hidden = true;
+      }
+      // Progress bar and labels
+      const pct = ((n-1) / 3) * 100;
+      $('#progressBar').style.width = pct + '%';
+      for (let i=1;i<=4;i++){
+        const li = $('#stepLabel'+i);
+        if (li) li.setAttribute('aria-current', i===n ? 'step' : 'false');
+      }
+      // hash for navigation
+      location.hash = '#step-' + n;
+      // Focus the first field of the step
+      if (focus){
+        const current = document.querySelector(`[data-step="${n}"]`);
+        const focusable = current ? current.querySelector('input, button, select, [tabindex]') : null;
+        focusable && focusable.focus();
+      }
+      // Read aloud summary if enabled
+      speakVisibleInstructions();
+    }
+
+    /* =========================================================
+       [Use-case] Accessibility toggles (Easy Read, High Contrast, Read Aloud)
+       ========================================================= */
+    const easyBtn = $('#easyReadBtn');
+    const contrastBtn = $('#contrastBtn');
+    const speakBtn = $('#speakBtn');
+    easyBtn.addEventListener('click', () => {
+      const on = !document.body.classList.contains('easy-read');
+      document.body.classList.toggle('easy-read', on);
+      easyBtn.setAttribute('aria-pressed', String(on));
+      announce(on ? 'Easy Read turned on' : 'Easy Read turned off');
+    });
+    contrastBtn.addEventListener('click', () => {
+      const on = !document.body.classList.contains('theme-high-contrast');
+      document.body.classList.toggle('theme-high-contrast', on);
+      contrastBtn.setAttribute('aria-pressed', String(on));
+      announce(on ? 'High contrast on' : 'High contrast off');
+    });
+    speakBtn.addEventListener('click', () => {
+      state.speechOn = !state.speechOn;
+      speakBtn.setAttribute('aria-pressed', String(state.speechOn));
+      if (state.speechOn) speakVisibleInstructions();
+      else window.speechSynthesis && window.speechSynthesis.cancel();
+    });
+
+    function visibleTextForSpeech(){
+      const sec = document.querySelector(`[data-step="${state.step}"]`);
+      if (!sec) return '';
+      const title = sec.querySelector('h2')?.textContent || '';
+      const hints = Array.from(sec.querySelectorAll('.hint'))
+        .map(n => n.textContent.trim())
+        .slice(0, 2) // keep it brief
+        .join('. ');
+      return `${title}. ${hints}`;
+    }
+    function speakVisibleInstructions(){
+      if (!state.speechOn) return;
+      const text = visibleTextForSpeech();
+      if (!('speechSynthesis' in window) || !text) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 1.03;
+      u.pitch = 1;
+      try { u.lang = navigator.language || 'en-US'; } catch {}
+      window.speechSynthesis.speak(u);
+    }
+
+    /* =========================================================
+       [Deliverables] Step 1 — Identify account
+       ========================================================= */
+    const idInput = $('#identifier');
+    const idError = $('#idError');
+    const idEcho = $('#idEcho');
+    const sendBtn = $('#sendCode');
+    const deliveryNote = $('#deliveryNote');
+    $('#clearId').addEventListener('click', () => {
+      idInput.value = '';
+      idInput.focus();
+      sendBtn.disabled = true;
+      idError.textContent = '';
+      deliveryNote.textContent = 'Waiting for input…';
+    });
+
+    function idLooksOkay(v){
+      // Accept simple usernames or emails
+      if (!v) return false;
+      const s = v.trim();
+      if (s.includes('@')){
+        // loose email check
+        return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
+      }
+      // username >= 3 chars with letters/digits/._-
+      return /^[a-zA-Z0-9._-]{3,}$/.test(s);
+    }
+
+    idInput.addEventListener('input', () => {
+      const val = idInput.value.trim();
+      const ok = idLooksOkay(val);
+      sendBtn.disabled = !ok;
+      idError.textContent = ok ? '' : 'Enter a valid email or username.';
+      deliveryNote.textContent = ok ? 'Ready to send.' : 'Waiting for input…';
+    });
+
+    $('#identifyForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = idInput.value.trim();
+      if (!idLooksOkay(id)){ idError.textContent = 'Please provide a valid identifier.'; return; }
+      state.identifier = id;
+      state.expectedCode = mockSendCode(id);
+      idEcho.textContent = id;
+      deliveryNote.textContent = 'Code sent (see console).';
+      setStep(2);
+    });
+
+    /* =========================================================
+       [Deliverables] Step 2 — Code verification
+       ========================================================= */
+    const codeInputs = $$('#step-2 .code-inputs input');
+    const pasteBtn = $('#pasteBtn');
+    const resendBtn = $('#resendBtn');
+    const verifyBtn = $('#verifyBtn');
+    const codeError = $('#codeError');
+    const resendNote = $('#resendNote');
+
+    function combinedCode(){
+      return codeInputs.map(i => i.value).join('');
+    }
+    function setCodeFromString(s){
+      const clean = (s || '').replace(/\D/g,'').slice(0,6);
+      codeInputs.forEach((inp, idx) => {
+        inp.value = clean[idx] || '';
+      });
+      verifyBtn.disabled = clean.length !== 6;
+    }
+
+    codeInputs.forEach((inp, idx) => {
+      inp.addEventListener('input', (e) => {
+        inp.value = inp.value.replace(/\D/g,''); // digits only
+        if (inp.value && idx < codeInputs.length - 1){
+          codeInputs[idx+1].focus();
+        }
+        verifyBtn.disabled = combinedCode().length !== 6;
+        codeError.textContent = '';
+      });
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !inp.value && idx > 0){
+          codeInputs[idx-1].focus();
+        }
+        if (e.key === 'ArrowLeft' && idx > 0) codeInputs[idx-1].focus();
+        if (e.key === 'ArrowRight' && idx < codeInputs.length-1) codeInputs[idx+1].focus();
+        if (e.key === 'Enter' && !verifyBtn.disabled){
+          e.preventDefault();
+          $('#codeForm').requestSubmit();
+        }
+      });
+    });
+
+    pasteBtn.addEventListener('click', async () => {
+      try{
+        const text = await navigator.clipboard.readText();
+        setCodeFromString(text);
+        announce('Code pasted.');
+      }catch{
+        codeError.textContent = 'Clipboard access unavailable. Paste with Ctrl/Cmd+V into the first box.';
+        codeInputs[0].focus();
+      }
+    });
+
+    resendBtn.addEventListener('click', () => {
+      if (!state.identifier) return;
+      const code = mockSendCode(state.identifier);
+      state.expectedCode = code;
+      resendNote.textContent = 'Code re-sent (console).';
+      setTimeout(()=> resendNote.textContent = '', 3000);
+    });
+
+    $('#codeForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const entered = combinedCode();
+      if (entered.length !== 6){
+        codeError.textContent = 'Please enter all 6 digits.';
+        return;
+      }
+      if (entered !== state.expectedCode){
+        codeError.textContent = 'That code did not match. Check the console and try again.';
+        codeInputs.forEach(i => i.classList.add('shake'));
+        announce('Code incorrect.');
+        return;
+      }
+      announce('Code verified.');
+      setStep(3);
+    });
+
+    /* =========================================================
+       [Deliverables] Step 3 — New password, live validation
+       ========================================================= */
+    const newPw = $('#newPassword');
+    const confPw = $('#confirmPassword');
+    const togglePw = $('#togglePw');
+    const toggleConfirm = $('#toggleConfirm');
+    const meter = $('#pwMeter');
+    const reqLen = $('#reqLen');
+    const reqVar = $('#reqVar');
+    const reqCommon = $('#reqCommon');
+    const capsMsg = $('#capsLockMsg');
+    const mismatch = $('#mismatch');
+    const updateBtn = $('#updateBtn');
+    const genBtn = $('#genPass');
+    const copyBtn = $('#copyPass');
+
+    const commonList = new Set([
+      'password','123456','qwerty','letmein','welcome','abc123','passw0rd','iloveyou','admin','monkey',
+      'dragon','baseball','football','princess','sunshine','login','starwars','hello','freedom','whatever'
+    ]);
+
+    function strengthScore(pw){
+      let score = 0;
+      if (pw.length >= 8) score += 1;
+      if (pw.length >= 12) score += 1;
+      if (pw.length >= 16) score += 1;
+      const sets = [
+        /[a-z]/.test(pw),
+        /[A-Z]/.test(pw),
+        /[0-9]/.test(pw),
+        /[^A-Za-z0-9]/.test(pw)
+      ].filter(Boolean).length;
+      score += Math.max(0, sets - 1); // 0..3
+      if (commonList.has(pw.toLowerCase())) score = Math.max(0, score - 2);
+      return Math.min(6, score); // 0..6
+    }
+    function updateMeter(pw){
+      const s = strengthScore(pw);
+      const pct = (s / 6) * 100;
+      meter.style.width = pct + '%';
+    }
+    function validatePassword(){
+      const pw = newPw.value;
+      const variety = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/].reduce((a,rx)=> a + (rx.test(pw)?1:0),0);
+      const lenOK = pw.length >= 12;
+      const varOK = variety >= 3;
+      const notCommon = !commonList.has(pw.toLowerCase());
+      setReq(reqLen, lenOK);
+      setReq(reqVar, varOK);
+      setReq(reqCommon, notCommon);
+      updateMeter(pw);
+      // match check
+      checkMatch();
+      // enable submit if all satisfied and match
+      updateBtn.disabled = !(lenOK && varOK && notCommon && newPw.value && confPw.value && newPw.value === confPw.value);
+    }
+    function setReq(node, ok){
+      node.classList.toggle('ok', ok);
+      node.classList.toggle('no', !ok);
+    }
+    function checkMatch(){
+      mismatch.textContent = '';
+      if (!newPw.value || !confPw.value) return;
+      if (newPw.value !== confPw.value){
+        const diff = firstDiffIndex(newPw.value, confPw.value);
+        mismatch.textContent = diff >= 0
+          ? `They differ at position ${diff+1}.`
+          : 'Passwords do not match.';
+        return false;
+      }
+      return true;
+    }
+    function firstDiffIndex(a,b){
+      const min = Math.min(a.length, b.length);
+      for (let i=0;i<min;i++) if (a[i]!==b[i]) return i;
+      if (a.length !== b.length) return min;
+      return -1;
+    }
+
+    newPw.addEventListener('input', validatePassword);
+    confPw.addEventListener('input', validatePassword);
+
+    newPw.addEventListener('keydown', (e)=>{
+      if (e.getModifierState && e.getModifierState('CapsLock')) {
+        capsMsg.hidden = false;
+      } else {
+        capsMsg.hidden = true;
+      }
+    });
+    confPw.addEventListener('keydown', (e)=>{
+      if (e.getModifierState && e.getModifierState('CapsLock')) {
+        capsMsg.hidden = false;
+      } else {
+        capsMsg.hidden = true;
+      }
+    });
+
+    togglePw.addEventListener('click', ()=>{
+      const showing = newPw.type === 'text';
+      newPw.type = showing ? 'password' : 'text';
+      togglePw.textContent = showing ? 'Show' : 'Hide';
+      togglePw.setAttribute('aria-pressed', String(!showing));
+      newPw.focus();
+    });
+    toggleConfirm.addEventListener('click', ()=>{
+      const showing = confPw.type === 'text';
+      confPw.type = showing ? 'password' : 'text';
+      toggleConfirm.textContent = showing ? 'Show' : 'Hide';
+      toggleConfirm.setAttribute('aria-pressed', String(!showing));
+      confPw.focus();
+    });
+
+    const easyWords = [
+      'green','apple','cloud','river','stone','paper','gold','silver','lucky','panda','sunny','ocean',
+      'forest','coffee','music','rocket','cookie','tiger','eagle','pearl','maple','winter','summer','autumn',
+      'spring','honey','candle','storm','breeze','melon','berry','orange','violet','sky','mountain','garden',
+      'sunrise','sunset','planet','comet','orbit','spark','stripe','smile','dream','story','puzzle','quiet',
+      'bright','swift','brave','calm','noble','chess','jazz','violin','camera','cosmic','ember','pixel'
+    ];
+    function suggestPass(){
+      function pick(){ return easyWords[Math.floor(Math.random()*easyWords.length)]; }
+      const suggestion = `${pick()}-${pick()}-${pick()}!${Math.floor(Math.random()*90+10)}`;
+      newPw.value = suggestion;
+      confPw.value = '';
+      validatePassword();
+      newPw.focus();
+      announce('Passphrase suggested.');
+    }
+    genBtn.addEventListener('click', suggestPass);
+    copyBtn.addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(newPw.value);
+        announce('Password copied to clipboard.');
+      }catch{
+        announce('Unable to copy. Select and press Ctrl or Cmd C.');
+      }
+    });
+
+    $('#passwordForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (updateBtn.disabled) return;
+      // Mock "update" (no server). In a real app we’d submit a request.
+      console.log('[mock] Password for', `"${state.identifier}"`, 'updated.');
+      announce('Password updated.');
+      setStep(4);
+    });
+
+    /* =========================================================
+       [Deliverables] Step 4 — Success & mock login
+       ========================================================= */
+    $('#loginBtn').addEventListener('click', () => {
+      // Simulate login and jump to portal helper
+      $('#portal').hidden = false;
+      // Hide the reset steps visually
+      $$('[data-step]').forEach(sec => sec.hidden = true);
+      for (let i=1;i<=4;i++){
+        const li = $('#stepLabel'+i);
+        if (li) li.setAttribute('aria-current','false');
+      }
+      $('#progressBar').style.width = '100%';
+      announce('Logged in. Showing quick navigation to assignments.');
+      $('#portal-title').scrollIntoView({behavior:'smooth', block:'start'});
+      speakVisibleInstructions();
+    });
+
+    $('#restartBtn').addEventListener('click', () => {
+      // Reset everything to initial
+      state.step = 1;
+      state.identifier = '';
+      state.expectedCode = '';
+      idInput.value = '';
+      deliveryNote.textContent = 'Waiting for input…';
+      idError.textContent = '';
+      setStep(1);
+    });
+
+    /* =========================================================
+       [Use-case] Portal: quick navigation and upload
+       ========================================================= */
+    $('#goAssignments').addEventListener('click', ()=>{
+      announce('Jumped to assignments section.');
+      $('#dropZone').focus();
+    });
+
+    const dz = $('#dropZone');
+    const fileInput = $('#fileInput');
+    const upMeter = $('#uploadMeter');
+    const upMsg = $('#uploadMsg');
+
+    function startUpload(file){
+      if (!file){ upMsg.textContent = 'No file selected.'; return; }
+      upMsg.textContent = `Uploading “${file.name}”…`;
+      upMeter.style.width = '0%';
+      const start = performance.now();
+      let pct = 0;
+      const tick = () => {
+        // Simulate faster progress for small files
+        pct += Math.random()*18 + 8;
+        if (pct >= 100) pct = 100;
+        upMeter.style.width = pct + '%';
+        if (pct < 100){
+          setTimeout(tick, 200);
+        } else {
+          const secs = ((performance.now()-start)/1000).toFixed(1);
+          upMsg.textContent = `Uploaded “${file.name}” in ${secs}s. You can upload again to replace the file before the deadline.`;
+          announce('Upload complete.');
+        }
+      };
+      setTimeout(tick, 200);
+    }
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      startUpload(file);
+    });
+
+    ;['dragenter','dragover'].forEach(evt=>{
+      dz.addEventListener(evt, e => {
+        e.preventDefault(); e.stopPropagation();
+        dz.style.borderColor = 'var(--accent)';
+      });
+    });
+    ;['dragleave','drop'].forEach(evt=>{
+      dz.addEventListener(evt, e => {
+        e.preventDefault(); e.stopPropagation();
+        dz.style.borderColor = 'var(--border)';
+      });
+    });
+    dz.addEventListener('drop', (e)=>{
+      const file = e.dataTransfer?.files?.[0];
+      startUpload(file);
+    });
+
+    // Midnight countdown
+    function updateCountdown(){
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24,0,0,0);
+      const ms = midnight - now;
+      const hrs = Math.floor(ms/3600000);
+      const mins = Math.floor((ms%3600000)/60000);
+      const secs = Math.floor((ms%60000)/1000);
+      $('#countdown').textContent = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    }
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    /* =========================================================
+       [Deliverables] Help dialog and misc
+       ========================================================= */
+    const helpDialog = $('#helpDialog');
+    $('#helpBtn').addEventListener('click', () => {
+      if (typeof helpDialog.showModal === 'function'){
+        helpDialog.showModal();
+      } else {
+        alert('Help:\n\n- Turn on Easy Read for better readability.\n- Codes are shown in the console.\n- You can paste the 6-digit code.\n- Use a 12+ character passphrase.\n- This is a client-only simulation.');
+      }
+    });
+
+    // Initialize
+    setStep(1, {focus:false});
+    idInput.focus();
+
+    // Keyboard shortcut hints:
+    // Alt+E toggle Easy Read, Alt+C contrast, Alt+R read aloud
+    document.addEventListener('keydown', (e)=>{
+      if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey){
+        if (e.key.toLowerCase() === 'e'){ e.preventDefault(); easyBtn.click(); }
+        if (e.key.toLowerCase() === 'c'){ e.preventDefault(); contrastBtn.click(); }
+        if (e.key.toLowerCase() === 'r'){ e.preventDefault(); speakBtn.click(); }
+      }
+    });
+  </script>
+</body>
+</html>

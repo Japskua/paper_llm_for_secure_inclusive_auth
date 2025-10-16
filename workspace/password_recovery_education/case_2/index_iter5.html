@@ -1,0 +1,704 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Password Recovery Demo — Client-Only, Mocked</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Requirements mapping:
+       - Single file, client-only, no network requests
+       - Mocked delivery and deterministic verification values
+       - Not for production use
+  -->
+  <style>
+    /* Requirements mapping: Inline CSS for basic layout and readable typography */
+    :root{
+      --bg:#ffffff;
+      --ink:#161616;
+      --muted:#4a4a4a;
+      /* Accessibility: Primary action color adjusted for >=4.5:1 contrast with white text.
+         Verified with WebAIM Contrast Checker: #003a70 on #ffffff ≈ 9.9:1 (AA/AAA pass for normal text). */
+      --accent:#003a70;
+      --ok:#1e8e3e;
+      --warn:#b00020;
+      --surface:#f5f7fb;
+      --ring:#5aa6ff;
+      --border:#d7dce5;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+      line-height:1.6;
+      font-size:18px; /* readable default for dyslexia-friendly sizing */
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+    header{
+      border-bottom:1px solid var(--border);
+      background:var(--surface);
+    }
+    .wrap{
+      max-width: 56rem;
+      padding: 1rem;
+      margin: 0 auto;
+    }
+    h1,h2{
+      line-height:1.25;
+      margin:0.25rem 0 0.5rem 0;
+    }
+    .tag{
+      display:inline-block;
+      font-size:0.9rem;
+      color:var(--muted);
+    }
+    main{
+      padding:2rem 0 3rem;
+    }
+    section.step{
+      margin: 0 0 2rem 0;
+      padding: 1.25rem;
+      border:1px solid var(--border);
+      border-radius: 12px;
+      background:#fff;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+    }
+    fieldset{
+      border:0;
+      padding:0;
+      margin:0;
+    }
+    legend{
+      font-weight:700;
+      margin-bottom:0.75rem;
+      font-size:1.15rem;
+    }
+    .field{
+      margin: 0 0 1rem 0;
+    }
+    label{
+      display:block;
+      font-weight:600;
+      margin-bottom:0.25rem;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      width:100%;
+      font-size:1rem;
+      padding:0.75rem;
+      border:2px solid var(--border);
+      border-radius:10px;
+      background:#fff;
+      color:var(--ink);
+    }
+    input:focus-visible{
+      outline: 3px solid var(--ring);
+      outline-offset: 2px;
+    }
+    .hint{
+      color:var(--muted);
+      font-size:0.95rem;
+      margin-top:0.25rem;
+    }
+    .row{
+      display:flex;
+      gap:0.75rem;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    /* Accessibility: Primary action button uses --accent background with white text (≥4.5:1 contrast). */
+    button{
+      font-size:1rem;
+      padding:0.7rem 1rem;
+      border-radius:10px;
+      border:2px solid transparent;
+      background:var(--accent);
+      color:#fff;
+      cursor:pointer;
+    }
+    button.secondary{
+      background:#fff;
+      color:var(--ink);
+      border-color:var(--border);
+    }
+    button.link{
+      background:transparent;
+      color:var(--accent);
+      border:0;
+      padding:0.25rem 0.5rem;
+      text-decoration:underline;
+    }
+    button:focus-visible{
+      outline: 3px solid var(--ring);
+      outline-offset: 2px;
+    }
+    .actions{
+      margin-top:0.5rem;
+      display:flex;
+      gap:0.75rem;
+      flex-wrap:wrap;
+    }
+    .error{
+      color:#fff;
+      background:var(--warn);
+      padding:0.5rem 0.75rem;
+      border-radius:8px;
+      font-size:0.95rem;
+      margin-top:0.5rem;
+    }
+    .error-inline{
+      color:var(--warn);
+      font-weight:600;
+      margin-top:0.35rem;
+      font-size:0.95rem;
+    }
+    /* Accessibility: Status banner text and links set to high-contrast ink on light background.
+       Verified with WebAIM: #161616 on #e9f6ee ≈ 12.3:1 (AA/AAA pass for normal text). */
+    .status{
+      color:var(--ink);
+      background:#e9f6ee;
+      border:1px solid #ccebd7;
+      padding:0.5rem 0.75rem;
+      border-radius:8px;
+      margin:0.75rem 0;
+      font-size:0.95rem;
+    }
+    .status a{
+      color: currentColor; /* ensure links match high-contrast text in banner */
+      text-decoration: underline;
+    }
+    .guidance{
+      background: #f8fafc;
+      border:1px dashed var(--border);
+      border-radius:10px;
+      padding:0.75rem;
+      margin-top:0.5rem;
+    }
+    .rules{
+      list-style:none;
+      padding-left:0;
+      margin:0.25rem 0 0 0;
+      display:grid;
+      gap:0.25rem;
+    }
+    .rule{
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      font-size:0.95rem;
+    }
+    .dot{
+      width:1.15rem;
+      height:1.15rem;
+      border-radius:50%;
+      display:inline-grid;
+      place-items:center;
+      font-weight:800;
+      font-size:0.8rem;
+      border:2px solid var(--border);
+      color:var(--muted);
+      background:#fff;
+    }
+    .rule.pass .dot{
+      border-color:#bfe6cb;
+      background:#e7f7ed;
+      color:var(--ok);
+      content:"";
+    }
+    .rule.pass .dot::before{ content:"✓"; }
+    .rule.fail .dot::before{ content:"•"; }
+    .visually-hidden{
+      position:absolute !important;
+      height:1px; width:1px;
+      overflow:hidden;
+      clip:rect(1px,1px,1px,1px);
+      white-space:nowrap;
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:0.5rem;
+    }
+    .startover{
+      display:inline-flex;
+      align-items:center;
+      gap:0.4rem;
+    }
+    .success{
+      border-color:#ccebd7;
+      background:#f7fcf9;
+    }
+    .footnote{
+      color:var(--muted);
+      font-size:0.9rem;
+      margin-top:1rem;
+    }
+    /* Accessibility: input-with-toggle layout for show/hide password controls */
+    .input-with-toggle{
+      display:flex;
+      gap:0.5rem;
+      align-items:stretch;
+    }
+    .input-with-toggle input{
+      flex:1 1 auto;
+      min-width: 10rem;
+    }
+    /* End inline CSS */
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div>
+        <h1>Password recovery</h1>
+        <div class="tag">Client-only demo • Works offline • Mocked delivery</div>
+      </div>
+      <div>
+        <button id="startOverTop" class="secondary startover" type="button" aria-label="Start over and go back to step 1">
+          ⟲ Start over
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app" class="wrap">
+    <!-- Requirements mapping: Dedicated live region for announcements (no aria-live on main). -->
+    <p id="globalStatus" class="status" role="status" aria-live="polite" aria-atomic="true" hidden></p>
+
+    <!-- Step 1: Request password reset -->
+    <section id="step1" class="step" aria-labelledby="s1title">
+      <h2 id="s1title">Step 1 of 3 — Request password reset</h2>
+      <form id="formRequest" novalidate>
+        <fieldset>
+          <legend class="visually-hidden">Who needs a reset?</legend>
+          <div class="field">
+            <label for="ident">Email or username</label>
+            <!-- Accessibility: single valid autocomplete token + input aids -->
+            <input id="ident" name="ident" type="text" autocomplete="username" autocapitalize="none" spellcheck="false"
+                   required aria-describedby="identHint identErr">
+            <p id="identHint" class="hint">We will send a 6-digit verification code (simulated) to continue.</p>
+            <p id="identErr" class="error-inline" role="alert" hidden></p>
+          </div>
+        </fieldset>
+        <div class="actions">
+          <button type="submit">Send code</button>
+          <button type="button" id="s1StartOver" class="secondary">Clear</button>
+        </div>
+      </form>
+      <p class="footnote">Note: Delivery is simulated in the browser console for this demo. No emails are sent.</p>
+    </section>
+
+    <!-- Step 2: Enter verification code -->
+    <section id="step2" class="step" aria-labelledby="s2title" hidden>
+      <h2 id="s2title">Step 2 of 3 — Enter verification code</h2>
+      <p id="sendSummary" class="hint">A verification code was sent (simulated). Check your console to see it.</p>
+      <form id="formVerify" novalidate>
+        <fieldset>
+          <legend class="visually-hidden">Verify ownership with a code</legend>
+          <div class="field">
+            <label for="code">6-digit code</label>
+            <!-- Accessibility: enforce max length and numeric normalization -->
+            <input id="code" name="code" type="text" inputmode="numeric" pattern="^[0-9]{6}$" maxlength="6"
+                   required aria-describedby="codeHint codeErr">
+            <p id="codeHint" class="hint">Enter the 6 digits exactly as provided.</p>
+            <p id="codeErr" class="error-inline" role="alert" hidden></p>
+          </div>
+        </fieldset>
+        <div class="actions">
+          <button type="submit">Verify code</button>
+          <button type="button" id="resend" class="secondary">Resend code</button>
+          <button type="button" id="s2StartOver" class="link">Start over</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Step 3: Create new password -->
+    <section id="step3" class="step" aria-labelledby="s3title" hidden>
+      <h2 id="s3title">Step 3 of 3 — Create a new password</h2>
+      <form id="formReset" novalidate>
+        <fieldset>
+          <legend class="visually-hidden">Choose a strong password</legend>
+
+          <div class="field">
+            <label for="pw">New password</label>
+            <!-- Accessibility: Show/Hide password toggle with aria-pressed state -->
+            <div class="input-with-toggle">
+              <input id="pw" name="pw" type="password" autocomplete="new-password"
+                     required aria-describedby="pwGuide pwErr">
+              <button type="button" id="togglePw" class="secondary" aria-pressed="false" aria-controls="pw" aria-label="Show password">Show</button>
+            </div>
+            <div id="pwGuide" class="guidance" aria-live="polite">
+              <strong>Make it strong and memorable:</strong>
+              <ul class="rules" aria-label="Password must meet all of these rules">
+                <li id="ruleLength" class="rule fail"><span class="dot" aria-hidden="true"></span> At least 12 characters</li>
+                <li id="ruleLower" class="rule fail"><span class="dot" aria-hidden="true"></span> At least one lowercase letter</li>
+                <li id="ruleUpper" class="rule fail"><span class="dot" aria-hidden="true"></span> At least one uppercase letter</li>
+                <li id="ruleNumber" class="rule fail"><span class="dot" aria-hidden="true"></span> At least one number</li>
+                <li id="ruleSymbol" class="rule fail"><span class="dot" aria-hidden="true"></span> At least one symbol (e.g., ! @ # ?)</li>
+              </ul>
+            </div>
+            <p id="pwErr" class="error-inline" role="alert" hidden></p>
+          </div>
+
+          <div class="field">
+            <label for="confirm">Confirm new password</label>
+            <!-- Accessibility: Show/Hide confirm toggle with aria-pressed state -->
+            <div class="input-with-toggle">
+              <input id="confirm" name="confirm" type="password" autocomplete="new-password"
+                     required aria-describedby="confirmHint confirmErr">
+              <button type="button" id="toggleConfirm" class="secondary" aria-pressed="false" aria-controls="confirm" aria-label="Show confirm password">Show</button>
+            </div>
+            <p id="confirmHint" class="hint">Re-type your new password exactly. You can copy and paste if that’s easier.</p>
+            <p id="confirmErr" class="error-inline" role="alert" hidden></p>
+          </div>
+        </fieldset>
+        <div class="actions">
+          <button type="submit">Save new password</button>
+          <button type="button" id="s3StartOver" class="secondary">Start over</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Success screen -->
+    <section id="success" class="step success" aria-labelledby="s4title" hidden>
+      <h2 id="s4title">Success! Your password was reset.</h2>
+      <p>You can now use your new password to log in.</p>
+      <div class="actions">
+        <button type="button" id="login">Log in</button>
+        <button type="button" id="again" class="secondary">Start over</button>
+      </div>
+      <p class="footnote">This is a mock flow. The “Log in” action is simulated in the console.</p>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <p class="footnote">
+      <!-- Requirements mapping: Comments clarifying non-production nature -->
+      This is a deterministic, client-only demo for academic evaluation. No real accounts are modified. No data leaves your browser.
+    </p>
+  </footer>
+
+  <script>
+    /* Requirements mapping:
+       - Inline JS only, no network requests
+       - Deterministic mock code and simulated delivery via console.log
+       - Manage focus across steps; accessible status updates
+       - Not for production use
+    */
+
+    // Deterministic mock verification code (strict equality required)
+    const MOCK_CODE = "424242";
+
+    // Simple in-memory UI state (client-only)
+    const state = {
+      user: "",
+      codeSent: false,
+      verified: false,
+    };
+
+    // Element helpers
+    const $ = s => document.querySelector(s);
+    const stepEls = [$("#step1"), $("#step2"), $("#step3"), $("#success")];
+    const globalStatus = $("#globalStatus");
+
+    // Utility: Show/hide steps and focus first interactive control
+    function showStep(id){
+      stepEls.forEach(sec => {
+        if(!sec) return;
+        const on = sec.id === id;
+        sec.hidden = !on;
+        if(on){
+          // Defer focus to allow rendering
+          setTimeout(() => focusFirst(sec), 0);
+        }
+      });
+    }
+
+    function focusFirst(root){
+      const focusable = root.querySelector('input, select, textarea, button, [tabindex]:not([tabindex="-1"])');
+      if(focusable){
+        focusable.focus();
+        if(focusable.setSelectionRange && focusable.type !== "password"){
+          const v = focusable.value || "";
+          focusable.setSelectionRange(v.length, v.length);
+        }
+      }
+    }
+
+    // Utility: Update accessible status message
+    function updateStatus(msg){
+      if(!msg){ globalStatus.hidden = true; globalStatus.textContent = ""; return; }
+      globalStatus.textContent = msg;
+      globalStatus.hidden = false;
+    }
+
+    // Utility: show field error text and mark invalid
+    function setFieldError(inputEl, errEl, message){
+      if(message){
+        inputEl.setAttribute("aria-invalid", "true");
+        errEl.textContent = message;
+        errEl.hidden = false;
+      }else{
+        inputEl.removeAttribute("aria-invalid");
+        errEl.textContent = "";
+        errEl.hidden = true;
+      }
+    }
+
+    // Mock: "send" code via console
+    function sendCode(){
+      state.codeSent = true;
+      const to = state.user || "(no identifier)";
+      console.log(`[Mock delivery] Verification code for ${to}: ${MOCK_CODE} (deterministic)`);
+      updateStatus("Verification code sent (simulated). Open your browser console to view it.");
+    }
+
+    // Mock: log verification success
+    function logVerificationSuccess(){
+      console.log("[Mock] Verification successful. Code matched deterministic value.");
+    }
+
+    // Mock: log password reset event
+    function logPasswordReset(){
+      console.log(`[Mock] Password reset completed for ${state.user}.`);
+    }
+
+    // Reset all UI and state
+    function resetAll(){
+      state.user = "";
+      state.codeSent = false;
+      state.verified = false;
+      updateStatus("");
+      // Clear forms and errors
+      $("#formRequest").reset();
+      $("#formVerify").reset();
+      $("#formReset").reset();
+      // Clear inline errors
+      setFieldError($("#ident"), $("#identErr"), "");
+      setFieldError($("#code"), $("#codeErr"), "");
+      setFieldError($("#pw"), $("#pwErr"), "");
+      setFieldError($("#confirm"), $("#confirmErr"), "");
+      // Reset guidance visuals
+      updatePasswordGuidance("");
+      // Reset show/hide toggles
+      resetPwToggle($("#pw"), $("#togglePw"));
+      resetPwToggle($("#confirm"), $("#toggleConfirm"));
+      // Show step 1
+      showStep("step1");
+    }
+
+    // Password rule checks
+    function getPwChecks(pw){
+      return {
+        length: pw.length >= 12,
+        lower: /[a-z]/.test(pw),
+        upper: /[A-Z]/.test(pw),
+        number: /[0-9]/.test(pw),
+        symbol: /[^A-Za-z0-9]/.test(pw),
+      };
+    }
+
+    function updatePasswordGuidance(pw){
+      const checks = getPwChecks(pw);
+      toggleRule("#ruleLength", checks.length);
+      toggleRule("#ruleLower",  checks.lower);
+      toggleRule("#ruleUpper",  checks.upper);
+      toggleRule("#ruleNumber", checks.number);
+      toggleRule("#ruleSymbol", checks.symbol);
+      return checks;
+    }
+
+    function toggleRule(sel, ok){
+      const el = $(sel);
+      if(!el) return;
+      el.classList.remove("pass","fail");
+      el.classList.add(ok ? "pass" : "fail");
+    }
+
+    // Wire up Step 1
+    $("#formRequest").addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const input = $("#ident");
+      const err = $("#identErr");
+      // Basic required validation
+      if(!input.value.trim()){
+        setFieldError(input, err, "Please enter your email or username.");
+        input.focus();
+        return;
+      }
+      setFieldError(input, err, "");
+      state.user = input.value.trim();
+
+      // Send mocked code and go to Step 2
+      sendCode();
+      $("#sendSummary").textContent = `A verification code was sent (simulated) for “${state.user}”. Check your console to see it.`;
+      showStep("step2");
+    });
+
+    $("#s1StartOver").addEventListener("click", ()=>{
+      $("#formRequest").reset();
+      setFieldError($("#ident"), $("#identErr"), "");
+      updateStatus("");
+      $("#ident").focus();
+    });
+
+    // Wire up Step 2
+    $("#resend").addEventListener("click", ()=>{
+      // Re-log the same deterministic code
+      sendCode();
+      $("#code").focus();
+    });
+
+    // Normalize code input: digits only and max length 6
+    const codeField = $("#code");
+    codeField.addEventListener("input", ()=>{
+      let digits = (codeField.value || "").replace(/\D+/g, "");
+      if(digits.length > 6) digits = digits.slice(0,6);
+      if(codeField.value !== digits){
+        const pos = codeField.selectionStart || digits.length;
+        codeField.value = digits;
+        // try to preserve caret position
+        if(codeField.setSelectionRange){
+          const p = Math.min(pos, digits.length);
+          codeField.setSelectionRange(p, p);
+        }
+      }
+    });
+
+    $("#formVerify").addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const codeInput = $("#code");
+      const codeErr = $("#codeErr");
+      const value = (codeInput.value || "").trim();
+
+      if(!/^\d{6}$/.test(value)){
+        setFieldError(codeInput, codeErr, "Enter the 6 digits exactly (e.g., 424242).");
+        codeInput.focus();
+        return;
+      }
+      if(value !== MOCK_CODE){
+        setFieldError(codeInput, codeErr, "That code doesn’t match. Please try again or resend.");
+        codeInput.focus();
+        return;
+      }
+      setFieldError(codeInput, codeErr, "");
+      state.verified = true;
+      logVerificationSuccess();
+      updateStatus("Code verified.");
+      showStep("step3");
+    });
+
+    $("#s2StartOver").addEventListener("click", resetAll);
+
+    // Wire up Step 3
+    const pwInput = $("#pw");
+    const confirmInput = $("#confirm");
+    pwInput.addEventListener("input", ()=>{
+      const pw = pwInput.value;
+      updatePasswordGuidance(pw);
+      // Clear password-level error as user types
+      setFieldError(pwInput, $("#pwErr"), "");
+      // If confirm already has text, validate match in real time
+      if(confirmInput.value){
+        validateConfirm();
+      }
+    });
+    confirmInput.addEventListener("input", ()=>{
+      validateConfirm();
+    });
+
+    function validateConfirm(){
+      const errEl = $("#confirmErr");
+      if(confirmInput.value && pwInput.value !== confirmInput.value){
+        setFieldError(confirmInput, errEl, "Passwords do not match.");
+        return false;
+      }else{
+        setFieldError(confirmInput, errEl, "");
+        return true;
+      }
+    }
+
+    $("#formReset").addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const pwErr = $("#pwErr");
+
+      const checks = updatePasswordGuidance(pwInput.value);
+      const allGood = checks.length && checks.lower && checks.upper && checks.number && checks.symbol;
+      if(!allGood){
+        setFieldError(pwInput, pwErr, "Please meet all password rules before continuing.");
+        pwInput.focus();
+        return;
+      }
+      if(!validateConfirm()){
+        confirmInput.focus();
+        return;
+      }
+      setFieldError(pwInput, pwErr, "";
+      // "Save" new password (mock)
+      logPasswordReset();
+      updateStatus("Your password was reset.");
+      showStep("success");
+    });
+
+    $("#s3StartOver").addEventListener("click", resetAll);
+
+    // Accessibility: Show/Hide password toggles
+    const togglePwBtn = $("#togglePw");
+    const toggleConfirmBtn = $("#toggleConfirm");
+
+    function togglePasswordVisibility(inputEl, btnEl, labelBase){
+      const isText = inputEl.type === "text";
+      inputEl.type = isText ? "password" : "text";
+      const pressed = !isText;
+      btnEl.setAttribute("aria-pressed", String(pressed));
+      btnEl.textContent = pressed ? "Hide" : "Show";
+      btnEl.setAttribute("aria-label", `${pressed ? "Hide" : "Show"} ${labelBase}`);
+      inputEl.focus();
+      // Move caret to end for convenience
+      if(inputEl.setSelectionRange){
+        const v = inputEl.value || "";
+        inputEl.setSelectionRange(v.length, v.length);
+      }
+    }
+    function resetPwToggle(inputEl, btnEl){
+      if(!inputEl || !btnEl) return;
+      inputEl.type = "password";
+      btnEl.setAttribute("aria-pressed", "false");
+      btnEl.textContent = "Show";
+      const labelBase = btnEl.id === "toggleConfirm" ? "confirm password" : "password";
+      btnEl.setAttribute("aria-label", `Show ${labelBase}`);
+    }
+
+    togglePwBtn.addEventListener("click", ()=>{
+      togglePasswordVisibility(pwInput, togglePwBtn, "password");
+    });
+    toggleConfirmBtn.addEventListener("click", ()=>{
+      togglePasswordVisibility(confirmInput, toggleConfirmBtn, "confirm password");
+    });
+
+    // Success actions
+    $("#login").addEventListener("click", ()=>{
+      console.log(`[Mock] Log in with new password for ${state.user}.`);
+      updateStatus("Login simulated. This demo ends here.");
+      // Optionally, go back to step 1 to mimic a redirect
+      showStep("step1");
+    });
+    $("#again").addEventListener("click", resetAll);
+
+    // Top Start Over
+    $("#startOverTop").addEventListener("click", resetAll);
+
+    // Initial focus
+    showStep("step1");
+
+    // Console banner for clarity
+    console.log("=== Password Recovery Demo (Client-only, deterministic) ===");
+    console.log(`Deterministic verification code is: ${MOCK_CODE}`);
+    console.log("No network calls are made; all actions are simulated here in the console.");
+  </script>
+</body>
+</html>

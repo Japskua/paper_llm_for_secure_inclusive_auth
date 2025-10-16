@@ -1,0 +1,868 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    Password Recovery System — Requirements (Single-Page, Client-Only, Mocked)
+    - One file: index.html
+    - Semantic HTML, inline CSS & JS
+    - Commented sections mapping to this spec
+    - All logic runs entirely in the browser (no backend)
+    - "Delivery" and verification simulated via console.log and deterministic mock values
+    - UX considers Helena (67, heart disease, ADHD): calm, accessible, step-by-step, high contrast option, larger text controls, clear guidance
+    - Not for production use
+  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark">
+  <title>City Hospital — Password Recovery (Mock)</title>
+  <style>
+    /* Requirement: Inline CSS; accessible, semantic, self-contained */
+    :root{
+      --base-font-size: 18px; /* Adjustable for readability */
+      --bg: #f7f9fb;
+      --fg: #0f172a;
+      --muted: #475569;
+      --primary: #0ea5e9; /* sky-500 */
+      --primary-contrast: #ffffff;
+      --accent: #16a34a; /* green-600 */
+      --warn: #b91c1c; /* red-700 */
+      --border: #cbd5e1;
+      --card: #ffffff;
+      --focus: #f59e0b; /* amber */
+      --shadow: 0 10px 30px rgba(2,8,23,0.06);
+    }
+    .high-contrast{
+      --bg:#ffffff;
+      --fg:#000000;
+      --muted:#1a1a1a;
+      --primary:#000000;
+      --primary-contrast:#ffffff;
+      --accent:#0a0;
+      --warn:#b00;
+      --border:#000000;
+      --card:#ffffff;
+      --focus:#ff8800;
+      --shadow:none;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0b1220;
+        --fg:#e5e7eb;
+        --muted:#cbd5e1;
+        --border:#334155;
+        --card:#0f172a;
+        --shadow: 0 10px 30px rgba(0,0,0,0.4);
+      }
+    }
+    html,body{
+      height:100%;
+    }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      font-size: var(--base-font-size);
+      color: var(--fg);
+      background: radial-gradient(1200px 700px at 10% -10%, rgba(14,165,233,0.08), transparent 60%),
+                  radial-gradient(1000px 600px at 110% 10%, rgba(22,163,74,0.05), transparent 50%),
+                  var(--bg);
+      line-height: 1.45;
+    }
+    a{ color: var(--primary); }
+    .container{
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    header[role="banner"]{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 12px;
+      padding: 12px 0 8px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:40px; height:40px; border-radius:8px; background: var(--primary);
+      display:grid; place-items:center; color:var(--primary-contrast); font-weight:700;
+      box-shadow: var(--shadow);
+    }
+    .brand h1{
+      font-size: 1.1rem;
+      margin:0;
+    }
+    .assist{
+      display:flex; align-items:center; gap:8px; flex-wrap: wrap;
+    }
+    .assist button{
+      border:1px solid var(--border);
+      background: var(--card);
+      color: var(--fg);
+      border-radius: 10px;
+      padding: 8px 10px;
+      min-height:44px; min-width:44px;
+      cursor: pointer;
+    }
+    .assist .toggle{
+      display:flex; align-items:center; gap:8px;
+    }
+    .assist input[type="checkbox"]{
+      width:22px; height:22px;
+    }
+
+    main{
+      display:grid; grid-template-columns: 1fr; gap: 16px;
+    }
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: clamp(16px, 2.5vw, 28px);
+    }
+    .two-col{
+      display:grid; gap:20px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 900px){
+      .two-col{ grid-template-columns: 2fr 1fr; }
+    }
+    .progress{
+      display:flex; gap:8px; align-items:center; flex-wrap: wrap;
+    }
+    .step{
+      display:flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
+      border:1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+    }
+    .step[aria-current="step"]{
+      border-color: var(--primary);
+      color: var(--fg);
+      box-shadow: inset 0 0 0 2px rgba(14,165,233,0.15);
+    }
+    .sr-only{
+      position:absolute !important; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+    }
+    form{
+      display:grid; gap:16px;
+    }
+    fieldset{
+      border: none; padding: 0; margin: 0; display:grid; gap: 12px;
+    }
+    label{ font-weight: 600; }
+    .hint{ color: var(--muted); font-size: 0.95rem; }
+    .help-box{
+      background: linear-gradient(0deg, rgba(14,165,233,0.08), rgba(14,165,233,0.08));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    input[type="text"], input[type="tel"], input[type="email"], input[type="password"]{
+      width:100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border:1px solid var(--border);
+      background: var(--card);
+      color: var(--fg);
+      font-size: 1rem;
+      min-height: 48px;
+    }
+    input:focus, select:focus, button:focus{
+      outline: 3px solid transparent;
+      box-shadow: 0 0 0 3px var(--focus);
+    }
+    .btn-row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .btn{
+      border:none;
+      background: var(--primary);
+      color: var(--primary-contrast);
+      padding: 12px 18px;
+      border-radius: 12px;
+      min-height: 48px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn.secondary{
+      background: transparent;
+      color: var(--primary);
+      border:1px solid var(--primary);
+    }
+    .btn.ghost{
+      background: transparent;
+      color: var(--fg);
+      border:1px dashed var(--border);
+    }
+    .btn:disabled{
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .error{
+      color: var(--warn);
+      font-weight: 600;
+    }
+    .status{
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .code-inputs{
+      display:flex; gap: 8px; justify-content: start; align-items:center; flex-wrap:wrap;
+    }
+    .code-inputs input{
+      width: 46px; height: 58px;
+      text-align: center;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+    }
+    .radio-card{
+      display:flex; gap:12px; align-items:center;
+      border:1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--card);
+    }
+    .radio-card input{ width:22px; height:22px; }
+    .requirements{
+      display:grid; gap: 6px; margin-top: 4px;
+    }
+    .req{
+      display:flex; align-items:center; gap:10px; color: var(--muted);
+    }
+    .req.ok{ color: var(--accent); }
+    .meter{
+      height:10px; border-radius:999px; background: #e5e7eb; overflow:hidden; border:1px solid var(--border);
+    }
+    .meter > span{
+      display:block; height:100%; width:0%;
+      background: linear-gradient(90deg, #f87171, #fbbf24, #34d399, #10b981);
+      transition: width .25s ease;
+    }
+    .muted{
+      color: var(--muted);
+    }
+    footer{
+      margin-top: 24px; color: var(--muted);
+      font-size: 0.95rem;
+    }
+    /* Larger hit areas for accessibility */
+    .tap-area{ min-height: 44px; min-width: 44px; display:inline-flex; align-items:center; justify-content:center; }
+  </style>
+</head>
+<body>
+  <!-- Requirement: Semantic header and assistive controls for readability and contrast -->
+  <div class="container">
+    <header role="banner" aria-label="City Hospital account recovery">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">CH</div>
+        <div>
+          <h1>City Hospital — Account Recovery</h1>
+          <p class="muted" id="subtitle">Reset your password to sign in and accept the updated privacy statement.</p>
+        </div>
+      </div>
+      <div class="assist" aria-label="Accessibility options">
+        <div class="toggle">
+          <button class="tap-area" id="fontDown" title="Decrease text size" aria-label="Decrease text size">A−</button>
+          <button class="tap-area" id="fontUp" title="Increase text size" aria-label="Increase text size">A+</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="contrastToggle" aria-label="High contrast mode"> High contrast</label>
+        <label class="toggle"><input type="checkbox" id="calmToggle" aria-label="Calm mode (reduce motion)"> Calm mode</label>
+      </div>
+    </header>
+
+    <!-- Requirement: Progress indicator for step-by-step clarity -->
+    <nav class="progress" aria-label="Progress">
+      <div class="step" id="stepBadge1" aria-current="step"><span aria-hidden="true">1</span> Identify</div>
+      <div class="step" id="stepBadge2"><span aria-hidden="true">2</span> Delivery</div>
+      <div class="step" id="stepBadge3"><span aria-hidden="true">3</span> Verify</div>
+      <div class="step" id="stepBadge4"><span aria-hidden="true">4</span> New password</div>
+      <div class="step" id="stepBadge5"><span aria-hidden="true">5</span> Done</div>
+    </nav>
+
+    <main id="app" class="two-col" role="main">
+      <section class="card" aria-labelledby="heading">
+        <div aria-live="polite" aria-atomic="true" class="sr-only" id="live-region"></div>
+
+        <!-- Requirement: Step 1 — Identify account -->
+        <section id="step-1" role="region" aria-labelledby="h-step-1">
+          <h2 id="h-step-1" tabindex="-1">Find your account</h2>
+          <p class="hint">Enter your email or mobile number. We will send you a 6‑digit code to reset your password.</p>
+          <form id="form-identify" novalidate>
+            <fieldset>
+              <label for="identifier">Email or mobile number</label>
+              <input id="identifier" name="identifier" type="text" inputmode="email"
+                     autocomplete="username" placeholder="e.g., helena@example.com or +1 555 0134"
+                     required aria-describedby="id-hint id-error" />
+              <div id="id-hint" class="hint">Tip: For Helena (demo), use helena@example.com</div>
+              <div id="id-error" class="error" role="alert" hidden></div>
+            </fieldset>
+            <div class="btn-row">
+              <button type="submit" class="btn" id="btn-identify">Continue</button>
+              <button type="button" class="btn ghost" id="btn-help">Need help?</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Requirement: Step 2 — Choose delivery method (mocked) -->
+        <section id="step-2" role="region" aria-labelledby="h-step-2" hidden>
+          <h2 id="h-step-2" tabindex="-1">Choose how to get your code</h2>
+          <p class="hint" id="delivery-mask"></p>
+          <form id="form-delivery">
+            <fieldset role="radiogroup" aria-labelledby="h-step-2">
+              <label class="radio-card">
+                <input type="radio" name="method" value="email" checked />
+                <span>
+                  <strong>Email a 6‑digit code</strong><br />
+                  <span class="muted" id="maskedEmail">h••••@example.com</span>
+                </span>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="method" value="sms" />
+                <span>
+                  <strong>Text a 6‑digit code</strong><br />
+                  <span class="muted" id="maskedPhone">••• ••• 0134</span>
+                </span>
+              </label>
+            </fieldset>
+            <div class="btn-row">
+              <button type="button" class="btn" id="btn-send">Send code</button>
+              <button type="button" class="btn secondary" id="back-2">Back</button>
+            </div>
+          </form>
+          <div class="help-box" role="note">
+            For your security, we only show partial contact details.
+          </div>
+        </section>
+
+        <!-- Requirement: Step 3 — Enter and verify code (deterministic, console.log) -->
+        <section id="step-3" role="region" aria-labelledby="h-step-3" hidden>
+          <h2 id="h-step-3" tabindex="-1">Enter the 6‑digit code</h2>
+          <p class="hint" id="code-sent-hint">We sent a code to your chosen method.</p>
+          <form id="form-verify" novalidate>
+            <fieldset>
+              <legend class="sr-only">Verification code</legend>
+              <div class="code-inputs" aria-describedby="code-hint code-error">
+                <input inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" aria-label="Digit 1" maxlength="1" />
+                <input inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" aria-label="Digit 2" maxlength="1" />
+                <input inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" aria-label="Digit 3" maxlength="1" />
+                <input inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" aria-label="Digit 4" maxlength="1" />
+                <input inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" aria-label="Digit 5" maxlength="1" />
+                <input inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" aria-label="Digit 6" maxlength="1" />
+              </div>
+              <div id="code-hint" class="hint">You can paste the entire code.</div>
+              <div id="code-error" class="error" role="alert" hidden></div>
+            </fieldset>
+            <div class="btn-row">
+              <button type="submit" class="btn" id="btn-verify" disabled>Verify code</button>
+              <button type="button" class="btn secondary" id="btn-resend" disabled>Resend code (20s)</button>
+              <button type="button" class="btn ghost" id="back-3">Back</button>
+            </div>
+          </form>
+          <div class="help-box" role="note">
+            If you didn’t receive the code, wait and tap “Resend”. Check your spam folder or messages.
+          </div>
+        </section>
+
+        <!-- Requirement: Step 4 — Set new password with guidance and strength meter -->
+        <section id="step-4" role="region" aria-labelledby="h-step-4" hidden>
+          <h2 id="h-step-4" tabindex="-1">Create a new password</h2>
+          <p class="hint">Choose a strong password you have not used before.</p>
+          <form id="form-reset" novalidate>
+            <fieldset>
+              <label for="new-pass">New password</label>
+              <div>
+                <input id="new-pass" type="password" autocomplete="new-password" required aria-describedby="pass-reqs pass-error" />
+              </div>
+              <div class="meter" aria-hidden="true"><span id="strengthBar"></span></div>
+              <div id="pass-reqs" class="requirements" aria-live="polite">
+                <div class="req" id="req-length">• At least 8 characters</div>
+                <div class="req" id="req-upper">• Contains an uppercase letter</div>
+                <div class="req" id="req-lower">• Contains a lowercase letter</div>
+                <div class="req" id="req-digit">• Contains a number</div>
+                <div class="req" id="req-unique">• Does not contain your email or name</div>
+              </div>
+              <div id="pass-error" class="error" role="alert" hidden></div>
+            </fieldset>
+            <fieldset>
+              <label for="confirm-pass">Confirm new password</label>
+              <input id="confirm-pass" type="password" autocomplete="new-password" required aria-describedby="confirm-error" />
+              <div id="confirm-error" class="error" role="alert" hidden></div>
+            </fieldset>
+            <div class="btn-row">
+              <button type="submit" class="btn" id="btn-reset" disabled>Save new password</button>
+              <button type="button" class="btn secondary" id="back-4">Back</button>
+            </div>
+          </form>
+          <div class="help-box" role="note">
+            Tip for Helena: A passphrase with 3–4 words and numbers can be easier to remember.
+          </div>
+        </section>
+
+        <!-- Requirement: Step 5 — Success (mock update via console.log) -->
+        <section id="step-5" role="region" aria-labelledby="h-step-5" hidden>
+          <h2 id="h-step-5" tabindex="-1">Password reset complete</h2>
+          <p class="status">Your password was updated successfully.</p>
+          <p>You can now sign in to your account and accept the updated privacy statement.</p>
+          <div class="btn-row">
+            <button type="button" class="btn" id="btn-finish">Back to sign in</button>
+            <button type="button" class="btn secondary" id="btn-start-over">Start over</button>
+          </div>
+          <div class="help-box" role="note">
+            For this demo, no real account changes are made. All actions are simulated in your browser.
+          </div>
+        </section>
+      </section>
+
+      <!-- Requirement: Supportive sidebar content for clarity (no backend) -->
+      <aside class="card" aria-labelledby="h-support">
+        <h2 id="h-support">Need assistance?</h2>
+        <p class="muted">This is a safe demonstration environment. No data leaves your browser.</p>
+        <ul>
+          <li><strong>Mock user</strong>: helena@example.com</li>
+          <li><strong>Deterministic code</strong>: 246810</li>
+          <li><strong>Support</strong>: Call 1‑800‑HOSPITAL (Mon–Fri 8am–6pm)</li>
+        </ul>
+        <details>
+          <summary>What is mocked?</summary>
+          <ul>
+            <li>Code delivery is printed to the JavaScript console.</li>
+            <li>Verification checks against a fixed code.</li>
+            <li>No server or network calls are made.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>Privacy note</summary>
+          <p>In a real system, contact details would be verified and codes would expire quickly. This demo is for evaluation only.</p>
+        </details>
+      </aside>
+    </main>
+
+    <footer role="contentinfo">
+      <p>© City Hospital (Demo). Client-only password recovery flow for academic AI evaluation.</p>
+    </footer>
+  </div>
+
+  <script>
+    /* Requirement: Inline JS; all logic in-browser; mocked delivery and deterministic verification */
+
+    // Accessibility & preferences
+    (function setupAssist(){
+      const html = document.documentElement;
+      const down = document.getElementById('fontDown');
+      const up = document.getElementById('fontUp');
+      const contrast = document.getElementById('contrastToggle');
+      const calm = document.getElementById('calmToggle');
+
+      let size = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--base-font-size')) || 18;
+      const applySize = () => document.documentElement.style.setProperty('--base-font-size', size + 'px');
+      applySize();
+
+      down.addEventListener('click', () => { size = Math.max(16, size - 1); applySize(); live('Text size decreased'); });
+      up.addEventListener('click', () => { size = Math.min(22, size + 1); applySize(); live('Text size increased'); });
+
+      contrast.addEventListener('change', (e) => {
+        if(e.target.checked){ document.body.classList.add('high-contrast'); live('High contrast on'); }
+        else { document.body.classList.remove('high-contrast'); live('High contrast off'); }
+      });
+
+      // Calm mode reduces transitions; we keep CSS minimal but can disable progress animation
+      calm.addEventListener('change', (e) => {
+        if(e.target.checked){
+          document.body.style.setProperty('transition', 'none');
+          document.querySelectorAll('*').forEach(el => el.style.transition = 'none');
+          live('Calm mode on');
+        }else{
+          document.body.style.removeProperty('transition');
+          document.querySelectorAll('*').forEach(el => el.style.transition = '');
+          live('Calm mode off');
+        }
+      });
+    })();
+
+    // Mock data and state
+    const MOCK_PROFILE = {
+      name: 'Helena',
+      email: 'helena@example.com',
+      phone: '+1 555 0134'
+    };
+    const DETERMINISTIC_CODE = '246810'; // Requirement: deterministic mock verification code
+    let state = {
+      step: 1,
+      identifier: '',
+      chosenMethod: 'email', // 'email' | 'sms'
+      maskedEmail: '',
+      maskedPhone: '',
+      codeSentAt: 0,
+      resendCooldown: 20,
+      verifyAttempts: 0,
+      codeTimerId: null
+    };
+
+    // Utility: live region for screen readers
+    function live(msg){ const r = document.getElementById('live-region'); r.textContent = msg; }
+
+    // Utility: mask email/phone safely
+    function maskEmail(email){
+      if(!email || !email.includes('@')) return '••••@••••';
+      const [user, domain] = email.split('@');
+      const u = user.length ? user[0] + '•'.repeat(Math.max(0, Math.min(4, user.length-1))) : '•••';
+      const d = domain.replace(/[^.]/g, '•');
+      return `${u}@${d}`;
+    }
+    function digitsOnly(s){ return (s||'').replace(/\D/g,''); }
+    function maskPhone(phone){
+      const d = digitsOnly(phone);
+      if(d.length < 2) return '••• ••• ••••';
+      const last = d.slice(-4);
+      return '••• ••• ' + last;
+    }
+    function isEmail(input){ return /@/.test(input); }
+
+    // Step navigation helpers
+    function showStep(n){
+      state.step = n;
+      ['step-1','step-2','step-3','step-4','step-5'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.hidden = (i+1) !== n;
+      });
+      // progress badges
+      for(let i=1;i<=5;i++){
+        const b = document.getElementById('stepBadge'+i);
+        if(!b) continue;
+        b.setAttribute('aria-current', i===n ? 'step' : 'false');
+      }
+      // focus heading
+      const h = document.querySelector('#step-'+n+' h2');
+      if(h){ h.focus(); }
+    }
+
+    // Step 1: Identify
+    (function setupIdentify(){
+      const form = document.getElementById('form-identify');
+      const input = document.getElementById('identifier');
+      const err = document.getElementById('id-error');
+      const help = document.getElementById('btn-help');
+      input.value = '';
+
+      help.addEventListener('click', () => {
+        alert('Tip: Enter your email or mobile number.\nDemo account: helena@example.com\nAll actions are simulated locally.');
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        err.hidden = true;
+        const id = input.value.trim();
+        if(!id){
+          err.textContent = 'Please enter your email or mobile number.';
+          err.hidden = false;
+          input.focus();
+          return;
+        }
+        state.identifier = id;
+        // Prepare masked details
+        const known = id.toLowerCase() === MOCK_PROFILE.email || digitsOnly(id) === digitsOnly(MOCK_PROFILE.phone);
+        state.maskedEmail = known ? maskEmail(MOCK_PROFILE.email) : maskEmail(isEmail(id) ? id : 'account@example.com');
+        state.maskedPhone = known ? maskPhone(MOCK_PROFILE.phone) : maskPhone(digitsOnly(id) || '0000');
+        // Default method preference based on input type
+        state.chosenMethod = isEmail(id) ? 'email' : 'sms';
+        // Update UI for step 2
+        document.getElementById('delivery-mask').textContent =
+          'For ' + (known ? 'your account' : 'the provided contact') + ', choose a delivery method:';
+        document.getElementById('maskedEmail').textContent = state.maskedEmail;
+        document.getElementById('maskedPhone').textContent = state.maskedPhone;
+        // Set radio default
+        document.querySelector('#form-delivery input[value="email"]').checked = state.chosenMethod === 'email';
+        document.querySelector('#form-delivery input[value="sms"]').checked = state.chosenMethod === 'sms';
+        showStep(2);
+        live('Account found. Choose delivery method.');
+      });
+    })();
+
+    // Step 2: Choose delivery & "send" code
+    (function setupDelivery(){
+      const back = document.getElementById('back-2');
+      const btn = document.getElementById('btn-send');
+
+      back.addEventListener('click', () => {
+        showStep(1);
+        live('Back to identify');
+      });
+
+      btn.addEventListener('click', () => {
+        // Get selected method
+        const method = document.querySelector('#form-delivery input[name="method"]:checked')?.value || 'email';
+        state.chosenMethod = method;
+
+        // Mock delivery via console.log (Requirement)
+        const destination = method === 'email'
+          ? (state.identifier.toLowerCase() === MOCK_PROFILE.email ? MOCK_PROFILE.email : (isEmail(state.identifier) ? state.identifier : MOCK_PROFILE.email))
+          : (state.identifier ? state.identifier : MOCK_PROFILE.phone);
+
+        state.codeSentAt = Date.now();
+        console.log('[MockDelivery] method=', method.toUpperCase(), 'destination=', destination, 'code=', DETERMINISTIC_CODE, 'timestamp=', new Date().toISOString());
+
+        // Prepare Step 3 UI
+        const hint = document.getElementById('code-sent-hint');
+        hint.textContent = 'We sent a code via ' + (method === 'email' ? 'email' : 'text message') + ' to ' + (method==='email' ? state.maskedEmail : state.maskedPhone) + '.';
+        resetCodeInputs();
+        startResendCooldown();
+
+        showStep(3);
+        live('Code sent. Please enter the 6-digit code.');
+      });
+    })();
+
+    // Step 3: Verify code
+    (function setupVerify(){
+      const form = document.getElementById('form-verify');
+      const inputs = Array.from(form.querySelectorAll('.code-inputs input'));
+      const err = document.getElementById('code-error');
+      const verifyBtn = document.getElementById('btn-verify');
+      const resendBtn = document.getElementById('btn-resend');
+      const back = document.getElementById('back-3');
+
+      // Auto-advance and paste handling
+      inputs.forEach((inp, idx) => {
+        inp.addEventListener('input', (e) => {
+          const val = e.target.value.replace(/\D/g,'').slice(0,1);
+          e.target.value = val;
+          if(val && idx < inputs.length-1){ inputs[idx+1].focus(); }
+          updateVerifyButton();
+        });
+        inp.addEventListener('keydown', (e) => {
+          if(e.key === 'Backspace' && !e.target.value && idx > 0){ inputs[idx-1].focus(); }
+          if(e.key === 'ArrowLeft' && idx > 0){ inputs[idx-1].focus(); }
+          if(e.key === 'ArrowRight' && idx < inputs.length-1){ inputs[idx+1].focus(); }
+        });
+        inp.addEventListener('paste', (e) => {
+          const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+          if(text && text.length >= 6){
+            e.preventDefault();
+            for(let i=0;i<6;i++){ inputs[i].value = text[i] || ''; }
+            inputs[5].focus();
+            updateVerifyButton();
+          }
+        });
+      });
+
+      function currentCode(){ return inputs.map(i => i.value).join(''); }
+      function updateVerifyButton(){
+        const ready = currentCode().length === 6;
+        verifyBtn.disabled = !ready;
+      }
+
+      resendBtn.addEventListener('click', () => {
+        // Re-send same deterministic code (Requirement)
+        const method = state.chosenMethod;
+        const destination = method === 'email'
+          ? (state.identifier.toLowerCase() === MOCK_PROFILE.email ? MOCK_PROFILE.email : (isEmail(state.identifier) ? state.identifier : MOCK_PROFILE.email))
+          : (state.identifier ? state.identifier : MOCK_PROFILE.phone);
+        state.codeSentAt = Date.now();
+        console.log('[MockDelivery:RESEND] method=', method.toUpperCase(), 'destination=', destination, 'code=', DETERMINISTIC_CODE, 'timestamp=', new Date().toISOString());
+        err.hidden = true;
+        resetCodeInputs();
+        startResendCooldown();
+        live('A new code was sent.');
+      });
+
+      back.addEventListener('click', () => {
+        clearInterval(state.codeTimerId);
+        showStep(2);
+        live('Back to delivery selection');
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        err.hidden = true;
+        const code = currentCode();
+        if(code === DETERMINISTIC_CODE){
+          clearInterval(state.codeTimerId);
+          state.verifyAttempts = 0;
+          showStep(4);
+          document.getElementById('new-pass').focus();
+          live('Code verified. Create a new password.');
+        }else{
+          state.verifyAttempts++;
+          err.textContent = 'That code is not correct. Please try again.';
+          err.hidden = false;
+          live('Incorrect code.');
+          if(state.verifyAttempts >= 5){
+            err.textContent = 'Too many attempts. You can request a new code or go back and choose a different method.';
+            resendBtn.disabled = false;
+          }
+        }
+      });
+    })();
+
+    function resetCodeInputs(){
+      const inputs = Array.from(document.querySelectorAll('#form-verify .code-inputs input'));
+      inputs.forEach(i => i.value = '');
+      const first = inputs[0];
+      if(first){ first.focus(); }
+      document.getElementById('btn-verify').disabled = true;
+      document.getElementById('code-error').hidden = true;
+    }
+
+    function startResendCooldown(){
+      const btn = document.getElementById('btn-resend');
+      const start = Date.now();
+      const wait = state.resendCooldown * 1000;
+      btn.disabled = true;
+      const tick = () => {
+        const left = Math.max(0, Math.ceil((wait - (Date.now() - start))/1000));
+        btn.textContent = left > 0 ? `Resend code (${left}s)` : 'Resend code';
+        if(left <= 0){
+          clearInterval(state.codeTimerId);
+          btn.disabled = false;
+          return;
+        }
+      };
+      tick();
+      clearInterval(state.codeTimerId);
+      state.codeTimerId = setInterval(tick, 300);
+    }
+
+    // Step 4: Reset password
+    (function setupReset(){
+      const form = document.getElementById('form-reset');
+      const newPass = document.getElementById('new-pass');
+      const confirm = document.getElementById('confirm-pass');
+      const passErr = document.getElementById('pass-error');
+      const confirmErr = document.getElementById('confirm-error');
+      const saveBtn = document.getElementById('btn-reset');
+      const back = document.getElementById('back-4');
+      const strengthBar = document.getElementById('strengthBar');
+
+      function userKeyParts(){
+        const id = state.identifier || '';
+        const email = (id.includes('@') ? id : MOCK_PROFILE.email).toLowerCase();
+        const user = email.split('@')[0];
+        const name = MOCK_PROFILE.name.toLowerCase();
+        return { user, name, digits: digitsOnly(id) };
+      }
+
+      function evaluate(pw){
+        const { user, name } = userKeyParts();
+        const rules = {
+          length: pw.length >= 8,
+          upper: /[A-Z]/.test(pw),
+          lower: /[a-z]/.test(pw),
+          digit: /[0-9]/.test(pw),
+          unique: !(pw.toLowerCase().includes(user) || pw.toLowerCase().includes(name))
+        };
+        const score = Object.values(rules).reduce((a,b)=>a+(b?1:0),0);
+        return { rules, score };
+      }
+
+      function updateUI(){
+        const pw = newPass.value;
+        const result = evaluate(pw);
+        // Toggle requirement indicators
+        setReq('req-length', result.rules.length);
+        setReq('req-upper', result.rules.upper);
+        setReq('req-lower', result.rules.lower);
+        setReq('req-digit', result.rules.digit);
+        setReq('req-unique', result.rules.unique);
+        // Strength bar
+        const pct = (result.score/5)*100;
+        strengthBar.style.width = pct + '%';
+        // Error messages
+        passErr.hidden = true;
+
+        // Confirm validation
+        if(confirm.value){
+          if(confirm.value !== pw){
+            confirmErr.textContent = 'Passwords do not match.';
+            confirmErr.hidden = false;
+          }else{
+            confirmErr.hidden = true;
+          }
+        }else{
+          confirmErr.hidden = true;
+        }
+
+        // Enable save button if all good
+        const allGood = Object.values(result.rules).every(Boolean) && confirm.value === pw && pw.length>0;
+        saveBtn.disabled = !allGood;
+      }
+
+      function setReq(id, ok){
+        const el = document.getElementById(id);
+        el.classList.toggle('ok', !!ok);
+        el.innerHTML = (ok ? '✓ ' : '• ') + el.textContent.replace(/^✓ |• /,'');
+      }
+
+      newPass.addEventListener('input', updateUI);
+      confirm.addEventListener('input', updateUI);
+
+      back.addEventListener('click', () => {
+        showStep(3);
+        live('Back to code verification');
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const pw = newPass.value;
+        const { rules } = evaluate(pw);
+        if(!Object.values(rules).every(Boolean)){
+          passErr.textContent = 'Please meet all password requirements.';
+          passErr.hidden = false;
+          return;
+        }
+        if(confirm.value !== pw){
+          confirmErr.textContent = 'Passwords do not match.';
+          confirmErr.hidden = false;
+          return;
+        }
+        // Mock password update via console.log (Requirement)
+        const accountRef = (state.identifier || MOCK_PROFILE.email);
+        console.log('[MockUpdate] Password updated for account=', accountRef, 'time=', new Date().toISOString());
+        newPass.value = ''; confirm.value = '';
+        updateUI();
+        showStep(5);
+        live('Password updated successfully.');
+      });
+    })();
+
+    // Step 5: Success
+    (function setupSuccess(){
+      document.getElementById('btn-finish').addEventListener('click', () => {
+        // Return to start (mock "sign in" redirection)
+        showStep(1);
+        document.getElementById('identifier').focus();
+      });
+      document.getElementById('btn-start-over').addEventListener('click', () => {
+        location.reload();
+      });
+    })();
+
+    // Initialize app at step 1
+    showStep(1);
+
+    // Keyboard support for radio-card labels (improves accessibility)
+    document.querySelectorAll('.radio-card').forEach(card=>{
+      card.addEventListener('keydown', (e)=>{
+        const input = card.querySelector('input[type="radio"]');
+        if((e.key === 'Enter' || e.key === ' ') && input){
+          e.preventDefault(); input.checked = true;
+        }
+      });
+      card.tabIndex = 0;
+    });
+
+    // Defensive: avoid accidental page navigation with backspace in empty inputs
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'Backspace'){
+        const t = e.target;
+        const ok = ['INPUT','TEXTAREA'].includes(t.tagName);
+        if(!ok) e.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>

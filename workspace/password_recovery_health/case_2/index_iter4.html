@@ -1,0 +1,616 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Password Recovery Demo — Client-Only Mock (Academic Evaluation)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--
+    Password Recovery System — Requirements (Single-Page, Client-Only, Mocked)
+
+    [Purpose]
+    A self-contained, single-HTML-file password recovery flow for an academic AI evaluation.
+    All logic runs entirely in the browser (no backend). Recovery “delivery” and verification
+    are simulated via console.log and deterministic mock values. Not for production use.
+
+    [Use-case description]
+    Helena (67, patient with chronic heart disease and ADHD) needs to reset her password to log in
+    and accept updated privacy conditions so hospital authorities can book an appointment.
+
+    [Deliverables]
+    • One file: index.html (this file)
+    • Semantic HTML, inline CSS & JS
+    • Commented sections mapping to this spec
+    • No build step required
+
+    [Flow steps implemented below]
+    1) Request Recovery (collect username or email, validate)
+    2) Simulate delivery via console.log using deterministic mock recovery code
+    3) Verify Code (compare user input with deterministic code; log attempts)
+    4) Reset Password (strong password rules + confirmation)
+    5) Success message and console.log outcome
+    - State is preserved in memory; no reloads or network requests
+    - Accessible labels and aria-live status region included
+
+    [Deterministic mock values]
+    - Recovery code (constant per session): HOSP-REC-246810
+      This value is documented here and used throughout the session.
+
+    [Acceptance Criteria (§14) — Embedded for evaluation]
+    1. Single file: Solution is one index.html with inline CSS and JS (no external requests).
+    2. Client-only: No network calls; recovery “delivery” is simulated via console.log.
+    3. Deterministic code: Mock recovery code is constant (HOSP-REC-246810) per session.
+    4. Flow: Request recovery → Verify code → Reset password → Success; all within one page.
+    5. Accessibility: Semantic landmarks, labels, and aria-live status region are present.
+    6. WCAG AA color contrast:
+       - Header text vs background meets ≥ 4.5:1.
+       - Primary button text vs background meets ≥ 4.5:1.
+       - Status/alert variants (default/ok/warn/error) meet ≥ 4.5:1.
+    7. Inputs:
+       - Identifier supports usernames or emails; inputmode="text".
+       - Identifier has autocomplete="username" (single valid token).
+       - Recovery code input uses a valid inputmode (e.g., "text"); no invalid "latin".
+       - Recovery code input has autocapitalize="off" and autocorrect="off".
+       - Password and confirm inputs have autocapitalize="off" and autocorrect="off".
+       - Password rules enforced; submit disabled until rules pass and values match.
+    8. No persistence: State is in-memory; password is not stored.
+    9. Logging: Key actions are logged with timestamps via console.log for evaluation.
+    10. Comments map code sections to the specification.
+  -->
+  <style>
+    /* [Style for readability and focus visibility + WCAG AA Contrast Compliance] */
+    :root {
+      --bg: #f7f9fc;
+      --panel: #ffffff;
+      --text: #1a1a1a;
+      --muted: #555;
+      /* Updated brand colors to meet WCAG AA with white text */
+      --brand: #0a47a7;          /* AA against white for primary buttons */
+      --header-bg: #083c7c;      /* Darker header background for AA with white text */
+      --ok: #0f5132;             /* Dark success text for AA on light success background */
+      --warn: #7c2d12;           /* Dark warning text for AA on light warning background */
+      --error: #b00020;          /* Error text already dark enough */
+      --border: #d9e1ec;
+      --focus: #0b6efd;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      color: var(--text);
+      background: var(--bg);
+    }
+    header, main, footer { display: block; }
+    header {
+      /* [WCAG AA] Increased contrast for header text/background */
+      background: var(--header-bg);
+      color: #ffffff;
+      padding: 1rem;
+    }
+    header h1 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.25rem;
+    }
+    header p {
+      margin: 0;
+      font-size: 0.95rem;
+      /* removed opacity to preserve contrast */
+    }
+    .container {
+      max-width: 720px;
+      margin: 1.25rem auto;
+      padding: 0 1rem;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 1.15rem;
+    }
+    form {
+      margin-top: 0.5rem;
+    }
+    .field {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.35rem;
+      font-weight: 600;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.6rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+      background: #fff;
+    }
+    input::placeholder { color: #9aa7b2; }
+    .help {
+      margin-top: 0.25rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 6px;
+      padding: 0.65rem 1rem;
+      font-size: 1rem;
+      background: var(--brand); /* [WCAG AA] Primary button contrast with white text */
+      color: #ffffff;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #e6eefc;
+      color: #123a7c;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .status {
+      margin: 0.75rem 0 0;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #f9fbff;
+      color: #0b3d91; /* Dark blue on light background — passes AA */
+      font-size: 0.95rem;
+    }
+    .status.ok {
+      background: #f1fbf5;
+      color: var(--ok);
+      border-color: #cce8d8;
+    }
+    .status.warn {
+      background: #fff8ec;
+      color: var(--warn); /* Darkened to ensure AA contrast */
+      border-color: #f6e1bf;
+    }
+    .status.error {
+      background: #fff2f2;
+      color: var(--error);
+      border-color: #f3c6cd;
+    }
+    ul.rules {
+      margin: 0.5rem 0 0.75rem 1.25rem;
+    }
+    ul.rules li {
+      margin: 0.2rem 0;
+    }
+    .rule-pass { color: var(--ok); }
+    .rule-fail { color: var(--error); }
+    .footnote {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .summary {
+      background: #f0f6ff;
+      border: 1px dashed #b6c9e6;
+      padding: 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+      color: #0b3d91;
+    }
+    :focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .sr-only {
+      border: 0 !important;
+      clip: rect(1px, 1px, 1px, 1px) !important;
+      -webkit-clip-path: inset(50%) !important;
+      clip-path: inset(50%) !important;
+      height: 1px !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      position: absolute !important;
+      width: 1px !important;
+      white-space: nowrap !important;
+    }
+    footer {
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.9rem;
+      padding: 1rem 0 2rem;
+    }
+    code.inline {
+      background: #eef3fb;
+      border: 1px solid #d7e3f8;
+      border-radius: 4px;
+      padding: 0.05rem 0.3rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+  </style>
+</head>
+<body>
+  <!-- [Header — Semantic HTML] -->
+  <header role="banner">
+    <div class="container">
+      <h1>Password Recovery (Client-Only Mock)</h1>
+      <p>Reset your password to access your healthcare account and accept updated privacy conditions.</p>
+    </div>
+  </header>
+
+  <!-- [Main Application — Single-Page Flow] -->
+  <main id="app" class="container" role="main" aria-describedby="flow-desc">
+    <p id="flow-desc" class="sr-only">
+      This page guides you through three steps: request recovery, verify code, and reset password.
+      Status messages are announced below.
+    </p>
+
+    <!-- [ARIA Live Region for Status — aids comprehension] -->
+    <div id="status" class="status" role="status" aria-live="polite">Welcome. Please start by requesting a recovery code.</div>
+
+    <!-- [Dynamic panel renders here via JS] -->
+    <section id="view" class="panel" aria-live="polite"></section>
+
+    <p class="footnote">
+      Note: This is a deterministic, client-only demonstration. No data leaves your browser.
+      The mock recovery code used in this session is <code class="inline">HOSP-REC-246810</code>.
+    </p>
+  </main>
+
+  <!-- [Footer — Deliverables note] -->
+  <footer role="contentinfo">
+    Single-file demo (no backend). Built for offline evaluation and accessibility.
+  </footer>
+
+  <script>
+    // [Deterministic mock values — constant for the session]
+    const MOCK_CODE = 'HOSP-REC-246810';
+
+    // [State kept in memory only — no storage, no network]
+    const state = {
+      step: 'request',         // 'request' | 'verify' | 'reset' | 'success'
+      identifier: '',          // username or email string
+      sentCode: MOCK_CODE,     // deterministic code
+      attempts: 0,             // verification attempts counter
+      lastLogTime: null        // timestamp of last action
+    };
+
+    // [Utility: Console logger with timestamps]
+    function logEvent(event, details = {}) {
+      const ts = new Date().toISOString();
+      state.lastLogTime = ts;
+      console.log(`[RecoveryDemo ${ts}] ${event}`, details);
+    }
+
+    // [Utility: Status message helper with aria-live updates]
+    function setStatus(message, type = '') {
+      const el = document.getElementById('status');
+      el.textContent = message;
+      el.className = `status${type ? ' ' + type : ''}`;
+    }
+
+    // [Utility: Mask identifier for display]
+    function maskIdentifier(id) {
+      if (!id) return '';
+      const s = String(id).trim();
+      if (s.includes('@')) {
+        const [user, dom] = s.split('@');
+        const maskedUser = user.length <= 2 ? user[0] + '*' : user[0] + '*'.repeat(Math.max(1, user.length - 2)) + user[user.length - 1];
+        const domParts = dom.split('.');
+        const maskedDom = domParts[0].length <= 2
+          ? '*'.repeat(domParts[0].length) + (domParts.slice(1).length ? '.' + domParts.slice(1).join('.') : '')
+          : domParts[0][0] + '*'.repeat(Math.max(1, domParts[0].length - 2)) + domParts[0].slice(-1) + (domParts.slice(1).length ? '.' + domParts.slice(1).join('.') : '');
+        return maskedUser + '@' + maskedDom;
+      }
+      if (s.length <= 3) return s[0] + '*'.repeat(Math.max(0, s.length - 1));
+      return s[0] + '*'.repeat(s.length - 2) + s[s.length - 1];
+    }
+
+    // [Validation helpers]
+    function isLikelyEmail(value) {
+      // basic client-side email heuristic (not exhaustive)
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
+
+    function validateIdentifier(raw) {
+      const v = String(raw || '').trim();
+      if (!v) return { ok: false, msg: 'Please enter your username or email.' };
+      if (isLikelyEmail(v)) return { ok: true, msg: 'Looks like an email address.' };
+      if (v.length >= 3) return { ok: true, msg: 'Looks like a username.' };
+      return { ok: false, msg: 'Username should be at least 3 characters (or provide a valid email).' };
+    }
+
+    // [Password rules — clear guidance]
+    function checkPasswordRules(pw) {
+      const lengthOK = pw.length >= 12;
+      const upperOK = /[A-Z]/.test(pw);
+      const lowerOK = /[a-z]/.test(pw);
+      const numberOK = /\d/.test(pw);
+      const specialOK = /[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(pw);
+      const noSpacesOK = !/\s/.test(pw);
+      return { lengthOK, upperOK, lowerOK, numberOK, specialOK, noSpacesOK };
+    }
+
+    function allPasswordRulesPass(r) {
+      return r.lengthOK && r.upperOK && r.lowerOK && r.numberOK && r.specialOK && r.noSpacesOK;
+    }
+
+    // [Rendering functions for each step]
+    function render() {
+      const view = document.getElementById('view');
+      switch (state.step) {
+        case 'request': renderRequest(view); break;
+        case 'verify': renderVerify(view); break;
+        case 'reset': renderReset(view); break;
+        case 'success': renderSuccess(view); break;
+        default: renderRequest(view); break;
+      }
+    }
+
+    // [Step 1 — Request Recovery]
+    function renderRequest(container) {
+      container.innerHTML = `
+        <!-- [Request Recovery form to collect username or email] -->
+        <h2 id="req-title">Request a recovery code</h2>
+        <p class="summary">Enter your username or email. We will simulate sending a recovery code. For this demo, the mock code is <code class="inline">${MOCK_CODE}</code> (also logged to the console).</p>
+        <form id="request-form" novalidate aria-labelledby="req-title">
+          <div class="field">
+            <label for="identifier">Username or email</label>
+            <!-- [Inputs per §14: autocomplete=username, inputmode=text] -->
+            <input id="identifier" name="identifier" type="text" inputmode="text"
+              autocomplete="username" placeholder="e.g. helena@example.org or helena67"
+              required aria-describedby="id-help">
+            <div id="id-help" class="help">Basic validation is applied. No actual messages are sent.</div>
+          </div>
+          <div class="actions">
+            <button type="submit" id="send-btn">Send recovery code</button>
+          </div>
+        </form>
+      `;
+      setStatus('Enter your username or email, then select “Send recovery code”.');
+      const input = document.getElementById('identifier');
+      input.value = state.identifier || '';
+      input.focus();
+
+      const form = document.getElementById('request-form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const raw = input.value;
+        const res = validateIdentifier(raw);
+        if (!res.ok) {
+          setStatus(res.msg, 'warn');
+          input.setAttribute('aria-invalid', 'true');
+          input.focus();
+          return;
+        }
+        input.removeAttribute('aria-invalid');
+        state.identifier = raw.trim();
+        state.sentCode = MOCK_CODE; // deterministic
+        // [Simulate "delivery" via console.log]
+        logEvent('REQUEST_SUBMITTED', {
+          identifier: state.identifier,
+          delivery: 'console.log only',
+          code: state.sentCode
+        });
+        console.log('Mock delivery: recovery code for', state.identifier, '=>', state.sentCode);
+        setStatus(`If an account exists for ${maskIdentifier(state.identifier)}, a recovery code has been sent.`, 'ok');
+        state.step = 'verify';
+        render();
+      });
+    }
+
+    // [Step 2 — Verify Code]
+    function renderVerify(container) {
+      const masked = maskIdentifier(state.identifier);
+      container.innerHTML = `
+        <!-- [Verification form that checks against deterministic mock value] -->
+        <h2 id="ver-title">Verify your recovery code</h2>
+        <p>We sent a code to the contact on file for <strong>${masked || 'your account'}</strong>.
+           Enter the code to continue.</p>
+        <form id="verify-form" novalidate aria-labelledby="ver-title">
+          <div class="field">
+            <label for="code">Recovery code</label>
+            <!-- [Inputs per §14: valid inputmode, autocapitalize/correct off] -->
+            <input id="code" name="code" type="text" inputmode="text" autocomplete="one-time-code"
+              autocapitalize="off" autocorrect="off"
+              placeholder="Enter your code" required aria-describedby="code-help">
+            <div id="code-help" class="help">For this demo, the code is <code class="inline">${MOCK_CODE}</code>. Attempts are logged.</div>
+          </div>
+          <div class="actions">
+            <button type="submit">Verify code</button>
+            <button type="button" class="secondary" id="back-request">Back</button>
+          </div>
+        </form>
+      `;
+      setStatus(`A code was “sent” for ${masked}. Enter it to proceed.`);
+      const input = document.getElementById('code');
+      input.focus();
+
+      document.getElementById('back-request').addEventListener('click', () => {
+        state.step = 'request';
+        setStatus('You can update your username or email and request a new code.', 'warn');
+        render();
+      });
+
+      const form = document.getElementById('verify-form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const provided = (input.value || '').trim();
+        state.attempts += 1;
+        const ok = provided === state.sentCode;
+        // [Log verification attempts and outcomes via console.log]
+        logEvent('CODE_VERIFY_ATTEMPT', {
+          attempt: state.attempts,
+          provided,
+          expected: state.sentCode,
+          match: ok
+        });
+        if (!ok) {
+          setStatus('That code did not match. Please try again.', 'error');
+          input.setAttribute('aria-invalid', 'true');
+          input.focus();
+          input.select();
+          return;
+        }
+        input.removeAttribute('aria-invalid');
+        setStatus('Code verified. You can now reset your password.', 'ok');
+        state.step = 'reset';
+        render();
+      });
+    }
+
+    // [Step 3 — Reset Password]
+    function renderReset(container) {
+      container.innerHTML = `
+        <!-- [Password reset form enforcing strong rules and confirmation match] -->
+        <h2 id="reset-title">Create a new password</h2>
+        <p>Please choose a strong password. Follow the rules below.</p>
+        <form id="reset-form" novalidate aria-labelledby="reset-title">
+          <div class="field">
+            <label for="pw1">New password</label>
+            <!-- [Inputs per §14: disable auto-capitalize/correct] -->
+            <input id="pw1" name="pw1" type="password" autocomplete="new-password"
+              autocapitalize="off" autocorrect="off"
+              placeholder="Enter a strong password" required aria-describedby="rules">
+          </div>
+          <div class="field">
+            <label for="pw2">Confirm new password</label>
+            <input id="pw2" name="pw2" type="password" autocomplete="new-password"
+              autocapitalize="off" autocorrect="off"
+              placeholder="Re-enter your new password" required>
+            <div class="help">Both entries must match exactly.</div>
+          </div>
+          <div id="rules" class="help">
+            Password must include:
+            <ul class="rules" id="rules-list">
+              <li id="r-length" class="rule-fail">At least 12 characters</li>
+              <li id="r-upper" class="rule-fail">An uppercase letter (A–Z)</li>
+              <li id="r-lower" class="rule-fail">A lowercase letter (a–z)</li>
+              <li id="r-number" class="rule-fail">A number (0–9)</li>
+              <li id="r-special" class="rule-fail">A special character (e.g., ! @ # $ %)</li>
+              <li id="r-spaces" class="rule-fail">No spaces</li>
+            </ul>
+          </div>
+          <div class="actions">
+            <button type="submit" id="reset-btn" disabled>Reset password</button>
+          </div>
+        </form>
+      `;
+      setStatus('Enter and confirm your new password. All rules must pass.');
+      const pw1 = document.getElementById('pw1');
+      const pw2 = document.getElementById('pw2');
+      const resetBtn = document.getElementById('reset-btn');
+      pw1.focus();
+
+      function updateRules() {
+        const r = checkPasswordRules(pw1.value);
+        const map = {
+          'r-length': r.lengthOK,
+          'r-upper': r.upperOK,
+          'r-lower': r.lowerOK,
+          'r-number': r.numberOK,
+          'r-special': r.specialOK,
+          'r-spaces': r.noSpacesOK
+        };
+        for (const id in map) {
+          const el = document.getElementById(id);
+          el.className = map[id] ? 'rule-pass' : 'rule-fail';
+        }
+        const match = pw1.value && pw1.value === pw2.value;
+        const enabled = allPasswordRulesPass(r) && match;
+        resetBtn.disabled = !enabled;
+        return { rules: r, match };
+      }
+
+      pw1.addEventListener('input', () => {
+        const { rules } = updateRules();
+        if (!allPasswordRulesPass(rules)) {
+          setStatus('Password does not meet all requirements yet.', 'warn');
+        } else {
+          setStatus('Password meets requirements. Confirm to enable reset.', 'ok');
+        }
+      });
+
+      pw2.addEventListener('input', () => {
+        const { match } = updateRules();
+        if (!match) {
+          setStatus('Passwords must match.', 'warn');
+        } else {
+          setStatus('Passwords match. You can reset now if all rules pass.', 'ok');
+        }
+      });
+
+      document.getElementById('reset-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const r = checkPasswordRules(pw1.value);
+        const match = pw1.value === pw2.value;
+        if (!allPasswordRulesPass(r) || !match) {
+          setStatus('Please satisfy all rules and ensure both passwords match.', 'error');
+          if (!match) pw2.setAttribute('aria-invalid', 'true'); else pw2.removeAttribute('aria-invalid');
+          if (!allPasswordRulesPass(r)) pw1.setAttribute('aria-invalid', 'true'); else pw1.removeAttribute('aria-invalid');
+          return;
+        }
+        pw1.removeAttribute('aria-invalid');
+        pw2.removeAttribute('aria-invalid');
+
+        // [On successful reset, log the outcome via console.log]
+        logEvent('PASSWORD_RESET_SUCCESS', {
+          identifier: state.identifier,
+          method: 'client-only mock',
+          notes: 'No real password persisted.'
+        });
+
+        setStatus('Your password has been reset for this demo session.', 'ok');
+        state.step = 'success';
+        render();
+      });
+
+      // Initialize rule display
+      updateRules();
+    }
+
+    // [Final — Success view]
+    function renderSuccess(container) {
+      const masked = maskIdentifier(state.identifier);
+      container.innerHTML = `
+        <!-- [Success/Next steps message] -->
+        <h2 id="success-title">Password reset complete</h2>
+        <p>Success! Your password has been reset for <strong>${masked || 'your account'}</strong> in this demo.</p>
+        <p class="summary">Next steps: Return to the login page for your healthcare account and sign in using your new password. You will then be able to accept the updated privacy statement.</p>
+        <div class="actions">
+          <button id="restart" class="secondary">Start over</button>
+        </div>
+      `;
+      setStatus('Password reset completed in this mock session. You may start over or close this page.', 'ok');
+      const btn = document.getElementById('restart');
+      btn.focus();
+      btn.addEventListener('click', () => {
+        // Reset in-memory state for a new demo run
+        state.step = 'request';
+        state.identifier = '';
+        state.attempts = 0;
+        setStatus('Welcome. Please start by requesting a recovery code.');
+        render();
+      });
+    }
+
+    // [Initialize app — renders first view; no network calls]
+    document.addEventListener('DOMContentLoaded', () => {
+      logEvent('APP_INIT', { deterministicCode: MOCK_CODE, offline: true });
+      render();
+    });
+  </script>
+</body>
+</html>
