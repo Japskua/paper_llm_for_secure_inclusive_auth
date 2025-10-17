@@ -6,7 +6,7 @@ Note: This is not for production use.
 
 Use-case description:
 
-Helena is a 67 year patient with chronic heart disease and cognitive condition ADHD. She calls the hospital to book an appointment to review her medication dosage. Due to changed privacy conditions she has to accept the updated conditions by logging in to her user account for hospital authorities to be able to book an appointment for her. The authentication to her personal healthcare account requires a strong password which she has forgot, therefore she needs to reset the password to be able access the account and accept the privacy statement.
+Alex is a university student. He needs to hand in his assignment before midnight. When he tries to log into the school portal, his password has expired, so he must make a new one. The reset email has long instructions and asks for a strong password, which is hard for him to read and follow quickly. He makes mistakes typing the new password and has to try again. After logging in, Alex still needs to find the right course page and upload the correct file before the deadline.
 
 Deliverables
 • One file: index.html

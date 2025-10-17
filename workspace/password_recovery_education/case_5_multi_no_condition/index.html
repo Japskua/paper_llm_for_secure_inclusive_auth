@@ -1,0 +1,673 @@
+
+<!doctype html>
+<!--
+Password Recovery System — Single-Page, Client-Only, Mocked
+Spec-to-Code Map (key sections):
+1) Semantic HTML, inline CSS & JS  -> Whole file; <style> and <script> inline; no external deps.
+2) Views:
+   - Login View                   -> renderLogin()
+   - Recovery Request View        -> renderRecoveryRequest()
+   - Code + New Password View     -> renderCodeAndPassword()
+   - Authenticated Dashboard      -> renderDashboard()
+3) Deterministic token generator  -> generateResetCode(email) [documented below]
+4) Console stages                 -> console.log at: email sent, code verified, password reset, login success, course selected, file uploaded
+5) Accessibility                 -> Labels, aria-describedby, aria-live regions, focus management on view change
+6) Password UX                   -> Real-time policy checklist, strength indicator, show/hide toggles, confirm match validation
+7) State & Logout                -> In-memory state reset on logout, returns to Login
+8) Offline guarantee             -> No network calls; all logic in-browser
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Password Recovery Demo (Client-only)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* Basic responsive layout and readable styles — Requirement: readable layout, clear states */
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #2563eb;
+      --accent-2: #10b981;
+      --error: #ef4444;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --border: #334155;
+    }
+    html, body {
+      height: 100%;
+      background: linear-gradient(180deg, #0b1022, #0b1022 30%, #0d1329);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      margin: 0;
+    }
+    header {
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px);
+    }
+    h1, h2 {
+      margin: 0 0 0.5rem 0;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    p {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    form {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    .field {
+      display: grid;
+      gap: 0.35rem;
+    }
+    label {
+      font-weight: 600;
+    }
+    input[type="email"],
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      background: #0b1022;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.65rem 0.75rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    }
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      align-items: stretch;
+    }
+    .toggle {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0 0.75rem;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+    .toggle:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.04);
+    }
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 0.25rem;
+    }
+    .btn {
+      background: linear-gradient(180deg, #2b67f2, #1e3fa6);
+      color: #fff;
+      border: 0;
+      border-radius: 12px;
+      padding: 0.7rem 1rem;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.25px;
+      box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+      transition: transform 0.06s ease, filter 0.15s ease, box-shadow 0.2s ease;
+    }
+    .btn:hover { filter: brightness(1.05); }
+    .btn:active { transform: translateY(1px); }
+    .btn.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      box-shadow: none;
+    }
+    .linkish {
+      background: none;
+      border: none;
+      color: #93c5fd;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 0;
+      font: inherit;
+    }
+    .status {
+      margin: 0.25rem 0 0;
+      padding: 0.5rem 0.6rem;
+      border-radius: 10px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+    .status.success {
+      color: #022c22;
+      background: #a7f3d0;
+      border-color: #10b981;
+    }
+    .status.error {
+      color: #450a0a;
+      background: #fecaca;
+      border-color: #ef4444;
+    }
+    .status.info {
+      color: #111827;
+      background: #dbeafe;
+      border-color: #60a5fa;
+    }
+    .help {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .checklist {
+      display: grid;
+      gap: 0.25rem;
+      margin: 0.25rem 0 0;
+      padding-left: 1.1rem;
+    }
+    .checklist li {
+      list-style: none;
+      position: relative;
+      padding-left: 1.1rem;
+      color: var(--muted);
+    }
+    .checklist li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--muted);
+    }
+    .checklist li.ok {
+      color: #bbf7d0;
+    }
+    .checklist li.ok::before {
+      content: "✓";
+      color: #22c55e;
+      font-weight: 800;
+    }
+    .checklist li.bad {
+      color: #fecaca;
+    }
+    .checklist li.bad::before {
+      content: "✗";
+      color: #ef4444;
+      font-weight: 800;
+    }
+    .strength {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.25rem;
+    }
+    .bar {
+      height: 10px;
+      border-radius: 6px;
+      background: #111827;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .bar > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);
+      transition: width 0.2s ease;
+    }
+    .label-weak { color: #fca5a5; }
+    .label-med { color: #fde68a; }
+    .label-strong { color: #86efac; }
+    .inline-error {
+      color: #fecaca;
+      font-weight: 600;
+    }
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0.75rem 0;
+      border-radius: 999px;
+    }
+    .row {
+      display: grid;
+      gap: 0.5rem;
+    }
+    @media (min-width: 560px) {
+      .row.two {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .visually-hidden {
+      position: absolute !important;
+      height: 1px; width: 1px;
+      overflow: hidden; clip: rect(1px, 1px, 1px, 1px);
+      white-space: nowrap; border: 0; padding: 0; margin: -1px;
+    }
+    footer {
+      color: var(--muted);
+      text-align: center;
+      padding: 1rem 0 2rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header aria-hidden="true">
+    <div class="container">
+      <h1>Password Recovery Demo</h1>
+      <p>A single-file, client-only mock flow. For demo/testing only.</p>
+    </div>
+  </header>
+  <main id="app" class="container" role="main">
+    <div class="panel">
+      <p>Loading…</p>
+    </div>
+  </main>
+  <footer>
+    Runs entirely offline in your browser. No data is transmitted.
+  </footer>
+
+  <script>
+    // Deterministic token generator — Requirement: Documented and repeatable
+    // Algorithm:
+    // 1) Start with seed = 5381 (classic djb2 seed).
+    // 2) For each character c in email (lowercased & trimmed), seed = ((seed << 5) + seed) ^ c.charCodeAt(0)  (djb2 xor variant).
+    // 3) Multiply by a small odd constant 33, then take absolute value and mod 1_000_000.
+    // 4) Left-pad to 6 digits. Example: "alex@example.edu" -> same 6-digit code every time.
+    function generateResetCode(email) {
+      const s = (String(email || '').trim().toLowerCase());
+      let seed = 5381;
+      for (let i = 0; i < s.length; i++) {
+        seed = ((seed << 5) + seed) ^ s.charCodeAt(i);
+        seed |= 0;
+      }
+      let n = Math.abs((seed * 33) | 0) % 1000000;
+      return String(n).padStart(6, '0');
+    }
+
+    // In-memory state — Requirement: resets on logout
+    const state = {
+      isAuthenticated: false,
+      userEmail: null,
+      generatedCode: null,
+      newPassword: null
+    };
+
+    // Utility: mount view and focus first control — Requirement: move focus on view change
+    function mount(html, focusSelector = 'input, select, textarea, button') {
+      const container = document.getElementById('app');
+      container.innerHTML = '<section class="panel">' + html + '</section>';
+      // Focus first focusable field
+      setTimeout(() => {
+        const first = container.querySelector('[autofocus]') || container.querySelector(focusSelector);
+        if (first && typeof first.focus === 'function') {
+          first.focus();
+        }
+      }, 0);
+    }
+
+    // Utility: escape HTML for safe text insertions
+    function esc(s) {
+      return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // View: Login — Requirement: Login view with forgot password control
+    function renderLogin(prefillEmail = '') {
+      state.isAuthenticated = false;
+      const html = `
+        <h2>Log in</h2>
+        <p id="login-help" class="help">Enter your university account. If your password is expired or forgotten, use "Forgot password?".</p>
+        <form id="login-form" aria-describedby="login-help">
+          <div class="field">
+            <label for="login-email">Email or username</label>
+            <input id="login-email" name="email" type="email" autocomplete="username" required value="${esc(prefillEmail)}" autofocus aria-describedby="login-help">
+          </div>
+          <div class="field">
+            <label for="login-password">Password</label>
+            <div class="input-row">
+              <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+              <button type="button" class="toggle" aria-controls="login-password" aria-label="Toggle password visibility" data-toggle="login-password">Show</button>
+            </div>
+          </div>
+          <div id="login-status" class="status info" role="status" aria-live="polite">Tip: You can try the reset flow via "Forgot password?"</div>
+          <div class="actions">
+            <button class="btn" type="submit">Log in</button>
+            <button class="linkish" type="button" id="forgot-btn">Forgot password?</button>
+          </div>
+        </form>
+      `;
+      mount(html);
+      // Wire up
+      const form = document.getElementById('login-form');
+      document.getElementById('forgot-btn').addEventListener('click', () => {
+        const email = /** move email along */ form.email.value;
+        renderRecoveryRequest(email);
+      });
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = form.email.value.trim();
+        const pwd = form.password.value;
+        if (!email || !pwd) return;
+        state.userEmail = email;
+        state.isAuthenticated = true;
+        console.log('[login success]', email);
+        renderDashboard();
+      });
+      bindVisibilityToggles();
+    }
+
+    // View: Recovery Request — Requirement: console.log deterministic reset code, show notice
+    function renderRecoveryRequest(prefillEmail = '') {
+      const html = `
+        <h2>Recover your account</h2>
+        <p id="rr-help" class="help">Enter your email to receive a 6-digit reset code. This demo uses a deterministic code visible in the browser console for testing.</p>
+        <form id="rr-form" aria-describedby="rr-help">
+          <div class="field">
+            <label for="rr-email">Email</label>
+            <input id="rr-email" name="email" type="email" required autocomplete="username" value="${esc(prefillEmail)}" autofocus>
+          </div>
+          <div id="rr-status" class="status info" role="status" aria-live="polite">Awaiting your request…</div>
+          <div class="actions">
+            <button class="btn" type="submit">Send code</button>
+            <button class="btn secondary" type="button" id="back-to-login">Back to login</button>
+          </div>
+        </form>
+      `;
+      mount(html);
+      document.getElementById('back-to-login').addEventListener('click', () => renderLogin(prefillEmail));
+      const form = document.getElementById('rr-form');
+      const statusEl = document.getElementById('rr-status');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = form.email.value.trim();
+        if (!email) return;
+        const code = generateResetCode(email);
+        state.userEmail = email;
+        state.generatedCode = code;
+        console.log('[email sent] Reset code for', email, '=>', code);
+        statusEl.className = 'status success';
+        statusEl.textContent = 'Code sent. Check the console for this demo.';
+        // Transition to next view
+        renderCodeAndPassword();
+      });
+    }
+
+    // Helpers for password policy — Requirement: real-time policy + strength indicator
+    const policy = {
+      length: (s) => s.length >= 8,
+      upper: (s) => /[A-Z]/.test(s),
+      lower: (s) => /[a-z]/.test(s),
+      number: (s) => /\d/.test(s),
+      symbol: (s) => /[^A-Za-z0-9\s]/.test(s)
+    };
+    function scorePassword(pw) {
+      let score = 0;
+      if (policy.length(pw)) score++;
+      if (policy.upper(pw)) score++;
+      if (policy.lower(pw)) score++;
+      if (policy.number(pw)) score++;
+      if (policy.symbol(pw)) score++;
+      return score;
+    }
+
+    // View: Code + New Password — Requirement: verify code, show errors; gate by policy; show/hide toggles; confirm match validation
+    function renderCodeAndPassword() {
+      const email = state.userEmail || '';
+      const html = `
+        <h2>Enter code and set a new password</h2>
+        <p class="help" id="cp-help">We sent a 6-digit code to ${esc(email || 'your email')}. For this demo, the code is deterministic: open DevTools console to see it.</p>
+        <form id="cp-form" aria-describedby="cp-help">
+          <div class="field">
+            <label for="cp-code">6-digit code</label>
+            <input id="cp-code" name="code" type="text" inputmode="numeric" pattern="\\d{6}" maxlength="6" aria-describedby="cp-code-err" autofocus>
+            <div id="cp-code-err" class="inline-error" role="alert" aria-live="assertive"></div>
+          </div>
+
+          <div class="divider" aria-hidden="true"></div>
+
+          <div class="row two">
+            <div class="field">
+              <label for="cp-pass">New password</label>
+              <div class="input-row">
+                <input id="cp-pass" name="password" type="password" autocomplete="new-password" aria-describedby="policy-list policy-help">
+                <button type="button" class="toggle" aria-controls="cp-pass" aria-label="Toggle password visibility" data-toggle="cp-pass">Show</button>
+              </div>
+              <div id="policy-help" class="help">Must satisfy all checks:</div>
+              <ul id="policy-list" class="checklist" aria-live="polite">
+                <li data-rule="length" class="bad">At least 8 characters</li>
+                <li data-rule="upper" class="bad">Contains an uppercase letter (A-Z)</li>
+                <li data-rule="lower" class="bad">Contains a lowercase letter (a-z)</li>
+                <li data-rule="number" class="bad">Contains a number (0-9)</li>
+                <li data-rule="symbol" class="bad">Contains a symbol (!@#...)</li>
+              </ul>
+              <div class="strength" aria-live="polite">
+                <div class="bar" aria-hidden="true"><span id="strength-bar"></span></div>
+                <div id="strength-label" class="label-weak">Strength: Weak</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="cp-confirm">Confirm new password</label>
+              <div class="input-row">
+                <input id="cp-confirm" name="confirm" type="password" autocomplete="new-password" aria-describedby="cp-confirm-err">
+                <button type="button" class="toggle" aria-controls="cp-confirm" aria-label="Toggle password visibility" data-toggle="cp-confirm">Show</button>
+              </div>
+              <div id="cp-confirm-err" class="inline-error" role="alert" aria-live="assertive"></div>
+            </div>
+          </div>
+
+          <div id="cp-status" class="status info" role="status" aria-live="polite">Enter the code and choose a strong password.</div>
+          <div class="actions">
+            <button id="cp-submit" class="btn" type="submit" disabled>Reset password</button>
+            <button class="btn secondary" type="button" id="cp-cancel">Cancel</button>
+          </div>
+        </form>
+      `;
+      mount(html);
+      bindVisibilityToggles();
+
+      const form = document.getElementById('cp-form');
+      const pass = document.getElementById('cp-pass');
+      const confirm = document.getElementById('cp-confirm');
+      const code = document.getElementById('cp-code');
+      const submit = document.getElementById('cp-submit');
+      const statusEl = document.getElementById('cp-status');
+      const codeErr = document.getElementById('cp-code-err');
+      const confirmErr = document.getElementById('cp-confirm-err');
+      const bar = document.getElementById('strength-bar');
+      const label = document.getElementById('strength-label');
+      const list = document.getElementById('policy-list');
+
+      document.getElementById('cp-cancel').addEventListener('click', () => renderLogin(email));
+
+      function updatePolicyUI() {
+        const val = pass.value || '';
+        // checklist
+        [...list.querySelectorAll('li')].forEach(li => {
+          const rule = li.getAttribute('data-rule');
+          const ok = policy[rule](val);
+          li.classList.toggle('ok', ok);
+          li.classList.toggle('bad', !ok);
+        });
+        // strength
+        const s = scorePassword(val);
+        const pct = (s / 5) * 100;
+        bar.style.width = pct + '%';
+        label.className = s <= 2 ? 'label-weak' : s === 3 ? 'label-med' : 'label-strong';
+        label.textContent = 'Strength: ' + (s <= 2 ? 'Weak' : s === 3 ? 'Medium' : 'Strong');
+        // enable submit only if all policy pass and confirm matches
+        const allPass = s === 5;
+        const match = confirm.value && confirm.value === val;
+        submit.disabled = !(allPass && match);
+      }
+      function updateConfirmUI() {
+        const val = pass.value || '';
+        if (!confirm.value) {
+          confirmErr.textContent = '';
+        } else if (confirm.value !== val) {
+          confirmErr.textContent = 'Passwords do not match.';
+        } else {
+          confirmErr.textContent = '';
+        }
+        updatePolicyUI();
+      }
+      pass.addEventListener('input', updatePolicyUI);
+      confirm.addEventListener('input', updateConfirmUI);
+      code.addEventListener('input', () => {
+        codeErr.textContent = '';
+      });
+      updatePolicyUI();
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const entered = (code.value || '').trim();
+        const expected = generateResetCode(email);
+        if (!/^\d{6}$/.test(entered) || entered !== expected) {
+          codeErr.textContent = 'Invalid or incorrect code. Please check and try again.';
+          statusEl.className = 'status error';
+          statusEl.textContent = 'Code verification failed.';
+          return;
+        }
+        console.log('[code verified]', email, 'code:', entered);
+        // Passed policy/confirm because button enabled
+        const newPw = pass.value;
+        state.newPassword = newPw;
+        console.log('[password reset]', email);
+        // Consider the user logged in post-reset
+        state.isAuthenticated = true;
+        console.log('[login success]', email);
+        renderDashboard();
+      });
+    }
+
+    // View: Dashboard — Requirement: course list, file upload, logout
+    function renderDashboard() {
+      const email = state.userEmail || 'user@example.edu';
+      const html = `
+        <h2>Dashboard</h2>
+        <p class="help">Welcome, ${esc(email)}. Select a course and upload your assignment before the deadline.</p>
+
+        <section aria-labelledby="course-label">
+          <div class="field">
+            <label id="course-label" for="course-select">Course</label>
+            <select id="course-select" aria-describedby="course-help">
+              <option value="">Select a course…</option>
+              <option>CS101 - Intro to Computer Science</option>
+              <option>CS223 - Data Structures</option>
+              <option>CS341 - Algorithms</option>
+              <option>HIST210 - Modern Europe</option>
+              <option>MATH231 - Linear Algebra</option>
+              <option>STAT320 - Probability</option>
+            </select>
+            <div id="course-help" class="help">Choose the course to submit your file to.</div>
+          </div>
+        </section>
+
+        <div class="divider" aria-hidden="true"></div>
+
+        <section aria-labelledby="upload-label">
+          <div class="field">
+            <label id="upload-label" for="file-input">Upload assignment</label>
+            <input id="file-input" type="file" aria-describedby="upload-help upload-err">
+            <div id="upload-help" class="help">Accepted for demo: any file. Nothing is uploaded; we only log the action.</div>
+            <div id="upload-err" class="inline-error" role="alert" aria-live="assertive"></div>
+          </div>
+          <div class="actions">
+            <button id="upload-btn" class="btn" type="button">Upload</button>
+            <button id="logout-btn" class="btn secondary" type="button">Log out</button>
+          </div>
+          <div id="dash-status" class="status info" role="status" aria-live="polite">Not uploaded yet.</div>
+        </section>
+      `;
+      mount(html, '#course-select');
+
+      const courseSel = document.getElementById('course-select');
+      const fileInput = document.getElementById('file-input');
+      const uploadErr = document.getElementById('upload-err');
+      const dashStatus = document.getElementById('dash-status');
+
+      courseSel.addEventListener('change', () => {
+        if (courseSel.value) {
+          console.log('[course selected]', courseSel.value);
+          dashStatus.className = 'status success';
+          dashStatus.textContent = 'Selected: ' + courseSel.value;
+        } else {
+          dashStatus.className = 'status info';
+          dashStatus.textContent = 'Select a course.';
+        }
+      });
+
+      document.getElementById('upload-btn').addEventListener('click', () => {
+        uploadErr.textContent = '';
+        const course = courseSel.value;
+        const file = fileInput.files && fileInput.files[0];
+        if (!course) {
+          uploadErr.textContent = 'Please select a course.';
+          courseSel.focus();
+          return;
+        }
+        if (!file) {
+          uploadErr.textContent = 'Please choose a file to upload.';
+          fileInput.focus();
+          return;
+        }
+        console.log('[file uploaded]', 'course:', course, 'file:', file.name);
+        dashStatus.className = 'status success';
+        dashStatus.textContent = 'Uploaded "' + file.name + '" to ' + course + '.';
+        // Reset file for repeatable demo
+        fileInput.value = '';
+      });
+
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        // Reset in-memory state — Requirement: reset to allow retry
+        state.isAuthenticated = false;
+        state.userEmail = null;
+        state.generatedCode = null;
+        state.newPassword = null;
+        renderLogin();
+      });
+    }
+
+    // Password visibility toggles — Requirement: show/hide toggles for password and confirm fields
+    function bindVisibilityToggles() {
+      document.querySelectorAll('[data-toggle]').forEach(btn => {
+        const id = btn.getAttribute('data-toggle');
+        const input = document.getElementById(id);
+        if (!input) return;
+        const setLabel = () => { btn.textContent = input.type === 'password' ? 'Show' : 'Hide'; };
+        setLabel();
+        btn.addEventListener('click', () => {
+          input.type = input.type === 'password' ? 'text' : 'password';
+          setLabel();
+          input.focus();
+        });
+      });
+    }
+
+    // Initial load -> Login
+    renderLogin();
+  </script>
+</body>
+</html>

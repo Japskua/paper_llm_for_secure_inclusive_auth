@@ -57,6 +57,20 @@ uv run python run.py \
   --verbose
 ```
 
+#### Scenario 5 - Multi-agents with no inclusivity requirements and no condition mentioned
+
+```bash
+uv run python run.py \
+  --mode multi \
+  --tasker prompts/prompt_tasker.txt \
+  --coder prompts/prompt_coder.txt \
+  --eval prompts/prompt_evaluator.txt \
+  --requirements requirements/password_recovery_health/password_recovery_health_no_inclusivity_no_condition.md \
+  --output workspace/password_recovery_health/case_5_multi_no_condition \
+  --max-iters 8 \
+  --verbose
+```
+
 ### Education case
 
 #### Scenario 1 - Single agent with no inclusivity requirements
@@ -105,6 +119,20 @@ uv run python run.py \
   --eval prompts/prompt_evaluator.txt \
   --requirements requirements/password_recovery_education/password_recovery_education_with_inclusivity.md \
   --output workspace/password_recovery_education/case_4 \
+  --max-iters 8 \
+  --verbose
+```
+
+#### Scenario 5 - Multi-agents with no inclusivity requirements and no condition mentioned
+
+```bash
+uv run python run.py \
+  --mode multi \
+  --tasker prompts/prompt_tasker.txt \
+  --coder prompts/prompt_coder.txt \
+  --eval prompts/prompt_evaluator.txt \
+  --requirements requirements/password_recovery_education/password_recovery_education_no_inclusivity_no_condition.md \
+  --output workspace/password_recovery_education/case_5_multi_no_condition \
   --max-iters 8 \
   --verbose
 ```

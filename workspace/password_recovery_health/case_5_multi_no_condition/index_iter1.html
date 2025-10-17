@@ -1,0 +1,636 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Password Recovery System (Client-only Mock)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--
+    SPEC MAPPING — Purpose
+    This single-file page implements a client-only, mocked password recovery flow for academic AI evaluation.
+    All logic runs in-browser; no servers, no external calls. Delivery and verification are simulated.
+    
+    SPEC MAPPING — Use-case
+    Use-case: Helena (67) needs to reset her strong password to log in and accept updated privacy conditions
+    so hospital staff can book her appointment. This flow helps her recover access.
+
+    SPEC MAPPING — Deliverables
+    - One file: index.html
+    - Semantic HTML, inline CSS & JS
+    - Commented sections mapping to the spec
+    - No build step
+
+    SPEC MAPPING — Mocking
+    Deterministic mock constants are used (DEMO_USER and RECOVERY_CODE='123456').
+    “Delivery” and verification are logged to console.
+  -->
+  <style>
+    /* SPEC MAPPING — Deliverables: Inline CSS; Accessibility: high contrast, large fonts, responsive, focus outlines */
+
+    :root {
+      --bg: #ffffff;
+      --fg: #111111;
+      --muted: #444444;
+      --accent: #005fcc;
+      --accent-2: #0a7d33;
+      --danger: #b00020;
+      --warn: #9b6a00;
+      --border: #cfd8e3;
+      --ok: #0a7d33;
+      --focus: #ff9900;
+      --surface: #f5f7fb;
+      --error-surface: #ffeef0;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.5;
+      font-size: 18px; /* large legible base */
+    }
+
+    header, main, footer {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    header {
+      border-bottom: 4px solid var(--border);
+      background: var(--surface);
+    }
+
+    header h1 {
+      margin: 0 0 .25rem 0;
+      font-size: 1.6rem;
+    }
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .container {
+      padding: 1rem;
+    }
+
+    .card {
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.4rem;
+    }
+
+    form {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"] {
+      width: 100%;
+      padding: 0.75rem 0.85rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #fff;
+      color: var(--fg);
+    }
+
+    input:focus, button:focus, a:focus {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+    }
+    button.secondary {
+      background: #e6eef9;
+      color: #0b3b7c;
+      border: 2px solid var(--border);
+    }
+    button.ghost {
+      background: transparent;
+      color: var(--accent);
+      border: 2px solid var(--accent);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .help {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: -0.25rem;
+    }
+
+    .field-error {
+      color: var(--danger);
+      background: var(--error-surface);
+      border-left: 4px solid var(--danger);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .status {
+      color: var(--accent-2);
+      background: #ebf7ef;
+      border-left: 4px solid var(--accent-2);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+    }
+
+    .warn {
+      color: var(--warn);
+    }
+
+    /* Password criteria list */
+    .criteria {
+      list-style: none;
+      padding: 0;
+      margin: 0.25rem 0 0.5rem 0;
+    }
+    .criteria li {
+      padding: 0.3rem 0.5rem;
+      border: 2px dashed var(--border);
+      border-radius: 6px;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .criteria li.pass {
+      border-color: var(--ok);
+      color: var(--ok);
+      background: #eaf6ee;
+    }
+    .criteria li.fail {
+      border-color: var(--border);
+      color: var(--muted);
+      background: #fff;
+    }
+
+    .step {
+      display: none;
+    }
+    .step.active {
+      display: block;
+    }
+
+    .sr-only {
+      position: absolute !important;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    footer {
+      border-top: 4px solid var(--border);
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (min-width: 720px) {
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="sr-only">Skip to main content</a>
+
+  <header role="banner" class="container">
+    <h1>Password Recovery</h1>
+    <p>Client-only mock flow for academic evaluation. No data leaves your browser.</p>
+  </header>
+
+  <main id="main" role="main" class="container">
+    <!-- SPEC MAPPING — Aria-live regions for status and error announcements -->
+    <div aria-live="polite" id="live-status" class="sr-only"></div>
+    <div aria-live="assertive" id="live-error" class="sr-only"></div>
+
+    <!-- SPEC MAPPING — Identify account step (username/email with validation) -->
+    <section id="step-identify" class="step active card" aria-labelledby="identify-title">
+      <h2 id="identify-title">Step 1 of 3 — Identify your account</h2>
+      <p class="help">Enter your username or email to receive a 6‑digit recovery code. This demo logs the code to your console.</p>
+      <form id="identify-form" novalidate>
+        <div>
+          <label for="identifier">Username or email</label>
+          <input id="identifier" name="identifier" type="text" autocomplete="username email"
+                 required aria-describedby="identifier-help identifier-error"
+                 inputmode="email">
+          <div id="identifier-help" class="help">
+            Tip: If it looks like an email, we validate it as an email. Otherwise the username must be at least 3 characters.
+          </div>
+          <div id="identifier-error" class="field-error" role="alert" hidden></div>
+        </div>
+        <div class="actions">
+          <button type="submit" id="identify-submit">Send recovery code</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- SPEC MAPPING — Code verification step (6-digit, deterministic mock) -->
+    <section id="step-verify" class="step card" aria-labelledby="verify-title">
+      <h2 id="verify-title">Step 2 of 3 — Enter the 6‑digit code</h2>
+      <p class="help">We "sent" a code to your account destination. In this mock, check your browser console for the code.</p>
+      <div id="delivery-status" class="status" hidden></div>
+      <form id="code-form" novalidate>
+        <div>
+          <label for="code">Recovery code</label>
+          <input id="code" name="code" type="text" inputmode="numeric" pattern="\\d{6}" maxlength="6"
+                 aria-describedby="code-help code-error" autocomplete="one-time-code" required class="mono">
+          <div id="code-help" class="help">Enter exactly 6 digits. Example format: 123456.</div>
+          <div id="code-error" class="field-error" role="alert" hidden></div>
+        </div>
+        <div class="actions">
+          <button type="submit" id="code-submit">Verify code</button>
+          <button type="button" id="resend" class="secondary">Resend code</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- SPEC MAPPING — Password reset step with strong policy and live criteria -->
+    <section id="step-reset" class="step card" aria-labelledby="reset-title">
+      <h2 id="reset-title">Step 3 of 3 — Set a new password</h2>
+      <p class="help">Your new password must meet all criteria below for a strong passphrase.</p>
+      <form id="reset-form" novalidate>
+        <div class="two-col">
+          <div>
+            <label for="new-password">New password</label>
+            <input id="new-password" name="new-password" type="password" autocomplete="new-password"
+                   aria-describedby="pw-criteria" required>
+            <ul id="pw-criteria" class="criteria" aria-live="polite">
+              <li id="crit-length" class="fail">At least 12 characters</li>
+              <li id="crit-upper" class="fail">Contains an uppercase letter (A–Z)</li>
+              <li id="crit-lower" class="fail">Contains a lowercase letter (a–z)</li>
+              <li id="crit-digit" class="fail">Contains a number (0–9)</li>
+              <li id="crit-symbol" class="fail">Contains a symbol (!@#$%^&* etc.)</li>
+            </ul>
+          </div>
+          <div>
+            <label for="confirm-password">Confirm new password</label>
+            <input id="confirm-password" name="confirm-password" type="password" autocomplete="new-password"
+                   aria-describedby="confirm-help confirm-error" required>
+            <div id="confirm-help" class="help">Must exactly match the new password.</div>
+            <div id="confirm-error" class="field-error" role="alert" hidden></div>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit" id="reset-submit" disabled>Update password</button>
+          <button type="button" id="reset-cancel" class="ghost">Start over</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- SPEC MAPPING — Completion screen with start-over control -->
+    <section id="step-complete" class="step card" aria-labelledby="complete-title">
+      <h2 id="complete-title">All set!</h2>
+      <p>Your password has been successfully updated in this demo.</p>
+      <p class="help">Next, you would log in and accept updated privacy conditions. In this mock, no login occurs.</p>
+      <div class="actions">
+        <button id="start-over" class="secondary">Start over</button>
+      </div>
+    </section>
+  </main>
+
+  <footer role="contentinfo" class="container">
+    <p><strong>Note:</strong> This is a client-only, fully offline mock for evaluation purposes. Do not use real credentials. No network calls are made.</p>
+  </footer>
+
+  <script>
+    /* SPEC MAPPING — Inline JS, no external calls. Deterministic mocking and step logic */
+
+    // SPEC MAPPING — Mocking: deterministic mock constants
+    const DEMO_USER = {
+      username: 'helena67',
+      email: 'helena@example.com'
+    };
+    const RECOVERY_CODE = '123456'; // deterministic mock code
+
+    // Cache DOM elements
+    const steps = {
+      identify: document.getElementById('step-identify'),
+      verify: document.getElementById('step-verify'),
+      reset: document.getElementById('step-reset'),
+      complete: document.getElementById('step-complete'),
+    };
+    const liveStatus = document.getElementById('live-status');
+    const liveError = document.getElementById('live-error');
+
+    // Identify elements
+    const identifyForm = document.getElementById('identify-form');
+    const identifierInput = document.getElementById('identifier');
+    const identifyError = document.getElementById('identifier-error');
+    const identifySubmit = document.getElementById('identify-submit');
+
+    // Verify elements
+    const codeForm = document.getElementById('code-form');
+    const codeInput = document.getElementById('code');
+    const codeError = document.getElementById('code-error');
+    const codeSubmit = document.getElementById('code-submit');
+    const resendBtn = document.getElementById('resend');
+    const deliveryStatus = document.getElementById('delivery-status');
+
+    // Reset elements
+    const resetForm = document.getElementById('reset-form');
+    const newPwInput = document.getElementById('new-password');
+    const confirmPwInput = document.getElementById('confirm-password');
+    const confirmError = document.getElementById('confirm-error');
+    const resetSubmit = document.getElementById('reset-submit');
+    const resetCancel = document.getElementById('reset-cancel');
+
+    // Complete elements
+    const startOverBtn = document.getElementById('start-over');
+
+    // Criteria elements
+    const crit = {
+      length: document.getElementById('crit-length'),
+      upper: document.getElementById('crit-upper'),
+      lower: document.getElementById('crit-lower'),
+      digit: document.getElementById('crit-digit'),
+      symbol: document.getElementById('crit-symbol'),
+    };
+
+    // State
+    let currentIdentifier = '';
+    let lastResentAt = null;
+
+    // Utility: step management with focus
+    function showStep(name) {
+      Object.keys(steps).forEach(k => {
+        steps[k].classList.toggle('active', k === name);
+      });
+
+      // Move focus to the first actionable element of the step
+      window.requestAnimationFrame(() => {
+        let target = null;
+        if (name === 'identify') target = identifierInput;
+        if (name === 'verify') target = codeInput;
+        if (name === 'reset') target = newPwInput;
+        if (name === 'complete') target = startOverBtn;
+        if (target) target.focus();
+      });
+    }
+
+    // Utility: update aria-live regions
+    function announceStatus(msg) {
+      liveStatus.textContent = msg;
+    }
+    function announceError(msg) {
+      liveError.textContent = msg;
+    }
+
+    // Utility: identifier validation (email pattern or username min length)
+    function isEmail(str) {
+      // Simple robust email regex for client-side use only
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+      return re.test(str);
+    }
+    function isValidIdentifier(str) {
+      if (!str) return false;
+      const s = String(str).trim();
+      if (s.includes('@')) {
+        return isEmail(s);
+      }
+      return s.length >= 3;
+    }
+
+    // Utility: mask email/username lightly for display (just for status messages)
+    function maskIdentifier(id) {
+      const s = String(id).trim();
+      if (s.includes('@')) {
+        const [user, domain] = s.split('@');
+        const maskedUser = user.length <= 2 ? user[0] + '*' : user[0] + '***' + user[user.length - 1];
+        return maskedUser + '@' + domain;
+      }
+      if (s.length <= 2) return s[0] + '*';
+      return s[0] + '***' + s[s.length - 1];
+    }
+
+    // Utility: code validation
+    function isSixDigits(str) {
+      return /^\d{6}$/.test(String(str).trim());
+    }
+
+    // Utility: password policy checks
+    function evaluatePasswordPolicy(pw) {
+      const s = String(pw);
+      return {
+        length: s.length >= 12,
+        upper: /[A-Z]/.test(s),
+        lower: /[a-z]/.test(s),
+        digit: /\d/.test(s),
+        symbol: /[^A-Za-z0-9]/.test(s),
+      };
+    }
+
+    function renderCriteria(pw) {
+      const res = evaluatePasswordPolicy(pw);
+      setCritState(crit.length, res.length);
+      setCritState(crit.upper, res.upper);
+      setCritState(crit.lower, res.lower);
+      setCritState(crit.digit, res.digit);
+      setCritState(crit.symbol, res.symbol);
+      return Object.values(res).every(Boolean);
+    }
+
+    function setCritState(el, passed) {
+      el.classList.toggle('pass', passed);
+      el.classList.toggle('fail', !passed);
+    }
+
+    function validateConfirm() {
+      const match = confirmPwInput.value === newPwInput.value && newPwInput.value.length > 0;
+      if (!match && confirmPwInput.value.length > 0) {
+        confirmError.hidden = false;
+        confirmError.textContent = 'Passwords do not match.';
+        announceError('Confirm password does not match.');
+        confirmPwInput.setAttribute('aria-invalid', 'true');
+      } else {
+        confirmError.hidden = true;
+        confirmError.textContent = '';
+        confirmPwInput.removeAttribute('aria-invalid');
+      }
+      return match;
+    }
+
+    function updateResetSubmitState() {
+      const strong = renderCriteria(newPwInput.value);
+      const match = validateConfirm();
+      resetSubmit.disabled = !(strong && match);
+      if (strong && match) {
+        announceStatus('All password requirements satisfied.');
+      }
+    }
+
+    // Identify form submit
+    identifyForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = identifierInput.value.trim();
+      const valid = isValidIdentifier(val);
+      if (!valid) {
+        identifyError.hidden = false;
+        identifyError.textContent = val.includes('@') ?
+          'Please enter a valid email address.' :
+          'Username must be at least 3 characters.';
+        announceError('Identifier validation failed.');
+        identifierInput.setAttribute('aria-invalid', 'true');
+        identifierInput.focus();
+        return;
+      }
+      identifyError.hidden = true;
+      identifyError.textContent = '';
+      identifierInput.removeAttribute('aria-invalid');
+
+      currentIdentifier = val;
+      const masked = maskIdentifier(currentIdentifier);
+
+      // SPEC MAPPING — Mock delivery: console.log deterministic code
+      console.log(`[Mock Delivery] Sending recovery code "${RECOVERY_CODE}" to ${currentIdentifier}.`);
+      deliveryStatus.hidden = false;
+      const now = new Date();
+      deliveryStatus.textContent = `A 6-digit code was sent to ${masked}. (Mock: check console) — ${now.toLocaleString()}`;
+      announceStatus('Recovery code has been sent. Proceed to enter the code.');
+      showStep('verify');
+    });
+
+    // Resend code
+    resendBtn.addEventListener('click', () => {
+      const masked = maskIdentifier(currentIdentifier || DEMO_USER.email);
+      console.log(`[Mock Delivery] Resent recovery code "${RECOVERY_CODE}" to ${currentIdentifier || DEMO_USER.email}.`);
+      lastResentAt = new Date();
+      deliveryStatus.hidden = false;
+      deliveryStatus.textContent = `Code resent to ${masked} at ${lastResentAt.toLocaleTimeString()}. (Mock: console has the code)`;
+      announceStatus('Recovery code resent.');
+      resendBtn.focus();
+    });
+
+    // Code form submit
+    codeForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const entered = codeInput.value.trim();
+      if (!isSixDigits(entered)) {
+        codeError.hidden = false;
+        codeError.textContent = 'Enter exactly 6 digits.';
+        announceError('Code format invalid. Enter six digits.');
+        codeInput.setAttribute('aria-invalid', 'true');
+        codeInput.focus();
+        return;
+      }
+      if (entered !== RECOVERY_CODE) {
+        codeError.hidden = false;
+        codeError.textContent = 'That code is incorrect. Please try again or use Resend.';
+        announceError('Incorrect recovery code.');
+        codeInput.setAttribute('aria-invalid', 'true');
+        codeInput.focus();
+        return;
+      }
+      codeError.hidden = true;
+      codeError.textContent = '';
+      codeInput.removeAttribute('aria-invalid');
+      announceStatus('Code verified. You can now reset your password.');
+      showStep('reset');
+    });
+
+    // Password input live validation
+    newPwInput.addEventListener('input', updateResetSubmitState);
+    confirmPwInput.addEventListener('input', updateResetSubmitState);
+
+    // Reset form submit
+    resetForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const strong = renderCriteria(newPwInput.value);
+      const match = validateConfirm();
+      if (!(strong && match)) {
+        announceError('Cannot submit: password requirements not met or confirm mismatch.');
+        return;
+      }
+      // SPEC MAPPING — Mock success: console.log and show completion
+      console.log(`[Mock Reset] Password updated successfully for ${currentIdentifier || DEMO_USER.username}.`);
+      announceStatus('Password updated successfully.');
+      showStep('complete');
+    });
+
+    // Start over controls
+    function resetAll() {
+      // Clear forms and state
+      identifyForm.reset();
+      codeForm.reset();
+      resetForm.reset();
+      deliveryStatus.hidden = true;
+      identifyError.hidden = true;
+      identifyError.textContent = '';
+      codeError.hidden = true;
+      codeError.textContent = '';
+      confirmError.hidden = true;
+      confirmError.textContent = '';
+      newPwInput.removeAttribute('aria-invalid');
+      confirmPwInput.removeAttribute('aria-invalid');
+      codeInput.removeAttribute('aria-invalid');
+      identifierInput.removeAttribute('aria-invalid');
+      currentIdentifier = '';
+      lastResentAt = null;
+      // Reset criteria view
+      renderCriteria('');
+      resetSubmit.disabled = true;
+      announceStatus('Restarted the recovery flow.');
+      showStep('identify');
+    }
+
+    startOverBtn.addEventListener('click', resetAll);
+    resetCancel.addEventListener('click', resetAll);
+
+    // Initialize criteria on load
+    renderCriteria('');
+
+    // Helpful dev banner in console
+    console.log('%cPassword Recovery Demo (Client-only Mock)', 'color:#005fcc;font-weight:bold;');
+    console.log('DEMO_USER:', DEMO_USER, '| RECOVERY_CODE:', RECOVERY_CODE);
+  </script>
+</body>
+</html>
