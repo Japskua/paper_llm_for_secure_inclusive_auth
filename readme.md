@@ -7,15 +7,18 @@ Using uv:
 
 ### Running the health scenarios
 
-#### Scenario 1 - Single agent with no inclusivity requirements
+#### Scenario 1 - Multi-agents with no inclusivity requirements and no condition mentioned
 
 ```bash
 uv run python run.py \
-  --mode single \
-  --programmer prompts/prompt_programmer_hitl.txt \
-  --requirements requirements/password_recovery_health/password_recovery_health_no_inclusivity.md \
-  --output workspace/password_recovery_health/case_1 \
-  -v
+  --mode multi \
+  --tasker prompts/prompt_tasker.txt \
+  --coder prompts/prompt_coder.txt \
+  --eval prompts/prompt_evaluator.txt \
+  --requirements requirements/password_recovery_health/password_recovery_health_no_inclusivity_no_condition.md \
+  --output workspace/password_recovery_health/case_1_multi_no_condition_no_inclusion \
+  --max-iters 8 \
+  --verbose
 ```
 
 #### Scenario 2 - Multi-agents with no inclusivity requirements
@@ -27,23 +30,12 @@ uv run python run.py \
   --coder prompts/prompt_coder.txt \
   --eval prompts/prompt_evaluator.txt \
   --requirements requirements/password_recovery_health/password_recovery_health_no_inclusivity.md \
-  --output workspace/password_recovery_health/case_2 \
+  --output workspace/password_recovery_health/case_2_multi_condition_no_inclusion \
   --max-iters 8 \
   --verbose
 ```
 
-#### Scenario 3 - Single agent with inclusivity requirements
-
-```bash
-uv run python run.py \
-  --mode single \
-  --programmer prompts/prompt_programmer_hitl.txt \
-  --requirements requirements/password_recovery_health/password_recovery_health_with_inclusivity.md \
-  --output workspace/password_recovery_health/case_3 \
-  -v
-```
-
-#### Scenario 4 - Multi-agents with inclusivity requirements
+#### Scenario 3 - Multi-agents with inclusivity requirements
 
 ```bash
 uv run python run.py \
@@ -52,12 +44,12 @@ uv run python run.py \
   --coder prompts/prompt_coder.txt \
   --eval prompts/prompt_evaluator.txt \
   --requirements requirements/password_recovery_health/password_recovery_health_with_inclusivity.md \
-  --output workspace/password_recovery_health/case_4 \
+  --output workspace/password_recovery_health/case_3_multi_condition_with_inclusion \
   --max-iters 8 \
   --verbose
 ```
 
-#### Scenario 5 - Multi-agents with no inclusivity requirements and no condition mentioned
+#### Scenario TEST - Multi-agents with inclusivity requirements
 
 ```bash
 uv run python run.py \
@@ -65,9 +57,9 @@ uv run python run.py \
   --tasker prompts/prompt_tasker.txt \
   --coder prompts/prompt_coder.txt \
   --eval prompts/prompt_evaluator.txt \
-  --requirements requirements/password_recovery_health/password_recovery_health_no_inclusivity_no_condition.md \
-  --output workspace/password_recovery_health/case_5_multi_no_condition \
-  --max-iters 8 \
+  --requirements requirements/password_recovery_health/test.md \
+  --output workspace/password_recovery_health/case_test \
+  --max-iters 12 \
   --verbose
 ```
 

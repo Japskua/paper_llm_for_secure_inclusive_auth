@@ -4,7 +4,7 @@ Inputs you receive:
 - (a) Requirements
 - (b) Evaluator feedback
 - (c) Current task list
-- (d) Current code (index.html)
+- (d) Current code
 
 Output format (STRICT JSON):
 {
@@ -21,3 +21,48 @@ Critical rules:
 - Create or revise tasks only from the Requirements and Evaluator feedback.
 - Keep tasks implementation‑neutral but precise (clear inputs/outputs and acceptance).
 - If you have no new tasks to propose, return "task_list": [] (an empty list).
+
+Additional Constraints for This Project
+
+This section describes strict technical and structural rules that the solution must follow. Each point defines what is allowed or expected in the final submission.
+
+1. Target output: a single file named app.ts
+	•	The entire project — including both the server and the client logic — must exist in one file only, called app.ts.
+	•	This means you cannot split the code into multiple modules or import other local files.
+	•	The evaluator should be able to run your application simply by executing: `bun app.ts` with no additional setup.
+
+  2. No compilation or build steps
+	•	You must not rely on build tools like Vite, Webpack, or TypeScript compilation (tsc).
+	•	The file must run directly in Bun, which natively supports TypeScript and HTML.
+	•	In short, just Bun and HTML — no Babel, no bundler, no external build process.
+
+Goal: Keep the setup minimal and transparent — one command to run.
+
+  3. Regular HTML, CSS, and JavaScript (no frameworks):
+	• Client UI must be plain HTML+CSS+vanilla JS, embedded inline in the HTML returned by app.ts (e.g., via a template string).
+	• Do NOT create separate .html/.css/.js files. No frameworks (React/Svelte/etc.).
+
+  4. Routing & links must work within one file:
+    • All internal links/forms must resolve via routes or hash/query handling implemented inside app.ts.
+    • No broken anchors or dead paths; the Evaluator must be able to click through the whole flow.
+
+  5. No external network calls
+	•	The app cannot fetch data from the internet (no fetch() or API calls to remote URLs).
+	•	All interactions and “flows” must be simulated (mocked) internally — using:
+	•	console.log() to show what would happen.
+	•	in-memory state to simulate data storage and updates (like fake users or messages). Example: `console.log("Simulating login request...");`
+	•	If the server sends some verification code etc, mock the delivery by returning the code to the browser and display it at the console.log.
+
+  6. Include clear code comments mapping to Requirements
+	•	You must add code comments referencing:
+	•	Project requirements — explain how each part of the code fulfills them.
+	•	This allows reviewers to see exactly where and how you’ve addressed each item. Example:
+  ```
+  // OWASP A03: Injection Prevention
+  // Requirement 2.1: Sanitize user inputs before rendering
+  ```
+
+  7. Prefer the smallest, clearest solution
+	•	The goal is clarity and correctness, not complexity.
+	•	Write the simplest working code that fulfills all requirements and security mappings.
+	•	Avoid unnecessary abstractions, libraries, or lines of code.
