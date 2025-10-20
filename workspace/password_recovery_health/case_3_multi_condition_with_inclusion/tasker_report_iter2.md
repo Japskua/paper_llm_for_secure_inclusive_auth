@@ -1,32 +1,30 @@
 # TASKER REPORT — Iteration 2 · Step 4
 
 ## SUMMARY
-- Raw tasks from Tasker: 8
-- Effective task_list after retention: 8
+- Raw tasks from Tasker: 7
+- Effective task_list after retention: 7
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
 {
   "task_list": [
-    "Add CSRF-protected POST /api/last-view that accepts JSON {view} ∈ {login, requestReset, verify, setPassword, mfa, success, help}, validates/sanitizes it, saves to session.lastView, and responds 200 {ok:true}.",
-    "In GET \"/\" rendering, set meta data-last to setPassword if session.canSetPassword, else mfa if session.mfaPending, else session.lastView or \"login\".",
-    "On first client load, read meta data-last and set window.location.hash to that view exactly once to restore progress.",
-    "Modify show(view) to POST {view} with the CSRF token to /api/last-view after routing; log failures but do not block UI.",
-    "Remove all inline style=\"\" attributes from the HTML markup.",
-    "Create equivalent CSS utility classes in the existing nonced <style> block and replace prior inline styles with these class names.",
-    "Confirm CSP header keeps style-src 'self' 'nonce-<nonce>' (no 'unsafe-inline') and that the page renders without CSP violations.",
-    "Optionally embed meta flags data-can-set-password and data-mfa-pending and, on initial route, prefer setPassword/mfa when true."
+    "Update CSP to use \"script-src 'self'\" and remove all nonce usage in HTML and headers.",
+    "Serve the client script at GET /app.js with Content-Type application/javascript and replace the inline <script> with <script src=\"/app.js\" defer> in the HTML.",
+    "Remove TypeScript-only assertions from the client JS (e.g., replace “(el as HTMLInputElement).value” with “el.value”) so it runs in browsers without SyntaxError.",
+    "In /api/reset/request, perform CSRF validation as the first operation in the handler, before rate limiting or input checks.",
+    "Change /api/reset/request to return a uniform JSON without top-level link/code; include the reset link and code only as human-readable strings in a log array.",
+    "Update the client to display reset details solely from res.log entries and remove any checks for res.link or res.code.",
+    "Replace any innerHTML use for static text (specifically resetEmailMsg) with textContent to reduce XSS risk."
   ]
 }
 ```
 
 ## PARSED_TASKS
-- Add CSRF-protected POST /api/last-view that accepts JSON {view} ∈ {login, requestReset, verify, setPassword, mfa, success, help}, validates/sanitizes it, saves to session.lastView, and responds 200 {ok:true}.
-- In GET "/" rendering, set meta data-last to setPassword if session.canSetPassword, else mfa if session.mfaPending, else session.lastView or "login".
-- On first client load, read meta data-last and set window.location.hash to that view exactly once to restore progress.
-- Modify show(view) to POST {view} with the CSRF token to /api/last-view after routing; log failures but do not block UI.
-- Remove all inline style="" attributes from the HTML markup.
-- Create equivalent CSS utility classes in the existing nonced <style> block and replace prior inline styles with these class names.
-- Confirm CSP header keeps style-src 'self' 'nonce-<nonce>' (no 'unsafe-inline') and that the page renders without CSP violations.
-- Optionally embed meta flags data-can-set-password and data-mfa-pending and, on initial route, prefer setPassword/mfa when true.
+- Update CSP to use "script-src 'self'" and remove all nonce usage in HTML and headers.
+- Serve the client script at GET /app.js with Content-Type application/javascript and replace the inline <script> with <script src="/app.js" defer> in the HTML.
+- Remove TypeScript-only assertions from the client JS (e.g., replace “(el as HTMLInputElement).value” with “el.value”) so it runs in browsers without SyntaxError.
+- In /api/reset/request, perform CSRF validation as the first operation in the handler, before rate limiting or input checks.
+- Change /api/reset/request to return a uniform JSON without top-level link/code; include the reset link and code only as human-readable strings in a log array.
+- Update the client to display reset details solely from res.log entries and remove any checks for res.link or res.code.
+- Replace any innerHTML use for static text (specifically resetEmailMsg) with textContent to reduce XSS risk.

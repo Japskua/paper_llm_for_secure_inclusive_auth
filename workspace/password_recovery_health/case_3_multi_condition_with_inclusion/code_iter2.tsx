@@ -1,1053 +1,1203 @@
 
 /**
- * app.ts - Single-file HTTPS Bun server + SPA for Password Recovery System
- * Run with: bun app.ts
+ * app.ts - Single-file HTTPS Bun server + SPA client
+ * Run with: bun app.ts  (Bun 1.3.0)
  *
- * This file implements:
- * - HTTPS server with TLS (certs/cert.pem, certs/key.pem)
- * - Strict security headers (HSTS, CSP with nonce, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
- * - In-memory stores for users, sessions, CSRF tokens, password reset tokens, MFA codes, and rate limiting
- * - SPA HTML with inline CSS/JS using CSP nonce (no inline event handlers)
- * - Client-side hash routing for: login, request reset, verify token, set new password, MFA verify, and success
- * - API endpoints for request-reset, verify-token, set-password, login, mfa-verify, last-view persistence
- * - Strong password policy checks (client + server), bcrypt/argon2id hashing via Bun.password.hash
- * - Anti-CSRF on all sensitive POST routes
- * - Rate limiting on sensitive POST routes
- * - Input sanitization and escaping helpers (server + client)
- * - Logs panel mirroring console.log and "For demo" panel showing mock deliveries
- *
- * Security Comments map to "Security Evaluation Requirements" where relevant in code blocks below.
+ * Password Recovery System per requirements.
+ * - HTTPS with mkcert certs
+ * - Strict security headers (HSTS, CSP script-src 'self', etc.)
+ * - In-memory stores for users, sessions, tokens, MFA, rate limits
+ * - CSRF protection with per-session token
+ * - Password reset wizard with verification link/code + MFA
+ * - Login with throttling and MFA
+ * - SPA with accessible, low-distraction UI, Help panel, persistent progress
+ * - All deliveries (reset link, codes) are console.log'd and mirrored to on-page Logs.
  */
+
+// ==============================
+// Utility and Security Helpers
+// ==============================
+
+// Server secret for signing; new per process. In production, persist securely.
+const SERVER_SECRET = crypto.getRandomValues(new Uint8Array(32));
+
+// Time helpers
+const now = () => Date.now();
+
+// Base64url encode helper
+function base64url(bytes: Uint8Array): string {
+  let str = Buffer.from(bytes).toString("base64");
+  return str.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+// Random ID
+function randId(bytes = 16): string {
+  const b = crypto.getRandomValues(new Uint8Array(bytes));
+  return base64url(b);
+}
+
+// Hash helpers
+async function sha256Hex(input: string): Promise<string> {
+  const enc = new TextEncoder();
+  const digest = await crypto.subtle.digest("SHA-256", enc.encode(input));
+  return Buffer.from(digest).toString("hex");
+}
+
+async function hmacSha256Hex(keyBytes: Uint8Array, data: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyBytes,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign", "verify"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
+  return Buffer.from(sig).toString("hex");
+}
+
+// Short code derivation (deterministic) from a token: 6 chars A-Z0-9
+function shortCodeFromHex(hex: string, length = 6): string {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let code = "";
+  for (let i = 0; code.length < length && i < hex.length; i += 2) {
+    const num = parseInt(hex.slice(i, i + 2), 16);
+    code += alphabet[num % alphabet.length];
+  }
+  return code;
+}
+
+// Mask email for privacy
+function maskEmail(email: string): string {
+  const [user, domain] = email.split("@");
+  if (!domain) return "account";
+  const [name, tld] = domain.split(".");
+  const u = user ? user[0] + "*".repeat(Math.max(0, user.length - 1)) : "*";
+  const n = name ? name[0] + "*".repeat(Math.max(0, name.length - 1)) : "*";
+  const t = tld ? tld : "";
+  return `${u}@${n}${t ? "." + t : ""}`;
+}
+
+// Escape HTML to prevent XSS in any dynamic UI strings (server side utility)
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>'"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c] as string));
+}
+
+// ==============================
+// In-memory Stores (non-persistent)
+// ==============================
 
 type User = {
   id: string;
-  username: string;
   email: string;
-  passwordHash: string; // argon2id
+  passwordHash: string;
   mfaEnabled: boolean;
 };
+const usersByEmail = new Map<string, User>();
+const usersById = new Map<string, User>();
 
+// Seed demo user with bcrypt via Bun.password.hash
+const DEMO_EMAIL = "helena.patient@examplehospital.org";
+let DEMO_USER_ID = randId(12);
+let DEMO_USER: User;
+const demoHash = await Bun.password.hash("StrongP@ssw0rd!2025", {
+  algorithm: "bcrypt",
+  cost: 10,
+});
+DEMO_USER = {
+  id: DEMO_USER_ID,
+  email: DEMO_EMAIL,
+  passwordHash: demoHash,
+  mfaEnabled: true,
+};
+usersByEmail.set(DEMO_EMAIL.toLowerCase(), DEMO_USER);
+usersById.set(DEMO_USER_ID, DEMO_USER);
+
+type ResetContext = { userId: string; token: string; mfaVerified?: boolean; createdAt: number };
 type Session = {
   id: string;
   csrf: string;
+  userId?: string;
+  pendingLoginUserId?: string;
   createdAt: number;
-  lastSeenAt: number;
-  ip?: string;
-  canSetPassword?: boolean;
-  resetUserId?: string | null;
-  mfaPending?: boolean;
-  mfaCode?: string | null;
-  mfaGeneratedAt?: number | null;
-  authenticated?: boolean;
-  // simple progress hints for inclusivity (pause/resume)
-  lastView?: string;
+  lastSeen: number;
+  counters: Record<string, number>;
+  reset?: ResetContext;
 };
-
-type ResetToken = {
-  token: string; // random base64url
-  code: string; // human 6-digit
-  userId: string | null;
-  createdAt: number;
-  expiresAt: number;
-  used: boolean;
-  sessionId?: string;
-};
-
-type RateRecord = {
-  count: number;
-  last: number;
-  blockedUntil: number;
-};
-
-const users = new Map<string, User>();
 const sessions = new Map<string, Session>();
-const resetTokens = new Map<string, ResetToken>(); // key: token
-const rateMap = new Map<string, RateRecord>();
 
-// Utility: base64url encode
-function b64url(buf: Uint8Array): string {
-  const b64 = Buffer.from(buf).toString("base64");
-  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+type ResetTokenRecord = {
+  token: string;
+  userId: string;
+  createdAt: number;
+  used: boolean;
+  shortCode: string;
+  attempts: number;
+  mfaAttempts: number;
+};
+const resetTokens = new Map<string, ResetTokenRecord>();
+const resetCodes = new Map<string, string>(); // shortCode -> token
+
+// MFA codes (demo)
+const mfaForReset = new Map<string, string>(); // token -> mfa code
+const mfaForLogin = new Map<string, string>(); // userId -> mfa code
+
+// Rate limits
+type RateEntry = { count: number; first: number };
+const rateLimits = new Map<string, RateEntry>();
+function rateKey(ip: string, scope: string) {
+  return `${ip}:${scope}`;
 }
-
-function randomId(bytes = 32): string {
-  return b64url(crypto.getRandomValues(new Uint8Array(bytes)));
-}
-
-function now(): number {
-  return Date.now();
-}
-
-function escapeHTML(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function sanitizeInput(input: unknown, maxLen = 256): string {
-  let s = String(input ?? "");
-  s = s.replace(/[\u0000-\u001F\u007F]/g, ""); // strip control chars
-  s = s.replace(/\s+/g, " ").trim();
-  s = s.slice(0, maxLen);
-  return s;
-}
-
-function parseCookies(header: string | null): Record<string, string> {
-  const obj: Record<string, string> = {};
-  if (!header) return obj;
-  header.split(";").forEach((p) => {
-    const [k, ...rest] = p.split("=");
-    if (!k) return;
-    const key = k.trim();
-    const val = rest.join("=").trim();
-    if (!key) return;
-    obj[key] = decodeURIComponent(val || "");
-  });
-  return obj;
-}
-
-// Security: CSRF token unique per session
-function ensureSession(req: Request, ip?: string): { session: Session; setCookies: string[] } {
-  const cookies = parseCookies(req.headers.get("cookie"));
-  let sid = cookies["sid"];
-  let session = sid ? sessions.get(sid) : undefined;
-  const setCookies: string[] = [];
-  if (!session) {
-    sid = randomId(32);
-    const csrf = randomId(16);
-    session = {
-      id: sid,
-      csrf,
-      createdAt: now(),
-      lastSeenAt: now(),
-      ip,
-      authenticated: false,
-      canSetPassword: false,
-      resetUserId: null,
-      mfaPending: false,
-      mfaCode: null,
-      mfaGeneratedAt: null,
-      lastView: "login",
-    };
-    sessions.set(sid, session);
-  } else {
-    session.lastSeenAt = now();
-    if (ip && !session.ip) session.ip = ip;
+function checkRate(ip: string, scope: string, limit: number, windowMs: number): { ok: boolean; retryAfter?: number } {
+  const key = rateKey(ip, scope);
+  const nowMs = now();
+  const entry = rateLimits.get(key);
+  if (!entry) {
+    rateLimits.set(key, { count: 1, first: nowMs });
+    return { ok: true };
   }
-  // Secure cookies
-  setCookies.push(
-    `sid=${encodeURIComponent(session.id)}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=2592000`
-  );
-  // CSRF token cookie (HttpOnly) - readable only by server; we also embed token in HTML meta for client usage.
-  setCookies.push(
-    `csrf=${encodeURIComponent(session.csrf)}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=2592000`
-  );
-  return { session, setCookies };
-}
-
-function securityHeaders(opts: { csp?: string; hsts?: boolean } = {}): HeadersInit {
-  const h: HeadersInit = {
-    "X-Frame-Options": "DENY",
-    "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "no-referrer",
-    "Permissions-Policy":
-      "accelerometer=(), camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), payment=(), usb=()",
-    "Cache-Control": "no-store",
-  };
-  if (opts.csp) (h as any)["Content-Security-Policy"] = opts.csp;
-  if (opts.hsts !== false) {
-    (h as any)["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload";
+  if (nowMs - entry.first > windowMs) {
+    rateLimits.set(key, { count: 1, first: nowMs });
+    return { ok: true };
   }
-  return h;
-}
-
-// Security: Rate limiting per session+IP+route with exponential backoff
-function rateKey(session: Session, route: string, ip?: string) {
-  return `${session.id}|${ip || "noip"}|${route}`;
-}
-function rateLimitCheck(session: Session, route: string, ip?: string): { ok: boolean; headers?: HeadersInit; retryAfter?: number } {
-  const key = rateKey(session, route, ip);
-  const rec = rateMap.get(key) || { count: 0, last: 0, blockedUntil: 0 };
-  const t = now();
-  // decay count after 60 seconds
-  if (t - rec.last > 60_000) {
-    rec.count = 0;
+  entry.count += 1;
+  if (entry.count > limit) {
+    const retryAfter = Math.ceil((entry.first + windowMs - nowMs) / 1000);
+    return { ok: false, retryAfter };
   }
-  rec.last = t;
-  if (t < rec.blockedUntil) {
-    const retryAfter = Math.ceil((rec.blockedUntil - t) / 1000);
-    return { ok: false, headers: { "Retry-After": String(retryAfter) }, retryAfter };
-  }
-  rec.count += 1;
-  if (rec.count > 5) {
-    const backoff = Math.min(120_000, 5_000 * Math.pow(2, rec.count - 6)); // exponential backoff
-    rec.blockedUntil = t + backoff;
-  }
-  rateMap.set(key, rec);
   return { ok: true };
 }
 
-function jsonResponse(
-  body: any,
-  init: { status?: number; headers?: HeadersInit; csp?: string } = {}
-) {
-  const headers: HeadersInit = {
-    "Content-Type": "application/json; charset=utf-8",
-    ...(init.headers || {}),
-    ...securityHeaders({ csp: init.csp }),
-  };
-  return new Response(JSON.stringify(body), { status: init.status || 200, headers });
-}
+// ==============================
+// Cookies and Session Management
+// ==============================
 
-function badRequest(message = "Bad Request") {
-  return jsonResponse({ ok: false, message }, { status: 400 });
-}
-function forbidden(message = "Forbidden") {
-  return jsonResponse({ ok: false, message }, { status: 403 });
-}
-
-// Security: server-side CSRF validation
-async function requireCsrf(req: Request, session: Session): Promise<boolean> {
-  const token = req.headers.get("x-csrf-token") || "";
-  if (!token || token !== session.csrf) {
-    return false;
-  }
-  return true;
-}
-
-// Password policy (both client and server use same logic)
-function checkPasswordPolicy(pw: string): { ok: boolean; reasons: string[] } {
-  const reasons: string[] = [];
-  if (pw.length < 12) reasons.push("At least 12 characters");
-  if (!/[a-z]/.test(pw)) reasons.push("Include lowercase letters");
-  if (!/[A-Z]/.test(pw)) reasons.push("Include uppercase letters");
-  if (!/[0-9]/.test(pw)) reasons.push("Include a number");
-  if (!/[^\w\s]/.test(pw)) reasons.push("Include a symbol");
-  if (/\s/.test(pw)) reasons.push("No spaces allowed");
-  return { ok: reasons.length === 0, reasons };
-}
-
-// Demo data: one user (avoid private identifiers in UI)
-const DEMO_USER_ID = "u1";
-async function initDemoUser() {
-  const hash = await Bun.password.hash("StrongPassw0rd!", {
-    algorithm: "argon2id",
-    memoryCost: 19456,
-    timeCost: 2,
+function parseCookies(req: Request): Record<string, string> {
+  const header = req.headers.get("cookie") || "";
+  const out: Record<string, string> = {};
+  header.split(";").forEach(part => {
+    const [k, ...v] = part.trim().split("=");
+    if (!k) return;
+    out[k] = decodeURIComponent(v.join("="));
   });
-  users.set(DEMO_USER_ID, {
-    id: DEMO_USER_ID,
-    username: "helena",
-    email: "patient@example.com",
-    passwordHash: hash,
-    mfaEnabled: true,
-  });
+  return out;
 }
 
-function deriveHumanCodeFromToken(token: string): string {
-  // deterministic 6-digit code from token hash
-  let acc = 0;
-  for (let i = 0; i < token.length; i++) {
-    acc = (acc * 31 + token.charCodeAt(i)) >>> 0;
-  }
-  const code = (acc % 1_000_000).toString().padStart(6, "0");
-  return code;
+async function signSessionId(id: string): Promise<string> {
+  const sig = await hmacSha256Hex(SERVER_SECRET, id);
+  return `${id}.${sig}`;
 }
 
-function generateResetToken(userId: string | null, sessionId: string): ResetToken {
-  const token = randomId(32);
-  const code = deriveHumanCodeFromToken(token);
-  const createdAt = now();
-  const expiresAt = createdAt + 15 * 60_000; // 15 minutes
-  const rt: ResetToken = { token, code, userId, createdAt, expiresAt, used: false, sessionId };
-  resetTokens.set(token, rt);
-  return rt;
+async function verifySessionCookie(cookieVal: string): Promise<string | null> {
+  const idx = cookieVal.lastIndexOf(".");
+  if (idx === -1) return null;
+  const id = cookieVal.slice(0, idx);
+  const sig = cookieVal.slice(idx + 1);
+  const expect = await hmacSha256Hex(SERVER_SECRET, id);
+  if (sig === expect) return id;
+  return null;
 }
 
-function findTokenByCode(code: string): ResetToken | undefined {
-  let found: ResetToken | undefined;
-  for (const t of resetTokens.values()) {
-    if (t.code === code) {
-      // pick the most recent non-expired
-      if (!found || t.createdAt > found.createdAt) found = t;
+async function getOrCreateSession(req: Request): Promise<{ session: Session; setCookie?: string }> {
+  const cookies = parseCookies(req);
+  const cookieVal = cookies["sid"];
+  if (cookieVal) {
+    const id = await verifySessionCookie(cookieVal);
+    if (id) {
+      const s = sessions.get(id);
+      if (s) {
+        s.lastSeen = now();
+        return { session: s };
+      }
     }
   }
-  return found;
+  const id = randId(18);
+  const csrf = randId(18);
+  const session: Session = { id, csrf, createdAt: now(), lastSeen: now(), counters: {} };
+  sessions.set(id, session);
+  const signed = await signSessionId(id);
+  const setCookie = `sid=${signed}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${60 * 60 * 24 * 7}`;
+  return { session, setCookie };
 }
 
-// MFA generation: deterministic per-session when login succeeds
-function generateMfaForSession(session: Session): string {
-  const seed = session.id + "|" + session.csrf + "|" + session.createdAt;
-  let acc = 7;
-  for (let i = 0; i < seed.length; i++) acc = (acc * 33 + seed.charCodeAt(i)) >>> 0;
-  const code = (acc % 1_000_000).toString().padStart(6, "0");
-  session.mfaCode = code;
-  session.mfaPending = true;
-  session.mfaGeneratedAt = now();
-  return code;
-}
+// ==============================
+// Security Headers per response
+// ==============================
 
-// Build CSP per response
-function buildCSP(nonce: string): string {
-  // Security: CSP with nonce, disallow inline except our nonce, no external
-  return [
-    "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
-    `style-src 'self' 'nonce-${nonce}'`,
-    "img-src 'self' data:",
+function securityHeaders(): Headers {
+  const h = new Headers();
+  h.set("X-Content-Type-Options", "nosniff");
+  h.set("X-Frame-Options", "DENY");
+  h.set("Referrer-Policy", "no-referrer");
+  h.set("Permissions-Policy", "geolocation=(), camera=(), microphone=()");
+  h.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  h.set("Cache-Control", "no-store");
+
+  const baseCsp = [
+    "default-src 'none'",
     "connect-src 'self'",
-    "font-src 'self'",
-    "object-src 'none'",
+    "img-src 'self' data:",
+    "style-src 'self' 'unsafe-inline'",
+    "form-action 'self'",
     "base-uri 'none'",
     "frame-ancestors 'none'",
-    "form-action 'self'",
-  ].join("; ");
+    "object-src 'none'",
+    "font-src 'self'",
+    "script-src 'self'",
+  ];
+  h.set("Content-Security-Policy", baseCsp.join("; "));
+  return h;
 }
 
-// Render SPA HTML (Security: outputs escaped; Inline JS/CSS via CSP nonce)
-function renderHTML(session: Session, nonce: string): string {
-  const csrf = escapeHTML(session.csrf);
+// ==============================
+// CSRF Validation
+// ==============================
 
-  // Compute preferred last view for restoring progress
-  const computedLast =
-    session.canSetPassword ? "setPassword" :
-    (session.mfaPending ? "mfa" :
-    (session.lastView || "login"));
-  const lastView = escapeHTML(computedLast);
+async function requireCsrf(req: Request, session: Session): Promise<Response | null> {
+  const token = req.headers.get("x-csrf-token") || "";
+  if (!token || token !== session.csrf) {
+    const h = securityHeaders();
+    h.set("Content-Type", "application/json");
+    return new Response(JSON.stringify({ ok: false, error: "CSRF validation failed" }), { status: 403, headers: h });
+  }
+  return null;
+}
 
-  // Flags for optional client usage
-  const canSetPwFlag = session.canSetPassword ? "true" : "false";
-  const mfaPendingFlag = session.mfaPending ? "true" : "false";
+// ==============================
+// Password Policy
+// ==============================
 
-  // No user identifiers printed
+const COMMON_PASSWORDS = new Set([
+  "password", "123456", "12345678", "qwerty", "qwerty123", "letmein", "admin", "welcome", "iloveyou", "monkey", "dragon",
+]);
+
+function validatePasswordPolicy(pw: string): { ok: boolean; message?: string } {
+  if (pw.length < 12) return { ok: false, message: "Password must be at least 12 characters." };
+  if (!/[a-z]/.test(pw)) return { ok: false, message: "Include a lowercase letter." };
+  if (!/[A-Z]/.test(pw)) return { ok: false, message: "Include an uppercase letter." };
+  if (!/[0-9]/.test(pw)) return { ok: false, message: "Include a number." };
+  if (!/[^\w\s]/.test(pw)) return { ok: false, message: "Include a special character." };
+  if (COMMON_PASSWORDS.has(pw.toLowerCase())) return { ok: false, message: "Password is too common." };
+  return { ok: true };
+}
+
+// ==============================
+// MFA generation (deterministic demo)
+// ==============================
+
+async function deriveMfaForReset(token: string): Promise<string> {
+  const hex = await sha256Hex(`reset:${token}:mfa`);
+  return shortCodeFromHex(hex, 6);
+}
+async function deriveMfaForLogin(userId: string): Promise<string> {
+  const hex = await sha256Hex(`login:${userId}:${Buffer.from(SERVER_SECRET).toString("hex")}`);
+  return shortCodeFromHex(hex, 6);
+}
+
+// ==============================
+// HTML SPA Template (no inline scripts)
+// ==============================
+
+function spaHtml(csrf: string): string {
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Healthcare Account — Secure Login & Password Recovery</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hospital Account Access — Secure Recovery</title>
-  <meta id="csrf-meta" data-token="${csrf}">
-  <meta id="session-view" data-last="${lastView}">
-  <meta id="session-flags" data-can-set-password="${canSetPwFlag}" data-mfa-pending="${mfaPendingFlag}">
-  <style nonce="${nonce}">
-    /* Inclusivity & Accessibility (Requirements: Inclusivity) */
+  <meta name="csrf-token" content="${escapeHtml(csrf)}">
+  <style>
+    /* Inclusivity: low-distraction, readable typography, clear structure */
     :root {
-      --bg: #f7fafc;
-      --fg: #1a202c;
-      --muted: #4a5568;
-      --primary: #2563eb;
-      --accent: #16a34a;
-      --warn: #b91c1c;
+      --bg: #f7f9fb;
       --card: #ffffff;
-      --focus: #f59e0b;
+      --text: #1e2a3a;
+      --muted: #5a6b7b;
+      --primary: #2f6fed;
+      --accent: #19b394;
+      --danger: #d93f4c;
+      --warning: #e6a700;
+      --border: #e1e7ef;
+      --focus: #ffbf47;
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background: var(--bg); color: var(--fg);
+      margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height: 1.5;
     }
     header {
-      background: #0f172a; color: #fff; padding: 16px;
+      background: var(--card); border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
     }
-    header h1 { margin: 0 0 4px 0; font-size: 20px; }
-    header p { margin: 0; color: #cbd5e1; font-size: 14px; }
-    main { max-width: 860px; margin: 24px auto; padding: 0 12px; }
-    .layout { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
-    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
-    .card {
-      background: var(--card); border-radius: 10px; padding: 16px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    .container { max-width: 980px; margin: 0 auto; padding: 16px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand .logo {
+      width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg,var(--primary),var(--accent)); display: inline-block;
     }
-    .step-header { display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px; }
-    .progress { width: 100%; height: 8px; background: #e5e7eb; border-radius: 999px; overflow: hidden; margin-top: 8px; }
-    .progress > div { height: 100%; background: var(--primary); width: 0%; transition: width .3s; }
-    nav a { color: #bfdbfe; margin-right: 16px; text-decoration: none; }
-    nav a:focus { outline: 3px solid var(--focus); border-radius: 4px; }
-    h2 { margin: 0 0 8px 0; }
-    .muted { color: var(--muted); font-size: 14px; }
-    label { display:block; margin: 10px 0 6px; }
-    input[type="text"], input[type="password"] {
-      width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;
+    .title { font-size: 1.1rem; font-weight: 700; }
+    main { padding: 16px; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 2fr 1fr; } }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    h1, h2, h3 { margin: 0 0 8px 0; }
+    p { margin: 0 0 8px; color: var(--muted); }
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tab { background: #eef3fb; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+    .tab[aria-selected="true"] { background: #dbe8ff; border-color: var(--primary); }
+    .progress {
+      display: flex; gap: 8px; margin: 8px 0 16px;
     }
-    button {
-      background: var(--primary); color: #fff; border: 0; padding: 10px 16px; border-radius: 8px; cursor: pointer;
-      margin-top: 12px; font-weight: 600;
+    .step {
+      flex: 1; height: 8px; background: #eef2f7; border-radius: 4px; position: relative; overflow: hidden;
     }
-    button.secondary { background: #374151; }
-    button.link { background: transparent; color: var(--primary); text-decoration: underline; padding: 6px 4px; }
-    .row { display:flex; gap: 8px; align-items:center; }
-    .between { justify-content: space-between; }
+    .step::after {
+      content: ""; position: absolute; inset: 0; background: var(--accent); width: 0%;
+    }
+    .step.done::after { width: 100%; }
+    .step.current::after { width: 60%; animation: pulse 1.5s ease-in-out infinite alternate; }
+    @keyframes pulse { from { width: 40%; } to { width: 80%; } }
+
+    label { display: block; font-weight: 600; margin: 8px 0 4px; }
+    input, button, select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; background: #fff; color: var(--text);
+    }
+    input:focus, button:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+    button.primary { background: var(--primary); color: #fff; border-color: var(--primary); cursor: pointer; }
+    button.secondary { background: #eef3fb; border-color: #d1dbf0; }
+    button.link { background: transparent; border: none; color: var(--primary); text-decoration: underline; padding: 0; width: auto; }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .row > * { flex: 1; }
+    .hint { font-size: 0.95rem; color: var(--muted); }
+    .danger { color: #d93f4c; }
     .success { color: var(--accent); }
-    .error { color: var(--warn); }
-    .info { color: #1d4ed8; }
-    .sr { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+    .warning { color: var(--warning); }
     .hidden { display: none !important; }
 
-    .panel { font-size: 12px; }
-    #logs { height: 180px; overflow: auto; background: #0b1020; color: #e2e8f0; padding: 8px; border-radius: 8px; white-space: pre-wrap; }
-    #demo { background: #fefce8; border: 1px dashed #f59e0b; }
-    .help { background: #ecfeff; border: 1px solid #06b6d4; }
-    .footer-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .help-panel { position: sticky; top: 88px; }
+    .help-panel details { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: #f6fbff; }
+    .help-panel summary { cursor: pointer; font-weight: 700; }
+    .help-panel ul { margin: 8px 0 0 18px; }
 
-    .password-tips { margin-top: 6px; font-size: 12px; }
-    .badge { display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-left: 8px; background: #e2e8f0;}
-    .badge.good { background: #dcfce7; color: #166534; }
-    .badge.bad { background: #fee2e2; color: #991b1b; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+    .logs { height: 220px; overflow: auto; background: #0b1021; color: #d5e3ff; font-family: ui-monospace, Menlo, Consolas, monospace; border-radius: 8px; padding: 8px; }
+    .note { background: #fff7e6; border: 1px solid #ffe2a8; border-radius: 8px; padding: 8px; }
 
-    .linklike { color: var(--primary); cursor: pointer; text-decoration: underline; }
-
-    /* Utilities for removed inline styles */
-    .mt-16 { margin-top: 16px; }
-    .footer-wrap { max-width: 860px; margin: 16px auto; }
-
-    /* Progress width classes to avoid inline style (CSP-friendly) */
-    .w0 { width: 0%; }
-    .w20 { width: 20%; }
-    .w40 { width: 40%; }
-    .w60 { width: 60%; }
-    .w80 { width: 80%; }
-    .w100 { width: 100%; }
+    .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
   </style>
 </head>
 <body>
-  <header role="banner">
-    <div class="row between">
-      <div>
-        <h1>Secure Access Portal</h1>
-        <p>Log in to accept the updated privacy conditions and manage your appointments.</p>
+  <header>
+    <div class="container brand" role="banner" aria-label="Healthcare secure access">
+      <span class="logo" aria-hidden="true"></span>
+      <div class="title">Healthcare Account Portal</div>
+      <div style="margin-left:auto">
+        <button id="helpToggle" class="link" aria-controls="helpArea" aria-expanded="false">Help & Safety</button>
       </div>
-      <nav aria-label="Helpful links">
-        <a href="#/help" id="helpLink">Help</a>
-      </nav>
     </div>
-    <div class="progress" aria-hidden="true"><div id="progressBar" class="w0"></div></div>
   </header>
+  <main class="container grid" id="root">
+    <section class="card">
+      <h1 id="flowTitle">Welcome</h1>
+      <p id="flowSubtitle">Log in or reset your password in a few clear steps. No time pressure.</p>
 
-  <main id="app" role="main" aria-live="polite">
-    <div class="layout">
-      <section id="views" class="card" aria-label="Steps">
-        <!-- Views rendered client-side -->
-        <div id="view-login" class="view">
-          <div class="step-header">
-            <h2>1. Log in</h2>
-            <span class="badge" id="authStatus">Not signed in</span>
+      <div class="tabs" role="tablist" aria-label="Authentication options">
+        <button role="tab" id="tab-login" class="tab" aria-selected="true" aria-controls="panel-login">Login</button>
+        <button role="tab" id="tab-reset" class="tab" aria-selected="false" aria-controls="panel-reset">Reset password</button>
+      </div>
+
+      <!-- Login Panel -->
+      <section id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+        <div class="progress" aria-hidden="true">
+          <div class="step" id="loginStep1"></div>
+          <div class="step" id="loginStep2"></div>
+        </div>
+
+        <div id="loginForm">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" autocomplete="username" inputmode="email" placeholder="you@example.org" required>
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••••••" required>
+          <div class="row">
+            <button id="btnLogin" class="primary">Log in</button>
+            <button id="btnLoginForgot" class="secondary">Forgot password</button>
           </div>
-          <p class="muted">Use your account to continue. If you can't remember your password, choose "I forgot my password" below.</p>
-          <form id="form-login" autocomplete="off" novalidate>
-            <label for="login-id">Username or email</label>
-            <input id="login-id" type="text" inputmode="email" autocomplete="username" required>
-            <label for="login-pw">Password</label>
-            <input id="login-pw" type="password" autocomplete="current-password" required>
-            <div class="row between">
-              <button type="submit">Continue</button>
-              <button type="button" id="goto-reset" class="secondary">I forgot my password</button>
+          <p class="hint">We will never email you asking for your password. If unsure, use the Reset password tab.</p>
+        </div>
+
+        <div id="loginMfa" class="hidden">
+          <p>We sent a sign-in code to your trusted device. For this demo, the code is written into the Logs panel.</p>
+          <label for="loginMfaCode">Enter 6-digit code</label>
+          <input id="loginMfaCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456">
+          <div class="row">
+            <button id="btnLoginMfa" class="primary">Verify and continue</button>
+            <button id="btnLoginBack" class="secondary">Back</button>
+          </div>
+        </div>
+
+        <div id="loginSuccess" class="hidden">
+          <h3>Welcome back</h3>
+          <p class="success">You are logged in. Please review and accept the updated privacy statement.</p>
+          <div class="note">
+            <p><strong>Updated privacy statement</strong></p>
+            <p>To continue with your appointment booking, please accept our updated privacy terms.</p>
+            <div class="row">
+              <button id="btnAcceptPrivacy" class="primary">Accept</button>
+              <button id="btnLogout" class="secondary">Logout</button>
             </div>
-            <div id="login-msg" class="muted" role="status"></div>
-          </form>
-        </div>
-
-        <div id="view-request-reset" class="view hidden">
-          <div class="step-header">
-            <h2>2. Request password reset</h2>
-          </div>
-          <p class="muted">We’ll send a reset link and a code. You can use either the link or enter the code manually. For the demo, they appear in the panel on the right.</p>
-          <form id="form-request-reset" autocomplete="off" novalidate>
-            <label for="reset-id">Account identifier</label>
-            <input id="reset-id" type="text" inputmode="email" placeholder="username or email" required>
-            <button type="submit">Send reset instructions</button>
-            <div id="reset-msg" class="muted" role="status"></div>
-          </form>
-          <div class="footer-note">We never disclose whether an account exists. Keep this page open—you can take a break and continue anytime.</div>
-        </div>
-
-        <div id="view-verify-token" class="view hidden">
-          <div class="step-header">
-            <h2>3. Verify reset</h2>
-          </div>
-          <p class="muted">Paste the link token or type the 6‑digit code you received.</p>
-          <form id="form-verify-token" autocomplete="off" novalidate>
-            <div class="grid">
-              <div>
-                <label for="verify-token">Verification link token</label>
-                <input id="verify-token" type="text" placeholder="token from the link">
-              </div>
-              <div>
-                <label for="verify-code">Or 6-digit code</label>
-                <input id="verify-code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="e.g. 123456">
-              </div>
-            </div>
-            <button type="submit">Verify</button>
-            <div id="verify-msg" class="muted" role="status"></div>
-          </form>
-        </div>
-
-        <div id="view-set-password" class="view hidden">
-          <div class="step-header">
-            <h2>4. Choose a new password</h2>
-          </div>
-          <p class="muted">Pick a strong password you can remember. Aim for 3+ words or a mix of letters, numbers, and symbols.</p>
-          <form id="form-set-password" autocomplete="off" novalidate>
-            <label for="new-pw">New password</label>
-            <input id="new-pw" type="password" autocomplete="new-password" required>
-            <label for="new-pw2">Confirm new password</label>
-            <input id="new-pw2" type="password" autocomplete="new-password" required>
-            <div id="pw-tips" class="password-tips"></div>
-            <button type="submit">Save new password</button>
-            <div id="setpw-msg" class="muted" role="status"></div>
-          </form>
-        </div>
-
-        <div id="view-mfa" class="view hidden">
-          <div class="step-header">
-            <h2>5. Verify with code</h2>
-          </div>
-          <p class="muted">Enter the 6‑digit code from your authenticator or secure message.</p>
-          <form id="form-mfa" autocomplete="off" novalidate>
-            <label for="mfa-code">6-digit code</label>
-            <input id="mfa-code" type="text" inputmode="numeric" maxlength="6" required>
-            <button type="submit">Verify</button>
-            <div id="mfa-msg" class="muted" role="status"></div>
-          </form>
-        </div>
-
-        <div id="view-success" class="view hidden">
-          <div class="step-header">
-            <h2>6. You're all set</h2>
-            <span class="badge good">Signed in</span>
-          </div>
-          <p class="success">You’re signed in. You can now accept the updated privacy statement and continue with your appointment booking.</p>
-          <p class="muted">You can close this page or return to your account dashboard.</p>
-          <p><span class="linklike" id="back-to-login">Back to start</span></p>
-        </div>
-
-        <div id="view-help" class="view hidden">
-          <div class="step-header">
-            <h2>Help & Safety</h2>
-          </div>
-          <div class="card help">
-            <ul>
-              <li>Stay calm—there are no time limits. You can pause and come back anytime.</li>
-              <li>We will never ask for your password or codes by email or phone.</li>
-              <li>Only use this secure site (check the lock icon and “https”).</li>
-              <li>If a link looks suspicious, manually visit this site and use the code instead.</li>
-              <li>Strong passwords: at least 12 characters with a mix of types, or use a passphrase.</li>
-            </ul>
-            <p><span class="linklike" id="help-back">Return to previous step</span></p>
           </div>
         </div>
       </section>
 
-      <aside aria-label="Guidance and logs" class="card panel">
-        <h3>For demo</h3>
-        <div id="demo" class="card">
-          <div><strong>Reset link:</strong> <span id="demo-link">(none yet)</span></div>
-          <div><strong>Manual token:</strong> <span id="demo-token">(none)</span></div>
-          <div><strong>Reset code:</strong> <span id="demo-code">(none)</span></div>
-          <div><strong>MFA code:</strong> <span id="demo-mfa">(none)</span></div>
+      <!-- Reset Panel -->
+      <section id="panel-reset" role="tabpanel" class="hidden" aria-labelledby="tab-reset">
+        <div class="progress" aria-hidden="true">
+          <div class="step" id="resetStep1"></div>
+          <div class="step" id="resetStep2"></div>
+          <div class="step" id="resetStep3"></div>
+          <div class="step" id="resetStep4"></div>
         </div>
-        <h3 class="mt-16">Logs</h3>
-        <div id="logs" aria-live="polite"></div>
-      </aside>
-    </div>
+
+        <div id="resetStepEmail">
+          <h2>Step 1: Find your account</h2>
+          <p>Enter your email. We'll send a secure reset link and a short code. You can use either.</p>
+          <label for="resetEmail">Email</label>
+          <input id="resetEmail" type="email" inputmode="email" autocomplete="username" placeholder="you@example.org">
+          <div class="row">
+            <button id="btnResetRequest" class="primary">Send reset instructions</button>
+            <button id="btnResetToLogin" class="secondary">Back to login</button>
+          </div>
+          <p id="resetEmailMsg" class="hint"></p>
+        </div>
+
+        <div id="resetStepVerify" class="hidden">
+          <h2>Step 2: Verify it's you</h2>
+          <p>Open the link we sent, or enter the short code below. For this demo, check the Logs panel for the link and code.</p>
+          <label for="resetCode">Short code</label>
+          <input id="resetCode" inputmode="text" maxlength="8" placeholder="ABC123">
+          <div class="row">
+            <button id="btnVerifyCode" class="primary">Verify code</button>
+            <button id="btnPasteLink" class="secondary">Verify from link</button>
+          </div>
+          <p id="verifyMsg" class="hint"></p>
+        </div>
+
+        <div id="resetStepMfa" class="hidden">
+          <h2>Step 3: Extra security</h2>
+          <p>Enter the 6-digit code. For this demo, the code is printed to Logs.</p>
+          <label for="resetMfa">MFA code</label>
+          <input id="resetMfa" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456">
+          <div class="row">
+            <button id="btnResetMfa" class="primary">Continue</button>
+            <button id="btnResetBackV" class="secondary">Back</button>
+          </div>
+          <p id="mfaMsg" class="hint"></p>
+        </div>
+
+        <div id="resetStepPassword" class="hidden">
+          <h2>Step 4: Choose a new password</h2>
+          <ul class="hint">
+            <li>At least 12 characters</li>
+            <li>Include upper and lowercase letters</li>
+            <li>Include a number and a special character</li>
+            <li>Avoid common passwords</li>
+          </ul>
+          <label for="newPassword">New password</label>
+          <input id="newPassword" type="password" autocomplete="new-password" placeholder="New strong password">
+          <label for="newPassword2">Confirm new password</label>
+          <input id="newPassword2" type="password" autocomplete="new-password" placeholder="Repeat password">
+          <div class="row">
+            <button id="btnUpdatePassword" class="primary">Update password</button>
+            <button id="btnResetBackMfa" class="secondary">Back</button>
+          </div>
+          <p id="pwMsg" class="hint"></p>
+        </div>
+
+        <div id="resetDone" class="hidden">
+          <h2>All set</h2>
+          <p class="success">Your password has been changed. For your security, previous sessions are signed out.</p>
+          <button id="btnGoLogin" class="primary">Go to login</button>
+        </div>
+      </section>
+    </section>
+
+    <aside id="helpArea" class="help-panel card" aria-live="polite">
+      <details>
+        <summary>Help & Safety tips</summary>
+        <ul>
+          <li>Stay on this page (https) and do not share codes or passwords with anyone.</li>
+          <li>We will never ask for your password by email or phone.</li>
+          <li>If you feel overwhelmed, you can pause. Your progress is saved on this device.</li>
+          <li>Use a unique, strong password. Avoid using the same password elsewhere.</li>
+          <li>Questions? Contact hospital support by phone; do not click unknown links.</li>
+        </ul>
+      </details>
+      <h3 style="margin-top:12px;">Logs</h3>
+      <div class="logs" id="logs" aria-live="polite" aria-label="System logs"></div>
+    </aside>
   </main>
 
-  <footer class="card footer-wrap">
-    <small class="muted">Security: HTTPS enforced, HSTS, CSP, CSRF protection, rate limiting, password hashing, MFA (demo). No external calls.</small>
-  </footer>
-
-  <script nonce="${nonce}">
-  // Client-side code
-  (function(){
-    'use strict';
-
-    // Security: prevent DOM XSS - helpers
-    function sanitizeInput(s) {
-      if (s == null) return '';
-      return String(s).replace(/[\\u0000-\\u001F\\u007F]/g, '').replace(/\\s+/g, ' ').trim().slice(0, 256);
-    }
-    function setText(el, text) { el.textContent = String(text || ''); }
-    function qs(sel) { return document.querySelector(sel); }
-    function qsa(sel) { return Array.from(document.querySelectorAll(sel)); }
-
-    // Logs panel mirrors console.log
-    const logsEl = qs('#logs');
-    const originalLog = console.log.bind(console);
-    console.log = function(...args) {
-      originalLog(...args);
-      const msg = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ');
-      const line = document.createElement('div');
-      line.textContent = msg;
-      logsEl.appendChild(line);
-      logsEl.scrollTop = logsEl.scrollHeight;
-    };
-
-    const csrfToken = qs('#csrf-meta')?.getAttribute('data-token') || '';
-    const sessionLast = qs('#session-view')?.getAttribute('data-last') || 'login';
-
-    const views = {
-      login: qs('#view-login'),
-      requestReset: qs('#view-request-reset'),
-      verifyToken: qs('#view-verify-token'),
-      setPassword: qs('#view-set-password'),
-      mfa: qs('#view-mfa'),
-      success: qs('#view-success'),
-      help: qs('#view-help')
-    };
-
-    const progressOrder = ['login','requestReset','verifyToken','setPassword','mfa','success'];
-    const widthClasses = ['w0','w20','w40','w60','w80','w100'];
-    function setProgress(view) {
-      const idx = Math.max(0, progressOrder.indexOf(view));
-      const bar = qs('#progressBar');
-      // Remove all width classes then add based on step
-      widthClasses.forEach(c => bar.classList.remove(c));
-      bar.classList.add(widthClasses[Math.min(idx, widthClasses.length-1)]);
-      const authBadge = qs('#authStatus');
-      if (view === 'success') { authBadge.textContent = 'Signed in'; authBadge.classList.add('good'); }
-      else { authBadge.textContent = 'Not signed in'; authBadge.classList.remove('good'); }
-    }
-
-    // Persist last view to session (non-blocking)
-    function persistLastView(view) {
-      // Map internal view names to allowed API set
-      const map = { verifyToken: 'verify' };
-      const payloadView = map[view] || view;
-      fetch('/api/last-view', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken
-        },
-        body: JSON.stringify({ view: payloadView })
-      })
-      .then(res => res.json().catch(() => ({ ok:false })))
-      .then(j => { if (!j || j.ok !== true) console.log('Failed to persist last view'); })
-      .catch(() => console.log('Network error while saving last view'));
-    }
-
-    function show(view) {
-      Object.values(views).forEach(v => v.classList.add('hidden'));
-      const v = views[view];
-      if (v) v.classList.remove('hidden');
-      setProgress(view);
-      // keep last view in history-free way
-      window.history.replaceState({}, '', window.location.pathname + window.location.search + '#/' + view);
-      // persist last view (non-blocking)
-      persistLastView(view);
-    }
-
-    // API helper with CSRF
-    async function api(path, data) {
-      const res = await fetch(path, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken
-        },
-        body: JSON.stringify(data || {})
-      });
-      const json = await res.json().catch(() => ({ ok: false, message: 'Invalid response' }));
-      return json;
-    }
-
-    // Password policy check (same as server)
-    function checkPasswordPolicy(pw) {
-      const reasons = [];
-      if (pw.length < 12) reasons.push('At least 12 characters');
-      if (!/[a-z]/.test(pw)) reasons.push('Include lowercase letters');
-      if (!/[A-Z]/.test(pw)) reasons.push('Include uppercase letters');
-      if (!/[0-9]/.test(pw)) reasons.push('Include a number');
-      if (!/[^\\w\\s]/.test(pw)) reasons.push('Include a symbol');
-      if (/\\s/.test(pw)) reasons.push('No spaces allowed');
-      return { ok: reasons.length === 0, reasons };
-    }
-
-    // Demo panel helpers
-    function updateDemo({ link, token, code, mfa }) {
-      if (link) setText(qs('#demo-link'), link);
-      if (token) setText(qs('#demo-token'), token);
-      if (code) setText(qs('#demo-code'), code);
-      if (mfa) setText(qs('#demo-mfa'), mfa);
-    }
-
-    // Forms wiring
-    const loginForm = qs('#form-login');
-    const resetForm = qs('#form-request-reset');
-    const verifyForm = qs('#form-verify-token');
-    const setPwForm = qs('#form-set-password');
-    const mfaForm = qs('#form-mfa');
-
-    qs('#goto-reset').addEventListener('click', () => show('requestReset'));
-    qs('#helpLink').addEventListener('click', (e) => { e.preventDefault(); show('help'); });
-    qs('#help-back').addEventListener('click', () => window.history.back());
-    qs('#back-to-login').addEventListener('click', () => show('login'));
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = sanitizeInput(qs('#login-id').value);
-      const pw = sanitizeInput(qs('#login-pw').value);
-      setText(qs('#login-msg'), 'Checking...');
-      const res = await api('/api/login', { identifier: id, password: pw });
-      // Always move to MFA to avoid enumeration. If valid, server will have set a code.
-      if (res && res.demoMfaCode) {
-        console.log('MFA code (demo):', res.demoMfaCode);
-        updateDemo({ mfa: res.demoMfaCode });
-      }
-      setText(qs('#login-msg'), 'If the credentials are correct, you will be asked for a code.');
-      show('mfa');
-    });
-
-    resetForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = sanitizeInput(qs('#reset-id').value);
-      setText(qs('#reset-msg'), 'Sending instructions...');
-      const res = await api('/api/request-reset', { identifier: id });
-      if (res && res.demo && res.demo.token) {
-        console.log('Password reset link (demo):', res.demo.link);
-        console.log('Manual token (demo):', res.demo.token);
-        console.log('Human code (demo):', res.demo.code);
-        updateDemo({ link: res.demo.link, token: res.demo.token, code: res.demo.code });
-      }
-      setText(qs('#reset-msg'), 'If the account exists, a reset message has been sent. Use the link or code.');
-      show('verifyToken');
-    });
-
-    verifyForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const token = sanitizeInput(qs('#verify-token').value);
-      const code = sanitizeInput(qs('#verify-code').value);
-      setText(qs('#verify-msg'), 'Verifying...');
-      const res = await api('/api/verify-token', { tokenOrCode: token || code });
-      if (res && res.canProceed) {
-        setText(qs('#verify-msg'), 'Code accepted. You can set a new password.');
-        show('setPassword');
-      } else {
-        setText(qs('#verify-msg'), 'If the code is valid, you can continue. Please check and try again.');
-      }
-    });
-
-    // Password strength feedback
-    function updatePwTips() {
-      const pw = qs('#new-pw').value || '';
-      const pol = checkPasswordPolicy(pw);
-      const el = qs('#pw-tips');
-      if (pw.length === 0) { el.textContent = 'Requirements: 12+ chars, upper+lower+number+symbol, no spaces.'; return; }
-      if (pol.ok) { el.innerHTML = ''; const span = document.createElement('span'); span.className = 'badge good'; span.textContent = 'Looks strong'; el.appendChild(span); }
-      else {
-        el.innerHTML = '';
-        pol.reasons.forEach(r => {
-          const s = document.createElement('div');
-          s.className = 'badge bad';
-          s.textContent = r;
-          el.appendChild(s);
-        });
-      }
-    }
-    qs('#new-pw').addEventListener('input', updatePwTips);
-    qs('#new-pw2').addEventListener('input', updatePwTips);
-
-    setPwForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const pw1 = qs('#new-pw').value || '';
-      const pw2 = qs('#new-pw2').value || '';
-      if (pw1 !== pw2) { setText(qs('#setpw-msg'), 'Passwords do not match.'); return; }
-      const pol = checkPasswordPolicy(pw1);
-      if (!pol.ok) { setText(qs('#setpw-msg'), 'Please improve: ' + pol.reasons.join(', ')); return; }
-      setText(qs('#setpw-msg'), 'Saving...');
-      const res = await api('/api/set-password', { newPassword: pw1 });
-      if (res && res.ok) {
-        setText(qs('#setpw-msg'), 'Password updated. Please log in with your new password.');
-        show('login');
-      } else {
-        setText(qs('#setpw-msg'), 'Unable to update password. Please try again.');
-      }
-    });
-
-    mfaForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const code = sanitizeInput(qs('#mfa-code').value);
-      setText(qs('#mfa-msg'), 'Checking code...');
-      const res = await api('/api/mfa-verify', { code });
-      if (res && res.success) {
-        setText(qs('#mfa-msg'), 'Success!');
-        show('success');
-      } else {
-        setText(qs('#mfa-msg'), 'If the code is correct, you will continue. Please try again.');
-      }
-    });
-
-    // Routing: simple hash router + token in query support
-    function parseHash() {
-      const h = window.location.hash.replace(/^#\\/?/, '');
-      const [path, q] = h.split('?');
-      const query = {};
-      if (q) q.split('&').forEach(pair => {
-        const [k,v] = pair.split('=');
-        if (k) query[decodeURIComponent(k)] = decodeURIComponent(v || '');
-      });
-      return { path: path || 'login', query };
-    }
-
-    function route() {
-      const { path, query } = parseHash();
-      // if token present in URL query (either hash or normal query)
-      const search = new URLSearchParams(window.location.search);
-      const tokenFromSearch = search.get('token');
-      const tokenFromHash = query['token'];
-      if ((path === 'verify' || path === 'verifyToken') && (tokenFromSearch || tokenFromHash)) {
-        const input = qs('#verify-token');
-        if (input && (tokenFromSearch || tokenFromHash)) {
-          input.value = sanitizeInput(tokenFromSearch || tokenFromHash);
-        }
-      }
-      if (path === 'help') show('help');
-      else if (path === 'request' || path === 'requestReset') show('requestReset');
-      else if (path === 'verify' || path === 'verifyToken') show('verifyToken');
-      else if (path === 'setPassword') show('setPassword');
-      else if (path === 'mfa') show('mfa');
-      else if (path === 'success') show('success');
-      else show('login');
-    }
-
-    window.addEventListener('hashchange', route);
-
-    // Initial route selection (restore once from server-provided last view)
-    if (window.location.search.includes('token=')) {
-      window.location.hash = '#/verifyToken';
-    } else if (sessionLast) {
-      window.location.hash = '#/' + sessionLast;
-    }
-    route();
-
-    console.log('Welcome. This panel shows secure mock deliveries and actions.');
-  })();
-  </script>
+  <script src="/app.js" defer></script>
 </body>
 </html>`;
 }
 
-// API routing
-async function handleAPI(req: Request, server: any, session: Session): Promise<Response> {
-  const url = new URL(req.url);
-  const ip = (server?.requestIP?.(req)?.address as string) || req.headers.get("x-forwarded-for") || "";
-  const csp = buildCSP(randomId(12)); // minimal nonce for API responses (no inline code), keep consistent CSP baseline
-  const readJson = async () => {
-    try {
-      return await req.json();
-    } catch {
-      return {};
+// ==============================
+// Client JS (served at /app.js)
+// ==============================
+
+function clientJs(): string {
+  return `
+// Client-side SPA logic
+(function() {
+  "use strict";
+
+  // CSRF token for all POST requests (Security 1)
+  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  const csrf = csrfMeta ? csrfMeta.getAttribute('content') || '' : '';
+
+  // Mirror console.log to on-page logs panel (Deliverables)
+  const logsEl = document.getElementById('logs');
+  const originalLog = console.log.bind(console);
+  console.log = (...args) => {
+    originalLog(...args);
+    const msg = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ');
+    const div = document.createElement('div');
+    div.textContent = msg;
+    if (logsEl) {
+      logsEl.appendChild(div);
+      logsEl.scrollTop = logsEl.scrollHeight;
     }
   };
 
-  if (req.method !== "POST") {
-    return jsonResponse({ ok: false, message: "Method not allowed" }, { status: 405, csp });
-  }
-
-  // CSRF required
-  if (!(await requireCsrf(req, session))) {
-    return forbidden("CSRF token invalid");
-  }
-
-  // Persist last view with validation (Security: CSRF protected; Broken Access Control prevention for session state update)
-  if (url.pathname === "/api/last-view") {
-    const body = await readJson();
-    const viewRaw = sanitizeInput(body?.view, 32);
-    const allowed = new Set(["login","requestReset","verify","setPassword","mfa","success","help"]);
-    if (!allowed.has(viewRaw)) {
-      return badRequest("Invalid view");
-    }
-    // Save as-is; router understands "verify" mapping
-    session.lastView = viewRaw;
-    return jsonResponse({ ok: true, message: "Saved" }, { csp });
-  }
-
-  if (url.pathname === "/api/request-reset") {
-    const rl = rateLimitCheck(session, "request-reset", ip);
-    if (!rl.ok) return jsonResponse({ ok: false, message: "Too many requests. Please wait." }, { status: 429, headers: rl.headers, csp });
-
-    const body = await readJson();
-    const identifier = sanitizeInput(body?.identifier);
-    // Do not reveal if user exists (Security: Avoid user enumeration)
-    // We will generate a token each time. Only tokens bound to a real user will allow proceeding.
-    let userId: string | null = null;
-    for (const u of users.values()) {
-      if (u.username.toLowerCase() === identifier.toLowerCase() || u.email.toLowerCase() === identifier.toLowerCase()) {
-        userId = u.id;
-        break;
+  function api(path, data) {
+    return fetch(path, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf
+      },
+      body: JSON.stringify(data || {})
+    }).then(async res => {
+      const json = await res.json().catch(() => ({}));
+      if (json && Array.isArray(json.log)) {
+        json.log.forEach(l => console.log(l));
       }
-    }
-    const rt = generateResetToken(userId, session.id);
-    const origin = url.origin.replace("http:", "https:"); // enforce https link
-    const link = `${origin}/#/verify?token=${encodeURIComponent(rt.token)}`;
-    // Mirror "delivery" via console in the browser — return for demo
-    return jsonResponse({
-      ok: true,
-      message: "If the account exists, you will receive instructions.",
-      demo: { token: rt.token, code: rt.code, link }
-    }, { csp });
-  }
-
-  if (url.pathname === "/api/verify-token") {
-    const rl = rateLimitCheck(session, "verify-token", ip);
-    if (!rl.ok) return jsonResponse({ ok: false, message: "Too many requests. Please wait." }, { status: 429, headers: rl.headers, csp });
-
-    const body = await readJson();
-    const tokenOrCode = sanitizeInput(body?.tokenOrCode);
-    let rt: ResetToken | undefined = resetTokens.get(tokenOrCode);
-    if (!rt) {
-      // allow manual code submission
-      if (/^[0-9]{6}$/.test(tokenOrCode)) {
-        rt = findTokenByCode(tokenOrCode);
+      if (!res.ok) {
+        const err = new Error(json.error || "Request failed");
+        err['status'] = res.status;
+        throw err;
       }
-    }
-    const t = now();
-    let canProceed = false;
-    if (rt && !rt.used && t < rt.expiresAt && rt.userId) {
-      rt.used = true; // single-use (Security: tokens single-use and short-lived)
-      session.canSetPassword = true;
-      session.resetUserId = rt.userId;
-      canProceed = true;
-    }
-    return jsonResponse({ ok: true, canProceed, message: "If valid, you may continue." }, { csp });
-  }
-
-  if (url.pathname === "/api/set-password") {
-    const rl = rateLimitCheck(session, "set-password", ip);
-    if (!rl.ok) return jsonResponse({ ok: false, message: "Too many requests. Please wait." }, { status: 429, headers: rl.headers, csp });
-
-    if (!session.canSetPassword || !session.resetUserId) {
-      // Security: Access control to sensitive action (Broken Access Control prevention)
-      return forbidden("Not authorized for this action");
-    }
-    const body = await readJson();
-    const newPassword = String(body?.newPassword || "");
-    const policy = checkPasswordPolicy(newPassword);
-    if (!policy.ok) {
-      return jsonResponse({ ok: false, message: "Password does not meet policy", reasons: policy.reasons }, { status: 400, csp });
-    }
-    const user = users.get(session.resetUserId);
-    if (!user) {
-      return jsonResponse({ ok: false, message: "Unexpected error" }, { status: 500, csp });
-    }
-    const hash = await Bun.password.hash(newPassword, {
-      algorithm: "argon2id",
-      memoryCost: 19456,
-      timeCost: 2,
+      return json;
     });
-    user.passwordHash = hash;
-    // Clear reset state
-    session.canSetPassword = false;
-    session.resetUserId = null;
-    return jsonResponse({ ok: true, message: "Password updated." }, { csp });
   }
 
-  if (url.pathname === "/api/login") {
-    const rl = rateLimitCheck(session, "login", ip);
-    if (!rl.ok) return jsonResponse({ ok: false, message: "Too many requests. Please wait." }, { status: 429, headers: rl.headers, csp });
+  // State persistence to support pausing (Inclusivity)
+  const store = {
+    load() { try { return JSON.parse(localStorage.getItem("wizard") || "{}"); } catch { return {}; } },
+    save(s) { localStorage.setItem("wizard", JSON.stringify(s)); }
+  };
+  let state = Object.assign({ flow: "login", loginStep: 1, resetStep: 1, email: "" }, store.load());
 
-    const body = await readJson();
-    const identifier = sanitizeInput(body?.identifier);
-    const password = String(body?.password || "");
-    let user: User | undefined;
-    for (const u of users.values()) {
-      if (u.username.toLowerCase() === identifier.toLowerCase() || u.email.toLowerCase() === identifier.toLowerCase()) {
-        user = u; break;
+  // Elements
+  const tabLogin = document.getElementById('tab-login');
+  const tabReset = document.getElementById('tab-reset');
+  const panelLogin = document.getElementById('panel-login');
+  const panelReset = document.getElementById('panel-reset');
+  const flowTitle = document.getElementById('flowTitle');
+  const flowSubtitle = document.getElementById('flowSubtitle');
+
+  // Login elements
+  const loginEmail = document.getElementById('loginEmail');
+  const loginPassword = document.getElementById('loginPassword');
+  const btnLogin = document.getElementById('btnLogin');
+  const btnLoginForgot = document.getElementById('btnLoginForgot');
+  const loginForm = document.getElementById('loginForm');
+  const loginMfa = document.getElementById('loginMfa');
+  const loginSuccess = document.getElementById('loginSuccess');
+  const loginStep1 = document.getElementById('loginStep1');
+  const loginStep2 = document.getElementById('loginStep2');
+  const loginMfaCode = document.getElementById('loginMfaCode');
+  const btnLoginMfa = document.getElementById('btnLoginMfa');
+  const btnLoginBack = document.getElementById('btnLoginBack');
+  const btnAcceptPrivacy = document.getElementById('btnAcceptPrivacy');
+  const btnLogout = document.getElementById('btnLogout');
+
+  // Reset elements
+  const resetStep1El = document.getElementById('resetStepEmail');
+  const resetStep2El = document.getElementById('resetStepVerify');
+  const resetStep3El = document.getElementById('resetStepMfa');
+  const resetStep4El = document.getElementById('resetStepPassword');
+  const resetDoneEl = document.getElementById('resetDone');
+  const resetStep1 = document.getElementById('resetStep1');
+  const resetStep2 = document.getElementById('resetStep2');
+  const resetStep3 = document.getElementById('resetStep3');
+  const resetStep4 = document.getElementById('resetStep4');
+
+  const resetEmail = document.getElementById('resetEmail');
+  const resetEmailMsg = document.getElementById('resetEmailMsg');
+  const btnResetRequest = document.getElementById('btnResetRequest');
+  const btnResetToLogin = document.getElementById('btnResetToLogin');
+
+  const resetCode = document.getElementById('resetCode');
+  const verifyMsg = document.getElementById('verifyMsg');
+  const btnVerifyCode = document.getElementById('btnVerifyCode');
+  const btnPasteLink = document.getElementById('btnPasteLink');
+
+  const resetMfa = document.getElementById('resetMfa');
+  const mfaMsg = document.getElementById('mfaMsg');
+  const btnResetMfa = document.getElementById('btnResetMfa');
+  const btnResetBackV = document.getElementById('btnResetBackV');
+
+  const newPassword = document.getElementById('newPassword');
+  const newPassword2 = document.getElementById('newPassword2');
+  const pwMsg = document.getElementById('pwMsg');
+  const btnUpdatePassword = document.getElementById('btnUpdatePassword');
+  const btnResetBackMfa = document.getElementById('btnResetBackMfa');
+  const btnGoLogin = document.getElementById('btnGoLogin');
+
+  const helpToggle = document.getElementById('helpToggle');
+  const helpArea = document.getElementById('helpArea');
+
+  function setTab(flow) {
+    state.flow = flow;
+    if (tabLogin) tabLogin.setAttribute('aria-selected', flow === 'login' ? 'true' : 'false');
+    if (tabReset) tabReset.setAttribute('aria-selected', flow === 'reset' ? 'true' : 'false');
+    if (panelLogin) panelLogin.classList.toggle('hidden', flow !== 'login');
+    if (panelReset) panelReset.classList.toggle('hidden', flow !== 'reset');
+    if (flowTitle) flowTitle.textContent = flow === 'login' ? 'Login' : 'Reset your password';
+    if (flowSubtitle) flowSubtitle.textContent = flow === 'login'
+      ? 'Enter your details. If you need help, you can switch to password reset.'
+      : 'Follow the steps below. You can pause anytime and continue later.';
+    render();
+    store.save(state);
+  }
+
+  function render() {
+    if (loginStep1) loginStep1.className = 'step ' + (state.loginStep >= 1 ? (state.loginStep > 1 ? 'done' : 'current') : '');
+    if (loginStep2) loginStep2.className = 'step ' + (state.loginStep > 1 ? 'done' : '');
+
+    if (resetStep1) resetStep1.className = 'step ' + (state.resetStep == 1 ? 'current' : (state.resetStep > 1 ? 'done' : ''));
+    if (resetStep2) resetStep2.className = 'step ' + (state.resetStep == 2 ? 'current' : (state.resetStep > 2 ? 'done' : ''));
+    if (resetStep3) resetStep3.className = 'step ' + (state.resetStep == 3 ? 'current' : (state.resetStep > 3 ? 'done' : ''));
+    if (resetStep4) resetStep4.className = 'step ' + (state.resetStep == 4 ? 'current' : (state.resetStep > 4 ? 'done' : ''));
+
+    if (loginForm) loginForm.classList.toggle('hidden', !(state.flow === 'login' && state.loginStep === 1));
+    if (loginMfa) loginMfa.classList.toggle('hidden', !(state.flow === 'login' && state.loginStep === 2));
+    if (loginSuccess) loginSuccess.classList.toggle('hidden', !(state.flow === 'login' && state.loginStep === 3));
+
+    if (resetStep1El) resetStep1El.classList.toggle('hidden', !(state.flow === 'reset' && state.resetStep === 1));
+    if (resetStep2El) resetStep2El.classList.toggle('hidden', !(state.flow === 'reset' && state.resetStep === 2));
+    if (resetStep3El) resetStep3El.classList.toggle('hidden', !(state.flow === 'reset' && state.resetStep === 3));
+    if (resetStep4El) resetStep4El.classList.toggle('hidden', !(state.flow === 'reset' && state.resetStep === 4));
+    if (resetDoneEl) resetDoneEl.classList.toggle('hidden', !(state.flow === 'reset' && state.resetStep === 5));
+
+    if (state.email) {
+      if (loginEmail) loginEmail.value = state.email;
+      if (resetEmail) resetEmail.value = state.email;
+    }
+  }
+
+  // Toggle help
+  if (helpToggle) {
+    helpToggle.addEventListener('click', () => {
+      const expanded = helpToggle.getAttribute('aria-expanded') === 'true';
+      helpToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+      if (helpArea && helpArea.scrollIntoView) {
+        helpArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
-    }
-    let demoMfaCode: string | undefined;
-    if (user && await Bun.password.verify(password, user.passwordHash)) {
-      // Valid credentials; generate MFA
-      demoMfaCode = generateMfaForSession(session);
-      // For demo: send code back for console.log panel
-      return jsonResponse({
-        ok: true,
-        message: "If the credentials are correct, you will be asked for a code.",
-        demoMfaCode
-      }, { csp });
-    } else {
-      // Do not reveal anything; still generic response
-      return jsonResponse({
-        ok: true,
-        message: "If the credentials are correct, you will be asked for a code."
-      }, { csp });
-    }
+    });
   }
 
-  if (url.pathname === "/api/mfa-verify") {
-    const rl = rateLimitCheck(session, "mfa-verify", ip);
-    if (!rl.ok) return jsonResponse({ ok: false, message: "Too many requests. Please wait." }, { status: 429, headers: rl.headers, csp });
+  // Tabs
+  if (tabLogin) tabLogin.addEventListener('click', () => setTab('login'));
+  if (tabReset) tabReset.addEventListener('click', () => setTab('reset'));
 
-    const body = await readJson();
-    const code = sanitizeInput(body?.code);
-    let success = false;
-    const ttl = 10 * 60_000;
-    if (session.mfaPending && session.mfaCode && session.mfaGeneratedAt && now() - session.mfaGeneratedAt < ttl) {
-      if (code === session.mfaCode) {
-        success = true;
-        session.authenticated = true;
-        session.mfaPending = false;
-        session.mfaCode = null;
-        session.mfaGeneratedAt = null;
+  // Login actions
+  if (btnLoginForgot) btnLoginForgot.addEventListener('click', () => {
+    state.resetStep = 1;
+    setTab('reset');
+  });
+
+  if (btnLogin) btnLogin.addEventListener('click', async () => {
+    const email = (loginEmail && 'value' in loginEmail ? loginEmail.value : '').trim().toLowerCase();
+    const password = (loginPassword && 'value' in loginPassword ? loginPassword.value : '');
+    state.email = email; store.save(state);
+    try {
+      const res = await api('/api/login/start', { email, password });
+      if (res.requireMfa) {
+        console.log('MFA code (login):', res.mfa);
+        state.loginStep = 2; render(); store.save(state);
+        setTimeout(() => { if (loginMfaCode) (loginMfaCode as any).focus && loginMfaCode.focus(); }, 50);
+      } else {
+        state.loginStep = 3; render(); store.save(state);
       }
+    } catch (e) {
+      const msg = e && e.message ? e.message : 'Login failed';
+      console.log('Login error:', msg);
+      alert('Login failed. Please check details or try reset.');
     }
-    return jsonResponse({ ok: true, success, message: success ? "Signed in." : "If the code is correct, you will continue." }, { csp });
+  });
+
+  if (btnLoginMfa) btnLoginMfa.addEventListener('click', async () => {
+    const code = (loginMfaCode && 'value' in loginMfaCode ? loginMfaCode.value : '').trim().toUpperCase();
+    try {
+      await api('/api/login/verify', { code });
+      state.loginStep = 3; render(); store.save(state);
+    } catch (e) {
+      console.log('MFA error:', e.message || 'Invalid code');
+      alert('Invalid code. Please check Logs for the current code.');
+    }
+  });
+
+  if (btnLoginBack) btnLoginBack.addEventListener('click', () => {
+    state.loginStep = 1; render(); store.save(state);
+  });
+
+  if (btnAcceptPrivacy) btnAcceptPrivacy.addEventListener('click', () => {
+    alert('Privacy statement accepted. Thank you.');
+  });
+
+  if (btnLogout) btnLogout.addEventListener('click', async () => {
+    try { await api('/api/logout', {}); } catch {}
+    state.loginStep = 1; render(); store.save(state);
+  });
+
+  // Reset flow actions
+  if (btnResetToLogin) btnResetToLogin.addEventListener('click', () => {
+    setTab('login');
+  });
+
+  function clientPasswordPolicy(pw) {
+    if (pw.length < 12) return "Password must be at least 12 characters.";
+    if (!/[a-z]/.test(pw)) return "Include a lowercase letter.";
+    if (!/[A-Z]/.test(pw)) return "Include an uppercase letter.";
+    if (!/[0-9]/.test(pw)) return "Include a number.";
+    if (!/[^\\w\\s]/.test(pw)) return "Include a special character.";
+    return "";
   }
 
-  return jsonResponse({ ok: false, message: "Not found" }, { status: 404, csp });
+  if (btnResetRequest) btnResetRequest.addEventListener('click', async () => {
+    const email = (resetEmail && 'value' in resetEmail ? resetEmail.value : '').trim().toLowerCase();
+    state.email = email; store.save(state);
+    if (resetEmailMsg) resetEmailMsg.textContent = "Working...";
+    try {
+      const res = await api('/api/reset/request', { email });
+      if (resetEmailMsg) resetEmailMsg.textContent = res && res.message ? res.message : 'If the account exists, instructions were sent. Check Logs.';
+      state.resetStep = 2; render(); store.save(state);
+    } catch (e) {
+      if (resetEmailMsg) resetEmailMsg.textContent = 'Please wait before trying again.';
+      console.log('Reset request throttled or failed:', e.message || '');
+    }
+  });
+
+  if (btnVerifyCode) btnVerifyCode.addEventListener('click', async () => {
+    const code = (resetCode && 'value' in resetCode ? resetCode.value : '').trim().toUpperCase();
+    if (verifyMsg) verifyMsg.textContent = 'Verifying...';
+    try {
+      await api('/api/reset/verify', { code });
+      state.resetStep = 3; render(); store.save(state);
+      if (verifyMsg) verifyMsg.textContent = 'Verified. Continue with MFA.';
+    } catch (e) {
+      if (verifyMsg) verifyMsg.textContent = 'Invalid or expired code. Please try again.';
+    }
+  });
+
+  if (btnPasteLink) btnPasteLink.addEventListener('click', async () => {
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get('token') || '';
+    if (!token) {
+      if (verifyMsg) verifyMsg.textContent = 'No token found in the address bar. Paste the link here by opening it first.';
+      return;
+    }
+    if (verifyMsg) verifyMsg.textContent = 'Verifying link...';
+    try {
+      await api('/api/reset/verify', { token });
+      state.resetStep = 3; render(); store.save(state);
+      if (verifyMsg) verifyMsg.textContent = 'Verified. Continue with MFA.';
+    } catch (e) {
+      if (verifyMsg) verifyMsg.textContent = 'Invalid or expired link.';
+    }
+  });
+
+  if (btnResetBackV) btnResetBackV.addEventListener('click', () => {
+    state.resetStep = 2; render(); store.save(state);
+  });
+
+  if (btnResetMfa) btnResetMfa.addEventListener('click', async () => {
+    const code = (resetMfa && 'value' in resetMfa ? resetMfa.value : '').trim().toUpperCase();
+    if (mfaMsg) mfaMsg.textContent = 'Checking code...';
+    try {
+      await api('/api/reset/mfa', { code });
+      state.resetStep = 4; render(); store.save(state);
+      if (mfaMsg) mfaMsg.textContent = '';
+    } catch (e) {
+      if (mfaMsg) mfaMsg.textContent = e.message || 'Invalid code. Please check Logs for the current code.';
+    }
+  });
+
+  if (btnResetBackMfa) btnResetBackMfa.addEventListener('click', () => {
+    state.resetStep = 3; render(); store.save(state);
+  });
+
+  if (btnUpdatePassword) btnUpdatePassword.addEventListener('click', async () => {
+    const a = (newPassword && 'value' in newPassword ? newPassword.value : '');
+    const b = (newPassword2 && 'value' in newPassword2 ? newPassword2.value : '');
+    if (pwMsg) pwMsg.textContent = '';
+    if (a !== b) { if (pwMsg) pwMsg.textContent = 'Passwords do not match.'; return; }
+    const err = clientPasswordPolicy(a);
+    if (err) { if (pwMsg) pwMsg.textContent = err; return; }
+    if (pwMsg) pwMsg.textContent = 'Updating...';
+    try {
+      await api('/api/reset/password', { password: a });
+      state.resetStep = 5; render(); store.save(state);
+      if (pwMsg) pwMsg.textContent = '';
+    } catch (e) {
+      if (pwMsg) pwMsg.textContent = e.message || 'Could not update password.';
+    }
+  });
+
+  if (btnGoLogin) btnGoLogin.addEventListener('click', () => {
+    state.loginStep = 1; setTab('login');
+  });
+
+  // Resume state on load
+  (function init() {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('token')) {
+      state.flow = 'reset';
+      state.resetStep = Math.max(state.resetStep, 2);
+    }
+    setTab(state.flow);
+    render();
+    if (state.email) {
+      if (loginEmail) loginEmail.value = state.email;
+      if (resetEmail) resetEmail.value = state.email;
+    }
+    console.log('This is a demo. No real emails are sent.');
+    console.log('Security: All sensitive requests require a CSRF token and are rate-limited.');
+  })();
+
+})();
+`;
 }
 
-// Main request handler
-async function handler(req: Request, server: any): Promise<Response> {
-  // Enforce HTTPS scheme in links and set strict headers per response
-  const ip = (server?.requestIP?.(req)?.address as string) || req.headers.get("x-forwarded-for") || "";
-  const { session, setCookies } = ensureSession(req, ip);
-  const url = new URL(req.url);
+// ==============================
+// API Handlers
+// ==============================
 
-  if (url.pathname.startsWith("/api/")) {
-    const res = await handleAPI(req, server, session);
-    const headers = new Headers(res.headers);
-    // propagate cookies and headers
-    for (const c of setCookies) headers.append("Set-Cookie", c);
-    return new Response(await res.text(), { status: res.status, headers });
-  }
-
-  if (url.pathname === "/") {
-    const nonce = randomId(12);
-    const csp = buildCSP(nonce);
-    const html = renderHTML(session, nonce);
-    const headers: HeadersInit = {
-      "Content-Type": "text/html; charset=utf-8",
-      ...securityHeaders({ csp }),
-    };
-    setCookies.push(`lastView=${encodeURIComponent(session.lastView || "login")}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=2592000`);
-    const resHeaders = new Headers(headers);
-    for (const c of setCookies) resHeaders.append("Set-Cookie", c);
-    return new Response(html, { status: 200, headers: resHeaders });
-  }
-
-  return new Response("Not found", { status: 404, headers: securityHeaders() });
+function getClientIP(req: Request): string {
+  const h = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
+  const ip = h.split(",")[0].trim();
+  return ip || "127.0.0.1";
 }
 
-// Initialize demo user and start server
-await initDemoUser();
+const JSON_HEADERS = () => {
+  const h = securityHeaders();
+  h.set("Content-Type", "application/json");
+  return h;
+};
 
-// HTTPS server with provided certificates (Requirements: Security Misconfiguration - HTTPS enforced, HSTS, CSP)
-const certFile = Bun.file("certs/cert.pem");
-const keyFile = Bun.file("certs/key.pem");
+// POST /api/reset/request
+async function handleResetRequest(req: Request, session: Session): Promise<Response> {
+  // CSRF validation first (Security 1: CSRF as first operation)
+  const csrfFail = await requireCsrf(req, session);
+  if (csrfFail) return csrfFail;
 
+  // Then rate limiting and input checks
+  const ip = getClientIP(req);
+  const rate = checkRate(ip, "reset-request:ip", 5, 60_000);
+  if (!rate.ok) {
+    const h = JSON_HEADERS();
+    h.set("Retry-After", String(rate.retryAfter || 30));
+    return new Response(JSON.stringify({ ok: false, error: "Too many requests. Please wait." }), { status: 429, headers: h });
+  }
+
+  const body = await req.json().catch(() => ({}));
+  const email = String((body.email || "")).toLowerCase().trim();
+  if (!email || !email.includes("@")) {
+    return new Response(JSON.stringify({ ok: true, message: "If the account exists, instructions were sent." , log: []}), { status: 200, headers: JSON_HEADERS() });
+  }
+
+  const rateAcc = checkRate(ip, `reset-request:${email}`, 3, 10 * 60_000);
+  if (!rateAcc.ok) {
+    const h = JSON_HEADERS();
+    h.set("Retry-After", String(rateAcc.retryAfter || 60));
+    return new Response(JSON.stringify({ ok: false, error: "Please wait before trying again." }), { status: 429, headers: h });
+  }
+
+  const user = usersByEmail.get(email);
+  let response: any = { ok: true, message: `If the account exists, instructions were sent to ${maskEmail(email)}.`, log: [] as string[] };
+
+  if (user) {
+    // Generate secure token (random, single-use, short-lived)
+    const token = randId(32);
+    const createdAt = now();
+    const tokenHash = await sha256Hex(token);
+    const code = shortCodeFromHex(tokenHash, 6);
+    const rec: ResetTokenRecord = { token, userId: user.id, createdAt, used: false, shortCode: code, attempts: 0, mfaAttempts: 0 };
+    resetTokens.set(token, rec);
+    resetCodes.set(code, token);
+    // Build link (no external calls)
+    const url = new URL(req.url);
+    const link = `${url.protocol}//${url.host}/?token=${encodeURIComponent(token)}`;
+    response.log.push(`Reset verification link: ${link}`);
+    response.log.push(`Short manual code: ${code}`);
+  } else {
+    response.log.push(`If the account exists, a reset link and code were generated.`);
+  }
+
+  return new Response(JSON.stringify(response), { status: 200, headers: JSON_HEADERS() });
+}
+
+// POST /api/reset/verify
+async function handleResetVerify(req: Request, session: Session): Promise<Response> {
+  const ip = getClientIP(req);
+  const rate = checkRate(ip, "reset-verify", 10, 60_000);
+  if (!rate.ok) {
+    const h = JSON_HEADERS();
+    h.set("Retry-After", String(rate.retryAfter || 30));
+    return new Response(JSON.stringify({ ok: false, error: "Too many attempts. Please slow down." }), { status: 429, headers: h });
+  }
+  const csrfFail = await requireCsrf(req, session);
+  if (csrfFail) return csrfFail;
+
+  const data = await req.json().catch(() => ({}));
+  const token = typeof data.token === "string" ? data.token : null;
+  const code = typeof data.code === "string" ? data.code.toUpperCase() : null;
+
+  let rec: ResetTokenRecord | undefined;
+  if (token) rec = resetTokens.get(token);
+  else if (code) {
+    const t = resetCodes.get(code);
+    if (t) rec = resetTokens.get(t);
+  }
+
+  if (!rec) {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid or expired token." }), { status: 400, headers: JSON_HEADERS() });
+  }
+  // Validate not used and not expired (15 minutes)
+  if (rec.used || now() - rec.createdAt > 15 * 60_000) {
+    return new Response(JSON.stringify({ ok: false, error: "Token expired. Please start over." }), { status: 400, headers: JSON_HEADERS() });
+  }
+
+  session.reset = { userId: rec.userId, token: rec.token, createdAt: now() };
+  const mfa = await deriveMfaForReset(rec.token);
+  mfaForReset.set(rec.token, mfa);
+
+  const res = { ok: true, next: "mfa", log: [`MFA code for reset: ${mfa}`] };
+  return new Response(JSON.stringify(res), { status: 200, headers: JSON_HEADERS() });
+}
+
+// POST /api/reset/mfa
+async function handleResetMfa(req: Request, session: Session): Promise<Response> {
+  const ip = getClientIP(req);
+  const rate = checkRate(ip, "reset-mfa", 10, 60_000);
+  if (!rate.ok) {
+    const h = JSON_HEADERS();
+    h.set("Retry-After", String(rate.retryAfter || 30));
+    return new Response(JSON.stringify({ ok: false, error: "Too many attempts. Please slow down." }), { status: 429, headers: h });
+  }
+  const csrfFail = await requireCsrf(req, session);
+  if (csrfFail) return csrfFail;
+
+  const reset = session.reset;
+  if (!reset) {
+    return new Response(JSON.stringify({ ok: false, error: "No reset session." }), { status: 400, headers: JSON_HEADERS() });
+  }
+  const rec = resetTokens.get(reset.token);
+  if (!rec || rec.used || now() - rec.createdAt > 15 * 60_000) {
+    return new Response(JSON.stringify({ ok: false, error: "Reset session expired." }), { status: 400, headers: JSON_HEADERS() });
+  }
+  const data = await req.json().catch(() => ({}));
+  const code = String(data.code || "").toUpperCase().trim();
+  const expect = mfaForReset.get(rec.token);
+  rec.mfaAttempts++;
+  if (rec.mfaAttempts > 10) {
+    return new Response(JSON.stringify({ ok: false, error: "Too many attempts." }), { status: 429, headers: JSON_HEADERS() });
+  }
+  if (!expect || code !== expect) {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid code." }), { status: 400, headers: JSON_HEADERS() });
+  }
+  reset.mfaVerified = true;
+  return new Response(JSON.stringify({ ok: true, next: "password" }), { status: 200, headers: JSON_HEADERS() });
+}
+
+// POST /api/reset/password
+async function handleResetPassword(req: Request, session: Session): Promise<Response> {
+  const csrfFail = await requireCsrf(req, session);
+  if (csrfFail) return csrfFail;
+
+  const reset = session.reset;
+  if (!reset || !reset.mfaVerified) {
+    return new Response(JSON.stringify({ ok: false, error: "Not authorized for password update." }), { status: 403, headers: JSON_HEADERS() });
+  }
+  const rec = resetTokens.get(reset.token);
+  if (!rec || rec.used || now() - rec.createdAt > 15 * 60_000) {
+    return new Response(JSON.stringify({ ok: false, error: "Reset session expired." }), { status: 400, headers: JSON_HEADERS() });
+  }
+  const data = await req.json().catch(() => ({}));
+  const password = String(data.password || "");
+  const val = validatePasswordPolicy(password);
+  if (!val.ok) {
+    return new Response(JSON.stringify({ ok: false, error: val.message || "Weak password." }), { status: 400, headers: JSON_HEADERS() });
+  }
+
+  const user = usersById.get(rec.userId);
+  if (!user) {
+    return new Response(JSON.stringify({ ok: false, error: "Account missing." }), { status: 400, headers: JSON_HEADERS() });
+  }
+
+  const hash = await Bun.password.hash(password, { algorithm: "bcrypt", cost: 10 });
+  user.passwordHash = hash;
+
+  // Invalidate token, MFA, and prior sessions
+  rec.used = true;
+  mfaForReset.delete(rec.token);
+  resetCodes.delete(rec.shortCode);
+  for (const [sid, s] of sessions) {
+    if (s.userId === user.id) sessions.delete(sid);
+  }
+  delete session.reset;
+
+  return new Response(JSON.stringify({ ok: true, message: "Password updated." }), { status: 200, headers: JSON_HEADERS() });
+}
+
+// POST /api/login/start
+async function handleLoginStart(req: Request, session: Session): Promise<Response> {
+  const ip = getClientIP(req);
+  const rate = checkRate(ip, "login-start", 8, 60_000);
+  if (!rate.ok) {
+    const h = JSON_HEADERS();
+    h.set("Retry-After", String(rate.retryAfter || 30));
+    return new Response(JSON.stringify({ ok: false, error: "Too many attempts. Please wait." }), { status: 429, headers: h });
+  }
+  const csrfFail = await requireCsrf(req, session);
+  if (csrfFail) return csrfFail;
+
+  const data = await req.json().catch(() => ({}));
+  const email = String(data.email || "").toLowerCase().trim();
+  const password = String(data.password || "");
+  const user = usersByEmail.get(email);
+  if (!user) {
+    await Bun.sleep(100);
+    return new Response(JSON.stringify({ ok: false, error: "Invalid credentials." }), { status: 401, headers: JSON_HEADERS() });
+  }
+  const ok = await Bun.password.verify(password, user.passwordHash);
+  if (!ok) {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid credentials." }), { status: 401, headers: JSON_HEADERS() });
+  }
+
+  if (user.mfaEnabled) {
+    const mfa = await deriveMfaForLogin(user.id);
+    mfaForLogin.set(user.id, mfa);
+    session.pendingLoginUserId = user.id;
+    return new Response(JSON.stringify({ ok: true, requireMfa: true, log: [`MFA code (login): ${mfa}`], mfa }), { status: 200, headers: JSON_HEADERS() });
+  } else {
+    session.userId = user.id;
+    return new Response(JSON.stringify({ ok: true, requireMfa: false }), { status: 200, headers: JSON_HEADERS() });
+  }
+}
+
+// POST /api/login/verify
+async function handleLoginVerify(req: Request, session: Session): Promise<Response> {
+  const ip = getClientIP(req);
+  const rate = checkRate(ip, "login-verify", 10, 60_000);
+  if (!rate.ok) {
+    const h = JSON_HEADERS();
+    h.set("Retry-After", String(rate.retryAfter || 30));
+    return new Response(JSON.stringify({ ok: false, error: "Too many attempts. Please wait." }), { status: 429, headers: h });
+  }
+  const csrfFail = await requireCsrf(req, session);
+  if (csrfFail) return csrfFail;
+
+  const uid = session.pendingLoginUserId;
+  if (!uid) {
+    return new Response(JSON.stringify({ ok: false, error: "No pending login." }), { status: 400, headers: JSON_HEADERS() });
+  }
+  const data = await req.json().catch(() => ({}));
+  const code = String(data.code || "").toUpperCase().trim();
+  const expect = mfaForLogin.get(uid) || (await deriveMfaForLogin(uid));
+  if (code !== expect) {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid code." }), { status: 401, headers: JSON_HEADERS() });
+  }
+  session.userId = uid;
+  delete session.pendingLoginUserId;
+  mfaForLogin.delete(uid);
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: JSON_HEADERS() });
+}
+
+// POST /api/logout
+async function handleLogout(req: Request, session: Session): Promise<Response> {
+  const csrfFail = await requireCsrf(req, session);
+  if (csrfFail) return csrfFail;
+  delete session.userId;
+  delete session.pendingLoginUserId;
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: JSON_HEADERS() });
+}
+
+// ==============================
+// Router and HTTPS Server
+// ==============================
+
+async function router(req: Request): Promise<Response> {
+  try {
+    const { session, setCookie } = await getOrCreateSession(req);
+    const url = new URL(req.url);
+    const path = url.pathname;
+    const method = req.method.toUpperCase();
+    const isApi = path.startsWith("/api/");
+
+    // Serve client JS
+    if (method === "GET" && path === "/app.js") {
+      const h = securityHeaders();
+      h.set("Content-Type", "application/javascript; charset=utf-8");
+      if (setCookie) h.set("Set-Cookie", setCookie);
+      return new Response(clientJs(), { status: 200, headers: h });
+    }
+
+    if (method === "GET" && !isApi) {
+      const html = spaHtml(session.csrf);
+      const h = securityHeaders();
+      h.set("Content-Type", "text/html; charset=utf-8");
+      if (setCookie) h.set("Set-Cookie", setCookie);
+      return new Response(html, { status: 200, headers: h });
+    }
+
+    // API endpoints
+    if (method === "POST") {
+      if (path === "/api/reset/request") return await handleResetRequest(req, session);
+      if (path === "/api/reset/verify") return await handleResetVerify(req, session);
+      if (path === "/api/reset/mfa") return await handleResetMfa(req, session);
+      if (path === "/api/reset/password") return await handleResetPassword(req, session);
+      if (path === "/api/login/start") return await handleLoginStart(req, session);
+      if (path === "/api/login/verify") return await handleLoginVerify(req, session);
+      if (path === "/api/logout") return await handleLogout(req, session);
+    }
+
+    // Unknown API or method
+    if (isApi) {
+      return new Response(JSON.stringify({ ok: false, error: "Not found" }), { status: 404, headers: JSON_HEADERS() });
+    }
+
+    // Fallback to SPA
+    const h = securityHeaders();
+    const html = spaHtml(session.csrf);
+    h.set("Content-Type", "text/html; charset=utf-8");
+    return new Response(html, { status: 200, headers: h });
+  } catch (_err) {
+    // Avoid leaking stack traces
+    const h = JSON_HEADERS();
+    return new Response(JSON.stringify({ ok: false, error: "Internal error" }), { status: 500, headers: h });
+  }
+}
+
+// Start HTTPS server with mkcert certificates (Security: HTTPS + HSTS)
 const server = Bun.serve({
-  port: 8443,
   tls: {
-    cert: await certFile.text(),
-    key: await keyFile.text(),
+    certFile: "certs/cert.pem",
+    keyFile: "certs/key.pem",
   },
-  fetch: handler,
+  port: 8443,
+  fetch: router,
 });
 
-console.log(`HTTPS server running at https://localhost:${server.port}`);
+console.log(`HTTPS server running on https://localhost:${server.port}`);
