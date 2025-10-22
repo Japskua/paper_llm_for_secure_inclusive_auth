@@ -1,0 +1,129 @@
+# docker-compose.local.yml
+
+x-app: &app_template
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      # set per-service below
+      APP_PATH: ""
+  restart: unless-stopped
+  networks:
+    - test_network
+  volumes:
+    # mount the SAME mkcert pair into all services
+    - ./certs/cert.pem:/app/certs/cert.pem:ro
+    - ./certs/key.pem:/app/certs/key.pem:ro
+
+services:
+  traefik:
+    image: traefik:v3.4.1
+    command:
+      - "--configFile=/app/configs/traefik.toml" # This is the traefik configuration file
+    volumes:
+      - ./traefik/traefik.toml:/app/configs/traefik.toml:ro
+      - ./traefik/dynamic_conf.toml:/app/configs/dynamic_conf.toml:ro
+      - ./certs:/certs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    networks:
+      - test_network
+    ports:
+      - "80:80"
+      - "443:443"
+    labels:
+      - traefik.enable=true
+      # Dashboard router (HTTP router on the dash entrypoint)
+      - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.service=api@internal"
+
+  # ===== EDUCATION =====
+  edu_c1:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_education/case_1_multi_no_condition_no_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.edu_c1.rule=HostSNI(`edu-c1.localhost`)
+      - traefik.tcp.routers.edu_c1.entrypoints=websecure
+      - traefik.tcp.routers.edu_c1.tls.passthrough=true
+      - traefik.tcp.services.edu_c1.loadbalancer.server.port=3441
+
+  edu_c2:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_education/case_2_multi_condition_no_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.edu_c2.rule=HostSNI(`edu-c2.localhost`)
+      - traefik.tcp.routers.edu_c2.entrypoints=websecure
+      - traefik.tcp.routers.edu_c2.tls.passthrough=true
+      - traefik.tcp.services.edu_c2.loadbalancer.server.port=3442
+
+  edu_c3:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_education/case_3_multi_condition_with_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.edu_c3.rule=HostSNI(`edu-c3.localhost`)
+      - traefik.tcp.routers.edu_c3.entrypoints=websecure
+      - traefik.tcp.routers.edu_c3.tls.passthrough=true
+      - traefik.tcp.services.edu_c3.loadbalancer.server.port=3443
+
+  # ===== HEALTH =====
+  health_c1:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_health/case_1_multi_no_condition_no_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.health_c1.rule=HostSNI(`health-c1.localhost`)
+      - traefik.tcp.routers.health_c1.entrypoints=websecure
+      - traefik.tcp.routers.health_c1.tls.passthrough=true
+      - traefik.tcp.services.health_c1.loadbalancer.server.port=8441
+
+  health_c2:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_health/case_2_multi_condition_no_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.health_c2.rule=HostSNI(`health-c2.localhost`)
+      - traefik.tcp.routers.health_c2.entrypoints=websecure
+      - traefik.tcp.routers.health_c2.tls.passthrough=true
+      - traefik.tcp.services.health_c2.loadbalancer.server.port=8442
+
+  health_c3:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_health/case_3_multi_condition_with_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.health_c3.rule=HostSNI(`health-c3.localhost`)
+      - traefik.tcp.routers.health_c3.entrypoints=websecure
+      - traefik.tcp.routers.health_c3.tls.passthrough=true
+      - traefik.tcp.services.health_c3.loadbalancer.server.port=8443
+networks:
+  test_network:
+    name: test_network # We are creating a network with the name test_network
+    driver: bridge # We are using the bridge driver

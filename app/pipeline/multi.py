@@ -15,7 +15,7 @@ from provider import make_three_llms
 
 
 class State(TypedDict):
-    code_html: str
+    code_tsx: str
     task_list: List[str]
     evaluator_md: str
     done: bool
@@ -86,7 +86,7 @@ def run_multi(args) -> None:
 
     # Initial state
     state: State = {
-        "code_html": INIT_CODE,
+        "code_tsx": INIT_CODE,
         "task_list": [],
         "evaluator_md": "",
         "done": False,
@@ -192,8 +192,8 @@ def run_multi(args) -> None:
         Tasks to implement now:
         {tasks_str}
 
-        Current index.html (edit in-place and return FULL FILE):
-        {state['code_html']}
+        Current app.ts (edit in-place and return FULL FILE):
+        {state['code_tsx']}
         """
         state["step"] = int(state.get("step", 0)) + 1
         prefix = f"[iter {state.get('iter','?')} | step {state.get('step','?')}]"
@@ -219,20 +219,20 @@ def run_multi(args) -> None:
         start = text.find("<FILE>")
         end = text.find("</FILE>")
         code = text[start + 6 : end] if start != -1 and end != -1 else text
-        state["code_html"] = code
+        state["code_tsx"] = code
 
         # Save artifacts
-        pathlib.Path(args.output, "index.html").write_text(
-            state["code_html"], encoding="utf-8"
+        pathlib.Path(args.output, "app.ts").write_text(
+            state["code_tsx"], encoding="utf-8"
         )
         iter_no = int(state.get("iter", 0))
-        versioned_name = f"index_iter{iter_no}.html"
+        versioned_name = f"code_iter{iter_no}.tsx"
         pathlib.Path(args.output, versioned_name).write_text(
-            state["code_html"], encoding="utf-8"
+            state["code_tsx"], encoding="utf-8"
         )
         if args.verbose:
             vprint(
-                f"{prefix} CODER: wrote index.html and index_iter{iter_no}.html (chars={len(state['code_html'])})"
+                f"{prefix} CODER: wrote app.ts and code_iter{iter_no}.tsx (chars={len(state['code_tsx'])})"
             )
         return state
 
@@ -241,8 +241,8 @@ def run_multi(args) -> None:
         Requirements:
         {requirements}
 
-        index.html:
-        {state['code_html']}
+        app.ts:
+        {state['code_tsx']}
         """
         state["step"] = int(state.get("step", 0)) + 1
         prefix = f"[iter {state.get('iter','?')} | step {state.get('step','?')}]"
