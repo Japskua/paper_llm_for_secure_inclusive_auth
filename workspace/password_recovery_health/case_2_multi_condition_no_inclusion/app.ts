@@ -862,9 +862,7 @@ async function handleAPI(req: Request, nonce: string): Promise<Response> {
 
         const delivery = {
             token: tokenStr,
-            link: `https://localhost:${PORT}/#/verify?token=${encodeURIComponent(
-                tokenStr
-            )}`
+            link: `/#/verify?token=${encodeURIComponent(tokenStr)}`
         };
         // Return generic success without revealing account existence (Auth)
         return jsonResponse(
