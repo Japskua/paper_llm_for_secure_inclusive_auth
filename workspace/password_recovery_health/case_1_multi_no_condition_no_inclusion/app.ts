@@ -1003,7 +1003,7 @@ const tls = {
 
 const server = Bun.serve({
     tls,
-    port: 8443,
+    port: 8441,
     async fetch(req: Request) {
         const url = new URL(req.url);
         const path = url.pathname;

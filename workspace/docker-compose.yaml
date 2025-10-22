@@ -1,0 +1,135 @@
+version: "3.9"
+
+x-app: &app_template
+  build:
+    context: .
+    dockerfile: Dockerfile
+  restart: unless-stopped
+  # Mount the correct Let's Encrypt cert pair into /app/certs/{cert,key}.pem
+  # (one pair per hostname or reuse a wildcard)
+  # Labels are set per service below
+  # Note: containers run as root by default, so they can read LE privkeys.
+
+services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # Global HTTP->HTTPS redirect
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --api.dashboard=false
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  # ===== EDUCATION =====
+  edu_c1:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_education/case_1_multi_no_condition_no_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.edu_c1.rule=HostSNI(`edu-c1.localhost`)
+      - traefik.tcp.routers.edu_c1.entrypoints=websecure
+      - traefik.tcp.routers.edu_c1.tls.passthrough=true
+      - traefik.tcp.services.edu_c1.loadbalancer.server.port=3443
+    volumes:
+      - ./certs/cert.pem:/app/certs/cert.pem:ro
+      - ./certs/key.pem:/app/certs/key.pem:ro
+
+  edu_c2:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_education/case_2_multi_condition_no_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.edu_c2.rule=HostSNI(`edu-c2.localhost`)
+      - traefik.tcp.routers.edu_c2.entrypoints=websecure
+      - traefik.tcp.routers.edu_c2.tls.passthrough=true
+      - traefik.tcp.services.edu_c2.loadbalancer.server.port=3443
+    volumes:
+      - ./certs/cert.pem:/app/certs/cert.pem:ro
+      - ./certs/key.pem:/app/certs/key.pem:ro
+
+  edu_c3:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_education/case_3_multi_condition_with_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.edu_c3.rule=HostSNI(`edu-c3.localhost`)
+      - traefik.tcp.routers.edu_c3.entrypoints=websecure
+      - traefik.tcp.routers.edu_c3.tls.passthrough=true
+      - traefik.tcp.services.edu_c3.loadbalancer.server.port=3443
+    volumes:
+      - ./certs/cert.pem:/app/certs/cert.pem:ro
+      - ./certs/key.pem:/app/certs/key.pem:ro
+
+  # ===== HEALTH =====
+  health_c1:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_health/case_1_multi_no_condition_no_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.health_c1.rule=HostSNI(`health-c1.localhost`)
+      - traefik.tcp.routers.health_c1.entrypoints=websecure
+      - traefik.tcp.routers.health_c1.tls.passthrough=true
+      - traefik.tcp.services.health_c1.loadbalancer.server.port=3443
+    volumes:
+      - ./certs/cert.pem:/app/certs/cert.pem:ro
+      - ./certs/key.pem:/app/certs/key.pem:ro
+
+  health_c2:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_health/case_2_multi_condition_no_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.health_c2.rule=HostSNI(`health-c2.localhost`)
+      - traefik.tcp.routers.health_c2.entrypoints=websecure
+      - traefik.tcp.routers.health_c2.tls.passthrough=true
+      - traefik.tcp.services.health_c2.loadbalancer.server.port=3443
+    volumes:
+      - ./certs/cert.pem:/app/certs/cert.pem:ro
+      - ./certs/key.pem:/app/certs/key.pem:ro
+
+  health_c3:
+    <<: *app_template
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PATH: password_recovery_health/case_3_multi_condition_with_inclusion/app.ts
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.health_c3.rule=HostSNI(`health-c3.localhost`)
+      - traefik.tcp.routers.health_c3.entrypoints=websecure
+      - traefik.tcp.routers.health_c3.tls.passthrough=true
+      # Important: service name and service label key must match
+      - traefik.tcp.services.health_c3.loadbalancer.server.port=3443
+    volumes:
+      - ./certs/cert.pem:/app/certs/cert.pem:ro
+      - ./certs/key.pem:/app/certs/key.pem:ro

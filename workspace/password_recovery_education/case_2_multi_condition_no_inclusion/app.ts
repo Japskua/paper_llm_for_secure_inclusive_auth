@@ -1,4 +1,3 @@
-
 /**
  * app.ts - Single-file HTTPS Bun server + SPA
  * Password Recovery System Demo
@@ -17,36 +16,36 @@
 // [Security 1: Broken Access Control] Sessions are isolated in-memory with CSRF per session.
 // [Security 3: Misconfiguration] No persistence; no sensitive info is exposed.
 type Session = {
-  id: string;
-  csrf: string;
-  createdAt: number;
-  ip: string;
-  pendingUser?: string;
-  user?: string;
-  pendingMFA?: boolean;
-  mfaCode?: string;
-  mfaExpiresAt?: number;
-  mfaAttempts?: number;
-  mfaNonce?: string;
-  resetUser?: string;
-  resetToken?: string;
-  accessibility?: boolean;
-  // Rate limit buckets per key (e.g., "login", "request-reset")
-  rate: Record<string, number[]>;
+    id: string;
+    csrf: string;
+    createdAt: number;
+    ip: string;
+    pendingUser?: string;
+    user?: string;
+    pendingMFA?: boolean;
+    mfaCode?: string;
+    mfaExpiresAt?: number;
+    mfaAttempts?: number;
+    mfaNonce?: string;
+    resetUser?: string;
+    resetToken?: string;
+    accessibility?: boolean;
+    // Rate limit buckets per key (e.g., "login", "request-reset")
+    rate: Record<string, number[]>;
 };
 
 type ResetToken = {
-  token: string;
-  expiresAt: number;
-  used: boolean;
+    token: string;
+    expiresAt: number;
+    used: boolean;
 };
 
 type User = {
-  username: string;
-  email: string;
-  passwordHash: string;
-  expired: boolean;
-  resetTokens: ResetToken[];
+    username: string;
+    email: string;
+    passwordHash: string;
+    expired: boolean;
+    resetTokens: ResetToken[];
 };
 
 // Deterministic single in-memory user store
@@ -55,15 +54,15 @@ const users = new Map<string, User>();
 // Initialize demo user 'alex' with expired password.
 const initialAlexPassword = "Al3xOldPass!!AA"; // strong old password
 const alexHash = await Bun.password.hash(initialAlexPassword, {
-  algorithm: "bcrypt",
-  cost: 10,
+    algorithm: "bcrypt",
+    cost: 10
 });
 users.set("alex", {
-  username: "alex",
-  email: "alex@example.edu",
-  passwordHash: alexHash,
-  expired: true,
-  resetTokens: [],
+    username: "alex",
+    email: "alex@example.edu",
+    passwordHash: alexHash,
+    expired: true,
+    resetTokens: []
 });
 
 // In-memory session store
@@ -71,192 +70,210 @@ const sessions = new Map<string, Session>();
 
 // ------------------------------- Util functions -----------------------------
 function b64url(bytes: Uint8Array): string {
-  // Node/Bun Buffer available
-  // @ts-ignore
-  return Buffer.from(bytes).toString("base64url");
+    // Node/Bun Buffer available
+    // @ts-ignore
+    return Buffer.from(bytes).toString("base64url");
 }
 function randomId(byteLen = 16): string {
-  const arr = new Uint8Array(byteLen);
-  crypto.getRandomValues(arr);
-  return b64url(arr);
+    const arr = new Uint8Array(byteLen);
+    crypto.getRandomValues(arr);
+    return b64url(arr);
 }
 function now(): number {
-  return Date.now();
+    return Date.now();
 }
 
 function getIP(req: Request): string {
-  // No reverse proxy in this demo; use header if present; otherwise localhost
-  const xf = req.headers.get("x-forwarded-for");
-  if (xf) return xf.split(",")[0].trim();
-  return "127.0.0.1";
+    // No reverse proxy in this demo; use header if present; otherwise localhost
+    const xf = req.headers.get("x-forwarded-for");
+    if (xf) return xf.split(",")[0].trim();
+    return "127.0.0.1";
 }
 
 function parseCookies(h: string | null): Record<string, string> {
-  const out: Record<string, string> = {};
-  if (!h) return out;
-  const parts = h.split(";");
-  for (const p of parts) {
-    const [k, ...rest] = p.trim().split("=");
-    if (!k) continue;
-    out[k] = decodeURIComponent(rest.join("=") || "");
-  }
-  return out;
+    const out: Record<string, string> = {};
+    if (!h) return out;
+    const parts = h.split(";");
+    for (const p of parts) {
+        const [k, ...rest] = p.trim().split("=");
+        if (!k) continue;
+        out[k] = decodeURIComponent(rest.join("=") || "");
+    }
+    return out;
 }
 
-function cookieSerialize(name: string, val: string, attrs: Record<string, string | number | boolean> = {}) {
-  let s = `${name}=${encodeURIComponent(val)}`;
-  if (attrs.Path) s += `; Path=${attrs.Path}`;
-  if (attrs.HttpOnly) s += `; HttpOnly`;
-  if (attrs.Secure) s += `; Secure`;
-  if (attrs.SameSite) s += `; SameSite=${attrs.SameSite}`;
-  if (attrs["Max-Age"]) s += `; Max-Age=${attrs["Max-Age"]}`;
-  if (attrs.Expires) s += `; Expires=${attrs.Expires}`;
-  return s;
+function cookieSerialize(
+    name: string,
+    val: string,
+    attrs: Record<string, string | number | boolean> = {}
+) {
+    let s = `${name}=${encodeURIComponent(val)}`;
+    if (attrs.Path) s += `; Path=${attrs.Path}`;
+    if (attrs.HttpOnly) s += `; HttpOnly`;
+    if (attrs.Secure) s += `; Secure`;
+    if (attrs.SameSite) s += `; SameSite=${attrs.SameSite}`;
+    if (attrs["Max-Age"]) s += `; Max-Age=${attrs["Max-Age"]}`;
+    if (attrs.Expires) s += `; Expires=${attrs.Expires}`;
+    return s;
 }
 
 // Simple per-session rate limiter (retained for any future per-session checks)
-function checkRate(session: Session, ip: string, key: string, limit = 5, windowMs = 5 * 60 * 1000): boolean {
-  const buckets = session.rate || (session.rate = {});
-  const nowMs = now();
-  const bkey = `${key}:${ip}`;
-  const arr = buckets[bkey] || (buckets[bkey] = []);
-  // prune old
-  while (arr.length && nowMs - arr[0] > windowMs) arr.shift();
-  if (arr.length >= limit) return false;
-  arr.push(nowMs);
-  return true;
+function checkRate(
+    session: Session,
+    ip: string,
+    key: string,
+    limit = 5,
+    windowMs = 5 * 60 * 1000
+): boolean {
+    const buckets = session.rate || (session.rate = {});
+    const nowMs = now();
+    const bkey = `${key}:${ip}`;
+    const arr = buckets[bkey] || (buckets[bkey] = []);
+    // prune old
+    while (arr.length && nowMs - arr[0] > windowMs) arr.shift();
+    if (arr.length >= limit) return false;
+    arr.push(nowMs);
+    return true;
 }
 
 // -------------------- Global rate limiter (per IP, per action) --------------
 // [Security 4: Throttling/Brute force mitigation — Global per-IP limiter]
 const globalRate = new Map<string, number[]>();
-function checkRateGlobal(ip: string, action: string, limit = 5, windowMs = 5 * 60 * 1000): boolean {
-  const key = `${ip}:${action}`;
-  const nowMs = now();
-  let arr = globalRate.get(key);
-  if (!arr) {
-    arr = [];
-    globalRate.set(key, arr);
-  }
-  // prune old timestamps
-  while (arr.length && nowMs - arr[0] > windowMs) arr.shift();
-  if (arr.length >= limit) return false;
-  arr.push(nowMs);
-  return true;
+function checkRateGlobal(
+    ip: string,
+    action: string,
+    limit = 5,
+    windowMs = 5 * 60 * 1000
+): boolean {
+    const key = `${ip}:${action}`;
+    const nowMs = now();
+    let arr = globalRate.get(key);
+    if (!arr) {
+        arr = [];
+        globalRate.set(key, arr);
+    }
+    // prune old timestamps
+    while (arr.length && nowMs - arr[0] > windowMs) arr.shift();
+    if (arr.length >= limit) return false;
+    arr.push(nowMs);
+    return true;
 }
 
 // ---------------------------- Security Headers ------------------------------
 // [Security 3: Misconfiguration hardening: HTTPS+HSTS+CSP+secure headers]
 function buildCSPForHTML(nonce: string) {
-  const csp = [
-    "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data:",
-    "connect-src 'self'",
-    "base-uri 'none'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    "object-src 'none'",
-  ].join("; ");
-  return csp;
+    const csp = [
+        "default-src 'self'",
+        `script-src 'self' 'nonce-${nonce}'`,
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data:",
+        "connect-src 'self'",
+        "base-uri 'none'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+        "object-src 'none'"
+    ].join("; ");
+    return csp;
 }
 function buildCSPForAPI() {
-  // No scripts in JSON responses; lock it down
-  const csp = [
-    "default-src 'none'",
-    "frame-ancestors 'none'",
-  ].join("; ");
-  return csp;
+    // No scripts in JSON responses; lock it down
+    const csp = ["default-src 'none'", "frame-ancestors 'none'"].join("; ");
+    return csp;
 }
 
 function commonSecurityHeaders(extra: Record<string, string> = {}) {
-  return {
-    // HSTS - enforce HTTPS
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
-    // XFO
-    "X-Frame-Options": "DENY",
-    // Referrer policy
-    "Referrer-Policy": "no-referrer",
-    // MIME sniffing
-    "X-Content-Type-Options": "nosniff",
-    // Minimal Permissions-Policy
-    "Permissions-Policy": "geolocation=(), camera=(), microphone=()",
-    ...extra,
-  };
+    return {
+        // HSTS - enforce HTTPS
+        "Strict-Transport-Security":
+            "max-age=31536000; includeSubDomains; preload",
+        // XFO
+        "X-Frame-Options": "DENY",
+        // Referrer policy
+        "Referrer-Policy": "no-referrer",
+        // MIME sniffing
+        "X-Content-Type-Options": "nosniff",
+        // Minimal Permissions-Policy
+        "Permissions-Policy": "geolocation=(), camera=(), microphone=()",
+        ...extra
+    };
 }
 
 function jsonResponse(obj: any, status = 200): Response {
-  return new Response(JSON.stringify(obj), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      ...commonSecurityHeaders({
-        "Content-Security-Policy": buildCSPForAPI(),
-      }),
-    },
-  });
+    return new Response(JSON.stringify(obj), {
+        status,
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            ...commonSecurityHeaders({
+                "Content-Security-Policy": buildCSPForAPI()
+            })
+        }
+    });
 }
 
 // ---------------------------- CSRF and Sessions -----------------------------
 // [Security 1: CSRF prevention — unique per session and validated on all POST /api/*]
-function getOrCreateSession(req: Request): { session: Session; newCookie?: string } {
-  const cookies = parseCookies(req.headers.get("cookie"));
-  let sid = cookies["sid"];
-  let sess: Session | undefined;
-  if (sid) {
-    sess = sessions.get(sid);
-  }
-  if (!sess) {
-    sid = randomId(18);
-    sess = {
-      id: sid,
-      csrf: randomId(18),
-      createdAt: now(),
-      ip: getIP(req),
-      rate: {},
-      accessibility: false,
-    };
-    sessions.set(sid, sess);
-    const cookie = cookieSerialize("sid", sid, {
-      Path: "/",
-      HttpOnly: true,
-      Secure: true,
-      SameSite: "Strict",
-      // Session cookie; no Max-Age for simplicity
-    });
-    return { session: sess, newCookie: cookie };
-  }
-  return { session: sess };
+function getOrCreateSession(req: Request): {
+    session: Session;
+    newCookie?: string;
+} {
+    const cookies = parseCookies(req.headers.get("cookie"));
+    let sid = cookies["sid"];
+    let sess: Session | undefined;
+    if (sid) {
+        sess = sessions.get(sid);
+    }
+    if (!sess) {
+        sid = randomId(18);
+        sess = {
+            id: sid,
+            csrf: randomId(18),
+            createdAt: now(),
+            ip: getIP(req),
+            rate: {},
+            accessibility: false
+        };
+        sessions.set(sid, sess);
+        const cookie = cookieSerialize("sid", sid, {
+            Path: "/",
+            HttpOnly: true,
+            Secure: true,
+            SameSite: "Strict"
+            // Session cookie; no Max-Age for simplicity
+        });
+        return { session: sess, newCookie: cookie };
+    }
+    return { session: sess };
 }
 
 async function readJsonSafe<T>(req: Request): Promise<T | null> {
-  try {
-    const txt = await req.text();
-    if (!txt) return {} as any;
-    return JSON.parse(txt);
-  } catch {
-    return null;
-  }
+    try {
+        const txt = await req.text();
+        if (!txt) return {} as any;
+        return JSON.parse(txt);
+    } catch {
+        return null;
+    }
 }
 
 function validateCSRF(req: Request, session: Session): boolean {
-  const token = req.headers.get("x-csrf-token") || "";
-  return token === session.csrf;
+    const token = req.headers.get("x-csrf-token") || "";
+    return token === session.csrf;
 }
 
 // ----------------------------- HTML Rendering -------------------------------
 function renderHTML(nonce: string, session: Session): string {
-  // Inline HTML SPA. Avoid reflecting unsanitized user input.
-  // [Security 2: XSS prevention — single trusted script with nonce, no inline event handlers]
-  const accessibilityEnabled = !!session.accessibility;
-  return `<!doctype html>
+    // Inline HTML SPA. Avoid reflecting unsanitized user input.
+    // [Security 2: XSS prevention — single trusted script with nonce, no inline event handlers]
+    const accessibilityEnabled = !!session.accessibility;
+    return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <title>University Portal — Secure Password Recovery Demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="${buildCSPForHTML(nonce).replace(/"/g, "&quot;")}">
+  <meta http-equiv="Content-Security-Policy" content="${buildCSPForHTML(
+      nonce
+  ).replace(/"/g, "&quot;")}">
   <style>
     /* Base styles with dyslexia-friendly optional mode */
     :root {
@@ -394,7 +411,9 @@ function renderHTML(nonce: string, session: Session): string {
           <a href="#forgot">Forgot Password</a>
           <a href="#help">Help</a>
         </nav>
-        <button id="toggleAccBtn" class="secondary" aria-pressed="${accessibilityEnabled ? "true" : "false"}" aria-label="Toggle dyslexia-friendly mode">Accessibility</button>
+        <button id="toggleAccBtn" class="secondary" aria-pressed="${
+            accessibilityEnabled ? "true" : "false"
+        }" aria-label="Toggle dyslexia-friendly mode">Accessibility</button>
       </div>
     </div>
   </header>
@@ -423,7 +442,9 @@ function renderHTML(nonce: string, session: Session): string {
 
     // Server-provided session data
     window.__CSRF = ${JSON.stringify(session.csrf)};
-    window.__PREFS = ${JSON.stringify({ accessibility: !!session.accessibility })};
+    window.__PREFS = ${JSON.stringify({
+        accessibility: !!session.accessibility
+    })};
     window.__MFANONCE = null;
 
     (function(){
@@ -768,297 +789,376 @@ function renderHTML(nonce: string, session: Session): string {
 
 // ------------------------------ API Handlers --------------------------------
 async function handleAPI(req: Request, session: Session): Promise<Response> {
-  // Enforce CSRF on all sensitive POST routes
-  if (req.method !== "POST") {
-    return jsonResponse({ ok: false, message: "Method Not Allowed" }, 405);
-  }
-  if (!validateCSRF(req, session)) {
-    // [Security 1: CSRF] CSRF token missing/invalid => 403
-    return jsonResponse({ ok: false, message: "CSRF validation failed" }, 403);
-  }
-
-  const url = new URL(req.url);
-  const path = url.pathname;
-
-  // Reject any absolute redirect/next parameters to avoid open redirect/SSRF
-  // [Security 5: SSRF/Open redirect prevention]
-  const nextParam = url.searchParams.get("next") || "";
-  if (nextParam && (/^https?:\/\//i).test(nextParam)) {
-    return jsonResponse({ ok: false, message: "Invalid next parameter" }, 400);
-  }
-
-  if (path === "/api/login") {
-    const ip = getIP(req);
-    if (!checkRateGlobal(ip, "login", 5, 5 * 60 * 1000)) {
-      return jsonResponse({ ok: false, message: "Too many attempts" }, 429);
+    // Enforce CSRF on all sensitive POST routes
+    if (req.method !== "POST") {
+        return jsonResponse({ ok: false, message: "Method Not Allowed" }, 405);
     }
-    const body = await readJsonSafe<{ username?: string; password?: string }>(req);
-    if (!body) return jsonResponse({ ok: false, message: "Bad Request" }, 400);
-    const username = (body.username || "").toLowerCase().trim();
-    const password = body.password || "";
-
-    // Generic error to avoid user enumeration
-    const genericErr = () => jsonResponse({ ok: false, message: "Invalid credentials" }, 401);
-
-    const user = users.get(username);
-    if (!user) return genericErr();
-    const ok = await Bun.password.verify(password, user.passwordHash);
-    if (!ok) return genericErr();
-
-    // Generate per-session MFA code
-    // [Security 4: MFA implemented]
-    const code = (Math.floor(100000 + Math.random() * 900000)).toString();
-    session.pendingUser = user.username;
-    session.pendingMFA = true;
-    session.mfaCode = code;
-    session.mfaExpiresAt = now() + 5 * 60 * 1000;
-    session.mfaAttempts = 5;
-    session.mfaNonce = randomId(16);
-
-    // For demo: send code to client for console/logging. Do not reveal user in UI response.
-    return jsonResponse({
-      ok: true,
-      mfaRequired: true,
-      mfaNonce: session.mfaNonce,
-      // The client mirrors this to console and Logs panel
-      log: `MFA code (demo): ${code}`
-    });
-  }
-
-  if (path === "/api/verify-mfa") {
-    const ip = getIP(req);
-    if (!checkRateGlobal(ip, "verify-mfa", 5, 5 * 60 * 1000)) {
-      return jsonResponse({ ok: false, message: "Too many attempts" }, 429);
-    }
-    const body = await readJsonSafe<{ code?: string; mfaNonce?: string }>(req);
-    if (!body) return jsonResponse({ ok: false, message: "Bad Request" }, 400);
-    const code = (body.code || "").trim();
-    const providedNonce = (body.mfaNonce || "").trim();
-    if (!session.pendingMFA || !session.pendingUser || !session.mfaCode) {
-      return jsonResponse({ ok: false, message: "No pending MFA" }, 400);
+    if (!validateCSRF(req, session)) {
+        // [Security 1: CSRF] CSRF token missing/invalid => 403
+        return jsonResponse(
+            { ok: false, message: "CSRF validation failed" },
+            403
+        );
     }
 
-    // Expiry check prior to comparison
-    if (typeof session.mfaExpiresAt === "number" && now() > session.mfaExpiresAt) {
-      // Clear MFA state (terminal expiry)
-      session.pendingMFA = false;
-      session.mfaCode = undefined;
-      session.mfaExpiresAt = undefined;
-      session.mfaAttempts = undefined;
-      session.mfaNonce = undefined;
-      return jsonResponse({ ok: false, message: "MFA expired; sign in again" }, 401);
+    const url = new URL(req.url);
+    const path = url.pathname;
+
+    // Reject any absolute redirect/next parameters to avoid open redirect/SSRF
+    // [Security 5: SSRF/Open redirect prevention]
+    const nextParam = url.searchParams.get("next") || "";
+    if (nextParam && /^https?:\/\//i.test(nextParam)) {
+        return jsonResponse(
+            { ok: false, message: "Invalid next parameter" },
+            400
+        );
     }
 
-    // Nonce must match
-    if (!session.mfaNonce || providedNonce !== session.mfaNonce) {
-      return jsonResponse({ ok: false, message: "Unauthorized" }, 401);
-    }
-
-    // Validate the code
-    if (code !== session.mfaCode) {
-      if (typeof session.mfaAttempts === "number") {
-        session.mfaAttempts = Math.max(0, session.mfaAttempts - 1);
-        if (session.mfaAttempts <= 0) {
-          // Terminal lockout: clear MFA state
-          session.pendingMFA = false;
-          session.mfaCode = undefined;
-          session.mfaExpiresAt = undefined;
-          session.mfaAttempts = undefined;
-          session.mfaNonce = undefined;
-          return jsonResponse({ ok: false, message: "Too many MFA attempts; sign in again" }, 429);
+    if (path === "/api/login") {
+        const ip = getIP(req);
+        if (!checkRateGlobal(ip, "login", 5, 5 * 60 * 1000)) {
+            return jsonResponse(
+                { ok: false, message: "Too many attempts" },
+                429
+            );
         }
-      }
-      return jsonResponse({ ok: false, message: "Invalid code" }, 401);
+        const body = await readJsonSafe<{
+            username?: string;
+            password?: string;
+        }>(req);
+        if (!body)
+            return jsonResponse({ ok: false, message: "Bad Request" }, 400);
+        const username = (body.username || "").toLowerCase().trim();
+        const password = body.password || "";
+
+        // Generic error to avoid user enumeration
+        const genericErr = () =>
+            jsonResponse({ ok: false, message: "Invalid credentials" }, 401);
+
+        const user = users.get(username);
+        if (!user) return genericErr();
+        const ok = await Bun.password.verify(password, user.passwordHash);
+        if (!ok) return genericErr();
+
+        // Generate per-session MFA code
+        // [Security 4: MFA implemented]
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        session.pendingUser = user.username;
+        session.pendingMFA = true;
+        session.mfaCode = code;
+        session.mfaExpiresAt = now() + 5 * 60 * 1000;
+        session.mfaAttempts = 5;
+        session.mfaNonce = randomId(16);
+
+        // For demo: send code to client for console/logging. Do not reveal user in UI response.
+        return jsonResponse({
+            ok: true,
+            mfaRequired: true,
+            mfaNonce: session.mfaNonce,
+            // The client mirrors this to console and Logs panel
+            log: `MFA code (demo): ${code}`
+        });
     }
 
-    // Success
-    session.user = session.pendingUser;
-    session.pendingMFA = false;
-    session.pendingUser = undefined;
-    session.mfaCode = undefined;
-    session.mfaExpiresAt = undefined;
-    session.mfaAttempts = undefined;
-    session.mfaNonce = undefined;
+    if (path === "/api/verify-mfa") {
+        const ip = getIP(req);
+        if (!checkRateGlobal(ip, "verify-mfa", 5, 5 * 60 * 1000)) {
+            return jsonResponse(
+                { ok: false, message: "Too many attempts" },
+                429
+            );
+        }
+        const body = await readJsonSafe<{ code?: string; mfaNonce?: string }>(
+            req
+        );
+        if (!body)
+            return jsonResponse({ ok: false, message: "Bad Request" }, 400);
+        const code = (body.code || "").trim();
+        const providedNonce = (body.mfaNonce || "").trim();
+        if (!session.pendingMFA || !session.pendingUser || !session.mfaCode) {
+            return jsonResponse({ ok: false, message: "No pending MFA" }, 400);
+        }
 
-    const u = users.get(session.user!);
-    const requireChange = !!u?.expired;
+        // Expiry check prior to comparison
+        if (
+            typeof session.mfaExpiresAt === "number" &&
+            now() > session.mfaExpiresAt
+        ) {
+            // Clear MFA state (terminal expiry)
+            session.pendingMFA = false;
+            session.mfaCode = undefined;
+            session.mfaExpiresAt = undefined;
+            session.mfaAttempts = undefined;
+            session.mfaNonce = undefined;
+            return jsonResponse(
+                { ok: false, message: "MFA expired; sign in again" },
+                401
+            );
+        }
 
-    // If password is expired, authorize a one-time password set via session-bound reset state
-    if (requireChange && u) {
-      session.resetUser = u.username;
-      session.resetToken = randomId(16); // session-local marker; not exposed elsewhere
+        // Nonce must match
+        if (!session.mfaNonce || providedNonce !== session.mfaNonce) {
+            return jsonResponse({ ok: false, message: "Unauthorized" }, 401);
+        }
+
+        // Validate the code
+        if (code !== session.mfaCode) {
+            if (typeof session.mfaAttempts === "number") {
+                session.mfaAttempts = Math.max(0, session.mfaAttempts - 1);
+                if (session.mfaAttempts <= 0) {
+                    // Terminal lockout: clear MFA state
+                    session.pendingMFA = false;
+                    session.mfaCode = undefined;
+                    session.mfaExpiresAt = undefined;
+                    session.mfaAttempts = undefined;
+                    session.mfaNonce = undefined;
+                    return jsonResponse(
+                        {
+                            ok: false,
+                            message: "Too many MFA attempts; sign in again"
+                        },
+                        429
+                    );
+                }
+            }
+            return jsonResponse({ ok: false, message: "Invalid code" }, 401);
+        }
+
+        // Success
+        session.user = session.pendingUser;
+        session.pendingMFA = false;
+        session.pendingUser = undefined;
+        session.mfaCode = undefined;
+        session.mfaExpiresAt = undefined;
+        session.mfaAttempts = undefined;
+        session.mfaNonce = undefined;
+
+        const u = users.get(session.user!);
+        const requireChange = !!u?.expired;
+
+        // If password is expired, authorize a one-time password set via session-bound reset state
+        if (requireChange && u) {
+            session.resetUser = u.username;
+            session.resetToken = randomId(16); // session-local marker; not exposed elsewhere
+        }
+
+        return jsonResponse({
+            ok: true,
+            requirePasswordChange: requireChange,
+            log: requireChange
+                ? "Login OK. Password is expired; please set a new one."
+                : "Login OK."
+        });
     }
 
-    return jsonResponse({
-      ok: true,
-      requirePasswordChange: requireChange,
-      log: requireChange ? "Login OK. Password is expired; please set a new one." : "Login OK."
-    });
-  }
+    if (path === "/api/request-reset") {
+        const ip = getIP(req);
+        if (!checkRateGlobal(ip, "request-reset", 5, 5 * 60 * 1000)) {
+            return jsonResponse(
+                { ok: false, message: "Too many requests" },
+                429
+            );
+        }
+        const body = await readJsonSafe<{ identifier?: string }>(req);
+        if (!body)
+            return jsonResponse({ ok: false, message: "Bad Request" }, 400);
+        const ident = (body.identifier || "").toLowerCase().trim();
 
-  if (path === "/api/request-reset") {
-    const ip = getIP(req);
-    if (!checkRateGlobal(ip, "request-reset", 5, 5 * 60 * 1000)) {
-      return jsonResponse({ ok: false, message: "Too many requests" }, 429);
-    }
-    const body = await readJsonSafe<{ identifier?: string }>(req);
-    if (!body) return jsonResponse({ ok: false, message: "Bad Request" }, 400);
-    const ident = (body.identifier || "").toLowerCase().trim();
-
-    // Generic response regardless of existence
-    let tokenHint: string | undefined;
-    // Only create a token if user exists (username or email)
-    let user: User | undefined;
-    if (ident.includes("@")) {
-      user = Array.from(users.values()).find(u => u.email.toLowerCase() === ident);
-    } else {
-      user = users.get(ident);
-    }
-    if (user) {
-      // [Security 3: Random, single-use, short-lived reset tokens]
-      const token = randomId(24);
-      const expiresAt = now() + 10 * 60 * 1000;
-      user.resetTokens.push({ token, expiresAt, used: false });
-      tokenHint = token;
-    }
-    return jsonResponse({
-      ok: true,
-      // do not reveal whether user exists
-      message: "If an account exists, a password reset link has been sent.",
-      // token returned only for demo logging in browser
-      tokenHint: tokenHint || null
-    });
-  }
-
-  if (path === "/api/validate-reset") {
-    const body = await readJsonSafe<{ token?: string }>(req);
-    if (!body) return jsonResponse({ ok: false, message: "Bad Request" }, 400);
-    const token = (body.token || "").trim();
-    // Validate token across all users
-    let matchedUser: User | undefined;
-    let matched: ResetToken | undefined;
-    for (const u of users.values()) {
-      const t = u.resetTokens.find(rt => rt.token === token && !rt.used && rt.expiresAt > now());
-      if (t) { matchedUser = u; matched = t; break; }
-    }
-    if (!matchedUser || !matched) {
-      return jsonResponse({ ok: false, message: "Invalid or expired token" }, 400);
-    }
-    // Mark single-use token as used immediately
-    matched.used = true;
-    // Bind the reset token to the session
-    session.resetUser = matchedUser.username;
-    session.resetToken = matched.token;
-    return jsonResponse({ ok: true, log: "Reset token validated. You can now set a new password." });
-  }
-
-  if (path === "/api/set-password") {
-    const body = await readJsonSafe<{ password?: string }>(req);
-    if (!body) return jsonResponse({ ok: false, message: "Bad Request" }, 400);
-    const pw = body.password || "";
-
-    // [Security 4: Strong password policy]
-    const strong = pw.length >= 12 && /[a-z]/.test(pw) && /[A-Z]/.test(pw) && /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
-    if (!strong) return jsonResponse({ ok: false, message: "Password does not meet policy" }, 400);
-
-    // [Security 1: Prevent IDOR]
-    // Authorize ONLY via session-bound reset state (ignore tokens in body)
-    if (!session.resetUser || !session.resetToken) {
-      return jsonResponse({ ok: false, message: "Unauthorized" }, 401);
-    }
-    const targetUser = users.get(session.resetUser);
-    if (!targetUser) {
-      return jsonResponse({ ok: false, message: "Unauthorized" }, 401);
+        // Generic response regardless of existence
+        let tokenHint: string | undefined;
+        // Only create a token if user exists (username or email)
+        let user: User | undefined;
+        if (ident.includes("@")) {
+            user = Array.from(users.values()).find(
+                (u) => u.email.toLowerCase() === ident
+            );
+        } else {
+            user = users.get(ident);
+        }
+        if (user) {
+            // [Security 3: Random, single-use, short-lived reset tokens]
+            const token = randomId(24);
+            const expiresAt = now() + 10 * 60 * 1000;
+            user.resetTokens.push({ token, expiresAt, used: false });
+            tokenHint = token;
+        }
+        return jsonResponse({
+            ok: true,
+            // do not reveal whether user exists
+            message:
+                "If an account exists, a password reset link has been sent.",
+            // token returned only for demo logging in browser
+            tokenHint: tokenHint || null
+        });
     }
 
-    const newHash = await Bun.password.hash(pw, { algorithm: "bcrypt", cost: 10 });
-    targetUser.passwordHash = newHash;
-    targetUser.expired = false;
-    // Invalidate all reset tokens for this user
-    targetUser.resetTokens.forEach(rt => rt.used = true);
-    // One-time success; clear session reset authorization
-    session.resetUser = undefined;
-    session.resetToken = undefined;
+    if (path === "/api/validate-reset") {
+        const body = await readJsonSafe<{ token?: string }>(req);
+        if (!body)
+            return jsonResponse({ ok: false, message: "Bad Request" }, 400);
+        const token = (body.token || "").trim();
+        // Validate token across all users
+        let matchedUser: User | undefined;
+        let matched: ResetToken | undefined;
+        for (const u of users.values()) {
+            const t = u.resetTokens.find(
+                (rt) => rt.token === token && !rt.used && rt.expiresAt > now()
+            );
+            if (t) {
+                matchedUser = u;
+                matched = t;
+                break;
+            }
+        }
+        if (!matchedUser || !matched) {
+            return jsonResponse(
+                { ok: false, message: "Invalid or expired token" },
+                400
+            );
+        }
+        // Mark single-use token as used immediately
+        matched.used = true;
+        // Bind the reset token to the session
+        session.resetUser = matchedUser.username;
+        session.resetToken = matched.token;
+        return jsonResponse({
+            ok: true,
+            log: "Reset token validated. You can now set a new password."
+        });
+    }
 
-    return jsonResponse({ ok: true, log: "Password updated (demo). All reset tokens invalidated." });
-  }
+    if (path === "/api/set-password") {
+        const body = await readJsonSafe<{ password?: string }>(req);
+        if (!body)
+            return jsonResponse({ ok: false, message: "Bad Request" }, 400);
+        const pw = body.password || "";
 
-  if (path === "/api/accessibility") {
-    const body = await readJsonSafe<{ enabled?: boolean }>(req);
-    if (!body || typeof body.enabled !== "boolean") return jsonResponse({ ok: false, message: "Bad Request" }, 400);
-    session.accessibility = body.enabled;
-    return jsonResponse({ ok: true });
-  }
+        // [Security 4: Strong password policy]
+        const strong =
+            pw.length >= 12 &&
+            /[a-z]/.test(pw) &&
+            /[A-Z]/.test(pw) &&
+            /[0-9]/.test(pw) &&
+            /[^A-Za-z0-9]/.test(pw);
+        if (!strong)
+            return jsonResponse(
+                { ok: false, message: "Password does not meet policy" },
+                400
+            );
 
-  return jsonResponse({ ok: false, message: "Not Found" }, 404);
+        // [Security 1: Prevent IDOR]
+        // Authorize ONLY via session-bound reset state (ignore tokens in body)
+        if (!session.resetUser || !session.resetToken) {
+            return jsonResponse({ ok: false, message: "Unauthorized" }, 401);
+        }
+        const targetUser = users.get(session.resetUser);
+        if (!targetUser) {
+            return jsonResponse({ ok: false, message: "Unauthorized" }, 401);
+        }
+
+        const newHash = await Bun.password.hash(pw, {
+            algorithm: "bcrypt",
+            cost: 10
+        });
+        targetUser.passwordHash = newHash;
+        targetUser.expired = false;
+        // Invalidate all reset tokens for this user
+        targetUser.resetTokens.forEach((rt) => (rt.used = true));
+        // One-time success; clear session reset authorization
+        session.resetUser = undefined;
+        session.resetToken = undefined;
+
+        return jsonResponse({
+            ok: true,
+            log: "Password updated (demo). All reset tokens invalidated."
+        });
+    }
+
+    if (path === "/api/accessibility") {
+        const body = await readJsonSafe<{ enabled?: boolean }>(req);
+        if (!body || typeof body.enabled !== "boolean")
+            return jsonResponse({ ok: false, message: "Bad Request" }, 400);
+        session.accessibility = body.enabled;
+        return jsonResponse({ ok: true });
+    }
+
+    return jsonResponse({ ok: false, message: "Not Found" }, 404);
 }
 
 // ------------------------------ HTTP Handlers -------------------------------
 async function handleGET(req: Request): Promise<Response> {
-  const { session, newCookie } = getOrCreateSession(req);
-  const nonce = randomId(18);
-  const html = renderHTML(nonce, session);
-  const headers: Record<string, string> = {
-    "Content-Type": "text/html; charset=utf-8",
-    "Content-Security-Policy": buildCSPForHTML(nonce),
-    ...commonSecurityHeaders(),
-  };
-  if (newCookie) headers["Set-Cookie"] = newCookie;
-  return new Response(html, {
-    status: 200,
-    headers,
-  });
+    const { session, newCookie } = getOrCreateSession(req);
+    const nonce = randomId(18);
+    const html = renderHTML(nonce, session);
+    const headers: Record<string, string> = {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Security-Policy": buildCSPForHTML(nonce),
+        ...commonSecurityHeaders()
+    };
+    if (newCookie) headers["Set-Cookie"] = newCookie;
+    return new Response(html, {
+        status: 200,
+        headers
+    });
 }
 
 async function handleRequest(req: Request): Promise<Response> {
-  const url = new URL(req.url);
+    const url = new URL(req.url);
 
-  // Only support our single-page app and same-file API
-  if (req.method === "GET" && url.pathname === "/") {
-    return handleGET(req);
-  }
-
-  if (url.pathname.startsWith("/api/")) {
-    // Must create session if missing (should exist from GET /)
-    const { session, newCookie } = getOrCreateSession(req);
-    const resp = await handleAPI(req, session);
-    if (newCookie) {
-      // Bubble cookie header into response if session was newly created via API (unlikely)
-      const headers = new Headers(resp.headers);
-      headers.set("Set-Cookie", newCookie);
-      return new Response(resp.body, { status: resp.status, headers });
+    // Only support our single-page app and same-file API
+    if (req.method === "GET" && url.pathname === "/") {
+        return handleGET(req);
     }
-    return resp;
-  }
 
-  // SPA: route all other GET to /
-  if (req.method === "GET") {
-    return handleGET(req);
-  }
+    if (url.pathname.startsWith("/api/")) {
+        // Must create session if missing (should exist from GET /)
+        const { session, newCookie } = getOrCreateSession(req);
+        const resp = await handleAPI(req, session);
+        if (newCookie) {
+            // Bubble cookie header into response if session was newly created via API (unlikely)
+            const headers = new Headers(resp.headers);
+            headers.set("Set-Cookie", newCookie);
+            return new Response(resp.body, { status: resp.status, headers });
+        }
+        return resp;
+    }
 
-  return new Response("Not Found", { status: 404, headers: commonSecurityHeaders() });
+    // SPA: route all other GET to /
+    if (req.method === "GET") {
+        return handleGET(req);
+    }
+
+    return new Response("Not Found", {
+        status: 404,
+        headers: commonSecurityHeaders()
+    });
 }
 
 // ------------------------------- HTTPS Server -------------------------------
 // [Security 3: Enforce HTTPS; use provided mkcert certs]
-const port = Number(process.env.PORT || 8443);
+const port = Number(process.env.PORT || 3442);
 
 const server = Bun.serve({
-  port,
-  tls: {
-    // Ready-made TLS certs will be placed at these paths by the evaluator
-    cert: Bun.file("certs/cert.pem"),
-    key: Bun.file("certs/key.pem"),
-  },
-  fetch: handleRequest,
-  error(err) {
-    // [Security 3: No stack traces in production responses]
-    console.error("Server error:", err?.message || err);
-    return new Response("Internal Error", { status: 500, headers: commonSecurityHeaders() });
-  },
+    port,
+    tls: {
+        // Ready-made TLS certs will be placed at these paths by the evaluator
+        cert: Bun.file("certs/cert.pem"),
+        key: Bun.file("certs/key.pem")
+    },
+    fetch: handleRequest,
+    error(err) {
+        // [Security 3: No stack traces in production responses]
+        console.error("Server error:", err?.message || err);
+        return new Response("Internal Error", {
+            status: 500,
+            headers: commonSecurityHeaders()
+        });
+    }
 });
 
 // Log startup (server-side)
-console.log(`HTTPS server running on https://localhost:${server.port} (SPA served from /)`);
+console.log(
+    `HTTPS server running on https://localhost:${server.port} (SPA served from /)`
+);
 
 // ------------------------------ End of file ---------------------------------

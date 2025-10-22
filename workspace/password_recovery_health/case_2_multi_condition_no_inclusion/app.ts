@@ -1,4 +1,3 @@
-
 /**
  * app.ts - Single-file HTTPS Bun server + SPA client
  * Run with: bun app.ts (Bun 1.3.0)
@@ -11,31 +10,31 @@
  * - SSRF/Open Redirects: No external calls, validate hash routing to internal only
  */
 
-const PORT = 8443;
+const PORT = 8442;
 
 // ---------- Utilities ----------
 function base64url(bytes: Uint8Array) {
-  const b64 = Buffer.from(bytes).toString("base64");
-  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    const b64 = Buffer.from(bytes).toString("base64");
+    return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 function randomId(size = 32) {
-  const b = new Uint8Array(size);
-  crypto.getRandomValues(b);
-  return base64url(b);
+    const b = new Uint8Array(size);
+    crypto.getRandomValues(b);
+    return base64url(b);
 }
 function now() {
-  return Date.now();
+    return Date.now();
 }
 
 // ---------- In-memory Stores (No external persistence) ----------
 // Users
 type User = {
-  id: string;
-  email: string;
-  username: string;
-  passwordHash: string;
-  createdAt: number;
-  mfaEnabled?: boolean;
+    id: string;
+    email: string;
+    username: string;
+    passwordHash: string;
+    createdAt: number;
+    mfaEnabled?: boolean;
 };
 const users = new Map<string, User>();
 // Secondary indexes to avoid exposing direct private identifiers (BAC)
@@ -44,83 +43,93 @@ const usernameToUserId = new Map<string, string>();
 
 // Sessions
 type Session = {
-  id: string;
-  csrfToken: string;
-  createdAt: number;
-  // For throttle accounting per-session (Auth)
-  rate: Map<string, { count: number; first: number }>;
-  // Reset flow state (Auth)
-  resetVerified?: boolean;
-  resetTokenId?: string;
-  resetUserId?: string | null;
-  mfaCode?: string;
-  mfaVerified?: boolean;
-  // Login state
-  userId?: string;
+    id: string;
+    csrfToken: string;
+    createdAt: number;
+    // For throttle accounting per-session (Auth)
+    rate: Map<string, { count: number; first: number }>;
+    // Reset flow state (Auth)
+    resetVerified?: boolean;
+    resetTokenId?: string;
+    resetUserId?: string | null;
+    mfaCode?: string;
+    mfaVerified?: boolean;
+    // Login state
+    userId?: string;
 };
 const sessions = new Map<string, Session>();
 
 // Password Reset Tokens
 type ResetToken = {
-  token: string;
-  userId: string | null; // may be null to avoid existence leak
-  createdAt: number;
-  expiresAt: number; // 15m TTL (Misconfiguration: short-lived)
-  used: boolean;
-  sessionId: string; // bind to session (BAC)
+    token: string;
+    userId: string | null; // may be null to avoid existence leak
+    createdAt: number;
+    expiresAt: number; // 15m TTL (Misconfiguration: short-lived)
+    used: boolean;
+    sessionId: string; // bind to session (BAC)
 };
 const resetTokens = new Map<string, ResetToken>();
 
 // Rate limiter (per-IP and per-session)
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMITS: Record<string, number> = {
-  "login": 5,
-  "request-reset": 5,
-  "verify-reset": 8,
-  "send-mfa": 8,
-  "verify-mfa": 8
+    login: 5,
+    "request-reset": 5,
+    "verify-reset": 8,
+    "send-mfa": 8,
+    "verify-mfa": 8
 };
 const ipRate = new Map<string, { count: number; first: number }>();
 
-function checkRateLimiter(ip: string, session: Session | null, key: keyof typeof RATE_LIMITS) {
-  const limit = RATE_LIMITS[key];
-  const retryCalc = (entry: { first: number }) => Math.max(1, Math.ceil((entry.first + RATE_LIMIT_WINDOW_MS - now()) / 1000));
-  // IP-based
-  const ipKey = `${ip}:${key}`;
-  let ipEntry = ipRate.get(ipKey);
-  if (!ipEntry || now() - ipEntry.first > RATE_LIMIT_WINDOW_MS) {
-    ipEntry = { count: 0, first: now() };
-    ipRate.set(ipKey, ipEntry);
-  }
-  ipEntry.count++;
-  if (ipEntry.count > limit) {
-    return { allowed: false, retryAfter: retryCalc(ipEntry) };
-  }
-  // Session-based
-  if (session) {
-    const sessKey = `rate:${key}`;
-    let sEntry = session.rate.get(sessKey);
-    if (!sEntry || now() - sEntry.first > RATE_LIMIT_WINDOW_MS) {
-      sEntry = { count: 0, first: now() };
-      session.rate.set(sessKey, sEntry);
+function checkRateLimiter(
+    ip: string,
+    session: Session | null,
+    key: keyof typeof RATE_LIMITS
+) {
+    const limit = RATE_LIMITS[key];
+    const retryCalc = (entry: { first: number }) =>
+        Math.max(
+            1,
+            Math.ceil((entry.first + RATE_LIMIT_WINDOW_MS - now()) / 1000)
+        );
+    // IP-based
+    const ipKey = `${ip}:${key}`;
+    let ipEntry = ipRate.get(ipKey);
+    if (!ipEntry || now() - ipEntry.first > RATE_LIMIT_WINDOW_MS) {
+        ipEntry = { count: 0, first: now() };
+        ipRate.set(ipKey, ipEntry);
     }
-    sEntry.count++;
-    if (sEntry.count > limit) {
-      return { allowed: false, retryAfter: retryCalc(sEntry) };
+    ipEntry.count++;
+    if (ipEntry.count > limit) {
+        return { allowed: false, retryAfter: retryCalc(ipEntry) };
     }
-  }
-  return { allowed: true };
+    // Session-based
+    if (session) {
+        const sessKey = `rate:${key}`;
+        let sEntry = session.rate.get(sessKey);
+        if (!sEntry || now() - sEntry.first > RATE_LIMIT_WINDOW_MS) {
+            sEntry = { count: 0, first: now() };
+            session.rate.set(sessKey, sEntry);
+        }
+        sEntry.count++;
+        if (sEntry.count > limit) {
+            return { allowed: false, retryAfter: retryCalc(sEntry) };
+        }
+    }
+    return { allowed: true };
 }
 
 // ---------- Demo seed user (Auth: Argon2id hashed) ----------
-const demoPasswordHash = await Bun.password.hash("StrongPassw0rd!", { algorithm: "argon2id" });
+const demoPasswordHash = await Bun.password.hash("StrongPassw0rd!", {
+    algorithm: "argon2id"
+});
 const demoUser: User = {
-  id: "u1",
-  email: "helena@example.com",
-  username: "helena67",
-  passwordHash: demoPasswordHash,
-  createdAt: now(),
-  mfaEnabled: true
+    id: "u1",
+    email: "helena@example.com",
+    username: "helena67",
+    passwordHash: demoPasswordHash,
+    createdAt: now(),
+    mfaEnabled: true
 };
 users.set(demoUser.id, demoUser);
 emailToUserId.set(demoUser.email.toLowerCase(), demoUser.id);
@@ -128,91 +137,103 @@ usernameToUserId.set(demoUser.username.toLowerCase(), demoUser.id);
 
 // ---------- Cookie helpers ----------
 function parseCookies(req: Request) {
-  const header = req.headers.get("cookie");
-  const out: Record<string, string> = {};
-  if (!header) return out;
-  const parts = header.split(";").map((p) => p.trim());
-  for (const p of parts) {
-    const [k, ...rest] = p.split("=");
-    if (!k) continue;
-    out[k] = decodeURIComponent(rest.join("="));
-  }
-  return out;
+    const header = req.headers.get("cookie");
+    const out: Record<string, string> = {};
+    if (!header) return out;
+    const parts = header.split(";").map((p) => p.trim());
+    for (const p of parts) {
+        const [k, ...rest] = p.split("=");
+        if (!k) continue;
+        out[k] = decodeURIComponent(rest.join("="));
+    }
+    return out;
 }
 function sessionCookie(id: string) {
-  // Security: HttpOnly, Secure, SameSite=Strict (BAC, Misconfiguration)
-  return `sid=${encodeURIComponent(id)}; Path=/; HttpOnly; Secure; SameSite=Strict`;
+    // Security: HttpOnly, Secure, SameSite=Strict (BAC, Misconfiguration)
+    return `sid=${encodeURIComponent(
+        id
+    )}; Path=/; HttpOnly; Secure; SameSite=Strict`;
 }
 // create or load session
 function getOrCreateSession(req: Request) {
-  const cookies = parseCookies(req);
-  const sid = cookies["sid"];
-  if (sid) {
-    const s = sessions.get(sid);
-    if (s) return { session: s, isNew: false };
-  }
-  const newId = randomId(32);
-  const csrfToken = randomId(32);
-  const sess: Session = { id: newId, csrfToken, createdAt: now(), rate: new Map() };
-  sessions.set(newId, sess);
-  return { session: sess, isNew: true };
+    const cookies = parseCookies(req);
+    const sid = cookies["sid"];
+    if (sid) {
+        const s = sessions.get(sid);
+        if (s) return { session: s, isNew: false };
+    }
+    const newId = randomId(32);
+    const csrfToken = randomId(32);
+    const sess: Session = {
+        id: newId,
+        csrfToken,
+        createdAt: now(),
+        rate: new Map()
+    };
+    sessions.set(newId, sess);
+    return { session: sess, isNew: true };
 }
 function getSessionFromRequest(req: Request) {
-  const cookies = parseCookies(req);
-  const sid = cookies["sid"];
-  if (sid) {
-    return sessions.get(sid) || null;
-  }
-  return null;
+    const cookies = parseCookies(req);
+    const sid = cookies["sid"];
+    if (sid) {
+        return sessions.get(sid) || null;
+    }
+    return null;
 }
 
 // ---------- Security Headers ----------
 function securityHeaders(nonce: string) {
-  const csp = [
-    "default-src 'none'",
-    "script-src 'self'",
-    `style-src 'self' 'nonce-${nonce}'`,
-    "img-src 'self' data:",
-    "connect-src 'self'",
-    "font-src 'self'",
-    "frame-ancestors 'none'",
-    "base-uri 'none'",
-    "form-action 'self'",
-    "object-src 'none'"
-  ].join("; ");
-  return {
-    "Content-Security-Policy": csp,
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
-    "X-Frame-Options": "DENY",
-    "Referrer-Policy": "no-referrer",
-    "X-Content-Type-Options": "nosniff",
-    "Permissions-Policy": "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
-  };
+    const csp = [
+        "default-src 'none'",
+        "script-src 'self'",
+        `style-src 'self' 'nonce-${nonce}'`,
+        "img-src 'self' data:",
+        "connect-src 'self'",
+        "font-src 'self'",
+        "frame-ancestors 'none'",
+        "base-uri 'none'",
+        "form-action 'self'",
+        "object-src 'none'"
+    ].join("; ");
+    return {
+        "Content-Security-Policy": csp,
+        "Strict-Transport-Security":
+            "max-age=31536000; includeSubDomains; preload",
+        "X-Frame-Options": "DENY",
+        "Referrer-Policy": "no-referrer",
+        "X-Content-Type-Options": "nosniff",
+        "Permissions-Policy":
+            "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+    };
 }
 
 function jsonResponse(body: unknown, nonce: string, init?: ResponseInit) {
-  const headers = new Headers(init?.headers);
-  headers.set("Content-Type", "application/json; charset=utf-8");
-  const sec = securityHeaders(nonce);
-  for (const [k, v] of Object.entries(sec)) headers.set(k, v);
-  headers.set("Vary", "Cookie");
-  return new Response(JSON.stringify(body), { status: init?.status ?? 200, headers });
+    const headers = new Headers(init?.headers);
+    headers.set("Content-Type", "application/json; charset=utf-8");
+    const sec = securityHeaders(nonce);
+    for (const [k, v] of Object.entries(sec)) headers.set(k, v);
+    headers.set("Vary", "Cookie");
+    return new Response(JSON.stringify(body), {
+        status: init?.status ?? 200,
+        headers
+    });
 }
 
 function textResponse(body: string, nonce: string, init?: ResponseInit) {
-  const headers = new Headers(init?.headers);
-  headers.set("Content-Type", "text/plain; charset=utf-8");
-  const sec = securityHeaders(nonce);
-  for (const [k, v] of Object.entries(sec)) headers.set(k, v);
-  headers.set("Vary", "Cookie");
-  return new Response(body, { status: init?.status ?? 200, headers });
+    const headers = new Headers(init?.headers);
+    headers.set("Content-Type", "text/plain; charset=utf-8");
+    const sec = securityHeaders(nonce);
+    for (const [k, v] of Object.entries(sec)) headers.set(k, v);
+    headers.set("Vary", "Cookie");
+    return new Response(body, { status: init?.status ?? 200, headers });
 }
 
 // ---------- HTML ----------
 function renderHTML(nonce: string, session: Session) {
-  // CSP nonce applied to style. CSRF token exposed via meta attribute (BAC + XSS).
-  const csrf = session.csrfToken;
-  const html = `<!doctype html>
+    // CSP nonce applied to style. CSRF token exposed via meta attribute (BAC + XSS).
+    const csrf = session.csrfToken;
+    const html = `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -326,7 +347,7 @@ function renderHTML(nonce: string, session: Session) {
   </footer>
 </body>
 </html>`;
-  return html;
+    return html;
 }
 
 // ---------- Static client JS (served at /app.js) ----------
@@ -699,244 +720,335 @@ const APP_JS = `(()=>{'use strict';
 
 // ---------- Server Routing and Handlers ----------
 
-function findUserByIdentifier(identifier: string | undefined | null): User | null {
-  if (!identifier) return null;
-  const id = identifier.trim().toLowerCase();
-  let uid = emailToUserId.get(id);
-  if (!uid) uid = usernameToUserId.get(id);
-  if (!uid) return null;
-  return users.get(uid) || null;
+function findUserByIdentifier(
+    identifier: string | undefined | null
+): User | null {
+    if (!identifier) return null;
+    const id = identifier.trim().toLowerCase();
+    let uid = emailToUserId.get(id);
+    if (!uid) uid = usernameToUserId.get(id);
+    if (!uid) return null;
+    return users.get(uid) || null;
 }
 
 function validatePasswordPolicy(pw: string) {
-  if (typeof pw !== 'string') return 'Invalid password';
-  if (pw.length < 12) return 'Password must be at least 12 characters';
-  if (!/[a-z]/.test(pw)) return 'Password must include a lowercase letter';
-  if (!/[A-Z]/.test(pw)) return 'Password must include an uppercase letter';
-  if (!/[0-9]/.test(pw)) return 'Password must include a digit';
-  if (!/[^A-Za-z0-9]/.test(pw)) return 'Password must include a symbol';
-  const common = ['password','123456','qwerty','letmein','admin','welcome','iloveyou','abc123','password1','123456789','12345678'];
-  if (common.includes(pw.toLowerCase())) return 'Password is too common';
-  return null;
+    if (typeof pw !== "string") return "Invalid password";
+    if (pw.length < 12) return "Password must be at least 12 characters";
+    if (!/[a-z]/.test(pw)) return "Password must include a lowercase letter";
+    if (!/[A-Z]/.test(pw)) return "Password must include an uppercase letter";
+    if (!/[0-9]/.test(pw)) return "Password must include a digit";
+    if (!/[^A-Za-z0-9]/.test(pw)) return "Password must include a symbol";
+    const common = [
+        "password",
+        "123456",
+        "qwerty",
+        "letmein",
+        "admin",
+        "welcome",
+        "iloveyou",
+        "abc123",
+        "password1",
+        "123456789",
+        "12345678"
+    ];
+    if (common.includes(pw.toLowerCase())) return "Password is too common";
+    return null;
 }
 
 async function handleAPI(req: Request, nonce: string): Promise<Response> {
-  const url = new URL(req.url);
-  const path = url.pathname;
+    const url = new URL(req.url);
+    const path = url.pathname;
 
-  // BAC: enforce same-origin and secure method handling
-  if (req.method !== 'POST') {
-    return textResponse('Method Not Allowed', nonce, { status: 405 });
-  }
-
-  // Load session and enforce CSRF for all state-changing routes (BAC)
-  const session = getSessionFromRequest(req);
-  if (!session) {
-    return jsonResponse({ message: 'Invalid session' }, nonce, { status: 401 });
-  }
-  const sentToken = req.headers.get('x-csrf-token') || '';
-  if (sentToken !== session.csrfToken) {
-    return jsonResponse({ message: 'CSRF token invalid' }, nonce, { status: 403 });
-  }
-
-  let body: any = {};
-  try {
-    body = await req.json();
-  } catch {
-    body = {};
-  }
-  // Basic input sanitation (XSS)
-  const sanitizeStr = (s: any, max = 200) => {
-    if (typeof s !== 'string') return '';
-    let t = s.trim();
-    if (t.length > max) t = t.slice(0, max);
-    t = t.replace(/[<>\\]/g,'').replace(/[\u0000-\u001F\u007F]/g,'');
-    return t;
-  };
-
-  const clientIp = (() => {
-    const xf = req.headers.get("x-forwarded-for");
-    if (xf) return xf.split(",")[0].trim();
-    return "127.0.0.1";
-  })();
-
-  // Routes
-  if (path === '/api/login') { // Auth + rate limit + hashing
-    const rate = checkRateLimiter(clientIp, session, 'login');
-    if (!rate.allowed) return jsonResponse({ message: 'Too many attempts' }, nonce, { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } });
-
-    const identifier = sanitizeStr(body.identifier, 120);
-    const password = String(body.password ?? '');
-
-    const user = findUserByIdentifier(identifier);
-    let ok = false;
-    if (user) {
-      try {
-        ok = await Bun.password.verify(password, user.passwordHash);
-      } catch {
-        ok = false;
-      }
+    // BAC: enforce same-origin and secure method handling
+    if (req.method !== "POST") {
+        return textResponse("Method Not Allowed", nonce, { status: 405 });
     }
-    if (!ok) {
-      // Generic error to prevent user enumeration (Auth)
-      return jsonResponse({ message: 'Invalid credentials' }, nonce, { status: 400 });
+
+    // Load session and enforce CSRF for all state-changing routes (BAC)
+    const session = getSessionFromRequest(req);
+    if (!session) {
+        return jsonResponse({ message: "Invalid session" }, nonce, {
+            status: 401
+        });
     }
-    session.userId = user!.id;
-    return jsonResponse({ message: 'Login successful (simulated).' }, nonce);
-  }
+    const sentToken = req.headers.get("x-csrf-token") || "";
+    if (sentToken !== session.csrfToken) {
+        return jsonResponse({ message: "CSRF token invalid" }, nonce, {
+            status: 403
+        });
+    }
 
-  if (path === '/api/request-reset') { // Auth + rate limit + non-disclosure + token creation
-    const rate = checkRateLimiter(clientIp, session, 'request-reset');
-    if (!rate.allowed) return jsonResponse({ message: 'Too many attempts' }, nonce, { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } });
-
-    const identifier = sanitizeStr(body.identifier, 120);
-    const user = findUserByIdentifier(identifier);
-
-    // Generate a random single-use token with 15-minute TTL, bound to this session (Misconfiguration + BAC)
-    const tokenStr = randomId(32);
-    const createdAt = now();
-    const expiresAt = createdAt + 15 * 60 * 1000;
-    const tok: ResetToken = {
-      token: tokenStr,
-      userId: user ? user.id : null,
-      createdAt,
-      expiresAt,
-      used: false,
-      sessionId: session.id
+    let body: any = {};
+    try {
+        body = await req.json();
+    } catch {
+        body = {};
+    }
+    // Basic input sanitation (XSS)
+    const sanitizeStr = (s: any, max = 200) => {
+        if (typeof s !== "string") return "";
+        let t = s.trim();
+        if (t.length > max) t = t.slice(0, max);
+        t = t.replace(/[<>\\]/g, "").replace(/[\u0000-\u001F\u007F]/g, "");
+        return t;
     };
-    resetTokens.set(tokenStr, tok);
 
-    const delivery = {
-      token: tokenStr,
-      link: `https://localhost:${PORT}/#/verify?token=${encodeURIComponent(tokenStr)}`
-    };
-    // Return generic success without revealing account existence (Auth)
-    return jsonResponse({ message: 'If an account exists, instructions have been sent.', delivery }, nonce);
-  }
+    const clientIp = (() => {
+        const xf = req.headers.get("x-forwarded-for");
+        if (xf) return xf.split(",")[0].trim();
+        return "127.0.0.1";
+    })();
 
-  if (path === '/api/verify-reset') { // Auth + rate limit + token validation + session binding
-    const rate = checkRateLimiter(clientIp, session, 'verify-reset');
-    if (!rate.allowed) return jsonResponse({ message: 'Too many attempts' }, nonce, { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } });
+    // Routes
+    if (path === "/api/login") {
+        // Auth + rate limit + hashing
+        const rate = checkRateLimiter(clientIp, session, "login");
+        if (!rate.allowed)
+            return jsonResponse({ message: "Too many attempts" }, nonce, {
+                status: 429,
+                headers: { "Retry-After": String(rate.retryAfter) }
+            });
 
-    const token = sanitizeStr(body.token, 300);
-    const rec = resetTokens.get(token);
-    if (!rec) return jsonResponse({ message: 'Invalid token' }, nonce, { status: 400 });
-    if (rec.used) return jsonResponse({ message: 'Token already used' }, nonce, { status: 400 });
-    if (rec.sessionId !== session.id) return jsonResponse({ message: 'Token not valid for this session' }, nonce, { status: 403 });
-    // Enforce expiry: if expired, reject without marking used or setting session flags
-    if (now() > rec.expiresAt) {
-      return jsonResponse({ message: 'Token expired' }, nonce, { status: 400 });
+        const identifier = sanitizeStr(body.identifier, 120);
+        const password = String(body.password ?? "");
+
+        const user = findUserByIdentifier(identifier);
+        let ok = false;
+        if (user) {
+            try {
+                ok = await Bun.password.verify(password, user.passwordHash);
+            } catch {
+                ok = false;
+            }
+        }
+        if (!ok) {
+            // Generic error to prevent user enumeration (Auth)
+            return jsonResponse({ message: "Invalid credentials" }, nonce, {
+                status: 400
+            });
+        }
+        session.userId = user!.id;
+        return jsonResponse(
+            { message: "Login successful (simulated)." },
+            nonce
+        );
     }
-    // Mark single-use upon successful verification
-    rec.used = true;
-    session.resetVerified = true;
-    session.resetTokenId = rec.token;
-    session.resetUserId = rec.userId;
-    return jsonResponse({ message: 'Token verified' }, nonce);
-  }
 
-  if (path === '/api/send-mfa') { // Auth + rate limit + MFA code generation
-    const rate = checkRateLimiter(clientIp, session, 'send-mfa');
-    if (!rate.allowed) return jsonResponse({ message: 'Too many attempts' }, nonce, { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } });
+    if (path === "/api/request-reset") {
+        // Auth + rate limit + non-disclosure + token creation
+        const rate = checkRateLimiter(clientIp, session, "request-reset");
+        if (!rate.allowed)
+            return jsonResponse({ message: "Too many attempts" }, nonce, {
+                status: 429,
+                headers: { "Retry-After": String(rate.retryAfter) }
+            });
 
-    if (!session.resetVerified) return jsonResponse({ message: 'Reset not verified' }, nonce, { status: 403 });
-    // Deterministic per-session MFA code for demo
-    const code = '246810';
-    session.mfaCode = code;
-    session.mfaVerified = false;
+        const identifier = sanitizeStr(body.identifier, 120);
+        const user = findUserByIdentifier(identifier);
 
-    return jsonResponse({ message: 'MFA code sent (simulated).', delivery: { code } }, nonce);
-  }
+        // Generate a random single-use token with 15-minute TTL, bound to this session (Misconfiguration + BAC)
+        const tokenStr = randomId(32);
+        const createdAt = now();
+        const expiresAt = createdAt + 15 * 60 * 1000;
+        const tok: ResetToken = {
+            token: tokenStr,
+            userId: user ? user.id : null,
+            createdAt,
+            expiresAt,
+            used: false,
+            sessionId: session.id
+        };
+        resetTokens.set(tokenStr, tok);
 
-  if (path === '/api/verify-mfa') { // Auth + rate limit + MFA verification
-    const rate = checkRateLimiter(clientIp, session, 'verify-mfa');
-    if (!rate.allowed) return jsonResponse({ message: 'Too many attempts' }, nonce, { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } });
-
-    if (!session.resetVerified) return jsonResponse({ message: 'Reset not verified' }, nonce, { status: 403 });
-    const code = sanitizeStr(body.code, 30);
-    if (!session.mfaCode || code !== session.mfaCode) {
-      return jsonResponse({ message: 'Invalid code' }, nonce, { status: 400 });
+        const delivery = {
+            token: tokenStr,
+            link: `https://localhost:${PORT}/#/verify?token=${encodeURIComponent(
+                tokenStr
+            )}`
+        };
+        // Return generic success without revealing account existence (Auth)
+        return jsonResponse(
+            {
+                message: "If an account exists, instructions have been sent.",
+                delivery
+            },
+            nonce
+        );
     }
-    session.mfaVerified = true;
-    return jsonResponse({ message: 'MFA verified' }, nonce);
-  }
 
-  if (path === '/api/set-password') { // Auth + password policy + Argon2id hash
-    if (!session.resetVerified || !session.mfaVerified) {
-      return jsonResponse({ message: 'Reset flow not completed' }, nonce, { status: 403 });
+    if (path === "/api/verify-reset") {
+        // Auth + rate limit + token validation + session binding
+        const rate = checkRateLimiter(clientIp, session, "verify-reset");
+        if (!rate.allowed)
+            return jsonResponse({ message: "Too many attempts" }, nonce, {
+                status: 429,
+                headers: { "Retry-After": String(rate.retryAfter) }
+            });
+
+        const token = sanitizeStr(body.token, 300);
+        const rec = resetTokens.get(token);
+        if (!rec)
+            return jsonResponse({ message: "Invalid token" }, nonce, {
+                status: 400
+            });
+        if (rec.used)
+            return jsonResponse({ message: "Token already used" }, nonce, {
+                status: 400
+            });
+        if (rec.sessionId !== session.id)
+            return jsonResponse(
+                { message: "Token not valid for this session" },
+                nonce,
+                { status: 403 }
+            );
+        // Enforce expiry: if expired, reject without marking used or setting session flags
+        if (now() > rec.expiresAt) {
+            return jsonResponse({ message: "Token expired" }, nonce, {
+                status: 400
+            });
+        }
+        // Mark single-use upon successful verification
+        rec.used = true;
+        session.resetVerified = true;
+        session.resetTokenId = rec.token;
+        session.resetUserId = rec.userId;
+        return jsonResponse({ message: "Token verified" }, nonce);
     }
-    const newPassword = String(body.newPassword ?? '');
-    const policyErr = validatePasswordPolicy(newPassword);
-    if (policyErr) return jsonResponse({ message: policyErr }, nonce, { status: 400 });
-    const uid = session.resetUserId;
-    if (!uid || !users.has(uid)) {
-      // Generic response (do not disclose existence)
-      // Clear state to avoid leaking flow
-      session.resetVerified = false;
-      session.mfaVerified = false;
-      session.resetUserId = null;
-      session.resetTokenId = undefined;
-      return jsonResponse({ message: 'Password updated' }, nonce);
+
+    if (path === "/api/send-mfa") {
+        // Auth + rate limit + MFA code generation
+        const rate = checkRateLimiter(clientIp, session, "send-mfa");
+        if (!rate.allowed)
+            return jsonResponse({ message: "Too many attempts" }, nonce, {
+                status: 429,
+                headers: { "Retry-After": String(rate.retryAfter) }
+            });
+
+        if (!session.resetVerified)
+            return jsonResponse({ message: "Reset not verified" }, nonce, {
+                status: 403
+            });
+        // Deterministic per-session MFA code for demo
+        const code = "246810";
+        session.mfaCode = code;
+        session.mfaVerified = false;
+
+        return jsonResponse(
+            { message: "MFA code sent (simulated).", delivery: { code } },
+            nonce
+        );
     }
-    const user = users.get(uid)!;
-    const hashed = await Bun.password.hash(newPassword, { algorithm: "argon2id" });
-    user.passwordHash = hashed;
 
-    // Invalidate token and clear flags
-    if (session.resetTokenId && resetTokens.has(session.resetTokenId)) {
-      const r = resetTokens.get(session.resetTokenId)!;
-      r.used = true;
-      resetTokens.delete(session.resetTokenId);
+    if (path === "/api/verify-mfa") {
+        // Auth + rate limit + MFA verification
+        const rate = checkRateLimiter(clientIp, session, "verify-mfa");
+        if (!rate.allowed)
+            return jsonResponse({ message: "Too many attempts" }, nonce, {
+                status: 429,
+                headers: { "Retry-After": String(rate.retryAfter) }
+            });
+
+        if (!session.resetVerified)
+            return jsonResponse({ message: "Reset not verified" }, nonce, {
+                status: 403
+            });
+        const code = sanitizeStr(body.code, 30);
+        if (!session.mfaCode || code !== session.mfaCode) {
+            return jsonResponse({ message: "Invalid code" }, nonce, {
+                status: 400
+            });
+        }
+        session.mfaVerified = true;
+        return jsonResponse({ message: "MFA verified" }, nonce);
     }
-    session.resetVerified = false;
-    session.mfaVerified = false;
-    session.resetUserId = null;
-    session.resetTokenId = undefined;
 
-    return jsonResponse({ message: 'Password updated' }, nonce);
-  }
+    if (path === "/api/set-password") {
+        // Auth + password policy + Argon2id hash
+        if (!session.resetVerified || !session.mfaVerified) {
+            return jsonResponse(
+                { message: "Reset flow not completed" },
+                nonce,
+                { status: 403 }
+            );
+        }
+        const newPassword = String(body.newPassword ?? "");
+        const policyErr = validatePasswordPolicy(newPassword);
+        if (policyErr)
+            return jsonResponse({ message: policyErr }, nonce, { status: 400 });
+        const uid = session.resetUserId;
+        if (!uid || !users.has(uid)) {
+            // Generic response (do not disclose existence)
+            // Clear state to avoid leaking flow
+            session.resetVerified = false;
+            session.mfaVerified = false;
+            session.resetUserId = null;
+            session.resetTokenId = undefined;
+            return jsonResponse({ message: "Password updated" }, nonce);
+        }
+        const user = users.get(uid)!;
+        const hashed = await Bun.password.hash(newPassword, {
+            algorithm: "argon2id"
+        });
+        user.passwordHash = hashed;
 
-  return jsonResponse({ message: 'Not found' }, nonce, { status: 404 });
+        // Invalidate token and clear flags
+        if (session.resetTokenId && resetTokens.has(session.resetTokenId)) {
+            const r = resetTokens.get(session.resetTokenId)!;
+            r.used = true;
+            resetTokens.delete(session.resetTokenId);
+        }
+        session.resetVerified = false;
+        session.mfaVerified = false;
+        session.resetUserId = null;
+        session.resetTokenId = undefined;
+
+        return jsonResponse({ message: "Password updated" }, nonce);
+    }
+
+    return jsonResponse({ message: "Not found" }, nonce, { status: 404 });
 }
 
 // ---------- HTTPS Server ----------
 const server = Bun.serve({
-  port: PORT,
-  tls: {
-    cert: Bun.file("certs/cert.pem"),
-    key: Bun.file("certs/key.pem")
-  },
-  fetch: async (req: Request) => {
-    const nonce = randomId(16);
-    const url = new URL(req.url);
-    const pathname = url.pathname;
+    port: PORT,
+    tls: {
+        cert: Bun.file("certs/cert.pem"),
+        key: Bun.file("certs/key.pem")
+    },
+    fetch: async (req: Request) => {
+        const nonce = randomId(16);
+        const url = new URL(req.url);
+        const pathname = url.pathname;
 
-    if (pathname.startsWith('/api/')) {
-      return handleAPI(req, nonce);
+        if (pathname.startsWith("/api/")) {
+            return handleAPI(req, nonce);
+        }
+
+        if (req.method === "GET" && pathname === "/") {
+            const { session, isNew } = getOrCreateSession(req);
+            const headers = new Headers(securityHeaders(nonce));
+            headers.set("Content-Type", "text/html; charset=utf-8");
+            headers.set("Vary", "Cookie");
+            if (isNew) {
+                headers.append("Set-Cookie", sessionCookie(session.id));
+            }
+            const html = renderHTML(nonce, session);
+            return new Response(html, { status: 200, headers });
+        }
+
+        if (req.method === "GET" && pathname === "/app.js") {
+            const headers = new Headers(securityHeaders(nonce));
+            headers.set(
+                "Content-Type",
+                "application/javascript; charset=utf-8"
+            );
+            headers.set("Vary", "Cookie");
+            return new Response(APP_JS, { status: 200, headers });
+        }
+
+        // No directory listing or debug info (Misconfiguration)
+        return textResponse("Not Found", nonce, { status: 404 });
     }
-
-    if (req.method === 'GET' && pathname === '/') {
-      const { session, isNew } = getOrCreateSession(req);
-      const headers = new Headers(securityHeaders(nonce));
-      headers.set("Content-Type", "text/html; charset=utf-8");
-      headers.set("Vary", "Cookie");
-      if (isNew) {
-        headers.append("Set-Cookie", sessionCookie(session.id));
-      }
-      const html = renderHTML(nonce, session);
-      return new Response(html, { status: 200, headers });
-    }
-
-    if (req.method === 'GET' && pathname === '/app.js') {
-      const headers = new Headers(securityHeaders(nonce));
-      headers.set("Content-Type", "application/javascript; charset=utf-8");
-      headers.set("Vary", "Cookie");
-      return new Response(APP_JS, { status: 200, headers });
-    }
-
-    // No directory listing or debug info (Misconfiguration)
-    return textResponse("Not Found", nonce, { status: 404 });
-  }
 });
 
 console.log(`HTTPS server running at https://localhost:${server.port}`);
