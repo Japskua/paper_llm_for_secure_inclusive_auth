@@ -20,6 +20,7 @@ This repository contains the complete experimental dataset and replication mater
 - [Quick Start](#quick-start)
 - [Replicating the Experiment](#replicating-the-experiment)
 - [Evaluation Data](#evaluation-data)
+- [Human Evaluation Data](#human-evaluation-data)
 - [Software Dependencies](#software-dependencies)
 - [Citation](#citation)
 - [License](#license)
@@ -70,6 +71,14 @@ All three cases shared identical security requirements based on five OWASP Top 1
 │   ├── case_1_multi_no_condition_no_inclusion/
 │   ├── case_2_multi_condition_no_inclusion/
 │   └── case_3_multi_condition_with_inclusion/
+│
+├── human_evaluations/                   # HUMAN EVAL: Expert assessment results
+│   ├── inclusivity_evaluation_results.xlsx   # 5 experts, 15 items, 3 cases
+│   └── security_evaluation_results.xlsx      # 8 experts, 15 items, 3 cases
+│
+├── survey_questionnaires/               # INSTRUMENTS: PDF survey forms
+│   ├── inclusivity_evaluation_survey.pdf     # Cognitive accessibility rubric
+│   └── security_evaluation_survey.pdf        # OWASP-based security rubric
 │
 ├── software_descriptions/               # Detailed specification documents
 │   └── password_recovery.md
@@ -286,6 +295,58 @@ final_evaluations/results/{security|inclusivity}/case_{1|2|3}/case_{N}_{model-na
 ```
 
 Example: `final_evaluations/results/security/case_1/case_1_gpt-5.txt`
+
+## Human Evaluation Data
+
+In addition to LLM-based evaluation, human experts assessed the generated code artifacts.
+
+### Survey Instruments
+
+The `survey_questionnaires/` directory contains the PDF survey forms used for data collection:
+
+| File | Pages | Purpose |
+|------|-------|---------|
+| `inclusivity_evaluation_survey.pdf` | 8 | Cognitive accessibility assessment instrument |
+| `security_evaluation_survey.pdf` | 8 | OWASP-based security assessment instrument |
+
+### Human Expert Results
+
+The `human_evaluations/` directory contains aggregated results from expert assessments:
+
+| File | Evaluators | Background |
+|------|------------|------------|
+| `inclusivity_evaluation_results.xlsx` | 5 | Software engineers, researchers, HR professionals |
+| `security_evaluation_results.xlsx` | 8 | Security engineers, malware researchers, developers |
+
+### Evaluator Demographics
+
+**Inclusivity Experts (n=5)**
+| Role | Experience |
+|------|------------|
+| Software Engineer | 9 years |
+| Human Resource Manager | 4 years |
+| Lecturer | 5 years |
+| Junior Researcher | 1 year |
+| Project Researcher | 10 years |
+
+**Security Experts (n=8)**
+| Role | Experience |
+|------|------------|
+| Web Developer | 1 year |
+| Full Stack Developer | 3 years |
+| Vulnerability Management Trainee | 2 years |
+| Senior Cyber Security Engineer | 4 years |
+| Security Researcher | 1 year |
+| Malware Researcher | 4 years |
+| Senior Malware Researcher | 5 years |
+| Lecturer (Information Security) | 5 years |
+
+### Excel File Structure
+
+Each results file contains:
+- **Raw scores**: Individual evaluator ratings per item (1-5 scale)
+- **Case breakdown**: Separate columns for Case 1, 2, and 3
+- **Statistics**: Average, Median, Variance, Standard Deviation
 
 ## Software Dependencies
 
