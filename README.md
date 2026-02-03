@@ -393,7 +393,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact
 
 For questions about this dataset, please contact:
-- Syed Bilal Naqvi - syed.naqvi@lut.fi
+- Janne Parkkila - janne.parkkila@lut.fi
 
 ## Acknowledgments
 
