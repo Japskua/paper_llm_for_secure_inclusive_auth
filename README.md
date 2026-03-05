@@ -363,13 +363,7 @@ See `pyproject.toml` for complete dependency list.
 If you use this dataset in your research, please cite:
 
 ```bibtex
-@article{naqvi2025security,
-  title={Evaluating Security and Inclusivity in LLM-Generated Code: A Controlled Experiment},
-  author={Naqvi, Bilal and Parkkila, Janne and bin Shahid, Waleed and Afzal, Hammad},
-  journal={Information and Software Technology},
-  year={2025},
-  note={Under review}
-}
+TBA
 ```
 
 For the dataset:
