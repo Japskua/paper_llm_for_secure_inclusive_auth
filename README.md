@@ -6,6 +6,8 @@
 
 This repository contains the complete experimental dataset and replication materials for evaluating security and inclusivity in Large Language Model (LLM)-generated authentication code.
 
+The data was generated and collected during September-October 2025.
+
 ## Related Publication
 
 TBA
@@ -33,7 +35,7 @@ This dataset was generated through a controlled experiment examining the relatio
 | **Case 2** | Moderate | Security requirements with cognitive condition (ADHD) mentioned |
 | **Case 3** | Detailed | Security requirements plus detailed ADHD-specific inclusivity guidelines |
 
-All three cases shared identical security requirements based on five OWASP Top 10 (2021) attack categories.
+All three cases shared identical security requirements based on five OWASP Top 10 (2025) attack categories.
 
 ## Repository Structure
 
@@ -128,7 +130,7 @@ Each case directory in `workspace/password_recovery_health/` contains:
 
 The `final_evaluations/` directory contains:
 
-- **Security rubrics**: 15-item questionnaire based on OWASP Top 10 (2021)
+- **Security rubrics**: 15-item questionnaire based on OWASP Top 10 (2025)
   - A01:2021 Broken Access Control (Items 1-3)
   - A02:2021 Cryptographic Failures (Items 4-6)
   - A03:2021 Injection/XSS (Items 7-9)
