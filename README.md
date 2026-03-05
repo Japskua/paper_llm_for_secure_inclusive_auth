@@ -8,9 +8,7 @@ This repository contains the complete experimental dataset and replication mater
 
 ## Related Publication
 
-> **Evaluating Security and Inclusivity in LLM-Generated Code: A Controlled Experiment**
-> Naqvi, B., Parkkila, J., bin Shahid, W., & Afzal, H.
-> *Information and Software Technology* (under review)
+TBA
 
 ## Table of Contents
 
@@ -377,13 +375,7 @@ If you use this dataset in your research, please cite:
 For the dataset:
 
 ```bibtex
-@dataset{naqvi2025dataset,
-  title={Experimental Dataset for Evaluating Security and Inclusivity in LLM-Generated Code},
-  author={Naqvi, Bilal and Parkkila, Janne and bin Shahid, Waleed and Afzal, Hammad},
-  year={2025},
-  publisher={GitHub/Zenodo},
-  doi={10.5281/zenodo.XXXXXXX}
-}
+TBA
 ```
 
 ## License
