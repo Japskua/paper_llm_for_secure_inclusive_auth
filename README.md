@@ -379,11 +379,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact
 
 For questions about this dataset, please contact:
-- Janne Parkkila - janne.parkkila@lut.fi
+- TBA
 
 ## Acknowledgments
 
-This research was conducted at:
-- Software Engineering, LENS, LUT University, Finland
-- Information Security Group, Royal Holloway, University of London, UK
-- School of Computing and Mathematical Sciences, University of Leicester, UK
+TBA
