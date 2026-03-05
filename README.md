@@ -226,7 +226,7 @@ Configure your LLM provider:
 # OpenRouter (recommended for reproducibility)
 LLM_PROVIDER=openrouter
 OPENROUTER_API_KEY=sk-or-...
-OPENROUTER_MODEL=openai/gpt-4o
+OPENROUTER_MODEL=openai/gpt-5
 
 # Token pricing (USD per 1M tokens)
 PRICE_INPUT_PER_1M=1.25
@@ -269,7 +269,7 @@ uv run python run.py --mode multi \
 | Parameter | Value | Description |
 |-----------|-------|-------------|
 | LLM Provider | OpenRouter | API aggregation service |
-| Code Generation Model | GPT-4o | Consistent across all cases |
+| Code Generation Model | GPT-5 | Consistent across all cases |
 | Temperature | 0.0 | Deterministic output |
 | Maximum Iterations | 12 | Upper bound for convergence |
 
