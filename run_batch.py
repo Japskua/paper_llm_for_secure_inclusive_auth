@@ -310,10 +310,12 @@ def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
     while attempts <= args.retries:
         attempts += 1
         if out.exists():
-            # Preserve the previous attempt instead of deleting it: a failed run
-            # is evidence, and erasing it would quietly convert a failure into a
-            # success in the dataset.
-            if any(out.iterdir()):
+            # Preserve a failed attempt from THIS batch instead of deleting it:
+            # a failed run is evidence, and erasing it would quietly convert a
+            # failure into a success in the dataset. On the first attempt any
+            # existing directory is a previous run being deliberately replaced
+            # (--force), not a failure, so it is removed rather than archived.
+            if attempts > 1 and any(out.iterdir()):
                 # shutil.move() into an existing directory nests inside it
                 # rather than replacing, so clear any stale attempt first.
                 dest = out.parent / f"{out.name}_failed_attempt_{attempts - 1}"
