@@ -2,12 +2,12 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": false,
-  "steps_total": 12,
-  "steps_passed": 6,
+  "steps_total": 11,
+  "steps_passed": 5,
   "happy_path_passed": 2,
   "happy_path_total": 8,
-  "negative_passed": 4,
-  "negative_total": 4,
+  "negative_passed": 3,
+  "negative_total": 3,
   "negatives_meaningful": false,
   "steps": [
     {
@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "name": "request password reset",
+      "name": "request reset instructions",
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": false,
@@ -87,7 +87,7 @@
       "response_message": "This request could not be verified. Refresh and try again."
     },
     {
-      "name": "reset request without CSRF rejected",
+      "name": "invalid CSRF token rejected",
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": true,
@@ -95,15 +95,7 @@
       "ok": true
     },
     {
-      "name": "reset request with wrong origin rejected",
-      "method": "POST",
-      "path": "/api/reset-request",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "invalid reset code rejected",
+      "name": "reused reset token rejected",
       "method": "POST",
       "path": "/api/reset-validate",
       "expect_failure": true,
@@ -111,14 +103,14 @@
       "ok": true
     },
     {
-      "name": "invalid MFA code rejected",
+      "name": "privacy acceptance requires true",
       "method": "POST",
-      "path": "/api/mfa-verify",
+      "path": "/api/privacy-accept",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 12
+  "spec_steps": 11
 }

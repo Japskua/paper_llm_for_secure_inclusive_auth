@@ -1,88 +1,87 @@
 ## SUMMARY
 
-The artifact is a valid single-file Bun HTTPS application implementing a browser-rendered password recovery, sign-in, MFA, privacy acceptance, and appointment-confirmation flow. It uses inline HTML/CSS/vanilla JavaScript within `app.ts`, serves over TLS using the required certificate paths, avoids external assets/network calls, and includes server-side session, CSRF, token, password-hashing, throttling, and access-control protections. The simulated recovery and MFA values are logged in the browser as required.
+The artifact is a valid single-file Bun application with a working HTTPS password-recovery flow, CSRF checks, Argon2id hashing, rate limiting, CSP nonces, MFA simulation, and browser-side mock logging. However, it does not fully meet the low-stress “pause and return without losing progress” requirement: after a reload during code verification, the UI no longer shows the simulated recovery code or recovery link, leaving the user unable to continue from the visible interface. The reset flow also permits account-existence probing through the returned mock delivery code.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file Bun application with no build tools/frameworks**
-  - All server logic, HTML, CSS, and browser JavaScript are contained in `app.ts`.
-  - The code uses `Bun.serve` directly and does not rely on bundlers, compilation steps, frameworks, or external assets.
+- **Single-file `app.ts` deliverable with Bun server, HTML, CSS, and vanilla browser JavaScript — PASS**
+  - The full application, including server, HTML template, inline CSS, and browser JavaScript, is contained in one `app.ts` file.
+  - No frameworks, bundlers, external assets, or external network calls are used.
 
-- **PASS — TLS and HTTPS enforcement**
-  - The HTTPS server loads `certs/cert.pem` and `certs/key.pem`.
-  - Startup fails safely if certificates are missing.
-  - A separate HTTP listener performs a fixed redirect to the HTTPS localhost origin.
-  - Session cookies are marked `Secure`, `HttpOnly`, `SameSite=Strict`, and use the valid `__Host-` cookie prefix configuration.
+- **Bun HTTPS server using the supplied certificate paths — PASS**
+  - `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`.
+  - The application is served on TLS and logs an HTTPS localhost URL.
 
-- **PASS — Clear recovery and authentication workflow**
-  - The SPA includes the required password-reset sequence: recovery request, manual code entry, code verification, new-password creation, completion, sign-in, MFA, privacy acceptance, and appointment confirmation.
-  - Recovery and MFA codes can be manually entered.
-  - Browser-side simulated delivery values are written to `console.log` and shown in the application log panel.
-  - Internal route transitions (`/`, `/reset`, `/signin`, `/account`, `/appointment`) are handled by the Bun server and client-side navigation.
+- **Password-reset flow is functional, including manual code entry and recovery link — PASS**
+  - A reset code is generated, returned to the UI, written to the browser console, displayed in the Logs panel, and can be entered manually.
+  - The recovery-link UI populates the code field and directs the user to verification.
+  - Tokens are random, expiring, and consumed on successful verification.
 
-- **PASS — ADHD/inclusivity and low-stress UX**
-  - The interface presents a visible numbered progress list and clear one-step instructions.
-  - It avoids countdown pressure; expiry is explained without live time pressure.
-  - A persistent help/safe-sign-in section is available at every stage.
-  - The user can pause and resume server-backed workflow state.
-  - The UI uses semantic headings, labels, focus styling, responsive layout, restrained visual design, and readable feedback notices.
+- **Password reset verification and password update are protected — PASS**
+  - Reset tokens expire after 15 minutes and are deleted after use.
+  - Password-reset grants are random, short-lived, session-bound, and consumed before hashing.
+  - New passwords require at least 12 characters with upper/lowercase letters, a number, and a symbol.
+  - Passwords are hashed with Argon2id and are not stored in plaintext.
 
-- **PASS — CSRF protection and session handling**
-  - A cryptographically random CSRF token is generated per session.
-  - All `/api/` POST endpoints require a valid session and a timing-safe CSRF-token comparison.
-  - Sensitive workflow state, reset records, MFA state, authentication status, and privacy acceptance are maintained server-side rather than trusted from client input.
+- **MFA and authenticated privacy acceptance flow — PASS**
+  - Successful sign-in creates an MFA challenge.
+  - MFA is required before the privacy-statement endpoint accepts the request.
+  - The privacy endpoint checks `session.authenticated`.
 
-- **PASS — Access control / IDOR protections**
-  - Reset records are bound to the originating session and intended mock account.
-  - Password reset requires a current, unexpired, unused, verified, session-bound token.
-  - MFA is session-bound and required before setting `authenticated`.
-  - Privacy acceptance and appointment confirmation require an authenticated session.
-  - Protected page routes redirect unauthenticated users to the sign-in route.
+- **CSRF protection on sensitive requests — PASS**
+  - A random CSRF token is created per server-side session.
+  - All POST `/api/*` actions validate the token.
+  - Session cookies use `HttpOnly`, `Secure`, `SameSite=Strict`, and `Path=/`.
 
-- **PASS — XSS and injection protections**
-  - Request values are not interpolated into HTML responses.
-  - Browser-rendered dynamic text uses `textContent`, not `innerHTML`.
-  - Server input fields are type-checked and length-limited.
-  - A nonce-based CSP restricts scripts and styles to the generated trusted nonce.
-  - The client has no event-handler attributes, dynamically loaded scripts, or external script sources.
+- **Security headers and browser injection controls — PASS**
+  - HSTS, CSP, `X-Frame-Options`, `X-Content-Type-Options`, referrer policy, permissions policy, and no-store caching are configured.
+  - CSP uses per-response nonces for the inline trusted style and script.
+  - User-derived content is written with DOM text APIs rather than unsafe HTML insertion.
 
-- **PASS — Secure reset-token behavior**
-  - Reset tokens are generated with cryptographically secure randomness and are 256-bit values represented as 64 hex characters.
-  - Tokens expire after 10 minutes.
-  - Tokens are bound to the requesting session, verified before password replacement, and deleted after use.
-  - Expired and used reset records are cleaned up.
-  - Invalid reset-code submissions are throttled and eventually locked out.
+- **Rate limiting / brute-force mitigation — PASS**
+  - Reset requests, reset-code verification, login attempts, and MFA attempts have server-side rate limits.
+  - Limits are based on server-derived IP/session context rather than only client-submitted values.
 
-- **PASS — Password policy and password storage**
-  - Passwords are hashed with Bun Argon2id rather than stored in plaintext.
-  - The new-password policy enforces 12–128 characters, uppercase, lowercase, numeric, and symbol requirements.
-  - Whitespace and obvious predictable prefixes are rejected.
+- **Account enumeration resistance — FAIL**
+  - Although `/api/request-reset` returns the same shape for known and unknown email addresses, it returns the generated `deliveryCode` to the requester.
+  - A code generated for a known account is accepted by `/api/verify-reset`; a code generated for an unknown address is rejected. An attacker can submit an arbitrary email, receive its code, verify it, and determine whether that email corresponds to an account.
+  - This contradicts the stated enumeration-protection intent and exposes whether a private account identifier exists.
 
-- **PASS — Brute-force and authentication protections**
-  - Sign-in failures are counted and lock the account temporarily after repeated failures.
-  - Reset verification is rate-limited and locked after repeated invalid attempts.
-  - MFA verification is rate-limited and locked after repeated failures.
-  - MFA codes are cryptographically generated, six-digit values with 10-minute expiry.
+- **ADHD/inclusivity requirement: user can pause and return without losing progress — FAIL**
+  - If the user reloads while on the Verify step, `/api/recovery-status` returns only `step: "verify"` and the client shows the verification form.
+  - The prior Logs-panel content and generated recovery link are lost because they exist only in the prior page DOM.
+  - There is no visible “send another recovery code” action on the Verify screen.
+  - Therefore, a user returning after a refresh cannot continue from the UI unless they happened to retain the token externally, such as in browser developer-console history.
 
-- **PASS — Security headers and production-safe responses**
-  - CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP, CORP, and no-store cache controls are configured.
-  - Unknown routes return a generic 404 response.
-  - Unexpected server errors return a generic 503 response without stack traces or debug data.
-  - The service has no directory listing behavior or external outbound requests.
+- **Clear low-stress guidance, progress indication, and help — PASS**
+  - The UI provides a visible step indicator, concise instructions, a persistent no-countdown message, status feedback, and an easy-to-find help link.
+  - The safety guidance appropriately tells users not to share passwords or recovery codes.
 
-- **PASS — SSRF, open redirect, and phishing mitigation**
-  - The application does not make outbound network requests, eliminating SSRF behavior.
-  - HTTP redirects are fixed to the local HTTPS origin and only preserve known internal paths.
-  - The UI includes repeated anti-phishing guidance not to share passwords or verification codes via email, phone, or text.
+- **Code validity / direct execution under Bun — PASS**
+  - The TypeScript and Bun APIs used are structurally valid for Bun 1.3.0.
+  - Top-level `await` is valid in Bun’s module execution model.
+  - No obvious syntax errors or missing referenced DOM IDs are present.
 
 ## FAILING_ITEMS
 
-- None identified.
+- The simulated reset-code design enables account enumeration:
+  - Known-account reset codes validate successfully.
+  - Unknown-email reset codes do not validate.
+  - Because the requester receives the code directly, this makes account existence testable.
+
+- Recovery progress is not fully resumable at the Verify step:
+  - Refreshing the page loses the displayed recovery link and Logs-panel code.
+  - The restored Verify screen does not offer a visible resend/reset-code action.
+  - This conflicts with the requirement to let users pause and return without losing progress.
 
 ## NEW_TASKS
 
-1. No remediation tasks required.
+1. Change reset-delivery simulation so that the returned/displayed code cannot be used to distinguish whether an entered email belongs to an account; ensure known and unknown-email flows remain indistinguishable through verification and visible responses.
+
+2. Persist the active simulated recovery delivery for the server-side session and return enough safe recovery-state data from `/api/recovery-status` to restore the Verify screen’s recovery link and Logs-panel guidance after a page refresh.
+
+3. Add a visible “Send a new recovery code” action on the Verify step as a recovery fallback, with clear low-stress messaging and the existing server-side rate limiting.
 
 ## DECISION
 
-PASS
+**FAIL**

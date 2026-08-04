@@ -1,96 +1,71 @@
 ## SUMMARY
 
-The artifact is a well-structured single-file Bun HTTPS application with a functional recovery flow, server-side sessions, CSRF validation, short-lived single-use reset tokens, bcrypt password hashing, MFA simulation, security headers, and browser-console mock delivery logs. Most functional and security requirements are met. However, it does not meet the explicit requirement that no inline scripts be allowed: the entire client application is embedded in an inline `<script>` block. This is mitigated by a CSP nonce but still violates the stated requirement. The unbounded creation of server sessions on unauthenticated `GET /` requests is also an availability/memory-retention concern.
+The artifact satisfies the single-file Bun HTTPS SPA requirement and implements a functional password-recovery, password-reset, login, MFA, and privacy-acceptance flow. It uses server-side sessions, per-session CSRF validation, HTTPS/TLS, security headers, bcrypt password hashing, rate limiting, reset-token expiry/single use, and browser-side safe DOM handling. The TypeScript and browser JavaScript appear syntactically valid for Bun 1.3.0, with no external dependencies, build tooling, or network calls.
 
 ## FUNCTIONAL_CHECK
 
-- **Single file (`app.ts`) containing Bun server, HTML, CSS, and vanilla JavaScript: PASS**
-  - The provided artifact is entirely contained in `app.ts`, with no framework, bundler, compiler, or external client asset dependency.
+- **PASS — Single-file application and zero-compilation compliance:**  
+  The server, HTML template, CSS, browser JavaScript, and backend logic are all contained in `app.ts`. It runs directly through Bun with no bundler, framework, package dependency, external asset, or compilation step.
 
-- **Bun HTTPS server uses supplied TLS certificate paths: PASS**
-  - The application checks for `certs/cert.pem` and `certs/key.pem`, fails closed if either is missing, and configures `Bun.serve` with TLS.
-  - A separate HTTP listener redirects to the fixed `https://localhost:<HTTPS_PORT>` URL.
+- **PASS — Bun HTTPS server uses supplied TLS certificates:**  
+  The server reads `certs/cert.pem` and `certs/key.pem` and starts `Bun.serve` with `tls: { cert, key }`. This meets the required localhost TLS setup.
 
-- **HTTPS enforcement and secure headers: PASS**
-  - HTTPS is used for the portal, HTTP redirects to HTTPS, and responses include HSTS, CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, permissions policy, COOP, CORP, and no-store cache controls.
+- **PASS — Password-reset request flow works without account enumeration:**  
+  `/api/reset/request` returns the same generic message for valid, invalid, and unknown contacts. The registered contact is never returned to the client. For the valid simulated account, a reset token is returned only as the required training mock value.
 
-- **CSRF protection for sensitive state-changing requests: PASS**
-  - Each server session has a random CSRF token.
-  - All POST API routes require a valid session and matching `X-CSRF-Token`.
-  - Session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
+- **PASS — Mock delivery is shown in the UI and logged in the browser:**  
+  The reset token is displayed in the training UI and logged via browser `console.log` through `addLog`. The simulated reset-link fragment is also logged. MFA mock codes are likewise logged in the browser.
 
-- **Session authorization / access-control enforcement: PASS**
-  - Password replacement requires a verified reset token.
-  - MFA requires a completed password replacement.
-  - Privacy-condition acceptance requires MFA completion.
-  - Reset-link sessions are restricted until the reset code is verified.
+- **PASS — Manual reset-code submission is supported:**  
+  The verification view has a reset-code field, accepts manual submission, and calls `/api/reset/verify`. The fragment route parser also prepopulates a valid token from `#verify?token=...`.
 
-- **Secure reset token behavior: PASS**
-  - Reset tokens are generated with cryptographic randomness, are URL-safe, expire after ten minutes, are server-side tracked, and are consumed after successful verification.
-  - The reset token is not consumed by a GET request; verification still requires a CSRF-protected POST.
+- **PASS — Reset tokens are secure, short-lived, session-bound, and single-use:**  
+  Reset tokens are generated with cryptographically secure randomness (`crypto.getRandomValues`), are 32 bytes, are stored only as SHA-256 hashes, expire after 15 minutes, are bound to the initiating session, and are permanently marked used before password hashing.
 
-- **Manual recovery-code entry and recovery-link flow: PASS**
-  - The recovery link contains a token query parameter and opens the verification screen.
-  - Users can also enter the recovery code manually.
-  - The code is shown only in the local browser Logs panel and browser console as required for testing.
+- **PASS — CSRF protections are present on sensitive requests:**  
+  Every POST endpoint requires a matching session-backed CSRF token in both the `X-CSRF-Token` request header and CSRF cookie. Tokens are generated per session. Cookies use `Secure`, `HttpOnly`, `SameSite=Strict`, and scoped paths.
 
-- **Recovery, password reset, MFA, privacy acceptance, and completion UI flow: PASS**
-  - The client-side UI transitions correctly through all required stages.
-  - The API checks server-side state at every transition rather than trusting client-side screen state.
+- **PASS — Sensitive actions enforce server-side authorization:**  
+  Password confirmation requires a verified reset token for the current session. MFA verification requires `mfaPending`. Privacy acceptance requires `session.authenticated`. No route accepts an account ID, user ID, course folder, or other IDOR-style identifier.
 
-- **Rate limiting / brute-force mitigation: PASS**
-  - Recovery, reset-token verification, MFA, and login routes have client-level throttling based on direct server peer metadata.
-  - Session-level limits additionally constrain recovery, verification, MFA, and login attempts.
-  - Forwarded headers are not trusted for client identification.
+- **PASS — XSS and unsafe DOM injection protections are implemented:**  
+  Browser-generated messages use `textContent`; user input is not interpolated into HTML. The application does not use `innerHTML`, `eval`, dynamic script loading, or external script resources. CSP uses per-response nonces for the trusted embedded style and script blocks.
 
-- **Password policy and password hashing: PASS**
-  - Passwords must be 12–128 characters, contain upper/lowercase characters, a digit, and a symbol, and contain no spaces.
-  - Passwords are hashed using Bun bcrypt with cost 10 and are not returned in responses.
+- **PASS — Secure browser/server headers are configured:**  
+  Responses include HSTS, CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, restrictive `Permissions-Policy`, and `Cache-Control: no-store`.
 
-- **MFA implementation: PASS**
-  - A simulated six-digit MFA code is required after password replacement.
-  - The deterministic code is returned only for the local demonstration and logged in the browser.
+- **PASS — Password policy and secure password storage are implemented:**  
+  Passwords must be 12–128 characters and include uppercase, lowercase, a number, and a symbol, with no spaces. Password hashes use Bun bcrypt with cost 10. Plaintext passwords are not persisted.
 
-- **XSS prevention and safe rendering of user-controlled values: PASS**
-  - The UI uses DOM APIs and `textContent`; it does not interpolate user-provided values into HTML.
-  - Inputs are validated server-side and client-side.
-  - API messages are controlled by server code rather than reflected user input.
-  - No external URLs or open redirects are accepted from user input.
+- **PASS — Login and verification throttling/lockout are implemented:**  
+  Reset requests are rate-limited by a server-side contact digest. Reset verification failures are throttled. Login failures and MFA failures trigger a ten-minute lock after five failures.
 
-- **No exposure of patient identifiers, usernames, course data, or private account data: PASS**
-  - The UI and API do not disclose an account’s existence, username, patient information, or other private identifiers.
-  - Recovery responses use generic language.
+- **PASS — MFA is implemented for the simulated flow:**  
+  Both password-reset completion and normal login require a second MFA verification step before authentication is set. The deterministic MFA code is appropriate for the explicitly simulated training environment and is browser-logged as required.
 
-- **Safe-authentication / anti-phishing guidance: PASS**
-  - Every recovery screen includes guidance telling users not to share passwords or security codes and to verify the `https://localhost` address.
+- **PASS — No open redirects, SSRF, or external network calls:**  
+  The application does not accept destination URLs, does not redirect to arbitrary locations, and does not perform outbound network requests. Client requests are same-origin API calls only.
 
-- **No external network calls: PASS**
-  - The client only calls same-origin API endpoints. Delivery is simulated through browser `console.log` and the on-page Logs panel.
+- **PASS — Safe-authentication guidance is present:**  
+  The UI warns users not to share passwords or security codes and explicitly states that staff will not request them by email or phone.
 
-- **No inline or untrusted scripts: FAIL**
-  - The HTML contains a large inline `<script nonce="...">` block containing the full client application.
-  - A CSP nonce authorizes that script, but it remains an inline script and therefore does not satisfy the explicit requirement: “No inline or untrusted scripts are allowed.”
+- **PASS — Internal SPA navigation functions:**  
+  Navigation buttons switch among recovery, verification, login, MFA, password, and privacy views. Hash-based verification-link handling is implemented and validation is server-side.
 
-- **Production-safe error handling: PASS**
-  - Errors are caught at the request boundary and return a generic response without stack traces or debug details.
+- **PASS — Production-safe error handling is present:**  
+  Server exceptions return a generic error response without stack traces, diagnostics, or sensitive details.
 
-- **Bounded server-side state / resistance to unauthenticated memory exhaustion: FAIL**
-  - Every unauthenticated `GET /` request creates a session, and the `sessions` map has no maximum size or GET-level throttling.
-  - An attacker can repeatedly request the root page and retain many sessions for up to 30 minutes, causing unnecessary server memory growth.
+- **PASS — Code validation:**  
+  The TypeScript structure, top-level `await`, Bun APIs (`Bun.serve`, `Bun.password`, `Bun.CryptoHasher`), request handling, and browser JavaScript are internally consistent and contain no apparent syntax or runtime-logic errors under the stated Bun environment.
 
 ## FAILING_ITEMS
 
-- The client application is implemented as an inline `<script>` element. Although it has a CSP nonce, this directly conflicts with the requirement that inline scripts not be allowed.
-- Unauthenticated `GET /` requests can create unlimited sessions because `sessions` has no maximum size and root-page requests are not rate limited. This permits avoidable memory exhaustion through repeated page loads.
-- The client script applies `label.style.margin = "0"` at runtime. With the current CSP, inline style attributes are not permitted by `style-src 'nonce-...'`; this cosmetic declaration may be blocked and produce a CSP violation. The style should be represented by a CSS class instead.
+- None identified.
 
 ## NEW_TASKS
 
-1. Move the browser JavaScript from the inline `<script>` block into a same-file Bun-served endpoint such as `GET /client.js`; serve it from `app.ts` with `Content-Type: application/javascript` and load it using `<script src="/client.js" defer></script>`.
-2. Pass the per-session CSRF token to the external client script safely, for example through a server-rendered `<meta name="csrf-token" content="...">` element that the external script reads. Update CSP to allow only same-origin scripts, e.g. `script-src 'self'`, without a nonce-based inline-script exception.
-3. Add a bounded session policy: impose a maximum `sessions` map size and/or rate-limit unauthenticated `GET /` session creation by direct client IP. Return a generic retry response rather than allocating a new session when the cap is reached.
-4. Replace `label.style.margin = "0"` with a predefined CSS class, such as `.check-row label { margin: 0; }`, so no inline style attribute is attempted under the CSP.
+1. No remediation tasks are required.
 
 ## DECISION
 
-**FAIL**
+PASS

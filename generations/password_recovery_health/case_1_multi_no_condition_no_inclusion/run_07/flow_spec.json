@@ -1,7 +1,9 @@
 {
   "variables": {
-    "email": "patient@example.com",
-    "new_password": "Secure-Reset-Password-42!"
+    "email": "recovery-test@example.com",
+    "seeded_email": null,
+    "initial_password": "Initial-Not-Usable-Password-42!",
+    "new_password": "Recovered-Password-42!"
   },
   "csrf": {
     "html_regex": "const CSRF = \"([^\"]+)\";",
@@ -10,7 +12,7 @@
   },
   "steps": [
     {
-      "name": "load recovery page",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/"
     },
@@ -81,21 +83,6 @@
   ],
   "negative_steps": [
     {
-      "name": "invalid CSRF token rejected",
-      "method": "POST",
-      "path": "/api/request-reset",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "invalid-csrf-token"
-      },
-      "body": {
-        "email": "${email}",
-        "csrf": "invalid-csrf-token"
-      },
-      "expect_failure": true
-    },
-    {
       "name": "invalid email rejected",
       "method": "POST",
       "path": "/api/request-reset",
@@ -106,6 +93,21 @@
       },
       "body": {
         "email": "not-an-email",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "CSRF mismatch rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "invalid-csrf-token"
+      },
+      "body": {
+        "email": "${email}",
         "csrf": "${csrf}"
       },
       "expect_failure": true

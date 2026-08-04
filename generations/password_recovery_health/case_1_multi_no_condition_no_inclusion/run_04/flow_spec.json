@@ -1,0 +1,124 @@
+{
+  "variables": {
+    "email": "test@example.com",
+    "new_password": "ValidPassw0rd!"
+  },
+  "csrf": {
+    "html_regex": "const csrf = \"([^\"]+)\";",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request recovery",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "reset_token": "mockToken"
+      }
+    },
+    {
+      "name": "open simulated verification link",
+      "method": "GET",
+      "path": "/verify?token=${reset_token}"
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "body": {
+        "token": "${reset_token}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "body": {
+        "password": "${new_password}",
+        "confirm": "${new_password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "accepted": true
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "request medication review appointment",
+      "method": "POST",
+      "path": "/api/request-appointment",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "recovery request without CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "body": {
+        "token": "invalid_invalid_invalid_invalid_123"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "mismatched password confirmation rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "body": {
+        "password": "${new_password}",
+        "confirm": "DifferentPassw0rd!"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance required",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "accepted": false
+      },
+      "expect_failure": true
+    }
+  ]
+}

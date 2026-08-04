@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 9,
-  "steps_passed": 9,
+  "steps_total": 11,
+  "steps_passed": 11,
   "happy_path_passed": 6,
   "happy_path_total": 6,
-  "negative_passed": 3,
-  "negative_total": 3,
+  "negative_passed": 5,
+  "negative_total": 5,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "Open recovery page and establish session",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "Request reset code",
+      "name": "request reset code",
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": false,
@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "name": "Verify reset code",
+      "name": "verify reset code",
       "method": "POST",
       "path": "/api/reset-verify",
       "expect_failure": false,
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "Set new password",
+      "name": "set new password",
       "method": "POST",
       "path": "/api/reset-complete",
       "expect_failure": false,
@@ -43,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "Verify MFA code",
+      "name": "verify MFA code",
       "method": "POST",
       "path": "/api/mfa-verify",
       "expect_failure": false,
@@ -51,7 +51,7 @@
       "ok": true
     },
     {
-      "name": "Accept privacy conditions",
+      "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy-accept",
       "expect_failure": false,
@@ -59,7 +59,7 @@
       "ok": true
     },
     {
-      "name": "Invalid CSRF token rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": true,
@@ -67,7 +67,7 @@
       "ok": true
     },
     {
-      "name": "Invalid reset code rejected",
+      "name": "invalid reset code rejected",
       "method": "POST",
       "path": "/api/reset-verify",
       "expect_failure": true,
@@ -75,7 +75,23 @@
       "ok": true
     },
     {
-      "name": "Privacy acceptance requires true",
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset-complete",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "privacy acceptance required",
       "method": "POST",
       "path": "/api/privacy-accept",
       "expect_failure": true,
@@ -84,5 +100,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 9
+  "spec_steps": 11
 }

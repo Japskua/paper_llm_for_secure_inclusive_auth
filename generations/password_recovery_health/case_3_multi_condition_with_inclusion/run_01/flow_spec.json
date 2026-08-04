@@ -1,39 +1,42 @@
 {
   "variables": {
-    "email": "helena.recovery@hospital.test",
-    "seeded_password": "HospitalDemo!2026",
-    "new_password": "SafeReset!2026"
+    "email": "helena@example.test",
+    "new_password": "N3wSecure!Pass"
   },
-  "csrf": {
-    "html_regex": "const csrf=\"([^\"]+)\"",
-    "field": "csrf",
-    "in": "body"
-  },
+  "csrf": null,
   "steps": [
     {
-      "name": "load recovery page and establish session",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/"
     },
     {
+      "name": "load recovery session status",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
       "name": "request recovery code",
       "method": "POST",
-      "path": "/api/reset/request",
+      "path": "/api/request-reset",
       "body": {
-        "contact": "${email}",
+        "email": "${email}",
         "csrf": "${csrf}"
       },
       "expect_json_true": "ok",
       "capture": {
-        "reset_token": "mockToken"
+        "recovery_code": "deliveryCode"
       }
     },
     {
       "name": "verify recovery code",
       "method": "POST",
-      "path": "/api/reset/verify",
+      "path": "/api/verify-reset",
       "body": {
-        "token": "${reset_token}",
+        "token": "${recovery_code}",
         "csrf": "${csrf}"
       },
       "expect_json_true": "ok"
@@ -41,10 +44,10 @@
     {
       "name": "set new password",
       "method": "POST",
-      "path": "/api/reset/password",
+      "path": "/api/reset-password",
       "body": {
-        "token": "${reset_token}",
         "password": "${new_password}",
+        "confirm": "${new_password}",
         "csrf": "${csrf}"
       },
       "expect_json_true": "ok"
@@ -52,19 +55,18 @@
     {
       "name": "sign in with new password",
       "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/login",
       "body": {
-        "identifier": "${email}",
         "password": "${new_password}",
         "csrf": "${csrf}"
       },
       "expect_json_true": "ok",
       "capture": {
-        "mfa_code": "mockMfaCode"
+        "mfa_code": "code"
       }
     },
     {
-      "name": "confirm MFA code",
+      "name": "confirm MFA",
       "method": "POST",
       "path": "/api/mfa",
       "body": {
@@ -81,47 +83,33 @@
         "csrf": "${csrf}"
       },
       "expect_json_true": "ok"
-    },
-    {
-      "name": "confirm appointment request",
-      "method": "POST",
-      "path": "/api/appointment",
-      "body": {
-        "csrf": "${csrf}"
-      },
-      "expect_json_true": "ok"
     }
   ],
   "negative_steps": [
     {
-      "name": "old seeded password rejected after reset",
+      "name": "wrong password rejected",
       "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/login",
       "body": {
-        "identifier": "${email}",
-        "password": "${seeded_password}",
+        "password": "WrongPassword!123",
         "csrf": "${csrf}"
       },
       "expect_failure": true
     },
     {
-      "name": "used recovery token cannot reset password again",
+      "name": "privacy request without CSRF rejected",
       "method": "POST",
-      "path": "/api/reset/password",
-      "body": {
-        "token": "${reset_token}",
-        "password": "${new_password}",
-        "csrf": "${csrf}"
-      },
+      "path": "/api/privacy",
+      "body": {},
       "expect_failure": true
     },
     {
-      "name": "missing valid CSRF token rejected",
+      "name": "invalid recovery code rejected",
       "method": "POST",
-      "path": "/api/reset/request",
+      "path": "/api/verify-reset",
       "body": {
-        "contact": "${email}",
-        "csrf": "invalid"
+        "token": "not-a-valid-recovery-code",
+        "csrf": "${csrf}"
       },
       "expect_failure": true
     }

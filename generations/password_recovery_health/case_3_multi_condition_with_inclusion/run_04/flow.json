@@ -1,0 +1,168 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": false,
+  "steps_total": 17,
+  "steps_passed": 10,
+  "happy_path_passed": 4,
+  "happy_path_total": 11,
+  "negative_passed": 6,
+  "negative_total": 6,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "bootstrap recovery session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "check initial session status",
+      "method": "GET",
+      "path": "/api/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "start password recovery",
+      "method": "POST",
+      "path": "/api/recovery/start",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'authorization_secret' from 'authorizationSecret'"
+      ],
+      "response_message": "We could not complete that step. Please check the information and try again."
+    },
+    {
+      "name": "confirm approved channel",
+      "method": "POST",
+      "path": "/api/recovery/channel",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'reset_token' from 'token'"
+      ],
+      "response_message": "We could not complete that step. Please check the information and try again."
+    },
+    {
+      "name": "open simulated recovery link",
+      "method": "GET",
+      "path": "/recovery/verify?token=${reset_token}",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check the information and try again."
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/recovery/password",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check the information and try again."
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'mfa_code' from 'mfaCode'"
+      ],
+      "response_message": "We could not complete that step. Please check the information and try again."
+    },
+    {
+      "name": "complete MFA",
+      "method": "POST",
+      "path": "/api/mfa",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check the information and try again."
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check the information and try again."
+    },
+    {
+      "name": "recovery start without CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery/start",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong approved channel secret rejected",
+      "method": "POST",
+      "path": "/api/recovery/channel",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong recovery token rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "weak new password rejected",
+      "method": "POST",
+      "path": "/api/recovery/password",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 17
+}

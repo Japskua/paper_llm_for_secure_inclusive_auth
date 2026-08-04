@@ -1,7 +1,7 @@
 {
   "variables": {
     "email": "patient@example.com",
-    "new_password": "ValidPassword1!"
+    "new_password": "NewPassword1!"
   },
   "csrf": {
     "html_regex": "const csrf=\"([^\"]+)\"",
@@ -10,14 +10,18 @@
   },
   "steps": [
     {
-      "name": "start recovery session",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/"
     },
     {
-      "name": "request password reset",
+      "name": "request reset token",
       "method": "POST",
       "path": "/api/recovery",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "email": "${email}"
       },
@@ -29,15 +33,23 @@
       "name": "verify reset token",
       "method": "POST",
       "path": "/api/verify",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "token": "${reset_token}"
       },
       "expect_json_true": "ok"
     },
     {
-      "name": "save new password",
+      "name": "set new password",
       "method": "POST",
       "path": "/api/reset",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "password": "${new_password}",
         "confirmation": "${new_password}"
@@ -51,6 +63,10 @@
       "name": "verify MFA code",
       "method": "POST",
       "path": "/api/mfa",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "code": "${mfa_code}"
       },
@@ -60,6 +76,10 @@
       "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "accepted": true
       },
@@ -68,9 +88,25 @@
   ],
   "negative_steps": [
     {
-      "name": "invalid recovery email rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
       "path": "/api/recovery",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "email": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid email rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "email": "not-an-email"
       },
@@ -80,8 +116,12 @@
       "name": "invalid reset token rejected",
       "method": "POST",
       "path": "/api/verify",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
-        "token": "0000000000000000000000000000000000000000000000000000000000000000"
+        "token": "not-a-token"
       },
       "expect_failure": true
     },
@@ -89,6 +129,10 @@
       "name": "privacy acceptance required",
       "method": "POST",
       "path": "/api/privacy",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "accepted": false
       },

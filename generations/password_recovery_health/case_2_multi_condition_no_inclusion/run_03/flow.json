@@ -11,7 +11,7 @@
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page and establish session",
+      "name": "start recovery session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "prepare recovery instructions",
+      "name": "request recovery token",
       "method": "POST",
       "path": "/api/recovery",
       "expect_failure": false,
@@ -43,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "confirm sign-in with MFA",
+      "name": "confirm MFA sign-in",
       "method": "POST",
       "path": "/api/mfa",
       "expect_failure": false,
@@ -67,7 +67,7 @@
       "ok": true
     },
     {
-      "name": "malformed recovery token rejected",
+      "name": "invalid recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "expect_failure": true,
@@ -75,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "invalid password policy rejected",
+      "name": "weak replacement password rejected",
       "method": "POST",
       "path": "/api/password",
       "expect_failure": true,
@@ -83,7 +83,7 @@
       "ok": true
     },
     {
-      "name": "privacy rejection without acceptance",
+      "name": "privacy acceptance required",
       "method": "POST",
       "path": "/api/privacy",
       "expect_failure": true,

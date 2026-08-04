@@ -1,89 +1,71 @@
 ## SUMMARY
 
-The artifact is a single `app.ts` Bun application with a functional browser-rendered recovery UI, TLS setup, CSRF protections, secure cookies, CSP/security headers, bcrypt password hashing, rate limiting, mock MFA, and browser-console simulated delivery logs. However, it has security and functional gaps around reset-link usability and reset authorization lifecycle, so it does not fully meet the requirements.
+The artifact satisfies the single-file Bun HTTPS SPA requirement and implements a functional password-recovery, password-reset, login, MFA, and privacy-acceptance flow. It uses server-side sessions, per-session CSRF validation, HTTPS/TLS, security headers, bcrypt password hashing, rate limiting, reset-token expiry/single use, and browser-side safe DOM handling. The TypeScript and browser JavaScript appear syntactically valid for Bun 1.3.0, with no external dependencies, build tooling, or network calls.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file Bun server and vanilla SPA implementation**
-  - The server, HTML, CSS, and browser JavaScript are contained in one `app.ts`.
-  - It uses Bun directly and has no frameworks, build tools, external assets, or external network requests.
+- **PASS — Single-file application and zero-compilation compliance:**  
+  The server, HTML template, CSS, browser JavaScript, and backend logic are all contained in `app.ts`. It runs directly through Bun with no bundler, framework, package dependency, external asset, or compilation step.
 
-- **PASS — HTTPS and supplied TLS certificate usage**
-  - The Bun HTTPS listener uses `certs/cert.pem` and `certs/key.pem`.
-  - The application fails closed when certificate files are absent.
-  - A separate HTTP listener redirects to a fixed `https://localhost:<port>` destination.
+- **PASS — Bun HTTPS server uses supplied TLS certificates:**  
+  The server reads `certs/cert.pem` and `certs/key.pem` and starts `Bun.serve` with `tls: { cert, key }`. This meets the required localhost TLS setup.
 
-- **PASS — Security headers and secure session cookie**
-  - HSTS, CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, permissions policy, COOP/CORP, and no-store caching are configured.
-  - The session cookie is `HttpOnly`, `Secure`, `SameSite=Strict`, scoped to `/`, and has a finite lifetime.
+- **PASS — Password-reset request flow works without account enumeration:**  
+  `/api/reset/request` returns the same generic message for valid, invalid, and unknown contacts. The registered contact is never returned to the client. For the valid simulated account, a reset token is returned only as the required training mock value.
 
-- **PASS — CSRF protection for sensitive operations**
-  - Each server-side session receives a cryptographically random CSRF token.
-  - State-changing API endpoints require the token in `X-CSRF-Token`.
-  - Session state is server-side and request-controlled IDs are not accepted for authorization.
+- **PASS — Mock delivery is shown in the UI and logged in the browser:**  
+  The reset token is displayed in the training UI and logged via browser `console.log` through `addLog`. The simulated reset-link fragment is also logged. MFA mock codes are likewise logged in the browser.
 
-- **PASS — XSS protections in the rendered UI**
-  - Dynamic UI values are inserted using `textContent` and DOM APIs rather than `innerHTML`.
-  - User-controlled values are validated server-side and client-side.
-  - CSP uses a per-page nonce for the known inline style and script blocks.
+- **PASS — Manual reset-code submission is supported:**  
+  The verification view has a reset-code field, accepts manual submission, and calls `/api/reset/verify`. The fragment route parser also prepopulates a valid token from `#verify?token=...`.
 
-- **PASS — Recovery identifier privacy / anti-enumeration behavior**
-  - Recovery responses use a generic message regardless of account existence.
-  - The UI does not display usernames, patient records, folders, or other private identifiers.
+- **PASS — Reset tokens are secure, short-lived, session-bound, and single-use:**  
+  Reset tokens are generated with cryptographically secure randomness (`crypto.getRandomValues`), are 32 bytes, are stored only as SHA-256 hashes, expire after 15 minutes, are bound to the initiating session, and are permanently marked used before password hashing.
 
-- **PASS — Reset token randomness, format, expiry, and verification throttling**
-  - Tokens are generated with cryptographic randomness.
-  - Tokens are short-lived (10 minutes), opaque, and validated against an allowlisted format.
-  - Verification attempts are rate-limited, and token attempts are capped.
+- **PASS — CSRF protections are present on sensitive requests:**  
+  Every POST endpoint requires a matching session-backed CSRF token in both the `X-CSRF-Token` request header and CSRF cookie. Tokens are generated per session. Cookies use `Secure`, `HttpOnly`, `SameSite=Strict`, and scoped paths.
 
-- **FAIL — Recovery link is not reliably functional as a password-reset link**
-  - Reset tokens are bound to the session that requested them: `state.sessionId !== auth.session!.id` causes verification failure.
-  - The simulated link contains only `?token=<token>`. If opened in a fresh browser, another browser profile, or a normal email-link scenario, the user receives a new session and cannot use the token.
-  - A password recovery link must work as an independently usable token-based verification mechanism, while still protecting against CSRF for state-changing follow-up actions.
+- **PASS — Sensitive actions enforce server-side authorization:**  
+  Password confirmation requires a verified reset token for the current session. MFA verification requires `mfaPending`. Privacy acceptance requires `session.authenticated`. No route accepts an account ID, user ID, course folder, or other IDOR-style identifier.
 
-- **FAIL — Password reset authorization remains usable after the reset token has been consumed**
-  - `apiVerifyToken()` marks the token as `used`, but it sets `session.resetVerified = true`.
-  - `apiPassword()` does not check whether a password has already been replaced and never clears `resetVerified`.
-  - Therefore, the same authenticated recovery session can call `/api/password` repeatedly and replace the password multiple times without requesting or verifying another recovery token.
-  - This weakens the required single-use reset-token behavior and permits unintended sensitive actions after the intended recovery step is complete.
+- **PASS — XSS and unsafe DOM injection protections are implemented:**  
+  Browser-generated messages use `textContent`; user input is not interpolated into HTML. The application does not use `innerHTML`, `eval`, dynamic script loading, or external script resources. CSP uses per-response nonces for the trusted embedded style and script blocks.
 
-- **PASS — Password policy and password hashing**
-  - Passwords require at least 12 characters, upper/lowercase letters, a number, and a symbol, with no whitespace.
-  - Passwords are hashed using Bun bcrypt before being stored in session state.
-  - Plaintext passwords are not retained in server variables after request completion.
+- **PASS — Secure browser/server headers are configured:**  
+  Responses include HSTS, CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, restrictive `Permissions-Policy`, and `Cache-Control: no-store`.
 
-- **PASS — MFA simulation and brute-force throttling**
-  - MFA is required after password replacement before privacy acceptance.
-  - The deterministic test MFA code is delivered through browser logging.
-  - MFA attempts are throttled.
+- **PASS — Password policy and secure password storage are implemented:**  
+  Passwords must be 12–128 characters and include uppercase, lowercase, a number, and a symbol, with no spaces. Password hashes use Bun bcrypt with cost 10. Plaintext passwords are not persisted.
 
-- **PASS — Privacy-condition acceptance access control**
-  - Privacy acceptance requires server-side MFA completion and an explicit accepted boolean.
-  - No user or patient identifier is accepted from the client to authorize that action.
+- **PASS — Login and verification throttling/lockout are implemented:**  
+  Reset requests are rate-limited by a server-side contact digest. Reset verification failures are throttled. Login failures and MFA failures trigger a ten-minute lock after five failures.
 
-- **PASS — Browser-console simulated delivery**
-  - Recovery token/link and MFA test code are logged using browser-side `console.log`.
-  - The code also provides a visible local Logs panel for testing.
-  - Manual code entry is supported.
+- **PASS — MFA is implemented for the simulated flow:**  
+  Both password-reset completion and normal login require a second MFA verification step before authentication is set. The deterministic MFA code is appropriate for the explicitly simulated training environment and is browser-logged as required.
 
-- **FAIL — Malformed cookies can cause an uncaught exception**
-  - `parseCookies()` calls `decodeURIComponent()` without handling malformed percent-encoding.
-  - A request containing an invalid cookie value such as `recovery_session=%` can throw a `URIError`.
-  - This can produce a server error and conflicts with the requirement to avoid exposing debug information or stack traces in production.
+- **PASS — No open redirects, SSRF, or external network calls:**  
+  The application does not accept destination URLs, does not redirect to arbitrary locations, and does not perform outbound network requests. Client requests are same-origin API calls only.
+
+- **PASS — Safe-authentication guidance is present:**  
+  The UI warns users not to share passwords or security codes and explicitly states that staff will not request them by email or phone.
+
+- **PASS — Internal SPA navigation functions:**  
+  Navigation buttons switch among recovery, verification, login, MFA, password, and privacy views. Hash-based verification-link handling is implemented and validation is server-side.
+
+- **PASS — Production-safe error handling is present:**  
+  Server exceptions return a generic error response without stack traces, diagnostics, or sensitive details.
+
+- **PASS — Code validation:**  
+  The TypeScript structure, top-level `await`, Bun APIs (`Bun.serve`, `Bun.password`, `Bun.CryptoHasher`), request handling, and browser JavaScript are internally consistent and contain no apparent syntax or runtime-logic errors under the stated Bun environment.
 
 ## FAILING_ITEMS
 
-- Recovery tokens are tied to the original browser session, so a simulated reset link is not usable when opened outside that original session.
-- A verified recovery session can repeatedly invoke `/api/password` and replace the password after the token has already been consumed.
-- Malformed cookie encoding can throw from `decodeURIComponent()` and is not safely handled.
+- None identified.
 
 ## NEW_TASKS
 
-1. Update the recovery-link/token flow so a valid token in `?token=` can establish a restricted recovery-verification session when opened in a new browser session, while retaining CSRF enforcement for subsequent POST requests.
-2. Make password-reset authorization single-use: after a successful password update, clear or consume `resetVerified` and reject further `/api/password` calls unless a newly issued token is verified.
-3. Harden cookie parsing by wrapping `decodeURIComponent()` in error handling and ignoring malformed cookie values rather than throwing.
-4. Add a top-level safe error response strategy so unexpected request errors return a generic non-debug response with secure headers rather than exposing server exception details.
+1. No remediation tasks are required.
 
 ## DECISION
 
-FAIL
+PASS

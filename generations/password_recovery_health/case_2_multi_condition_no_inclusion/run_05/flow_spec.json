@@ -1,0 +1,143 @@
+{
+  "variables": {
+    "email": "patient@example.com",
+    "new_password": "SecureReset!2025"
+  },
+  "csrf": {
+    "html_regex": "(?!)",
+    "field": "csrf",
+    "in": "body"
+  },
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recover",
+      "body": {
+        "account": "${email}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "reset_token": "testToken"
+      }
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "body": {
+        "token": "${reset_token}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "testMfaCode"
+      }
+    },
+    {
+      "name": "verify second factor",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "body": {
+        "code": "${mfa_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "reset password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "body": {
+        "password": "${new_password}",
+        "confirmation": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm sign in",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "body": {
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "accepted": true,
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/book-appointment",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "missing csrf rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "body": {
+        "account": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery account rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "body": {
+        "account": "x",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "body": {
+        "password": "WrongPassword!2025",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy requires acceptance",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "accepted": false,
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

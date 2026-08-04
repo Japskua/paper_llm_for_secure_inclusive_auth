@@ -1,0 +1,133 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": false,
+  "steps_total": 13,
+  "steps_passed": 6,
+  "happy_path_passed": 2,
+  "happy_path_total": 9,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recover",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'reset_token' from 'testToken'"
+      ],
+      "response_message": "Request not allowed."
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'mfa_code' from 'testMfaCode'"
+      ],
+      "response_message": "Request not allowed."
+    },
+    {
+      "name": "verify second factor",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Request not allowed."
+    },
+    {
+      "name": "reset password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Request not allowed."
+    },
+    {
+      "name": "confirm sign in",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Request not allowed."
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Request not allowed."
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/book-appointment",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Request not allowed."
+    },
+    {
+      "name": "missing csrf rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid recovery account rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "privacy requires acceptance",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 13
+}

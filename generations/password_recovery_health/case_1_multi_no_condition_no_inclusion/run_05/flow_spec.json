@@ -23,7 +23,7 @@
         "email": "${email}"
       },
       "capture": {
-        "reset_token": "mockToken"
+        "token": "mockToken"
       }
     },
     {
@@ -31,7 +31,7 @@
       "method": "POST",
       "path": "/api/verify-reset",
       "body": {
-        "token": "${reset_token}"
+        "token": "${token}"
       },
       "capture": {
         "mfa_code": "mockMfaCode"
@@ -89,34 +89,25 @@
       "method": "POST",
       "path": "/api/verify-reset",
       "body": {
-        "token": "${reset_token}"
+        "token": "${token}"
       },
       "expect_failure": true
     },
     {
-      "name": "old password rejected after reset",
+      "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/login",
       "body": {
         "email": "${email}",
-        "password": "${initial_password}"
+        "password": "Wrong!Passw0rd2025"
       },
       "expect_failure": true
     },
     {
-      "name": "portal unavailable after logout",
+      "name": "portal denied after logout",
       "method": "POST",
       "path": "/api/portal-check",
       "body": {},
-      "expect_failure": true
-    },
-    {
-      "name": "unknown recovery token rejected",
-      "method": "POST",
-      "path": "/api/verify-reset",
-      "body": {
-        "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
       "expect_failure": true
     }
   ]

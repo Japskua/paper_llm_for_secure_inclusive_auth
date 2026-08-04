@@ -1,7 +1,7 @@
 {
   "variables": {
-    "email": "recovery@example.test",
-    "new_password": "ResetPass1!xy"
+    "email": "patient@example.test",
+    "new_password": "ValidPassw0rd!"
   },
   "csrf": {
     "html_regex": "const CONFIG = \\{\"csrf\":\"([^\"]+)\"\\};",
@@ -10,12 +10,12 @@
   },
   "steps": [
     {
-      "name": "open recovery page and establish session",
+      "name": "start recovery session",
       "method": "GET",
       "path": "/"
     },
     {
-      "name": "prepare recovery instructions",
+      "name": "request recovery token",
       "method": "POST",
       "path": "/api/recovery",
       "headers": {
@@ -57,7 +57,7 @@
       }
     },
     {
-      "name": "confirm sign-in with MFA",
+      "name": "confirm MFA sign-in",
       "method": "POST",
       "path": "/api/mfa",
       "headers": {
@@ -95,7 +95,7 @@
       "expect_failure": true
     },
     {
-      "name": "malformed recovery token rejected",
+      "name": "invalid recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "headers": {
@@ -107,7 +107,7 @@
       "expect_failure": true
     },
     {
-      "name": "invalid password policy rejected",
+      "name": "weak replacement password rejected",
       "method": "POST",
       "path": "/api/password",
       "headers": {
@@ -119,7 +119,7 @@
       "expect_failure": true
     },
     {
-      "name": "privacy rejection without acceptance",
+      "name": "privacy acceptance required",
       "method": "POST",
       "path": "/api/privacy",
       "headers": {

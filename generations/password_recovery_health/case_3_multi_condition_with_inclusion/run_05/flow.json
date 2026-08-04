@@ -1,0 +1,112 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 12,
+  "steps_passed": 12,
+  "happy_path_passed": 8,
+  "happy_path_total": 8,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "Get session status and CSRF token",
+      "method": "GET",
+      "path": "/api/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Request recovery code",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Open simulated recovery delivery",
+      "method": "POST",
+      "path": "/api/demo/recovery-code",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Verify recovery code",
+      "method": "POST",
+      "path": "/api/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Prepare replacement password grant",
+      "method": "POST",
+      "path": "/api/recovery/replacement-grant",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Set new password",
+      "method": "POST",
+      "path": "/api/password",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Confirm MFA code",
+      "method": "POST",
+      "path": "/api/mfa",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "Invalid recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "Wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "Incorrect MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 12
+}

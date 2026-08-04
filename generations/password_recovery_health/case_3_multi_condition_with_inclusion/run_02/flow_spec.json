@@ -1,0 +1,155 @@
+{
+  "variables": {
+    "email": "helena@example.com",
+    "initial_password": "Initial!HospitalPassword9",
+    "new_password": "Recover!Pass2025"
+  },
+  "csrf": {
+    "html_regex": "const csrf=\"([^\"]+)\"",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open secure portal",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "read initial session state",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "request recovery instruction",
+      "method": "POST",
+      "path": "/api/recovery/request",
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_token": "testValue",
+        "recovery_identity": "testIdentityValue"
+      }
+    },
+    {
+      "name": "confirm recovery token",
+      "method": "POST",
+      "path": "/api/recovery/instruction",
+      "body": {
+        "value": "${recovery_token}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "verify recovery identity",
+      "method": "POST",
+      "path": "/api/recovery/identity",
+      "body": {
+        "value": "${recovery_identity}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "save replacement password",
+      "method": "POST",
+      "path": "/api/recovery/password",
+      "body": {
+        "password": "${new_password}",
+        "confirmPassword": "${new_password}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign in with replacement password",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "identifier": "${email}",
+        "password": "${new_password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "testMfaCode",
+        "possession_value": "testPossessionValue"
+      }
+    },
+    {
+      "name": "confirm MFA code",
+      "method": "POST",
+      "path": "/api/mfa/code",
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm MFA possession value",
+      "method": "POST",
+      "path": "/api/mfa/possession",
+      "body": {
+        "value": "${possession_value}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid CSRF token rejected",
+      "method": "POST",
+      "path": "/api/recovery/request",
+      "headers": {
+        "X-CSRF-Token": "invalid"
+      },
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong recovery token rejected",
+      "method": "POST",
+      "path": "/api/recovery/instruction",
+      "body": {
+        "value": "AAAAAAAAAAAAAAAAAAAA"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "weak replacement password rejected",
+      "method": "POST",
+      "path": "/api/recovery/password",
+      "body": {
+        "password": "short",
+        "confirmPassword": "short"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "identifier": "${email}",
+        "password": "WrongPassword!9"
+      },
+      "expect_failure": true
+    }
+  ]
+}

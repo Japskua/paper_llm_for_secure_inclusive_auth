@@ -1,0 +1,112 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 12,
+  "steps_passed": 12,
+  "happy_path_passed": 8,
+  "happy_path_total": 8,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "start secure session",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "load session state and CSRF token",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request password recovery",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm MFA sign-in",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/confirm-appointment",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid CSRF token rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "weak replacement password rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 12
+}

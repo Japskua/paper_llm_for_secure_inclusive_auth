@@ -1,0 +1,96 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 10,
+  "steps_passed": 10,
+  "happy_path_passed": 7,
+  "happy_path_total": 7,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "start secure session",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request recovery",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "create new password",
+      "method": "POST",
+      "path": "/api/password",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/mfa",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm completion",
+      "method": "GET",
+      "path": "/api/confirmation",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "missing CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid account input rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "used recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 10
+}

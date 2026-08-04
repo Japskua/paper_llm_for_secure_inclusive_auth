@@ -1,26 +1,26 @@
 {
   "variables": {
     "email": "helena@example.test",
-    "new_password": "ValidPass1!xx"
+    "new_password": "ValidPass123!"
   },
   "csrf": null,
   "steps": [
     {
       "name": "load recovery portal",
       "method": "GET",
-      "path": "/"
+      "path": "/",
+      "expect_status": 200
     },
     {
       "name": "bootstrap secure session",
       "method": "GET",
       "path": "/api/bootstrap",
-      "expect_json_true": "csrf",
       "capture": {
         "csrf": "csrf"
       }
     },
     {
-      "name": "request password reset",
+      "name": "request reset instructions",
       "method": "POST",
       "path": "/api/reset-request",
       "headers": {
@@ -105,11 +105,12 @@
   ],
   "negative_steps": [
     {
-      "name": "reset request without CSRF rejected",
+      "name": "invalid CSRF token rejected",
       "method": "POST",
       "path": "/api/reset-request",
       "headers": {
-        "Origin": "https://localhost:3000"
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}-invalid"
       },
       "body": {
         "email": "${email}"
@@ -117,20 +118,7 @@
       "expect_failure": true
     },
     {
-      "name": "reset request with wrong origin rejected",
-      "method": "POST",
-      "path": "/api/reset-request",
-      "headers": {
-        "Origin": "https://example.test",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "email": "${email}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "invalid reset code rejected",
+      "name": "reused reset token rejected",
       "method": "POST",
       "path": "/api/reset-validate",
       "headers": {
@@ -138,20 +126,20 @@
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "token": "invalid_reset_code_1234567890"
+        "token": "${reset_token}"
       },
       "expect_failure": true
     },
     {
-      "name": "invalid MFA code rejected",
+      "name": "privacy acceptance requires true",
       "method": "POST",
-      "path": "/api/mfa-verify",
+      "path": "/api/privacy-accept",
       "headers": {
         "Origin": "https://localhost:3000",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "code": "000000"
+        "accepted": false
       },
       "expect_failure": true
     }

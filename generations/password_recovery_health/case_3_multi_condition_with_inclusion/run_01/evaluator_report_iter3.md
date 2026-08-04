@@ -1,120 +1,64 @@
 ## SUMMARY
 
-The artifact is a well-structured single-file Bun HTTPS SPA with functional recovery, password replacement, MFA sign-in, privacy acceptance, and appointment confirmation. It uses secure cookies, CSRF tokens, CSP nonces, Argon2id password hashing, HTTPS redirects, and browser-side mock delivery logging. However, it does not fully meet the security and inclusivity requirements: invalid reset-code attempts are not actually throttled, and the advertised pause/save-place feature does not persist progress reliably.
+The artifact is a single-file Bun/TypeScript password-recovery SPA with TLS, CSP nonces, CSRF validation, Argon2id password hashing, reset-token expiry/single use, session-bound reset grants, visible recovery progress, manual code entry, simulated browser-console delivery logs, MFA, and protected privacy acceptance. The main security defect is that verification and MFA throttling are keyed by the attacker-controlled submitted code/token, allowing unlimited attempts by changing the submitted value on every request. This fails the brute-force protection requirements.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file Bun server and SPA delivery**
-  - The server, HTML, CSS, and browser JavaScript are all contained in `app.ts`.
-  - It uses Bun directly, with no framework, bundler, compiler step, or external assets.
-  - It checks for and uses `certs/cert.pem` and `certs/key.pem`.
+- **PASS — Single-file Bun application with no build tooling or external assets.**  
+  The server, HTML, CSS, and browser-side vanilla JavaScript are all contained in `app.ts`. It uses `Bun.serve` directly and imports no packages or external assets.
 
-- **PASS — HTTPS enforcement and secure transport**
-  - HTTPS is served with the provided TLS files.
-  - The HTTP listener performs a fixed redirect to `https://localhost:<HTTPS_PORT>`.
-  - Secure transport headers are present, including HSTS, CSP, `X-Content-Type-Options`, `Referrer-Policy`, and frame protections.
-  - Session cookies use `Secure`, `HttpOnly`, `SameSite=Strict`, and the `__Host-` naming convention.
+- **PASS — TLS/HTTPS configuration is present.**  
+  `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`, matching the required certificate locations. The application advertises an HTTPS localhost URL.
 
-- **PASS — Recovery flow functions end-to-end**
-  - A recovery request can create a reset token for the approved mock contact.
-  - The simulated recovery token is returned to the browser UI and logged through browser-side `console.log`.
-  - The token can be entered manually in the recovery-code screen.
-  - Valid token verification enables password replacement.
-  - A used reset token is deleted and cannot be reused.
+- **PASS — Security headers and restrictive CSP are configured.**  
+  Responses include HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, no-store caching, and a CSP using per-response script/style nonces. The client scripts are nonced and there are no external script sources.
 
-- **FAIL — Password-reset verification attempts are throttled**
-  - In `/api/reset/verify`, `currentReset(session, token)` is called before the code compares/counts a wrong token.
-  - For an invalid, malformed, or incorrect token, `currentReset()` returns `undefined`, causing the handler to return immediately:
-    ```ts
-    if (!record) return safeError("That recovery code is not available. Request a new code and try again.");
-    ```
-  - Therefore, `registerResetVerificationFailure(now)` is never called for incorrect tokens.
-  - This means incorrect reset-token guessing is not subject to the configured `VERIFY_LIMIT` / lockout logic, violating the brute-force mitigation requirement.
+- **PASS — CSRF protection is implemented for sensitive POST routes.**  
+  Each session receives a random CSRF token. All `/api/*` POST routes require the token through `validCsrf`, and the session cookie is `HttpOnly`, `Secure`, `SameSite=Strict`, and path-scoped.
 
-- **PASS — Password security**
-  - Passwords are stored using `Bun.password.hash(..., { algorithm: "argon2id" })`.
-  - Password verification uses `Bun.password.verify`.
-  - The new-password policy requires 12–128 characters, uppercase, lowercase, numeric, and symbolic characters, and blocks spaces and several predictable prefixes.
+- **PASS — Password reset tokens are random, expiring, and single-use.**  
+  Reset tokens and grants are generated with cryptographically random bytes. Reset tokens expire after 15 minutes, are deleted immediately after successful verification, and result in a separate reset grant that expires after 10 minutes and is bound to the session.
 
-- **PASS — MFA implementation**
-  - Successful password sign-in creates a random six-digit MFA code with expiry.
-  - MFA codes are returned only as a simulated browser test value and logged in the browser console.
-  - MFA has a five-attempt limit and a 15-minute lockout.
-  - Authentication is only granted after successful MFA verification.
+- **PASS — Password reset verification supports both a recovery link and manual entry.**  
+  The simulated delivery provides a recovery link containing the token and also displays a manual code input. Opening the link populates the code field and keeps the user at the Verify step.
 
-- **PASS — CSRF and access control**
-  - Sessions receive a random CSRF token.
-  - All API POST routes require a valid session and CSRF token.
-  - Reset records are bound to the requesting session and account.
-  - Privacy acceptance and appointment confirmation require authenticated state.
-  - Appointment confirmation also requires prior privacy acceptance.
-  - Direct GET access to `/account` and `/appointment` redirects unauthenticated or unauthorized users appropriately.
+- **PASS — Password reset flow works end to end for the recognized mock account.**  
+  The user can request a reset, verify the simulated code, set a compliant password, sign in with it, complete MFA, and accept the privacy statement.
 
-- **PASS — XSS/injection protections**
-  - User-provided data is not interpolated into HTML.
-  - Browser rendering uses DOM APIs and `textContent`.
-  - A nonce-based CSP restricts scripts and styles.
-  - No user-controlled URLs, HTML, or script content are rendered.
+- **PASS — Password policy and secure password storage are implemented.**  
+  Passwords require at least 12 characters with upper- and lowercase letters, a digit, and a symbol. Passwords are hashed and verified with Bun Argon2id APIs; no plaintext password is stored.
 
-- **PASS — Privacy and identifier exposure**
-  - The client UI does not display the approved recovery contact or other account identifiers.
-  - Recovery responses use generic wording to reduce account enumeration risk.
-  - No external requests or external assets are used.
+- **FAIL — Automated verification/MFA guessing is not effectively throttled.**  
+  Reset-code throttling is keyed as ``${token}|${ip}``, and MFA throttling is keyed as ``${code}|${ip}``. Because both token/code values are controlled by the requester, an attacker can submit a different invalid value per attempt and receive a new rate-limit bucket each time. This permits unlimited guesses and violates the requirements for brute-force blocking/throttling.
 
-- **FAIL — Pause and return without losing progress**
-  - The “Pause and save place” button only toggles an in-memory browser variable:
-    ```js
-    paused=!paused;
-    ```
-  - It does not save a stage, route, or task status to server session state or browser storage.
-  - It does not disable interactions while paused.
-  - Refreshing or reopening the SPA during MFA returns the user to the sign-in page instead of restoring the pending MFA step.
-  - Recovery state is partly restorable, but the claimed pause/save-place behavior is not consistently implemented across the full multi-step process.
+- **PASS — Login failures are throttled.**  
+  Login attempts use a server-side limiter keyed by account and IP. Repeated failed password attempts are blocked for five minutes after exceeding the configured limit.
 
-- **FAIL — Low-stress timing communication is internally inconsistent**
-  - The sidebar states:
-    > “No time limit: You can pause and return to this browser later.”
-  - Recovery and MFA codes actually expire after 10 minutes, and sessions are removed after 24 hours.
-  - Short-lived recovery tokens are appropriate for security, but the UI must clearly explain that the page does not rush the user while codes have a safety expiry and can be re-requested.
-  - The current wording can mislead users and conflicts with the inclusivity requirement for clear expectations.
+- **PASS — UI addresses the ADHD/inclusivity requirements.**  
+  The flow has a persistent visible progress indicator, one task per screen, clear messages, a no-countdown reminder, stable server-resumable recovery state, low visual density, and an accessible help option at every stage.
 
-- **PASS — Semantic and accessible UI basics**
-  - The app uses semantic `header`, `main`, `section`, `aside`, and `footer` elements.
-  - Inputs have labels.
-  - Progress is visibly presented.
-  - Focus indicators are present.
-  - Font sizing and layout are relatively accessible and responsive.
-  - Help and safe-authentication guidance are available throughout the UI.
+- **PASS — User-derived UI output avoids DOM XSS sinks.**  
+  The client writes dynamic content using `textContent`, `replaceChildren`, and DOM node creation rather than `innerHTML`. The recovery link is created from a controlled same-origin URL plus URL-encoded token data.
 
-- **PASS — Error handling and production behavior**
-  - Server errors are caught and returned as generic responses.
-  - No stack traces, directory listings, or debug data are exposed to the user.
-  - Responses use `Cache-Control: no-store`.
+- **PASS — Privacy acceptance is access-controlled.**  
+  `/api/privacy` requires `session.authenticated`; unauthenticated sessions receive a 403 response.
+
+- **PASS — Simulated deliveries are visible in the browser console and UI.**  
+  The reset token/link and MFA code are logged using browser-side `console.log` and shown in the UI Logs panel, satisfying the stated simulation/testing requirement.
 
 ## FAILING_ITEMS
 
-- **Reset-code brute-force protection is ineffective for incorrect tokens.**
-  - Incorrect token submissions return before failure registration and lockout enforcement.
-  - The configured reset verification limit is therefore bypassable for invalid guesses.
+- **Verification rate limits are bypassable.**  
+  `/api/verify-reset` uses `const verificationKey = \`${token}|${ip}\`;`. A new fake token creates a new rate-limit key, so invalid-token guesses are not globally/per-session/per-IP throttled.
 
-- **The pause/save-place control does not actually persist user progress.**
-  - The button does not store the current workflow step in server session state or browser storage.
-  - It does not restore pending MFA state after a page reload.
-  - It presents a stronger guarantee than the implementation provides.
-
-- **The “No time limit” message is inaccurate.**
-  - Recovery and MFA verification codes expire after 10 minutes.
-  - The UI should distinguish between a non-rushed page/session experience and necessary security expiry for verification codes.
+- **MFA rate limits are bypassable.**  
+  `/api/mfa` uses `const mfaKey = \`${code}|${ip}\`;`. A new fake MFA code creates a new rate-limit key, so an attacker can make unlimited MFA guesses instead of being blocked after repeated failures.
 
 ## NEW_TASKS
 
-1. Refactor `/api/reset/verify` so it first retrieves the session’s active reset record without comparing the submitted token, checks reset-verification lockout availability, then compares the submitted token and calls `registerResetVerificationFailure(now)` for every invalid or malformed submitted token before returning an error.
+1. Change `/api/verify-reset` throttling to use a non-attacker-controlled key, such as the client IP plus session ID (or at minimum client IP), rather than the submitted reset token. Keep the existing successful-verification limit clearing aligned with the new key.
 
-2. Add session-backed workflow progress persistence for non-secret state, including the currently paused stage and pending MFA state; restore the saved stage after reload without storing passwords or verification codes in browser storage.
-
-3. Make the pause button persist the current stage through a CSRF-protected API request, provide clear paused/resumed feedback, and prevent misleading claims that progress was saved when it was not.
-
-4. Replace the “No time limit” copy with accurate low-stress wording explaining that the user may proceed at their own pace, while recovery and verification codes expire after 10 minutes for safety and can be requested again.
+2. Change `/api/mfa` throttling to use a non-attacker-controlled key, such as the client IP plus session ID or the authenticated/pre-MFA account/session context, rather than the submitted MFA code. Ensure all incorrect code attempts for the same MFA challenge contribute to the same limit.
 
 ## DECISION
 

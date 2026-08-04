@@ -1,133 +1,65 @@
 ## SUMMARY
 
-The artifact is a valid single-file Bun HTTPS SPA with a clear, accessible recovery flow, CSRF protection, CSP nonces, session-bound recovery state, Argon2id password hashing, MFA simulation, and working client-side navigation. However, it does not fully meet the security requirements: password-reset and sign-in brute-force controls are only session-scoped and can be bypassed by obtaining a new session, and the reset flow does not establish that the requester controls a specific account contact before permitting a global password change. It also emits several mock events through the server console despite the explicit requirement that mocks use browser `console.log`.
+The artifact is a valid single-file Bun/TypeScript SPA with a generally clear, accessible recovery flow, TLS configuration, CSP nonce usage, CSRF checks, Argon2id hashing, and simulated browser-console delivery. However, it does not fully meet the security and link-functionality requirements: account existence can be enumerated through the reset response, rate limiting is bypassable or incomplete, reset tokens are not strictly single-use at verification, and recovery links fail when opened in a fresh session.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file Bun server, HTML, CSS, and vanilla browser JavaScript**
-  - All server logic and the HTML/CSS/client JavaScript are contained in `app.ts`.
-  - No frameworks, bundlers, compilation steps, or external assets are used.
+- **PASS — Single-file Bun server and client application:** The server, HTML, CSS, and browser JavaScript are all contained in `app.ts`. No framework, bundler, external assets, or external network calls are used.
 
-- **PASS — HTTPS and HTTP-to-HTTPS redirect**
-  - The Bun HTTPS listener uses `certs/cert.pem` and `certs/key.pem`.
-  - A separate HTTP listener redirects to the fixed HTTPS localhost origin.
-  - The application fails safely at startup if certificates are absent.
+- **PASS — Bun TLS configuration:** `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`, as required.
 
-- **PASS — Clear, structured, low-distraction recovery UX**
-  - The UI has visible numbered progress, one step per screen, straightforward language, accessible focus styles, help guidance, and a pause/resume affordance.
-  - It avoids automatic redirects during recovery and provides status messages after actions.
+- **PASS — HTTPS/security headers:** The application configures HSTS, CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, no-store caching, Secure cookies, HttpOnly cookies, and `SameSite=Strict`.
 
-- **PASS — Recovery code can be submitted manually**
-  - The recovery token is shown in the simulation log and prefilled into a normal editable input.
-  - The user can replace the prefilled value and submit the recovery code manually.
+- **PASS — CSRF protection on sensitive requests:** POST API routes require a session-specific CSRF token and reject invalid or missing values.
 
-- **PASS — Internal recovery, sign-in, privacy, and appointment navigation works**
-  - The routes `/`, `/reset`, `/signin`, `/account`, and `/appointment` are served.
-  - The SPA controls route changes with History API and supports browser back/forward handling.
-  - Server-side route guards redirect unauthorized direct requests to protected routes.
+- **PASS — Password security policy and hashing:** Passwords require 12+ characters with upper/lowercase, digit, and symbol. Passwords are stored using `Bun.password.hash(..., { algorithm: "argon2id" })`, not plaintext.
 
-- **PASS — Session recovery state can be restored**
-  - Recovery state is retained server-side in the browser session.
-  - `/api/recovery/state` restores a valid pending reset token and stage after a refresh or return to `/reset`.
+- **PASS — MFA simulation works:** After a valid password login, the MFA code is generated and displayed through browser-side `console.log` and the Logs panel. MFA is required before privacy acceptance.
 
-- **PASS — CSRF controls are present on sensitive API requests**
-  - A cryptographically random CSRF token is generated per server session.
-  - API requests require that token before reset, sign-in, MFA, privacy acceptance, or appointment actions are processed.
-  - Session cookies are `Secure`, `HttpOnly`, `SameSite=Strict`, and correctly use the `__Host-` cookie prefix requirements.
+- **PASS — Reset code can be manually entered:** The recovery code is displayed in browser logs and can be manually entered into the recovery-code field.
 
-- **PASS — XSS protections are substantially implemented**
-  - Request values are not interpolated into HTML.
-  - Client-rendered user-facing values use `textContent`, not `innerHTML`.
-  - CSP restricts the page to nonce-authorized static inline style/script blocks and blocks external script sources.
-  - No external or user-controlled scripts are loaded.
+- **FAIL — Recovery verification links function correctly:** The generated link is `/?token=...`, but opening it in a new browser/session does not show the Verify step or populate the code. `initialize()` only honors a URL token when `data.step === "verify"`, which is false for a new session (`start`).
 
-- **PASS — Secure headers and HTTPS configuration**
-  - CSP, HSTS, `X-Content-Type-Options`, frame restrictions, referrer policy, permissions policy, COOP, CORP, and no-store caching headers are configured.
-  - HTTP requests are redirected to HTTPS.
-  - Error responses are generic and do not disclose stack traces.
+- **FAIL — Account identifiers are not protected from enumeration:** Although the text message is generic, `/api/request-reset` returns a `token` only when an account exists. An attacker can inspect the JSON response or UI behavior to determine whether an email is registered.
 
-- **PASS — Random, expiring, session-bound reset tokens**
-  - Reset tokens are generated with cryptographically secure randomness.
-  - They expire after 10 minutes.
-  - They are session-bound and invalidated after a successful password update.
-  - Token comparisons use timing-safe equality.
+- **FAIL — Automated guessing and reset abuse are not adequately blocked:** Login and reset verification throttling is stored only in the current session. Attackers can obtain a new session/cookie and continue attempts. `/api/request-reset` has no throttling at all and can generate unlimited tokens for a known account.
 
-- **FAIL — Password reset flow does not adequately prevent unauthorized password changes**
-  - Any visitor can submit any syntactically valid email address to `/api/reset/request`.
-  - The API then returns a usable reset token to that same unauthenticated session.
-  - That token can reset the shared global `storedPasswordHash`, regardless of whether the visitor controls the email/account being “recovered.”
-  - This means a new session can reset the application password without proving ownership of a known account contact. The simulation requirement to expose a test token can still be met, but it must be tied to a deterministic mock account/contact and modeled as delivery only to that account’s simulated channel.
+- **FAIL — Reset-token single-use behavior is incomplete:** A reset token remains valid after successful `/api/verify-reset`; it is only invalidated after `/api/reset-password`. The same token can be submitted to verify repeatedly before the password is changed, contrary to a strict single-use verification-token requirement.
 
-- **FAIL — Sign-in brute-force protection is bypassable**
-  - Login failures and lockout state are stored only in the current browser session.
-  - An attacker can clear cookies, use private browsing, or create a new session to immediately obtain five more password attempts.
-  - There is no account-level or source-level throttle, CAPTCHA, or durable lockout mechanism.
+- **PASS — XSS handling:** User-derived content is written with `textContent`, not `innerHTML`; token links are generated with `encodeURIComponent`; no user input is reflected into HTML. The nonce-based CSP restricts script execution.
 
-- **FAIL — Recovery request throttling is bypassable**
-  - Reset request limiting is also stored only in `session.reset`.
-  - A new session bypasses the three-request limit immediately.
-  - The requirement calls for protection against automated guessing/abuse; per-session-only limits are insufficient.
+- **PASS — Sensitive authorization checks:** Password reset requires a verified reset token held in the session, and privacy acceptance requires authenticated MFA completion. No client-provided account ID is accepted by sensitive endpoints.
 
-- **PASS — MFA exists and has attempt/expiry controls**
-  - A cryptographically random six-digit MFA code is generated after successful password verification.
-  - MFA codes expire after 10 minutes.
-  - MFA attempts are limited and lock for 15 minutes after repeated failures.
-  - MFA verification is required before privacy acceptance and appointment request actions.
+- **PASS — ADHD/inclusivity design:** The UI is structured into distinct steps, provides visible progress, clear status messages, no UI timeout/countdown, pause reassurance, a prominent help option, and low visual density.
 
-- **PASS — Password policy and password hashing**
-  - Passwords must be 12–128 characters and include uppercase, lowercase, numeric, and symbol characters, with no spaces.
-  - Passwords are stored only as Argon2id hashes via `Bun.password.hash`.
-  - Password verification uses `Bun.password.verify`.
+- **FAIL — Progress display is incomplete during MFA:** The progress indicator has only Start, Verify, New password, and Sign in. When the user reaches MFA, the UI still highlights “Sign in” rather than showing a distinct MFA/identity-confirmation step, reducing orientation in a multi-step flow.
 
-- **PASS — Protected routes avoid direct object references and private-data exposure**
-  - The implementation has no user IDs, patient IDs, usernames, course folders, or object identifiers in URLs or APIs.
-  - `/api/privacy` and `/api/appointment` require authenticated state, and appointment creation additionally requires privacy acceptance.
-
-- **PASS — Safe-authentication and anti-phishing guidance**
-  - The UI tells users not to share passwords or codes by email, phone, or text.
-  - It directs users to use the hospital’s normal published contact number if something feels unexpected.
-  - Redirect destinations are fixed/whitelisted rather than based on user input.
-
-- **FAIL — Mock logging does not comply fully with the browser-console-only requirement**
-  - The requirements specify: “All mocks via `console.log` IN THE BROWSER.”
-  - The code logs several mock events from the Bun server:
-    - `[mock delivery] Password recovery code prepared...`
-    - `[mock verification] Password replacement completed...`
-    - `[mock MFA] ...`
-    - `[mock privacy] ...`
-    - `[mock appointment] ...`
-  - Only some test values are also logged in the browser. All mock simulation events must be emitted via browser `console.log`, not server-side logs.
-
-- **PASS — No external network calls**
-  - Browser requests are same-origin API calls only.
-  - The application does not call third-party services or load external resources.
-
-- **PASS — Basic source validity**
-  - The TypeScript/Bun APIs and syntax are internally coherent for Bun 1.3.0 usage.
-  - The server startup, request routing, header construction, session handling, and client rendering logic do not contain an obvious compile-blocking error.
+- **PASS — Safe-authentication guidance and SSRF/open-redirect avoidance:** The help text warns users not to share passwords or recovery codes. The app makes no outbound requests and generated recovery URLs are same-origin.
 
 ## FAILING_ITEMS
 
-- The password reset endpoint grants a reset token to any unauthenticated session supplying any email-shaped string, without validating that the request corresponds to a specific allowed mock account or that the requester is entitled to reset that account.
-- `storedPasswordHash` is global rather than tied to an account record, so any successful reset changes the effective password for the entire application.
-- Login throttling/lockout is tracked only per session and is trivially bypassed by starting a new session or clearing cookies.
-- Reset-request throttling is tracked only per session and is trivially bypassed by starting a new session or clearing cookies.
-- Mock-related `console.log` calls remain on the Bun server, contrary to the requirement that all mocks are logged in the browser console.
+- Reset-account enumeration is possible because valid-account responses contain a `token`, while unknown-account responses do not.
+- Reset-request creation is unthrottled, permitting repeated token generation and possible delivery/resource abuse.
+- Login and reset-code throttles are session-only and can be bypassed by starting a new session.
+- `ResetRecord.failures` is never incremented, so the intended token-level lockout is nonfunctional.
+- A successfully verified reset token remains reusable until password submission instead of being consumed at verification.
+- Recovery links do not correctly resume the Verify step when opened with a fresh session.
+- MFA is not represented as a separate visible progress step.
 
 ## NEW_TASKS
 
-1. Replace the global password variable with a deterministic in-memory mock account record containing an allowed account contact, an Argon2id password hash, account-level sign-in failure counters, account-level lockout time, reset-request counters, and reset verification counters.
+1. Make reset-request responses and UI behavior indistinguishable for known and unknown email addresses, including returning a safe simulated delivery result for both cases without exposing whether a real account exists.
 
-2. Restrict password-reset initiation to the deterministic mock account contact while retaining account-enumeration-safe UI/API messaging; create a reset record only for that account and session after the simulated contact-delivery condition is satisfied.
+2. Add server-side throttling for `/api/request-reset`, scoped to an appropriate abuse-control key such as normalized email plus client IP/session, with a bounded retry window.
 
-3. Make reset tokens reference the intended mock account internally and permit password replacement only when the token is valid, session-bound, unexpired, verified, and bound to that account.
+3. Replace session-only login and reset-verification throttling with server-side rate limits that cannot be bypassed merely by creating a new session; remove or correct the unused `ResetRecord.failures` logic.
 
-4. Move sign-in rate limiting and lockout tracking from session-only state to the mock account record, so a new browser session cannot bypass the five-attempt lockout.
+4. Consume a reset token immediately after successful verification and create a separate, short-lived, session-bound password-reset grant for `/api/reset-password`.
 
-5. Move password-reset request and verification throttling from session-only state to the mock account record, optionally adding a bounded source/session throttle as a secondary control.
+5. Update client initialization so a valid `?token=` recovery URL always opens the Verify step and pre-fills the manual token field, including in a newly created session.
 
-6. Remove server-side mock `console.log` calls and return non-sensitive simulation event data to the SPA so the browser client performs every required mock `console.log` itself.
+6. Add a distinct MFA step to the progress indicator and mark it active while the MFA section is displayed.
 
 ## DECISION
 
-**FAIL**
+FAIL

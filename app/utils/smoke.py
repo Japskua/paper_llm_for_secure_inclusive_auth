@@ -173,9 +173,11 @@ def _probe(ports: List[int]) -> Dict[str, Any]:
     """
     errors = []
     for port in ports:
-        # Try both loopback families: an artifact bound to [::1] only is
-        # unreachable over 127.0.0.1 and would look dead.
-        for host in ("127.0.0.1", "[::1]"):
+        # "localhost" first: artifacts validate the Host header against a
+        # configured origin and answer 421 Misdirected Request to a raw IP.
+        # Then both loopback families, since an artifact bound to [::1] only is
+        # unreachable over 127.0.0.1 and would otherwise look dead.
+        for host in ("localhost", "127.0.0.1", "[::1]"):
             for scheme in ("https", "http"):
                 url = f"{scheme}://{host}:{port}/"
                 try:

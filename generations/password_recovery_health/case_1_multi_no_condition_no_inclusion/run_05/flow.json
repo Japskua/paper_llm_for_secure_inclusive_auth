@@ -2,12 +2,12 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 13,
-  "steps_passed": 5,
+  "steps_total": 12,
+  "steps_passed": 4,
   "happy_path_passed": 1,
   "happy_path_total": 9,
-  "negative_passed": 4,
-  "negative_total": 4,
+  "negative_passed": 3,
+  "negative_total": 3,
   "negatives_meaningful": false,
   "steps": [
     {
@@ -26,7 +26,7 @@
       "status_code": 403,
       "ok": false,
       "warnings": [
-        "could not capture 'reset_token' from 'mockToken'"
+        "could not capture 'token' from 'mockToken'"
       ],
       "response_message": "Your secure session has expired. Please refresh the page and try again."
     },
@@ -105,7 +105,7 @@
       "ok": true
     },
     {
-      "name": "old password rejected after reset",
+      "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": true,
@@ -113,22 +113,14 @@
       "ok": true
     },
     {
-      "name": "portal unavailable after logout",
+      "name": "portal denied after logout",
       "method": "POST",
       "path": "/api/portal-check",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "unknown recovery token rejected",
-      "method": "POST",
-      "path": "/api/verify-reset",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 13
+  "spec_steps": 12
 }

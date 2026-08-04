@@ -1,7 +1,7 @@
 {
   "ok": true,
   "landing_status": 200,
-  "csrf_found": true,
+  "csrf_found": false,
   "steps_total": 11,
   "steps_passed": 11,
   "happy_path_passed": 8,
@@ -11,7 +11,7 @@
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "load recovery page and establish session",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -19,9 +19,17 @@
       "ok": true
     },
     {
+      "name": "load recovery session status",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
       "name": "request recovery code",
       "method": "POST",
-      "path": "/api/reset/request",
+      "path": "/api/request-reset",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -29,7 +37,7 @@
     {
       "name": "verify recovery code",
       "method": "POST",
-      "path": "/api/reset/verify",
+      "path": "/api/verify-reset",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -37,7 +45,7 @@
     {
       "name": "set new password",
       "method": "POST",
-      "path": "/api/reset/password",
+      "path": "/api/reset-password",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -45,13 +53,13 @@
     {
       "name": "sign in with new password",
       "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/login",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
     {
-      "name": "confirm MFA code",
+      "name": "confirm MFA",
       "method": "POST",
       "path": "/api/mfa",
       "expect_failure": false,
@@ -67,33 +75,25 @@
       "ok": true
     },
     {
-      "name": "confirm appointment request",
+      "name": "wrong password rejected",
       "method": "POST",
-      "path": "/api/appointment",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "old seeded password rejected after reset",
-      "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/login",
       "expect_failure": true,
-      "status_code": 400,
+      "status_code": 401,
       "ok": true
     },
     {
-      "name": "used recovery token cannot reset password again",
+      "name": "privacy request without CSRF rejected",
       "method": "POST",
-      "path": "/api/reset/password",
+      "path": "/api/privacy",
       "expect_failure": true,
-      "status_code": 400,
+      "status_code": 403,
       "ok": true
     },
     {
-      "name": "missing valid CSRF token rejected",
+      "name": "invalid recovery code rejected",
       "method": "POST",
-      "path": "/api/reset/request",
+      "path": "/api/verify-reset",
       "expect_failure": true,
       "status_code": 400,
       "ok": true

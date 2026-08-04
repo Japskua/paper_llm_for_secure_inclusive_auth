@@ -1,0 +1,168 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 19,
+  "steps_passed": 19,
+  "happy_path_passed": 15,
+  "happy_path_total": 15,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "open reset link",
+      "method": "GET",
+      "path": "/reset?code=nImXWI-1-A1bgT6RBfjy5qoudZw-xWEyoX1CPtEOrx0",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "open new password page",
+      "method": "GET",
+      "path": "/new-password",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "check verified recovery status",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/new-password",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "open sign in page",
+      "method": "GET",
+      "path": "/login",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "open mfa page",
+      "method": "GET",
+      "path": "/mfa",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify mfa code",
+      "method": "POST",
+      "path": "/api/mfa",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "open privacy page",
+      "method": "GET",
+      "path": "/privacy",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "open appointment page",
+      "method": "GET",
+      "path": "/appointment",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment-confirm",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "missing csrf rejected",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "old password rejected after reset",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 19
+}

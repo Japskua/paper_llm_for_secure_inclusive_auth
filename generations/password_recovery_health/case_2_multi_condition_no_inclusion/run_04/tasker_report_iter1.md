@@ -1,26 +1,44 @@
 # TASKER REPORT — Iteration 1 · Step 1
 
 ## SUMMARY
-- Raw tasks from Tasker: 13
-- Effective task_list after retention: 13
+- Raw tasks from Tasker: 14
+- Effective task_list after retention: 14
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Create a single runnable `app.ts` that starts a Bun HTTPS server using `certs/cert.pem` and `certs/key.pem`, serves only the recovery SPA, and redirects/rejects insecure HTTP requests.","Add security response headers in `app.ts`: strict CSP without third-party sources, HSTS, frame protection, MIME sniffing protection, referrer policy, and a restrictive permissions policy; return generic production-safe errors with no stack traces.","Implement in-memory session handling with cryptographically random secure, HttpOnly, SameSite=Strict cookies and a unique CSRF token per session.","Implement server routes for session initialization, reset request, reset-token verification, password update, MFA verification, and authenticated privacy acceptance; require valid session CSRF tokens on every state-changing request.","Implement cryptographically random, short-lived, single-use reset tokens stored only in server memory; return generic reset-request responses and provide the deterministic/mock recovery code only to the browser console for evaluation.","Add per-session and per-reset-token throttling for reset, token, MFA, password-update, and login-equivalent attempts, with clear retry/lockout feedback that does not disclose account identity.","Implement password validation requiring a strong password and hash updated passwords with Bun-supported bcrypt or Argon2 functionality; never store or render plaintext passwords.","Implement a deterministic simulated MFA challenge that is delivered through browser `console.log`, remains usable for testing, is verified server-side, and is required before privacy conditions can be accepted.","Build the complete semantic recovery SPA as inline HTML, CSS, and vanilla JavaScript in `app.ts`, including request-reset, manual token entry, reset-password, MFA, privacy-statement acceptance, success, and safe-authentication guidance screens.","Ensure client navigation and all forms use implemented same-origin routes or controlled hash state, support both recovery-link token handling and manual token submission, and provide no broken internal links.","Use safe DOM rendering (`textContent` and fixed templates), client-side input constraints, and server-side validation so user-controlled values cannot execute HTML/JavaScript, alter navigation, or create open redirects.","Add concise comments in `app.ts` mapping the HTTPS/TLS, headers, CSRF/access control, output encoding, token handling, password hashing, throttling, MFA, and social-engineering protections to the numbered security requirements.","Verify all simulated delivery events and sensitive-flow transitions log only appropriate mock/testing details in the browser console, make no external network requests, and do not expose patient names, usernames, identifiers, or private data in UI or API responses."]}
+{
+  "task_list": [
+    "Create a single runnable `app.ts` that starts a Bun HTTPS server using `certs/cert.pem` and `certs/key.pem`, serves the complete application, and does not import local project files or require a build step.",
+    "Configure HTTPS-only security behavior: redirect/reject non-secure requests as applicable, set HSTS, CSP, `X-Content-Type-Options`, `X-Frame-Options`, referrer-policy, and restrictive permissions-policy headers, and return generic error responses without stack traces.",
+    "Embed a semantic password-recovery SPA in the server HTML response using only inline HTML, CSS, and vanilla browser JavaScript, with no external assets, frameworks, or remote network calls.",
+    "Implement internal client-side routing or state transitions for the recovery request, reset-token verification, new-password entry, MFA verification, and completion screens so every visible internal link and form action works.",
+    "Implement a recovery-request form that accepts a non-identifying account contact value, validates it safely, always gives a generic response, and logs simulated recovery delivery plus the deterministic test token in the browser console.",
+    "Generate reset tokens server-side using cryptographically secure randomness, bind each token to the requesting session and recovery record, enforce short expiry and single use, and permit the delivered token to be entered manually.",
+    "Create per-session CSRF tokens, store them server-side, and require valid CSRF validation for every state-changing recovery, token-verification, password-change, and MFA request.",
+    "Enforce access control on recovery and authenticated routes by checking the current session and reset-flow ownership; reject missing, expired, reused, or cross-session tokens without exposing private account data.",
+    "Implement rate limiting or temporary lockout for repeated recovery-token, MFA-code, and login/reset-password failures, with clear non-sensitive feedback and no account enumeration.",
+    "Implement a strong new-password policy and store only a secure bcrypt or Argon2 password hash in in-memory mock state; never render, log, or retain the submitted plaintext password after processing.",
+    "Implement a deterministic simulated MFA step that can be completed by the user, logs its mock delivery only in the browser console, and requires successful MFA before finalizing the password reset.",
+    "Sanitize and validate all request inputs, escape all values rendered into HTML, avoid inserting untrusted values through executable DOM APIs, and ensure user input cannot create scripts, redirects, or fake authentication pages.",
+    "Restrict all navigation and post-reset destinations to an internal allowlist, and include visible safe-authentication guidance warning users not to share passwords or codes with email, callers, or purported staff.",
+    "Add concise code comments in `app.ts` mapping the implementation to each applicable Security Evaluation Requirement section and the single-file/Bun/vanilla-JavaScript delivery constraints."
+  ]
+}
 ```
 
 ## PARSED_TASKS
-- Create a single runnable app.ts that starts a Bun HTTPS server using certs/cert.pem and certs/key.pem, serves only the recovery SPA, and redirects/rejects insecure HTTP requests.
-- Add security response headers in app.ts: strict CSP without third-party sources, HSTS, frame protection, MIME sniffing protection, referrer policy, and a restrictive permissions policy; return generic production-safe errors with no stack traces.
-- Implement in-memory session handling with cryptographically random secure, HttpOnly, SameSite=Strict cookies and a unique CSRF token per session.
-- Implement server routes for session initialization, reset request, reset-token verification, password update, MFA verification, and authenticated privacy acceptance; require valid session CSRF tokens on every state-changing request.
-- Implement cryptographically random, short-lived, single-use reset tokens stored only in server memory; return generic reset-request responses and provide the deterministic/mock recovery code only to the browser console for evaluation.
-- Add per-session and per-reset-token throttling for reset, token, MFA, password-update, and login-equivalent attempts, with clear retry/lockout feedback that does not disclose account identity.
-- Implement password validation requiring a strong password and hash updated passwords with Bun-supported bcrypt or Argon2 functionality; never store or render plaintext passwords.
-- Implement a deterministic simulated MFA challenge that is delivered through browser console.log, remains usable for testing, is verified server-side, and is required before privacy conditions can be accepted.
-- Build the complete semantic recovery SPA as inline HTML, CSS, and vanilla JavaScript in app.ts, including request-reset, manual token entry, reset-password, MFA, privacy-statement acceptance, success, and safe-authentication guidance screens.
-- Ensure client navigation and all forms use implemented same-origin routes or controlled hash state, support both recovery-link token handling and manual token submission, and provide no broken internal links.
-- Use safe DOM rendering (textContent and fixed templates), client-side input constraints, and server-side validation so user-controlled values cannot execute HTML/JavaScript, alter navigation, or create open redirects.
-- Add concise comments in app.ts mapping the HTTPS/TLS, headers, CSRF/access control, output encoding, token handling, password hashing, throttling, MFA, and social-engineering protections to the numbered security requirements.
-- Verify all simulated delivery events and sensitive-flow transitions log only appropriate mock/testing details in the browser console, make no external network requests, and do not expose patient names, usernames, identifiers, or private data in UI or API responses.
+- Create a single runnable app.ts that starts a Bun HTTPS server using certs/cert.pem and certs/key.pem, serves the complete application, and does not import local project files or require a build step.
+- Configure HTTPS-only security behavior: redirect/reject non-secure requests as applicable, set HSTS, CSP, X-Content-Type-Options, X-Frame-Options, referrer-policy, and restrictive permissions-policy headers, and return generic error responses without stack traces.
+- Embed a semantic password-recovery SPA in the server HTML response using only inline HTML, CSS, and vanilla browser JavaScript, with no external assets, frameworks, or remote network calls.
+- Implement internal client-side routing or state transitions for the recovery request, reset-token verification, new-password entry, MFA verification, and completion screens so every visible internal link and form action works.
+- Implement a recovery-request form that accepts a non-identifying account contact value, validates it safely, always gives a generic response, and logs simulated recovery delivery plus the deterministic test token in the browser console.
+- Generate reset tokens server-side using cryptographically secure randomness, bind each token to the requesting session and recovery record, enforce short expiry and single use, and permit the delivered token to be entered manually.
+- Create per-session CSRF tokens, store them server-side, and require valid CSRF validation for every state-changing recovery, token-verification, password-change, and MFA request.
+- Enforce access control on recovery and authenticated routes by checking the current session and reset-flow ownership; reject missing, expired, reused, or cross-session tokens without exposing private account data.
+- Implement rate limiting or temporary lockout for repeated recovery-token, MFA-code, and login/reset-password failures, with clear non-sensitive feedback and no account enumeration.
+- Implement a strong new-password policy and store only a secure bcrypt or Argon2 password hash in in-memory mock state; never render, log, or retain the submitted plaintext password after processing.
+- Implement a deterministic simulated MFA step that can be completed by the user, logs its mock delivery only in the browser console, and requires successful MFA before finalizing the password reset.
+- Sanitize and validate all request inputs, escape all values rendered into HTML, avoid inserting untrusted values through executable DOM APIs, and ensure user input cannot create scripts, redirects, or fake authentication pages.
+- Restrict all navigation and post-reset destinations to an internal allowlist, and include visible safe-authentication guidance warning users not to share passwords or codes with email, callers, or purported staff.
+- Add concise code comments in app.ts mapping the implementation to each applicable Security Evaluation Requirement section and the single-file/Bun/vanilla-JavaScript delivery constraints.

@@ -1,0 +1,124 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": false,
+  "steps_total": 12,
+  "steps_passed": 6,
+  "happy_path_passed": 2,
+  "happy_path_total": 8,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "start secure session",
+      "method": "GET",
+      "path": "/api/session?route=recover",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery/initiate",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'recovery_token' from 'mockToken'"
+      ],
+      "response_message": "Your secure form has expired. Refresh the page and try again."
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Your secure form has expired. Refresh the page and try again."
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/recovery/reset",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'mfa_code' from 'mockCode'"
+      ],
+      "response_message": "Your secure form has expired. Refresh the page and try again."
+    },
+    {
+      "name": "complete reset MFA",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Your secure form has expired. Refresh the page and try again."
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Your secure form has expired. Refresh the page and try again."
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment/confirm",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Your secure form has expired. Refresh the page and try again."
+    },
+    {
+      "name": "invalid recovery reference rejected",
+      "method": "POST",
+      "path": "/api/recovery/initiate",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "missing CSRF rejected",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 12
+}

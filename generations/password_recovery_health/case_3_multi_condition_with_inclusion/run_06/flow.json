@@ -1,0 +1,173 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": false,
+  "steps_total": 18,
+  "steps_passed": 8,
+  "happy_path_passed": 4,
+  "happy_path_total": 14,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "create session and obtain CSRF token",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery/request",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check your entry and try again."
+    },
+    {
+      "name": "retrieve recovery delivery token",
+      "method": "GET",
+      "path": "/api/recovery/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm recovery token",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check your entry and try again."
+    },
+    {
+      "name": "send recovery security code",
+      "method": "POST",
+      "path": "/api/mfa/send",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check your entry and try again."
+    },
+    {
+      "name": "retrieve recovery security code",
+      "method": "GET",
+      "path": "/api/recovery/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm recovery security code",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check your entry and try again."
+    },
+    {
+      "name": "change password",
+      "method": "POST",
+      "path": "/api/password/change",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check your entry and try again."
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check your entry and try again."
+    },
+    {
+      "name": "retrieve sign-in security code",
+      "method": "GET",
+      "path": "/api/login/mfa/status",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'login_mfa_code' from 'mockLoginMfaCode'"
+      ],
+      "response_message": "We could not complete that step. Please check your entry and try again."
+    },
+    {
+      "name": "confirm sign-in security code",
+      "method": "POST",
+      "path": "/api/login/mfa/verify",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check your entry and try again."
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check your entry and try again."
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that step. Please check your entry and try again."
+    },
+    {
+      "name": "recovery request without CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery/request",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "privacy acceptance without authentication rejected",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "used recovery token rejected",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 18
+}

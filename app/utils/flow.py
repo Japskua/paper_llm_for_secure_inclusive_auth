@@ -71,7 +71,12 @@ Reply with ONLY a JSON object, no prose and no code fences:
 Rules:
   - For "csrf", set "in" to "header" when the client sends the token as an HTTP
     request header (e.g. X-CSRF-Token), or "body" when it is a JSON field.
-    Check how the page's own fetch() calls send it.
+    Check how the page's own fetch() calls send it. If the server requires a
+    CSRF token on state-changing routes, "csrf" must NOT be null — find where
+    the token reaches the page (an inline script constant, a meta tag, or a
+    session/state endpoint) and describe it. If it arrives from a JSON endpoint
+    rather than the HTML, make that endpoint the first step and capture the
+    token into a variable named "csrf".
   - "${name}" interpolates a variable captured earlier or defined in "variables".
   - "capture" maps a new variable name to a field in the JSON response
     (dotted paths allowed, e.g. "data.token").
@@ -138,31 +143,34 @@ def _run_step(
     path = _interpolate(step.get("path", "/"), variables)
     body = _interpolate(step.get("body") or {}, variables)
     csrf_field = csrf.get("field", "csrf") if csrf else "csrf"
-    # Apps send CSRF either as a JSON body field or an HTTP header (X-CSRF-Token
-    # has been observed). Honour the declared location; when absent, a hyphen in
-    # the name is a reliable tell that it is a header.
     csrf_in = (csrf.get("in") if csrf else None) or (
         "header" if "-" in csrf_field else "body"
     )
     headers: Dict[str, str] = {}
-    # The real token is exposed as ${csrf}, so a step that references it gets the
-    # live value. Auto-inject only when a positive step omits the field entirely.
-    # Negative steps are never auto-filled: they deliberately forge or omit the
-    # token, and overwriting it would silently turn them into valid requests.
     declared = step.get("body") or {}
-    if (
-        csrf
-        and csrf_value
-        and method != "GET"
-        and csrf_field not in declared
-        and not step.get("expect_failure")
-    ):
-        if csrf_in == "header":
+
+    # Token delivery varies widely: JSON body field, X-CSRF-Token header, or a
+    # value fetched from a status endpoint rather than the HTML. Rather than
+    # depend on the derived spec identifying it correctly, a positive step sends
+    # the current token in every common form. Surplus fields and headers are
+    # ignored by servers that do not use them, whereas a missing one fails the
+    # request and would misreport a working artifact as broken.
+    #
+    # Negative steps are never auto-filled: they deliberately forge or omit the
+    # token, and supplying a valid one would turn them into valid requests.
+    if csrf_value and method != "GET" and not step.get("expect_failure"):
+        for header_name in ("X-CSRF-Token", "X-Csrf-Token", "x-csrf-token"):
+            headers.setdefault(header_name, csrf_value)
+        if csrf_in == "header" and csrf_field not in headers:
             headers[csrf_field] = csrf_value
-        else:
+        if csrf_in != "header" and csrf_field not in declared:
             body = {**body, csrf_field: csrf_value}
-    # A negative step may name the header explicitly to forge it.
+        if "csrf" not in declared and "csrf" not in body:
+            body = {**body, "csrf": csrf_value}
+
+    # A negative step may name the header explicitly in order to forge it.
     if csrf_in == "header" and csrf_field in declared:
+        headers = {k: v for k, v in headers.items() if k.lower() != csrf_field.lower()}
         headers[csrf_field] = str(body.pop(csrf_field, ""))
 
     record: Dict[str, Any] = {
@@ -214,6 +222,15 @@ def _run_step(
                         f"could not capture '{var}' from '{field}'"
                     )
 
+    # Some artifacts hand the token out from a status/session endpoint and
+    # rotate it per request, so pick it up wherever it appears.
+    if isinstance(payload, dict):
+        for key in ("csrf", "csrfToken", "csrf_token"):
+            fresh = payload.get(key)
+            if isinstance(fresh, str) and fresh:
+                record["_csrf"] = fresh
+                break
+
     if not record["ok"] and isinstance(payload, dict):
         record["response_message"] = str(payload.get("message") or payload)[:160]
     return record
@@ -225,8 +242,17 @@ def execute_flow(base_url: str, spec: Dict[str, Any]) -> Dict[str, Any]:
     csrf = spec.get("csrf") or None
     results: List[Dict[str, Any]] = []
 
+    # Artifacts enforce same-origin on state-changing requests by checking the
+    # Origin (and sometimes Referer) header, which a browser always sends and a
+    # bare HTTP client does not. Without these, a correct CSRF defence rejects
+    # every POST and a working artifact reads as broken.
+    browser_headers = {"Origin": base_url, "Referer": base_url + "/"}
+
     with httpx.Client(
-        verify=False, timeout=REQUEST_TIMEOUT_S, follow_redirects=True
+        verify=False,
+        timeout=REQUEST_TIMEOUT_S,
+        follow_redirects=True,
+        headers=browser_headers,
     ) as client:
         landing = client.get(base_url + "/")
         csrf_value = None
@@ -242,15 +268,15 @@ def execute_flow(base_url: str, spec: Dict[str, Any]) -> Dict[str, Any]:
             variables.setdefault("csrf", csrf_value)
             variables.setdefault(csrf.get("field", "csrf"), csrf_value)
 
-        for step in spec.get("steps") or []:
-            results.append(
-                _run_step(client, base_url, step, variables, csrf, csrf_value)
-            )
-        for step in spec.get("negative_steps") or []:
-            step = {**step, "expect_failure": True}
-            results.append(
-                _run_step(client, base_url, step, variables, csrf, csrf_value)
-            )
+        for step in (spec.get("steps") or []) + [
+            {**s, "expect_failure": True} for s in (spec.get("negative_steps") or [])
+        ]:
+            record = _run_step(client, base_url, step, variables, csrf, csrf_value)
+            refreshed = record.pop("_csrf", None)
+            if refreshed:
+                csrf_value = refreshed
+                variables["csrf"] = refreshed
+            results.append(record)
 
     positives = [r for r in results if not r["expect_failure"]]
     negatives = [r for r in results if r["expect_failure"]]

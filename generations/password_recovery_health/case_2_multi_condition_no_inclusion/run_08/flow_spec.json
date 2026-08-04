@@ -1,0 +1,127 @@
+{
+  "variables": {
+    "email": "test@example.com",
+    "new_password": "StrongPass1!x",
+    "seeded_account_credentials": null
+  },
+  "csrf": {
+    "html_regex": "<meta name=\"csrf-token\" content=\"([^\"]+)\">",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "start secure session",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request recovery",
+      "method": "POST",
+      "path": "/api/recovery",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "account": "${email}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "token": "deliveryToken"
+      }
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "${token}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "create new password",
+      "method": "POST",
+      "path": "/api/password",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "password": "${new_password}",
+        "confirmPassword": "${new_password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mockCode"
+      }
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/mfa",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "accepted": true
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm completion",
+      "method": "GET",
+      "path": "/api/confirmation",
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "missing CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "account": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid account input rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "account": "x"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "used recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "${token}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

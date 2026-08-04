@@ -1,0 +1,160 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": false,
+  "steps_total": 17,
+  "steps_passed": 12,
+  "happy_path_passed": 7,
+  "happy_path_total": 12,
+  "negative_passed": 5,
+  "negative_total": 5,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load recovery application",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "start recovery",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'token' from 'mockToken'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "confirm token verification stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "confirm MFA stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "confirm password reset stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "confirm privacy stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "confirm recovery completion",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "recovery request without CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "used recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "privacy acceptance must be true",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 17
+}

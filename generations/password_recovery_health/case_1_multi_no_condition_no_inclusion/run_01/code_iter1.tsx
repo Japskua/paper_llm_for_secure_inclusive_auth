@@ -1,671 +1,688 @@
 
-import { existsSync } from "node:fs";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { readFileSync } from "node:fs";
 
-// Security Requirements 3: HTTPS-only server configuration, HSTS, restrictive CSP, and secure headers.
-const HTTPS_PORT = Number(Bun.env.HTTPS_PORT || 3000);
-const HTTP_PORT = Number(Bun.env.HTTP_PORT || 3001);
-const CERT_FILE = "certs/cert.pem";
-const KEY_FILE = "certs/key.pem";
+/**
+ * Password Recovery System, single-file Bun server + SPA.
+ * Security requirement sections are labelled S1-S5 in comments below.
+ */
+
+const PORT = Number(Bun.env.PORT || 3000);
+const SESSION_TTL_MS = 30 * 60 * 1000;
+const RESET_TTL_MS = 15 * 60 * 1000;
+const MOCK_ACCOUNT_IDENTIFIER = "helena.patient@hospital.test"; // Never returned to a client.
+const MFA_TEST_CODE = "246810"; // Deterministic mock delivery code for this academic demo.
 
 type Session = {
   id: string;
   csrf: string;
-  createdAt: number;
-  authenticated: boolean;
-  mfaPending: boolean;
-  mfaVerified: boolean;
-  privacyAccepted: boolean;
-  loginFailures: number[];
-  resetFailures: number[];
-  lockedUntil: number;
+  expiresAt: number;
+  requestAttempts: number[];
+  verifyAttempts: number[];
+  mfaAttempts: number[];
+  resetKey?: string;
+  mfaComplete: boolean;
 };
 
 type ResetRecord = {
-  sessionId: string;
-  token: string;
-  code: string;
+  digest: Buffer;
   expiresAt: number;
   used: boolean;
+  boundSessionId?: string;
 };
 
 const sessions = new Map<string, Session>();
-const resetRecords = new Map<string, ResetRecord>();
-const RESET_TTL_MS = 10 * 60 * 1000;
-const SESSION_TTL_SECONDS = 60 * 30;
-const LOCK_MS = 10 * 60 * 1000;
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-const MAX_ATTEMPTS = 5;
-const MFA_TEST_CODE = "246810";
+const resets = new Map<string, ResetRecord>();
+let activeResetKey: string | undefined;
 
-// Security Requirement 4: Password is stored only as a Bun bcrypt hash, never plaintext.
-const account = {
-  passwordHash: "",
-};
-
-const passwordReady = Bun.password.hash("Helena!Secure2025", {
-  algorithm: "bcrypt",
-  cost: 10,
-}).then((hash) => {
-  account.passwordHash = hash;
+// S4: Passwords are only stored as Argon2 hashes; no plaintext password is retained.
+let mockPasswordHash = await Bun.password.hash("Initial-Demo-Password-Only!", {
+  algorithm: "argon2id",
 });
 
-function randomSecret(bytes = 32): string {
-  const values = new Uint8Array(bytes);
-  crypto.getRandomValues(values);
-  return Array.from(values, (value) => value.toString(16).padStart(2, "0")).join("");
+function digest(value: string): Buffer {
+  return createHash("sha256").update(value).digest();
 }
 
-function randomCode(): string {
-  const values = new Uint32Array(1);
-  crypto.getRandomValues(values);
-  return String(100000 + (values[0] % 900000));
+function safeEqual(left: Buffer | string, right: Buffer | string): boolean {
+  const a = Buffer.isBuffer(left) ? left : Buffer.from(left);
+  const b = Buffer.isBuffer(right) ? right : Buffer.from(right);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+function makeToken(bytes = 32): string {
+  return randomBytes(bytes).toString("base64url");
 }
 
 function parseCookies(request: Request): Record<string, string> {
-  const cookie = request.headers.get("cookie") || "";
-  const output: Record<string, string> = {};
-  for (const part of cookie.split(";")) {
-    const divider = part.indexOf("=");
-    if (divider > 0) {
-      const key = part.slice(0, divider).trim();
-      const value = part.slice(divider + 1).trim();
-      if (/^[A-Za-z0-9_-]{1,128}$/.test(key) && /^[A-Za-z0-9_-]{1,256}$/.test(value)) {
-        output[key] = value;
-      }
+  const result: Record<string, string> = {};
+  const header = request.headers.get("cookie") || "";
+  for (const item of header.split(";")) {
+    const index = item.indexOf("=");
+    if (index > 0) {
+      const key = item.slice(0, index).trim();
+      const value = item.slice(index + 1).trim();
+      if (/^[A-Za-z0-9_-]+$/.test(value)) result[key] = value;
     }
   }
-  return output;
+  return result;
 }
 
-function getSession(request: Request): Session | undefined {
-  const id = parseCookies(request).sid;
-  if (!id) return undefined;
-  return sessions.get(id);
-}
-
-function sessionCookie(session: Session): string {
-  return `sid=${session.id}; Path=/; Max-Age=${SESSION_TTL_SECONDS}; Secure; HttpOnly; SameSite=Strict`;
-}
-
-function createSession(): Session {
+function newSession(): Session {
   const session: Session = {
-    id: randomSecret(32),
-    csrf: randomSecret(32),
-    createdAt: Date.now(),
-    authenticated: false,
-    mfaPending: false,
-    mfaVerified: false,
-    privacyAccepted: false,
-    loginFailures: [],
-    resetFailures: [],
-    lockedUntil: 0,
+    id: makeToken(32),
+    csrf: makeToken(32),
+    expiresAt: Date.now() + SESSION_TTL_MS,
+    requestAttempts: [],
+    verifyAttempts: [],
+    mfaAttempts: [],
+    mfaComplete: false,
   };
   sessions.set(session.id, session);
   return session;
 }
 
-function baseHeaders(nonce?: string): Headers {
-  const headers = new Headers();
-  headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-  headers.set("X-Content-Type-Options", "nosniff");
-  headers.set("X-Frame-Options", "DENY");
-  headers.set("Referrer-Policy", "no-referrer");
-  headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()");
-  headers.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-  headers.set("Pragma", "no-cache");
-  headers.set("Cross-Origin-Opener-Policy", "same-origin");
-  headers.set("Cross-Origin-Resource-Policy", "same-origin");
-  headers.set(
-    "Content-Security-Policy",
-    nonce
-      ? `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src 'self'; img-src 'none'; font-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`
-      : "default-src 'none'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
-  );
-  return headers;
-}
-
-function json(data: unknown, status = 200, extra?: HeadersInit): Response {
-  const headers = baseHeaders();
-  headers.set("Content-Type", "application/json; charset=utf-8");
-  if (extra) {
-    for (const [key, value] of new Headers(extra)) headers.set(key, value);
+function sessionFor(request: Request): { session: Session; isNew: boolean } {
+  const sid = parseCookies(request).sid;
+  const current = sid ? sessions.get(sid) : undefined;
+  if (current && current.expiresAt > Date.now()) {
+    return { session: current, isNew: false };
   }
-  return new Response(JSON.stringify(data), { status, headers });
+  if (sid) sessions.delete(sid);
+  return { session: newSession(), isNew: true };
 }
 
-function errorResponse(message = "Request could not be completed.", status = 400): Response {
-  return json({ ok: false, message }, status);
+function sessionCookie(session: Session): string {
+  // S1/S3/S4: secure, HttpOnly, SameSite session cookie.
+  return `sid=${session.id}; Path=/; Max-Age=${Math.floor(
+    SESSION_TTL_MS / 1000,
+  )}; Secure; HttpOnly; SameSite=Strict`;
 }
 
-function originIsAllowed(request: Request): boolean {
-  const origin = request.headers.get("origin");
-  if (!origin) return false;
-  try {
-    const url = new URL(origin);
-    if (url.protocol !== "https:") return false;
-    const allowedHost = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
-    return allowedHost && (url.port === String(HTTPS_PORT) || (HTTPS_PORT === 443 && url.port === ""));
-  } catch {
-    return false;
-  }
+function nonce(): string {
+  return randomBytes(18).toString("base64");
 }
 
-// Security Requirement 1: every state-changing API call must have a same-origin request and per-session CSRF token.
-function requireCsrf(request: Request): { session?: Session; response?: Response } {
-  const session = getSession(request);
-  const token = request.headers.get("x-csrf-token") || "";
-  if (!session || !originIsAllowed(request) || token.length !== session.csrf.length || token !== session.csrf) {
-    return { response: errorResponse("Your secure session could not be verified. Refresh and try again.", 403) };
-  }
-  return { session };
+// S3: Uniform production security headers. CSP permits only this response's inline SPA.
+function baseHeaders(scriptNonce: string): Headers {
+  return new Headers({
+    "Content-Type": "text/plain; charset=utf-8",
+    "Cache-Control": "no-store, max-age=0",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "Content-Security-Policy": [
+      "default-src 'none'",
+      `script-src 'nonce-${scriptNonce}'`,
+      `style-src 'nonce-${scriptNonce}'`,
+      "connect-src 'self'",
+      "img-src 'self'",
+      "font-src 'self'",
+      "base-uri 'none'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "object-src 'none'",
+      "upgrade-insecure-requests",
+    ].join("; "),
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy":
+      "camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=()",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Resource-Policy": "same-origin",
+  });
 }
 
-async function readObject(request: Request): Promise<Record<string, unknown> | undefined> {
-  const type = request.headers.get("content-type") || "";
-  if (!type.toLowerCase().startsWith("application/json")) return undefined;
-  const body = await request.text();
-  if (body.length > 2048) return undefined;
-  try {
-    const value = JSON.parse(body);
-    return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
-  } catch {
-    return undefined;
-  }
+function response(
+  body: string,
+  options: {
+    status?: number;
+    type?: string;
+    session?: Session;
+    nonce?: string;
+  } = {},
+): Response {
+  const n = options.nonce || nonce();
+  const headers = baseHeaders(n);
+  headers.set("Content-Type", options.type || "text/plain; charset=utf-8");
+  if (options.session) headers.set("Set-Cookie", sessionCookie(options.session));
+  return new Response(body, { status: options.status || 200, headers });
 }
 
-function validEmail(value: unknown): value is string {
-  return typeof value === "string" &&
-    value.length <= 254 &&
-    /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(value);
+function json(
+  data: Record<string, unknown>,
+  status: number,
+  session: Session,
+): Response {
+  return response(JSON.stringify(data), {
+    status,
+    type: "application/json; charset=utf-8",
+    session,
+  });
 }
 
-function validSecret(value: unknown, max = 128): value is string {
-  return typeof value === "string" && value.length >= 6 && value.length <= max && /^[A-Za-z0-9]+$/.test(value);
-}
-
-function recordFailure(session: Session, kind: "loginFailures" | "resetFailures"): boolean {
+function limited(bucket: number[], maximum: number, windowMs: number): boolean {
   const now = Date.now();
-  session[kind] = session[kind].filter((time) => now - time < RATE_WINDOW_MS);
-  session[kind].push(now);
-  if (session[kind].length >= MAX_ATTEMPTS) {
-    session.lockedUntil = now + LOCK_MS;
-    return true;
-  }
+  while (bucket.length && bucket[0] < now - windowMs) bucket.shift();
+  if (bucket.length >= maximum) return true;
+  bucket.push(now);
   return false;
 }
 
-function isLocked(session: Session): boolean {
-  return session.lockedUntil > Date.now();
+// S1: Every state-changing request requires a per-session CSRF token and same-origin request.
+function validCsrf(request: Request, session: Session): boolean {
+  const supplied = request.headers.get("x-csrf-token") || "";
+  const origin = request.headers.get("origin");
+  const expectedOrigin = new URL(request.url).origin;
+  return (
+    origin === expectedOrigin &&
+    supplied.length > 10 &&
+    safeEqual(supplied, session.csrf)
+  );
 }
 
-function validStrongPassword(password: unknown): password is string {
-  return typeof password === "string" &&
-    password.length >= 12 &&
-    password.length <= 128 &&
-    /[a-z]/.test(password) &&
-    /[A-Z]/.test(password) &&
-    /\d/.test(password) &&
-    /[^A-Za-z0-9]/.test(password);
+async function readBody(request: Request): Promise<Record<string, unknown> | null> {
+  try {
+    const contentType = request.headers.get("content-type") || "";
+    if (!contentType.startsWith("application/json")) return null;
+    const body = await request.json();
+    return body && typeof body === "object" && !Array.isArray(body)
+      ? (body as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
 }
 
-async function api(request: Request, pathname: string): Promise<Response> {
-  if (request.method === "GET" && pathname === "/api/session") {
-    let session = getSession(request);
-    let newSession = false;
-    if (!session) {
-      session = createSession();
-      newSession = true;
-    }
-    const headers = new Headers();
-    if (newSession) headers.set("Set-Cookie", sessionCookie(session));
-    return json({ ok: true, csrf: session.csrf }, 200, headers);
+function validIdentifier(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase();
+  if (
+    normalized.length < 3 ||
+    normalized.length > 120 ||
+    !/^[a-z0-9][a-z0-9._+@-]*[a-z0-9]$/i.test(normalized)
+  ) {
+    return null;
   }
+  return normalized;
+}
 
-  if (request.method !== "POST") return errorResponse("Not found.", 404);
-  const protectedRequest = requireCsrf(request);
-  if (protectedRequest.response) return protectedRequest.response;
-  const session = protectedRequest.session!;
-  const body = await readObject(request);
-  if (!body) return errorResponse("Invalid request format.");
+function validResetToken(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  return /^[A-Za-z0-9_-]{30,100}$/.test(value) ? value : null;
+}
 
-  if (pathname === "/api/recovery") {
-    // Security Requirements 1 and 4: no account lookup result is disclosed (anti-enumeration).
-    if (isLocked(session)) return errorResponse("Too many attempts. Please wait before trying again.", 429);
-    const contactIsValid = validEmail(body.contact);
-    if (!contactIsValid) {
-      recordFailure(session, "resetFailures");
-      return json({ ok: true, message: "If an eligible account exists, recovery instructions have been prepared." });
+function resetForSession(session: Session): ResetRecord | null {
+  if (!session.resetKey) return null;
+  const reset = resets.get(session.resetKey);
+  if (
+    !reset ||
+    reset.used ||
+    reset.expiresAt <= Date.now() ||
+    reset.boundSessionId !== session.id
+  ) {
+    return null;
+  }
+  return reset;
+}
+
+function passwordProblem(password: unknown): string | null {
+  if (typeof password !== "string") return "Enter a new password.";
+  if (password.length < 12 || password.length > 128) {
+    return "Use 12 to 128 characters.";
+  }
+  if (
+    !/[a-z]/.test(password) ||
+    !/[A-Z]/.test(password) ||
+    !/[0-9]/.test(password) ||
+    !/[^A-Za-z0-9\s]/.test(password) ||
+    /\s/.test(password)
+  ) {
+    return "Use uppercase, lowercase, a number, and a symbol, with no spaces.";
+  }
+  return null;
+}
+
+function htmlPage(pageNonce: string): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hospital Account Recovery</title>
+  <style nonce="${pageNonce}">
+    :root { color-scheme: light; --blue:#075a9d; --navy:#07385f; --ink:#17212b; --soft:#eef5f9; --line:#c9d7e1; --danger:#a51d2d; --ok:#146c43; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--soft); color:var(--ink); font-family:Arial,Helvetica,sans-serif; line-height:1.5; }
+    header { background:var(--navy); color:white; padding:1.2rem 1rem; }
+    header div, main, footer { max-width:760px; margin:auto; }
+    header h1 { margin:0; font-size:1.35rem; }
+    header p { margin:.25rem 0 0; font-size:.94rem; }
+    main { padding:1.5rem 1rem 2rem; }
+    section.card, aside, .logs { background:white; border:1px solid var(--line); border-radius:8px; padding:1.25rem; margin-bottom:1rem; box-shadow:0 1px 2px #1231; }
+    h2 { margin-top:0; color:var(--navy); font-size:1.3rem; }
+    label { display:block; font-weight:bold; margin:.8rem 0 .25rem; }
+    input { width:100%; padding:.72rem; border:1px solid #8599a8; border-radius:4px; font:inherit; }
+    button, .link-button { margin-top:1rem; padding:.68rem 1rem; border:0; border-radius:4px; background:var(--blue); color:white; font:inherit; font-weight:bold; cursor:pointer; text-decoration:none; display:inline-block; }
+    button.secondary { background:#526571; margin-left:.5rem; }
+    button:focus, input:focus, a:focus { outline:3px solid #e6a800; outline-offset:2px; }
+    .hint { font-size:.92rem; color:#40525e; }
+    .message { min-height:1.5rem; margin:.8rem 0 0; font-weight:bold; }
+    .error { color:var(--danger); } .success { color:var(--ok); }
+    [hidden] { display:none !important; }
+    aside { border-left:5px solid var(--blue); }
+    aside h2 { font-size:1.08rem; }
+    .logs { background:#101820; color:#dbeeff; }
+    .logs h2 { color:white; font-size:1.05rem; }
+    #log-output { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font: .82rem ui-monospace, SFMono-Regular, Consolas, monospace; max-height:180px; overflow:auto; }
+    footer { padding:0 1rem 2rem; font-size:.85rem; color:#4e616e; }
+  </style>
+</head>
+<body>
+  <header><div><h1>Hospital Account Recovery</h1><p>Secure access to your healthcare account</p></div></header>
+  <main>
+    <section class="card" id="request-view">
+      <h2>Reset your password</h2>
+      <p>Enter the email address or account identifier associated with your account.</p>
+      <form id="request-form" novalidate>
+        <label for="identifier">Email address or account identifier</label>
+        <input id="identifier" name="identifier" autocomplete="username" maxlength="120" required>
+        <p class="hint">For privacy, the same confirmation is shown whether or not an account can be recovered.</p>
+        <button type="submit">Send recovery instructions</button>
+      </form>
+      <p id="request-message" class="message" role="status" aria-live="polite"></p>
+      <a id="reset-link" class="link-button" hidden>Open simulated reset link</a>
+      <button id="manual-button" class="secondary" type="button">Enter a recovery code manually</button>
+    </section>
+
+    <section class="card" id="verify-view" hidden>
+      <h2>Verify recovery code</h2>
+      <p>Open the secure recovery link you received, or enter its code below.</p>
+      <form id="verify-form" novalidate>
+        <label for="reset-token">Recovery code</label>
+        <input id="reset-token" name="token" autocomplete="one-time-code" maxlength="100" required>
+        <button type="submit">Verify recovery code</button>
+        <button id="verify-back" class="secondary" type="button">Back</button>
+      </form>
+      <p id="verify-message" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="mfa-view" hidden>
+      <h2>Confirm your identity</h2>
+      <p>Enter the six-digit verification code sent through the simulated secure delivery channel.</p>
+      <form id="mfa-form" novalidate>
+        <label for="mfa-code">Verification code</label>
+        <input id="mfa-code" name="mfa" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
+        <button type="submit">Confirm code</button>
+      </form>
+      <p id="mfa-message" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="password-view" hidden>
+      <h2>Create a strong password</h2>
+      <p class="hint">Use 12 or more characters, including uppercase, lowercase, a number, and a symbol. Do not use spaces.</p>
+      <form id="password-form" novalidate>
+        <label for="new-password">New password</label>
+        <input id="new-password" name="password" type="password" autocomplete="new-password" maxlength="128" required>
+        <label for="confirm-password">Confirm new password</label>
+        <input id="confirm-password" name="confirm" type="password" autocomplete="new-password" maxlength="128" required>
+        <button type="submit">Update password</button>
+      </form>
+      <p id="password-message" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="success-view" hidden>
+      <h2>Password updated</h2>
+      <p>Your password has been updated. You may now return to the hospital account sign-in service and accept the updated privacy conditions.</p>
+      <button id="restart-button" type="button">Start another recovery</button>
+    </section>
+
+    <aside aria-labelledby="safe-title">
+      <h2 id="safe-title">Keep your account safe</h2>
+      <p>Hospital staff will never ask for your password or verification code. Never share credentials or codes by email, text message, or phone. Use only this hospital address and do not follow unexpected links.</p>
+    </aside>
+
+    <section class="logs" aria-labelledby="logs-title">
+      <h2 id="logs-title">Logs</h2>
+      <p id="log-output" aria-live="polite">Secure recovery session ready.</p>
+    </section>
+  </main>
+  <footer>Demo recovery service. No patient details, account identifiers, or passwords are displayed.</footer>
+
+  <script nonce="${pageNonce}">
+    "use strict";
+    // Single-file/no-build client. S2: all dynamic messages use textContent, never HTML insertion.
+    const state = { csrf: "", current: "request" };
+    const ids = ["request", "verify", "mfa", "password", "success"];
+    const logOutput = document.getElementById("log-output");
+
+    function safeLog(message) {
+      console.log(message); // Required simulated-delivery browser console logging.
+      const line = document.createTextNode("\\n" + message);
+      logOutput.appendChild(line);
+      logOutput.scrollTop = logOutput.scrollHeight;
     }
 
-    const token = randomSecret(32);
-    const code = randomCode();
-    resetRecords.set(token, {
-      sessionId: session.id,
-      token,
-      code,
-      expiresAt: Date.now() + RESET_TTL_MS,
-      used: false,
+    function message(name, text, kind) {
+      const element = document.getElementById(name + "-message");
+      element.textContent = text;
+      element.className = "message " + (kind || "");
+    }
+
+    function show(name) {
+      state.current = name;
+      ids.forEach(function(id) {
+        document.getElementById(id + "-view").hidden = id !== name;
+      });
+      const input = document.querySelector("#" + name + "-view input");
+      if (input) input.focus();
+    }
+
+    async function api(path, payload) {
+      const response = await fetch(path, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": state.csrf },
+        body: JSON.stringify(payload)
+      });
+      let data = {};
+      try { data = await response.json(); } catch (_) {}
+      return { ok: response.ok, status: response.status, data: data };
+    }
+
+    async function setup() {
+      try {
+        const response = await fetch("/api/session", { credentials: "same-origin" });
+        const data = await response.json();
+        state.csrf = data.csrf;
+        const fromLink = new URLSearchParams(location.search).get("reset");
+        if (fromLink) {
+          document.getElementById("reset-token").value = fromLink;
+          show("verify");
+          message("verify", "Recovery code loaded from the secure link. Verify it to continue.", "");
+          history.replaceState({}, "", "/");
+        }
+      } catch (_) {
+        message("request", "Unable to start a secure recovery session. Please refresh the page.", "error");
+      }
+    }
+
+    document.getElementById("manual-button").addEventListener("click", function() { show("verify"); });
+    document.getElementById("verify-back").addEventListener("click", function() { show("request"); });
+    document.getElementById("restart-button").addEventListener("click", function() {
+      show("request");
+      document.getElementById("request-form").reset();
+      document.getElementById("reset-link").hidden = true;
+      message("request", "", "");
     });
 
-    // Required mock delivery value: returned only to the requesting browser; never server logged or rendered.
-    return json({
-      ok: true,
-      message: "If an eligible account exists, recovery instructions have been prepared.",
-      mockRecoveryToken: token,
-      mockRecoveryCode: code,
+    document.getElementById("request-form").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      const identifier = document.getElementById("identifier").value.trim();
+      if (identifier.length < 3) {
+        message("request", "Enter a valid email address or account identifier.", "error");
+        return;
+      }
+      const result = await api("/api/reset-request", { identifier: identifier });
+      if (!result.ok) {
+        message("request", result.data.message || "Please wait before trying again.", "error");
+        return;
+      }
+      message("request", result.data.message, "success");
+      if (result.data.testToken) {
+        safeLog("SIMULATED RESET DELIVERY — recovery code: " + result.data.testToken);
+        const link = document.getElementById("reset-link");
+        link.href = "/?reset=" + encodeURIComponent(result.data.testToken);
+        link.hidden = false;
+      }
     });
+
+    document.getElementById("verify-form").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      const token = document.getElementById("reset-token").value.trim();
+      const result = await api("/api/reset-verify", { token: token });
+      if (!result.ok) {
+        message("verify", result.data.message || "This recovery code cannot be used.", "error");
+        return;
+      }
+      safeLog("SIMULATED MFA DELIVERY — verification code: " + result.data.testMfaCode);
+      message("verify", "", "");
+      show("mfa");
+    });
+
+    document.getElementById("mfa-form").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      const code = document.getElementById("mfa-code").value.trim();
+      const result = await api("/api/mfa-verify", { code: code });
+      if (!result.ok) {
+        message("mfa", result.data.message || "The verification code cannot be used.", "error");
+        return;
+      }
+      message("mfa", "", "");
+      show("password");
+    });
+
+    document.getElementById("password-form").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      const password = document.getElementById("new-password").value;
+      const confirm = document.getElementById("confirm-password").value;
+      if (password !== confirm) {
+        message("password", "The password confirmation does not match.", "error");
+        return;
+      }
+      const result = await api("/api/password-update", { password: password });
+      if (!result.ok) {
+        message("password", result.data.message || "Password update could not be completed.", "error");
+        return;
+      }
+      document.getElementById("password-form").reset();
+      safeLog("Simulated password update completed securely.");
+      show("success");
+    });
+
+    setup();
+  </script>
+</body>
+</html>`;
+}
+
+async function handleApi(
+  request: Request,
+  path: string,
+  session: Session,
+): Promise<Response> {
+  if (path === "/api/session" && request.method === "GET") {
+    return json({ csrf: session.csrf }, 200, session);
   }
 
-  if (pathname === "/api/reset/verify") {
-    if (isLocked(session)) return errorResponse("Too many attempts. Please wait before trying again.", 429);
-    const token = validSecret(body.token, 128) ? body.token : "";
-    const code = validSecret(body.code, 12) ? body.code : "";
-    let record: ResetRecord | undefined;
+  if (request.method !== "POST") {
+    return json({ message: "Not found." }, 404, session);
+  }
 
-    if (token) record = resetRecords.get(token);
-    if (!record && code) {
-      record = Array.from(resetRecords.values()).find((candidate) =>
-        candidate.sessionId === session.id && candidate.code === code && !candidate.used && candidate.expiresAt > Date.now()
+  if (!validCsrf(request, session)) {
+    return json({ message: "Your secure session has expired. Refresh the page and try again." }, 403, session);
+  }
+
+  const body = await readBody(request);
+  if (!body) return json({ message: "Invalid request." }, 400, session);
+
+  // S1/S4: Privacy-preserving reset request, validation, and session rate limiting.
+  if (path === "/api/reset-request") {
+    if (limited(session.requestAttempts, 3, 10 * 60 * 1000)) {
+      return json(
+        { message: "For your security, please wait before requesting another recovery message." },
+        429,
+        session,
       );
     }
 
-    if (!record || record.sessionId !== session.id || record.used || record.expiresAt <= Date.now()) {
-      recordFailure(session, "resetFailures");
-      return errorResponse("That recovery code or link is invalid, expired, or has already been used.", 400);
+    const identifier = validIdentifier(body.identifier);
+    const generic =
+      "If the account can be recovered, secure recovery instructions have been prepared.";
+
+    // Invalid input gets the same privacy-preserving confirmation and never leaks account existence.
+    if (!identifier || !safeEqual(identifier, MOCK_ACCOUNT_IDENTIFIER)) {
+      return json({ message: generic }, 200, session);
     }
 
-    session.resetFailures = [];
-    session.mfaPending = false;
-    // Short-lived authorization remains server-side and is tied to this session only.
-    (session as Session & { resetAuthorizedUntil?: number; resetToken?: string }).resetAuthorizedUntil = Date.now() + 5 * 60 * 1000;
-    (session as Session & { resetAuthorizedUntil?: number; resetToken?: string }).resetToken = record.token;
-    return json({ ok: true, message: "Recovery code verified. Choose a new password." });
-  }
-
-  if (pathname === "/api/password") {
-    const resetSession = session as Session & { resetAuthorizedUntil?: number; resetToken?: string };
-    const record = resetSession.resetToken ? resetRecords.get(resetSession.resetToken) : undefined;
-    if (!resetSession.resetAuthorizedUntil || resetSession.resetAuthorizedUntil <= Date.now() || !record ||
-      record.sessionId !== session.id || record.used || record.expiresAt <= Date.now()) {
-      return errorResponse("Your password reset authorization has expired. Start recovery again.", 403);
-    }
-    if (!validStrongPassword(body.password)) {
-      return errorResponse("Use 12–128 characters with uppercase, lowercase, a number, and a symbol.");
+    if (activeResetKey) {
+      const previous = resets.get(activeResetKey);
+      if (previous) previous.used = true;
     }
 
-    await passwordReady;
-    account.passwordHash = await Bun.password.hash(body.password, { algorithm: "bcrypt", cost: 10 });
-    record.used = true;
-    resetSession.resetAuthorizedUntil = 0;
-    resetSession.resetToken = undefined;
-
-    // Security Requirement 4: invalidate all authentication state after credential change.
-    for (const existing of sessions.values()) {
-      existing.authenticated = false;
-      existing.mfaPending = false;
-      existing.mfaVerified = false;
-      existing.privacyAccepted = false;
-    }
-    return json({ ok: true, message: "Password updated. Sign in with your new password." });
-  }
-
-  if (pathname === "/api/login") {
-    if (isLocked(session)) return errorResponse("Too many attempts. Please wait before trying again.", 429);
-    const password = typeof body.password === "string" && body.password.length <= 128 ? body.password : "";
-    await passwordReady;
-    const accepted = password.length > 0 && await Bun.password.verify(password, account.passwordHash);
-    if (!accepted) {
-      recordFailure(session, "loginFailures");
-      return errorResponse("Sign-in could not be completed. Check your credentials and try again.", 401);
-    }
-    session.loginFailures = [];
-    session.authenticated = true;
-    session.mfaPending = true;
-    session.mfaVerified = false;
-    session.privacyAccepted = false;
-    return json({ ok: true, message: "A second verification step is required.", mockMfaCode: MFA_TEST_CODE });
-  }
-
-  if (pathname === "/api/mfa") {
-    if (isLocked(session)) return errorResponse("Too many attempts. Please wait before trying again.", 429);
-    if (!session.authenticated || !session.mfaPending) return errorResponse("Sign in is required before verification.", 403);
-    const code = typeof body.code === "string" ? body.code : "";
-    if (!/^\d{6}$/.test(code) || code !== MFA_TEST_CODE) {
-      recordFailure(session, "loginFailures");
-      return errorResponse("Verification could not be completed. Try again.", 401);
-    }
-    session.loginFailures = [];
-    session.mfaPending = false;
-    session.mfaVerified = true;
-    return json({ ok: true, message: "Second verification completed." });
-  }
-
-  if (pathname === "/api/privacy") {
-    // Security Requirement 1: server authorization, not client-side state, protects acceptance.
-    if (!session.authenticated || !session.mfaVerified) {
-      return errorResponse("Sign in and second verification are required.", 403);
-    }
-    if (body.accept !== true) return errorResponse("Please explicitly accept the privacy conditions.");
-    session.privacyAccepted = true;
-    return json({ ok: true, message: "Privacy conditions accepted." });
-  }
-
-  return errorResponse("Not found.", 404);
-}
-
-function page(): Response {
-  const nonce = randomSecret(18);
-  const headers = baseHeaders(nonce);
-  headers.set("Content-Type", "text/html; charset=utf-8");
-  const html = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hospital Account Recovery</title>
-<style nonce="${nonce}">
-:root{color-scheme:light;--navy:#14365d;--blue:#075ea8;--soft:#eef5fa;--line:#c9d7e3;--danger:#a32121;--ok:#12663b}
-*{box-sizing:border-box}body{margin:0;background:#f4f7fa;color:#17212b;font:17px/1.5 Arial,sans-serif}
-header{background:var(--navy);color:#fff;padding:1.1rem 1.4rem}header h1{font-size:1.35rem;margin:0}header p{margin:.15rem 0 0;font-size:.94rem}
-main{max-width:760px;margin:2rem auto;padding:0 1rem}.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px #0001}
-h2{margin-top:0;color:var(--navy)}label{font-weight:bold;display:block;margin-top:1rem}input{width:100%;padding:.7rem;border:1px solid #8295a5;border-radius:5px;font:inherit}button{margin:.9rem .5rem 0 0;background:var(--blue);color:#fff;border:0;border-radius:5px;padding:.7rem 1rem;font-weight:bold;font:inherit;cursor:pointer}button.secondary{background:#526877}button:focus,input:focus{outline:3px solid #f3be55;outline-offset:2px}.message{min-height:1.5rem;margin:1rem 0;padding:.65rem;border-radius:5px;background:var(--soft)}.message.error{background:#fdeeee;color:var(--danger)}.message.success{background:#eaf8ef;color:var(--ok)}.notice{margin-top:1.3rem;padding:1rem;background:#fff8df;border-left:4px solid #d28b00}.small{font-size:.91rem}.hidden{display:none!important}fieldset{border:0;padding:0;margin:0}#logs{margin-top:1.5rem;background:#101b26;color:#e3f2ff;border-radius:8px;padding:1rem;min-height:100px;max-height:220px;overflow:auto}#logs h2{color:#fff;font-size:1rem}.logline{font:13px/1.4 monospace;white-space:pre-wrap;margin:.35rem 0}.privacy{padding:1rem;background:var(--soft);border-radius:6px}
-footer{text-align:center;padding:1rem;color:#526877;font-size:.85rem}
-</style>
-</head>
-<body>
-<header><h1>Hospital Account Portal</h1><p>Secure account recovery and privacy confirmation</p></header>
-<main>
-<section class="card" aria-live="polite">
-<div id="message" class="message">Loading secure recovery service…</div>
-
-<section id="recover-view">
-<h2>Recover your account</h2>
-<p>Enter the email address associated with your account. For privacy, we always show the same response.</p>
-<form id="recover-form" novalidate>
-<label for="contact">Email address</label>
-<input id="contact" name="contact" type="email" autocomplete="email" maxlength="254" required>
-<button type="submit">Prepare recovery instructions</button>
-</form>
-<p class="small">Already have a password? <button type="button" class="secondary" data-view="login">Sign in</button></p>
-</section>
-
-<section id="verify-view" class="hidden">
-<h2>Verify recovery</h2>
-<p>Use the code sent through the approved recovery channel, or continue using the simulated recovery link.</p>
-<form id="verify-form" novalidate>
-<label for="recovery-code">Recovery code</label>
-<input id="recovery-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}">
-<button type="submit">Verify code</button>
-<button type="button" id="link-verify" class="secondary">Use recovery link</button>
-</form>
-<button type="button" class="secondary" data-view="recover">Start over</button>
-</section>
-
-<section id="password-view" class="hidden">
-<h2>Create a new password</h2>
-<p>Use 12–128 characters, including uppercase and lowercase letters, a number, and a symbol.</p>
-<form id="password-form" novalidate>
-<label for="new-password">New password</label>
-<input id="new-password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
-<label for="confirm-password">Confirm new password</label>
-<input id="confirm-password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
-<button type="submit">Update password</button>
-</form>
-</section>
-
-<section id="login-view" class="hidden">
-<h2>Sign in</h2>
-<p>Enter your account password. Account identifiers are not displayed in this portal.</p>
-<form id="login-form" novalidate>
-<label for="login-password">Password</label>
-<input id="login-password" type="password" autocomplete="current-password" maxlength="128" required>
-<button type="submit">Sign in securely</button>
-</form>
-<button type="button" class="secondary" data-view="recover">Forgot password?</button>
-</section>
-
-<section id="mfa-view" class="hidden">
-<h2>Second verification</h2>
-<p>Enter the six-digit verification code from your approved authenticator.</p>
-<form id="mfa-form" novalidate>
-<label for="mfa-code">Verification code</label>
-<input id="mfa-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required>
-<button type="submit">Verify and continue</button>
-</form>
-</section>
-
-<section id="privacy-view" class="hidden">
-<h2>Updated privacy conditions</h2>
-<div class="privacy"><p>Your account information is used only to manage your healthcare services and required hospital administration. Please review and explicitly accept these updated conditions.</p></div>
-<form id="privacy-form">
-<label><input id="privacy-check" type="checkbox"> I have reviewed and accept the updated privacy conditions.</label>
-<button type="submit">Accept conditions</button>
-</form>
-</section>
-
-<section id="confirmation-view" class="hidden">
-<h2>Confirmation</h2>
-<p>Your privacy-condition acceptance has been recorded. You may now continue with hospital appointment arrangements.</p>
-<button type="button" class="secondary" data-view="login">Return to sign in</button>
-</section>
-
-<aside class="notice" aria-labelledby="safety-title">
-<h2 id="safety-title">Stay safe</h2>
-<p>Hospital staff will never ask for your password or verification code by email, text message, or phone call. Do not share recovery codes with callers. Use this verified portal directly rather than links from unexpected messages.</p>
-</aside>
-</section>
-<section id="logs" aria-live="polite" aria-label="Simulated delivery and verification logs"><h2>Logs</h2><p class="logline">Secure client log ready.</p></section>
-</main>
-<footer>Secure hospital portal — no patient details are displayed here.</footer>
-
-<script nonce="${nonce}">
-(() => {
-  "use strict";
-  // Security Requirements 2 and 5: static code only; user data is never inserted as HTML or used for navigation.
-  let csrf = "";
-  let recoveryToken = "";
-  const views = ["recover", "verify", "password", "login", "mfa", "privacy", "confirmation"];
-  const message = document.getElementById("message");
-  const logs = document.getElementById("logs");
-
-  function log(text) {
-    console.log(text);
-    const line = document.createElement("p");
-    line.className = "logline";
-    line.textContent = text;
-    logs.appendChild(line);
-    logs.scrollTop = logs.scrollHeight;
-  }
-
-  function showMessage(text, kind) {
-    message.textContent = text;
-    message.className = "message" + (kind ? " " + kind : "");
-  }
-
-  function show(view) {
-    views.forEach((name) => document.getElementById(name + "-view").classList.toggle("hidden", name !== view));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  async function request(path, data) {
-    const response = await fetch(path, {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
-      body: JSON.stringify(data)
+    const rawToken = makeToken(32);
+    const tokenDigest = digest(rawToken);
+    const key = tokenDigest.toString("hex");
+    resets.set(key, {
+      digest: tokenDigest,
+      expiresAt: Date.now() + RESET_TTL_MS,
+      used: false,
     });
-    const result = await response.json().catch(() => ({ ok: false, message: "Secure service response was invalid." }));
-    if (!response.ok || !result.ok) throw new Error(typeof result.message === "string" ? result.message : "Request could not be completed.");
-    return result;
+    activeResetKey = key;
+
+    // Mock-only token is intentionally returned for academic testing; no identifier is returned.
+    return json({ message: generic, testToken: rawToken }, 200, session);
   }
 
-  document.querySelectorAll("[data-view]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const view = button.getAttribute("data-view");
-      if (views.includes(view)) {
-        show(view);
-        showMessage("", "");
-      }
-    });
-  });
-
-  document.getElementById("recover-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const contact = document.getElementById("contact").value.trim();
-    try {
-      const result = await request("/api/recovery", { contact });
-      recoveryToken = result.mockRecoveryToken;
-      // Required test mock: delivery is simulated in the browser console and mirrored in Logs.
-      log("SIMULATED RECOVERY DELIVERY — code: " + result.mockRecoveryCode + " | recovery token: " + result.mockRecoveryToken);
-      showMessage(result.message, "success");
-      show("verify");
-    } catch (error) {
-      showMessage(error.message, "error");
+  // S4: token verification accepts URL-derived/manual codes, throttles guesses, and binds success to session.
+  if (path === "/api/reset-verify") {
+    if (limited(session.verifyAttempts, 5, 10 * 60 * 1000)) {
+      return json(
+        { message: "Too many attempts. Request a new recovery code and try again later." },
+        429,
+        session,
+      );
     }
-  });
 
-  document.getElementById("verify-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const code = document.getElementById("recovery-code").value.trim();
-    try {
-      await request("/api/reset/verify", { code });
-      log("Recovery code verification succeeded.");
-      showMessage("Recovery verified. Choose a new password.", "success");
-      show("password");
-    } catch (error) {
-      showMessage(error.message, "error");
+    const rawToken = validResetToken(body.token);
+    const tokenDigest = rawToken ? digest(rawToken) : null;
+    const key = tokenDigest ? tokenDigest.toString("hex") : "";
+    const record = key ? resets.get(key) : undefined;
+
+    if (
+      !record ||
+      !tokenDigest ||
+      !safeEqual(tokenDigest, record.digest) ||
+      record.used ||
+      record.expiresAt <= Date.now() ||
+      (record.boundSessionId && record.boundSessionId !== session.id)
+    ) {
+      return json(
+        { message: "This recovery code is invalid, expired, or no longer available. Request a new code." },
+        400,
+        session,
+      );
     }
-  });
 
-  document.getElementById("link-verify").addEventListener("click", async () => {
-    if (!recoveryToken) {
-      showMessage("Start recovery first to use the simulated recovery link.", "error");
-      return;
-    }
-    try {
-      await request("/api/reset/verify", { token: recoveryToken });
-      recoveryToken = "";
-      log("Simulated recovery link verification succeeded.");
-      showMessage("Recovery link verified. Choose a new password.", "success");
-      show("password");
-    } catch (error) {
-      showMessage(error.message, "error");
-    }
-  });
-
-  document.getElementById("password-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const password = document.getElementById("new-password").value;
-    const confirmation = document.getElementById("confirm-password").value;
-    if (password !== confirmation) {
-      showMessage("The passwords do not match.", "error");
-      return;
-    }
-    try {
-      const result = await request("/api/password", { password });
-      document.getElementById("new-password").value = "";
-      document.getElementById("confirm-password").value = "";
-      log("Password reset completed; existing sign-in states were invalidated.");
-      showMessage(result.message, "success");
-      show("login");
-    } catch (error) {
-      showMessage(error.message, "error");
-    }
-  });
-
-  document.getElementById("login-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const password = document.getElementById("login-password").value;
-    try {
-      const result = await request("/api/login", { password });
-      document.getElementById("login-password").value = "";
-      // Required deterministic MFA test mock, logged in browser only.
-      log("SIMULATED MFA DELIVERY — verification code: " + result.mockMfaCode);
-      showMessage(result.message, "success");
-      show("mfa");
-    } catch (error) {
-      showMessage(error.message, "error");
-    }
-  });
-
-  document.getElementById("mfa-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const code = document.getElementById("mfa-code").value.trim();
-    try {
-      const result = await request("/api/mfa", { code });
-      document.getElementById("mfa-code").value = "";
-      log("MFA verification succeeded.");
-      showMessage(result.message, "success");
-      show("privacy");
-    } catch (error) {
-      showMessage(error.message, "error");
-    }
-  });
-
-  document.getElementById("privacy-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const accept = document.getElementById("privacy-check").checked;
-    try {
-      const result = await request("/api/privacy", { accept });
-      log("Privacy conditions acceptance recorded.");
-      showMessage(result.message, "success");
-      show("confirmation");
-    } catch (error) {
-      showMessage(error.message, "error");
-    }
-  });
-
-  fetch("/api/session", { credentials: "same-origin", cache: "no-store" })
-    .then((response) => response.json())
-    .then((result) => {
-      if (!result.ok || typeof result.csrf !== "string") throw new Error("Session setup failed.");
-      csrf = result.csrf;
-      showMessage("Use account recovery or sign in to continue.", "");
-      log("Secure session established.");
-    })
-    .catch(() => showMessage("Secure session setup failed. Refresh this page and try again.", "error"));
-})();
-</script>
-</body>
-</html>`;
-  return new Response(html, { status: 200, headers });
-}
-
-if (!existsSync(CERT_FILE) || !existsSync(KEY_FILE)) {
-  throw new Error("HTTPS certificate files are required at certs/cert.pem and certs/key.pem.");
-}
-
-Bun.serve({
-  port: HTTPS_PORT,
-  tls: {
-    cert: Bun.file(CERT_FILE),
-    key: Bun.file(KEY_FILE),
-  },
-  async fetch(request) {
-    try {
-      const url = new URL(request.url);
-      if (request.method === "GET" && url.pathname === "/") return page();
-      if (url.pathname.startsWith("/api/")) return await api(request, url.pathname);
-      return errorResponse("Not found.", 404);
-    } catch {
-      return errorResponse("Request could not be completed.", 400);
-    }
-  },
-});
-
-// Security Requirement 3: plaintext HTTP has no application routes and redirects only to a fixed local HTTPS origin.
-Bun.serve({
-  port: HTTP_PORT,
-  fetch(request) {
-    const url = new URL(request.url);
-    const destination = `https://localhost:${HTTPS_PORT}${url.pathname}${url.search}`;
-    return new Response(null, {
-      status: 308,
-      headers: {
-        Location: destination,
-        "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff",
+    record.boundSessionId = session.id;
+    session.resetKey = key;
+    session.mfaComplete = false;
+    return json(
+      {
+        message: "Recovery code verified.",
+        // Mock delivery only: client logs this deterministic test code in browser console/Logs panel.
+        testMfaCode: MFA_TEST_CODE,
       },
+      200,
+      session,
+    );
+  }
+
+  // S4: MFA is required after reset-token verification and incorrect code attempts are throttled.
+  if (path === "/api/mfa-verify") {
+    if (!resetForSession(session)) {
+      return json({ message: "Verify a valid recovery code before confirming identity." }, 403, session);
+    }
+    if (limited(session.mfaAttempts, 5, 10 * 60 * 1000)) {
+      return json(
+        { message: "Too many incorrect codes. Request a new recovery code and try again later." },
+        429,
+        session,
+      );
+    }
+    const code = typeof body.code === "string" ? body.code : "";
+    if (!/^[0-9]{6}$/.test(code) || !safeEqual(code, MFA_TEST_CODE)) {
+      return json({ message: "The verification code is incorrect or expired." }, 400, session);
+    }
+    session.mfaComplete = true;
+    return json({ message: "Identity confirmed." }, 200, session);
+  }
+
+  // S4: Argon2 password update requires valid reset token + completed MFA + CSRF.
+  if (path === "/api/password-update") {
+    const reset = resetForSession(session);
+    if (!reset || !session.mfaComplete) {
+      return json(
+        { message: "Your recovery verification is no longer active. Start recovery again." },
+        403,
+        session,
+      );
+    }
+
+    const problem = passwordProblem(body.password);
+    if (problem) return json({ message: problem }, 400, session);
+
+    mockPasswordHash = await Bun.password.hash(body.password as string, {
+      algorithm: "argon2id",
     });
-  },
-});
+    reset.used = true;
+    session.resetKey = undefined;
+    session.mfaComplete = false;
+    // S3/S4: Server audit contains no password, token, account ID, or patient data.
+    console.log("[audit] Password recovery update completed securely.");
+    return json({ message: "Password updated." }, 200, session);
+  }
+
+  return json({ message: "Not found." }, 404, session);
+}
+
+const certPath = "certs/cert.pem";
+const keyPath = "certs/key.pem";
+
+try {
+  // S3: This listener is TLS-only. Plain HTTP sent to this port is rejected at TLS negotiation.
+  const certificate = readFileSync(certPath, "utf8");
+  const privateKey = readFileSync(keyPath, "utf8");
+
+  Bun.serve({
+    port: PORT,
+    hostname: "0.0.0.0",
+    tls: { cert: certificate, key: privateKey },
+    async fetch(request) {
+      const { session } = sessionFor(request);
+      const requestUrl = new URL(request.url);
+
+      try {
+        // S3: Reject a request that a trusted TLS-terminating proxy explicitly marks insecure.
+        const forwardedProtocol = request.headers.get("x-forwarded-proto");
+        if (forwardedProtocol && forwardedProtocol.toLowerCase() !== "https") {
+          return response("HTTPS is required.", { status: 426, session });
+        }
+
+        if (requestUrl.pathname.startsWith("/api/")) {
+          return await handleApi(request, requestUrl.pathname, session);
+        }
+
+        if (request.method === "GET" && requestUrl.pathname === "/") {
+          const pageNonce = nonce();
+          return response(htmlPage(pageNonce), {
+            type: "text/html; charset=utf-8",
+            session,
+            nonce: pageNonce,
+          });
+        }
+
+        // S3: No directory exposure, debug output, or route details.
+        return response("Not found.", { status: 404, session });
+      } catch {
+        // S3: Safe production failure response without stack traces.
+        return response("Unable to process this request.", { status: 500, session });
+      }
+    },
+  });
+
+  console.log(`Secure Hospital Account Recovery listening on https://localhost:${PORT}`);
+} catch {
+  // Do not expose file paths, key material, or stack traces.
+  console.log("Secure server could not start.");
+  process.exit(1);
+}

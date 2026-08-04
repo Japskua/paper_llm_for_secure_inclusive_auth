@@ -1,0 +1,104 @@
+{
+  "variables": {
+    "email": "helena.recovery@hospital.test",
+    "seeded_password": "Initial-Clinical!2025",
+    "new_password": "Recovered-Access!2026"
+  },
+  "csrf": {
+    "html_regex": "fetch\\(\"(\\/api\\/bootstrap)\"",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request password reset",
+      "method": "POST",
+      "path": "/api/reset/request",
+      "body": {
+        "contact": "${email}"
+      },
+      "capture": {
+        "reset_token": "mockToken"
+      }
+    },
+    {
+      "name": "verify reset code",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "body": {
+        "token": "${reset_token}"
+      }
+    },
+    {
+      "name": "save new password",
+      "method": "POST",
+      "path": "/api/reset/confirm",
+      "body": {
+        "token": "${reset_token}",
+        "password": "${new_password}"
+      },
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "complete security check",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "body": {
+        "code": "${mfa_code}"
+      }
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {}
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid csrf rejected",
+      "method": "POST",
+      "path": "/api/reset/request",
+      "headers": {
+        "X-CSRF-Token": "invalid"
+      },
+      "body": {
+        "contact": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed reset code rejected",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "body": {
+        "token": "invalid-reset-code"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "old password rejected after reset",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "password": "${seeded_password}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

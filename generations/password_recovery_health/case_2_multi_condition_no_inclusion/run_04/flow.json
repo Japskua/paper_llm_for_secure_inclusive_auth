@@ -1,0 +1,106 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": false,
+  "steps_total": 10,
+  "steps_passed": 6,
+  "happy_path_passed": 2,
+  "happy_path_total": 6,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "bootstrap recovery session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'reset_token' from 'testToken'"
+      ],
+      "response_message": "{'error': 'We could not complete that recovery step. Please start again if the problem continues.'}"
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "{'error': 'We could not complete that recovery step. Please start again if the problem continues.'}"
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/set-password",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'mfa_code' from 'testMfaCode'"
+      ],
+      "response_message": "{'error': 'We could not complete that recovery step. Please start again if the problem continues.'}"
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "{'error': 'We could not complete that recovery step. Please start again if the problem continues.'}"
+    },
+    {
+      "name": "missing CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/set-password",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 10
+}

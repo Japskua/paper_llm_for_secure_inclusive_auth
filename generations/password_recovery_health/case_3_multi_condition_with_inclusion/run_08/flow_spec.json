@@ -1,0 +1,135 @@
+{
+  "variables": {
+    "email": "helena@hospital.test",
+    "initial_password": "Initial-Only-Password!42",
+    "new_password": "Renewed-Password!42"
+  },
+  "csrf": {
+    "html_regex": "const csrf=\"([a-f0-9]+)\"",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "start password recovery",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "body": {
+        "identifier": "${email}"
+      },
+      "capture": {
+        "delivery_code": "deliveryAuthorizationCode"
+      }
+    },
+    {
+      "name": "authorize simulated delivery",
+      "method": "POST",
+      "path": "/api/recovery-delivery",
+      "body": {
+        "code": "${delivery_code}"
+      },
+      "capture": {
+        "recovery_token": "evaluationToken"
+      }
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/reset-validate",
+      "body": {
+        "token": "${recovery_token}"
+      },
+      "expect_json_true": "verified"
+    },
+    {
+      "name": "save new password",
+      "method": "POST",
+      "path": "/api/reset-complete",
+      "body": {
+        "password": "${new_password}",
+        "confirm": "${new_password}"
+      },
+      "expect_json_true": "saved"
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "identifier": "${email}",
+        "password": "${new_password}"
+      },
+      "capture": {
+        "mfa_code": "evaluationMfaCode"
+      }
+    },
+    {
+      "name": "complete MFA security check",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "${mfa_code}"
+      }
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment",
+      "body": {
+        "confirm": true
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "malformed recovery email rejected",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "body": {
+        "identifier": "not-an-email"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "identifier": "${email}",
+        "password": "Wrong-Password!42"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance must be true",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "accepted": false
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "appointment confirmation must be true",
+      "method": "POST",
+      "path": "/api/appointment",
+      "body": {
+        "confirm": false
+      },
+      "expect_failure": true
+    }
+  ]
+}

@@ -1,129 +1,85 @@
 ## SUMMARY
 
-The artifact is a single-file Bun HTTPS SPA with a functional password-reset, sign-in, MFA, privacy-acceptance, and appointment-request flow. It has several strong security measures, including TLS, secure headers, Argon2id password hashing, CSRF protection, CSP nonces, generic reset responses, reset-token expiration/single-use behavior, and login/reset throttling. However, it does not fully meet the recovery/resume and authorization requirements, and MFA verification is vulnerable to unlimited guessing. Therefore, the artifact cannot be accepted as-is.
+The artifact is a valid single-file Bun application with a clear, accessible recovery UI, TLS configuration, CSP/nonces, per-session CSRF protection, Argon2id password hashing, and working simulated reset/MFA flows. However, it fails critical authorization and brute-force protections: any visitor can reset the single global password using any syntactically valid email, and MFA/reset-verification attempts are not throttled. The pause-and-return behavior also does not preserve recovery progress as required.
 
 ## FUNCTIONAL_CHECK
 
-- **Single `app.ts` artifact containing Bun server, HTML, CSS, and vanilla browser JavaScript — PASS**
-  - The server and complete SPA are contained in the supplied `app.ts`.
-  - No framework, bundler, compiler pipeline, external asset, or network call is used.
+- **PASS — Single-file Bun implementation with no bundler, compiler, framework, or external assets.**  
+  The server, HTML, CSS, and browser JavaScript are all contained in `app.ts`. Bun directly serves the page, and there are no external network calls or asset dependencies.
 
-- **Bun serves HTTPS using `certs/cert.pem` and `certs/key.pem` — PASS**
-  - The server validates both certificate paths before startup.
-  - `Bun.serve()` is configured with TLS using those files.
-  - A separate HTTP listener redirects requests to HTTPS.
+- **PASS — TLS is configured to use the required certificate paths.**  
+  `Bun.serve` uses `certs/cert.pem` and `certs/key.pem`, matching the required certificate locations.
 
-- **Password-recovery flow works, including manual token/code entry — PASS**
-  - A reset request creates a cryptographically random 64-hex-character token.
-  - The client logs the mock token to the browser console and displays it in the simulation log.
-  - The user can manually enter the token in the recovery-code field.
-  - A simulated recovery-link route (`/reset?token=...`) is also supported.
+- **PASS — The recovery UI is a functional SPA with semantic structure and clear step guidance.**  
+  The UI uses `header`, `main`, `section`, labels, progress indicators, live status messaging, and an orderly sequence of reset, verification, password creation, sign-in, MFA, and privacy acceptance.
 
-- **Reset tokens are random, short-lived, and single-use — PASS**
-  - Tokens are created with `crypto.getRandomValues`.
-  - Tokens expire after 10 minutes.
-  - The reset authorization is removed after successful password replacement.
-  - Verification is required before the password can be replaced.
+- **PASS — Reset-token delivery is simulated in the browser and manual code entry works.**  
+  `/api/request-reset` returns a token, and browser-side `demoLog()` writes the token and constructed recovery URL to both the browser console and visible demo log. The user can manually enter the code in the recovery-code field.
 
-- **Strong password policy and password hashing are implemented — PASS**
-  - Passwords require 12–128 characters, upper/lowercase letters, a number, and a symbol, with no spaces.
-  - Passwords are stored only as Argon2id hashes using `Bun.password.hash`.
-  - Password verification uses `Bun.password.verify`.
+- **PARTIAL/FAIL — Recovery-link UX is incomplete.**  
+  The application constructs a recovery URL and prints it as plain text in a `<pre>` element, but does not render it as a clickable internal link. The `/?token=...` route itself works if manually opened, but the visible “recovery link” cannot be opened directly from the application.
 
-- **CSRF protection is implemented on state-changing API endpoints — PASS**
-  - Each session receives a unique CSRF token.
-  - All `/api/*` POST operations go through `csrfValid()`.
-  - The CSRF token is validated using a timing-safe comparison.
+- **FAIL — Password recovery prevents unauthorized access.**  
+  The reset-request endpoint accepts **any syntactically valid email address**, does not check whether it belongs to an account, does not associate the reset token with an account, and resets one global `passwordHash`. Consequently, any unauthenticated visitor can request a reset token for arbitrary input such as `attacker@example.com`, receive it in their own browser, and reset Helena’s password. This is a critical authorization failure.
 
-- **XSS defenses and safe output handling are implemented — PASS**
-  - Request values are not interpolated into server HTML.
-  - Client-created UI content is assigned with `textContent`, not `innerHTML`.
-  - CSP uses a per-page nonce for the inline trusted `<style>` and `<script>`.
-  - CSP otherwise uses `default-src 'none'`.
+- **PASS — CSRF protections are implemented for sensitive POST requests.**  
+  A cryptographically random CSRF token is generated per server session, returned only to the same session, included by the client in every POST request, and validated server-side. The session cookie is `HttpOnly`, `Secure`, and `SameSite=Strict`.
 
-- **Secure HTTP response configuration is implemented — PASS**
-  - CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, Referrer Policy, Permissions Policy, COOP, CORP, and no-store caching are configured.
-  - Errors are generic and do not expose stack traces or debug data.
+- **PASS — Core output handling avoids reflected/stored XSS.**  
+  User input is not interpolated into HTML. Browser output uses `textContent`, and server-generated HTML does not inject request data. CSP uses per-response nonces for the inline application script/style.
 
-- **Login brute-force protection is implemented — PASS**
-  - Failed sign-ins are counted per session.
-  - After five failures, the session is locked for 15 minutes.
-  - The failure counter resets after the configured login window.
+- **PASS — Security headers and HTTPS-oriented settings are present.**  
+  The app sets HSTS, CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cache-Control: no-store`, secure cookies, and a restrictive CSP.
 
-- **Reset-code brute-force protection is implemented — PASS**
-  - Reset verification attempts are limited to five per recovery record.
-  - Reset requests are limited to three per 15-minute period.
+- **PASS — Reset tokens are cryptographically random, short-lived, and invalidated after password reset.**  
+  Tokens use 32 random bytes, expire after 15 minutes, and are deleted/marked used following a successful password change.
 
-- **MFA is implemented — FAIL**
-  - MFA is present in the flow, but `/api/mfa` has no attempt counter, rate limit, or lockout.
-  - An attacker with access to an active session can make unlimited guesses against the six-digit MFA code until it expires.
-  - The code is also a fixed predictable value (`246810`) for every sign-in, reducing the security value of MFA.
+- **FAIL — Automated guessing protections are incomplete.**  
+  Login attempts are throttled after five failures, but `/api/verify-reset` and `/api/mfa` have no rate limiting, attempt counting, lockout, or delay. In particular, the MFA code is a fixed six-digit value (`246810`) and can be repeatedly guessed without restriction.
 
-- **Appointment request is authorized only after privacy acceptance — FAIL**
-  - `/api/appointment` checks only `session.authenticated`.
-  - `/api/privacy` does not store any “privacy accepted” state.
-  - An authenticated user can directly call `/api/appointment` without accepting the updated privacy statement, bypassing the required workflow.
+- **PASS — Password hashing and baseline password policy are implemented.**  
+  Passwords are hashed with Argon2id via `Bun.password.hash`. The policy requires at least 12 characters and lowercase, uppercase, numeric, and symbol characters.
 
-- **Users can pause and return without losing progress — FAIL**
-  - Only the current `stage` is stored in `localStorage`.
-  - The recovery token and verified-reset authorization context are not restored to the client after a reload.
-  - For example, reloading on the `password` stage leaves `resetToken` empty, causing `/api/reset/password` to fail.
-  - The UI promises “You can pause and return to this browser later,” but the password-reset flow can become unrecoverable after a reload.
+- **FAIL — Password input is silently modified before hashing and verification.**  
+  Passwords are passed through `text()`, which trims whitespace and truncates values to 300 characters. A user entering a password with intentional leading/trailing spaces will not actually save the password they entered. Password values must be validated without mutation.
 
-- **Low-stress, ADHD-aware UX is substantially implemented — PARTIAL / FAIL**
-  - Positive aspects: visible progress, simple language, clear next steps, help content, no countdown pressure, and a pause control are provided.
-  - However, the claimed pause/resume behavior is not reliable because reloads can lose reset context and leave users stranded at an unusable step.
+- **PASS — MFA exists and gates the authenticated privacy action.**  
+  A password login creates an MFA challenge, `/api/mfa` sets `session.authenticated = true` only after the correct code, and `/api/privacy` checks authentication before accepting the privacy statement.
 
-- **All internal routes function correctly — PARTIAL / FAIL**
-  - `/reset?token=...` works as a simulated recovery link.
-  - `/signin`, `/account`, and `/appointment` are accepted by the server but are not interpreted by the client to render their respective stages; they simply load the default recovery screen.
-  - This makes the declared internal route support incomplete.
+- **PASS — No open redirects, SSRF paths, or external URL fetching are present.**  
+  The app does not fetch arbitrary URLs, does not accept redirect targets, and does not expose external navigation functionality.
+
+- **PASS — Safe-authentication guidance and help are available.**  
+  The “Need help?” control works and advises users that hospital staff will not request their password or recovery code.
+
+- **FAIL — Pause-and-return behavior does not preserve recovery progress.**  
+  Although `hospitalRecoveryStep` is written to `localStorage`, on reload `initialize()` intentionally returns the user to the start screen and says they must restart the recovery check. This conflicts with the requirement to allow users to pause and return without losing progress. It also does not restore the safe server-side recovery state after successful token verification.
+
+- **PASS — The code is syntactically plausible for Bun 1.3.0 and has no obvious runtime API misuse.**  
+  `Bun.serve`, `Bun.file`, `Bun.password.hash`, and `Bun.password.verify` are used in supported patterns. The unused `readFileSync` import is not a functional runtime error, though it should be removed.
 
 ## FAILING_ITEMS
 
-- **MFA verification has unlimited guessing attempts.**
-  - `/api/mfa` accepts unlimited incorrect MFA-code submissions until code expiration.
-  - This conflicts with the requirement to throttle or block automated guessing attempts.
-
-- **MFA code is globally predictable.**
-  - Every sign-in uses the fixed code `246810`.
-  - While deterministic mock values are allowed for evaluation, the current implementation does not provide a meaningful per-session MFA verification secret.
-
-- **Privacy acceptance is not enforced before appointment confirmation.**
-  - There is no `privacyAccepted` session field.
-  - `/api/appointment` does not require prior completion of `/api/privacy`.
-
-- **Pause/resume loses required password-reset state.**
-  - Only `stage` is persisted.
-  - Reloading at the password stage loses `resetToken`, so the user cannot submit the new password despite the UI restoring the password stage.
-  - The UI’s “pause and return” assurance is therefore inaccurate.
-
-- **Declared SPA routes are not mapped to UI stages.**
-  - The server serves `/signin`, `/account`, and `/appointment`, but the client only handles `/reset` specially.
-  - Loading those routes does not render the corresponding screen.
-
-- **The HTML contains a CSP-blocked inline style attribute.**
-  - `<section class="card" ... style="margin-top:1.25rem">` is an inline style attribute.
-  - The configured CSP only allows nonce-authorized stylesheet blocks and will block this style attribute.
-  - This causes a browser CSP violation and prevents the intended spacing from applying.
+- Any unauthenticated user can reset the global account password because `/api/request-reset` accepts any valid email and reset tokens are not bound to a real account or verified recipient.
+- The app models only one global password hash, rather than account-specific authentication/recovery state.
+- `/api/verify-reset` has unlimited token-verification attempts and no throttling.
+- `/api/mfa` has unlimited attempts against a deterministic six-digit MFA code and no expiry, lockout, or rate limiting.
+- Passwords are silently trimmed and truncated by `text()`, changing user credentials instead of validating the exact submitted value.
+- Reloading the page discards the current recovery step and forces the user to restart, violating the required pause/resume experience.
+- The displayed recovery URL is plain log text rather than an operable internal recovery hyperlink.
+- `readFileSync` is imported but unused.
 
 ## NEW_TASKS
 
-1. Add MFA attempt tracking to `Session` and enforce a maximum number of invalid `/api/mfa` attempts, with an appropriate temporary lockout or MFA-reset requirement after the limit is reached.
-
-2. Generate a new per-session MFA mock code for each successful sign-in using secure randomness; return it only in the simulated browser-delivery response and browser `console.log`.
-
-3. Add a `privacyAccepted` boolean to `Session`, set it only after a successful `/api/privacy` request, and require it in `/api/appointment`.
-
-4. Correct recovery pause/resume behavior:
-   - Do not restore a stage that cannot be completed after reload.
-   - Persist only safe client state, or add a CSRF-protected session-state endpoint that reports the valid current recovery state.
-   - Ensure a user returning at the password stage can securely continue without requiring an inaccessible token.
-
-5. Add client-side pathname-to-stage routing for `/signin`, `/account`, and `/appointment`, while still enforcing the corresponding server authorization checks.
-
-6. Move the inline `margin-top` declaration from the HTML `style` attribute into the nonce-authorized stylesheet, using a CSS class.
+1. Replace the global-password model with a minimal mock account record keyed by a normalized, recognized account email; only issue a reset token for that account while returning a generic response for unknown emails.
+2. Bind every reset-token record to its intended account identifier and update only that account’s password hash during `/api/reset-password`.
+3. Add per-session and/or per-token failed-attempt tracking, rate limiting, and temporary lockout for `/api/verify-reset`.
+4. Add MFA-code expiration plus per-session MFA attempt limits and temporary lockout/rate limiting for `/api/mfa`.
+5. Stop using `text()` for passwords; read password and confirmation as raw strings, reject oversized passwords explicitly, and compare/hash the unmodified values.
+6. Add a safe recovery-status endpoint backed by server session state, and use it on initialization to resume the appropriate non-secret step without storing passwords or reset tokens in `localStorage`.
+7. Render the simulated recovery URL as a same-origin clickable `<a>` element created with safe DOM APIs, while retaining manual recovery-code entry.
+8. Remove the unused `readFileSync` import.
 
 ## DECISION
 
-**FAIL**
+FAIL

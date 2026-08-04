@@ -1,0 +1,117 @@
+{
+  "variables": {
+    "email": "helena.patient@hospital.test",
+    "password": "Initial-Demo-Password-Only!",
+    "new_password": "NewSecurePassword1!"
+  },
+  "csrf": null,
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "get session csrf token",
+      "method": "GET",
+      "path": "/api/session",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request recovery instructions",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "identifier": "${email}"
+      },
+      "capture": {
+        "reset_token": "testToken"
+      }
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/reset-verify",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "${reset_token}"
+      },
+      "capture": {
+        "mfa_code": "testMfaCode"
+      }
+    },
+    {
+      "name": "confirm mfa code",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${mfa_code}"
+      }
+    },
+    {
+      "name": "update password",
+      "method": "POST",
+      "path": "/api/password-update",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "password": "${new_password}"
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "reset request without csrf rejected",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery token rejected",
+      "method": "POST",
+      "path": "/api/reset-verify",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "password update without active recovery rejected",
+      "method": "POST",
+      "path": "/api/password-update",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "password": "${new_password}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

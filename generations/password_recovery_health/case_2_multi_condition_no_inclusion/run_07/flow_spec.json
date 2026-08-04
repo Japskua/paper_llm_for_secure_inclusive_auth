@@ -1,0 +1,172 @@
+{
+  "variables": {
+    "email": "helena.recovery@localhost",
+    "initial_password": "Initial!DemoPassword2025",
+    "new_password": "Reset!Pass2026"
+  },
+  "csrf": {
+    "html_regex": "<meta name=\"csrf-token\" content=\"([^\"]+)\">",
+    "field": "csrf",
+    "in": "body"
+  },
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "body": {
+        "identifier": "${email}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "reset_code": "code"
+      }
+    },
+    {
+      "name": "open reset link",
+      "method": "GET",
+      "path": "/reset?code=${reset_code}"
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "body": {
+        "code": "${reset_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "open new password page",
+      "method": "GET",
+      "path": "/new-password"
+    },
+    {
+      "name": "check verified recovery status",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_json_true": "resetVerified"
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/new-password",
+      "body": {
+        "password": "${new_password}",
+        "confirmation": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "open sign in page",
+      "method": "GET",
+      "path": "/login"
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mfaCode",
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "open mfa page",
+      "method": "GET",
+      "path": "/mfa"
+    },
+    {
+      "name": "verify mfa code",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "${mfa_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "open privacy page",
+      "method": "GET",
+      "path": "/privacy"
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "open appointment page",
+      "method": "GET",
+      "path": "/appointment"
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment-confirm",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "missing csrf rejected",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "body": {
+        "code": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "body": {
+        "code": "${reset_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "old password rejected after reset",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "password": "${initial_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

@@ -1,6 +1,80 @@
 {
   "ok": false,
-  "stage": "server_no_response",
-  "error": "https://:3000: ConnectError; http://:3000: ConnectError",
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 7,
+  "steps_passed": 3,
+  "happy_path_passed": 1,
+  "happy_path_total": 5,
+  "negative_passed": 2,
+  "negative_total": 2,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request recovery verification",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'token' from 'testToken'",
+        "could not capture 'mfa_code' from 'testMfaCode'"
+      ],
+      "response_message": "Security validation failed. Refresh and try again."
+    },
+    {
+      "name": "verify recovery and MFA codes",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Security validation failed. Refresh and try again."
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/set-password",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Security validation failed. Refresh and try again."
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Security validation failed. Refresh and try again."
+    },
+    {
+      "name": "invalid email rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "CSRF mismatch rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
   "spec_steps": 7
 }

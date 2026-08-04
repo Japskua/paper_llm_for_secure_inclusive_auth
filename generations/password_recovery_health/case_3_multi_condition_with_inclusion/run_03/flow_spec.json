@@ -1,0 +1,147 @@
+{
+  "variables": {
+    "email": null,
+    "new_password": "ValidPass!2025"
+  },
+  "csrf": null,
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/",
+      "capture_html": {
+        "identifier": "id\\.value=\"([^\"]+)\""
+      }
+    },
+    {
+      "name": "start secure session",
+      "method": "GET",
+      "path": "/api/session?route=recover",
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery/initiate",
+      "headers": {
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "identifier": "${identifier}"
+      },
+      "expect_json_true": "mockToken",
+      "capture": {
+        "recovery_token": "mockToken"
+      }
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "token": "${recovery_token}"
+      },
+      "expect_json_true": "message"
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/recovery/reset",
+      "headers": {
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "password": "${new_password}",
+        "confirm": "${new_password}"
+      },
+      "expect_json_true": "mockCode",
+      "capture": {
+        "mfa_code": "mockCode"
+      }
+    },
+    {
+      "name": "complete reset MFA",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "message"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "headers": {
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "message"
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment/confirm",
+      "headers": {
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "message"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid recovery reference rejected",
+      "method": "POST",
+      "path": "/api/recovery/initiate",
+      "headers": {
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "identifier": "!"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "headers": {
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "identifier": "${identifier}",
+        "password": "WrongPass!2025"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "missing CSRF rejected",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {},
+      "expect_failure": true
+    },
+    {
+      "name": "invalid MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    }
+  ]
+}

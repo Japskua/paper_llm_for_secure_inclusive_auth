@@ -1,18 +1,16 @@
-# TASKER REPORT — Iteration 6 · Step 16
+# TASKER REPORT — Iteration 2 · Step 4
 
 ## SUMMARY
-- Raw tasks from Tasker: 5
-- Effective task_list after retention: 5
+- Raw tasks from Tasker: 3
+- Effective task_list after retention: 3
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Serve all browser JavaScript from a same-file `GET /client.js` route with `Content-Type: application/javascript`, and load it using `<script src=\"/client.js\" defer></script>` rather than any inline script block.","Expose the per-session CSRF token to `/client.js` through a safely encoded server-rendered value such as a `meta[name=\"csrf-token\"]` element; have the client read it and send it on every sensitive request.","Set CSP to permit only same-origin scripts (for example, `script-src 'self'`) and remove nonce-based authorization for inline client scripts.","Bound server session allocation by enforcing a maximum session count and/or direct-client-IP throttling for unauthenticated `GET /`; when capacity is unavailable, return a generic retry response without creating a session.","Replace runtime `label.style.margin = \"0\"` usage with a predefined stylesheet rule such as `.check-row label { margin: 0; }`, with no inline style attributes written by client JavaScript."]}
+{"task_list":["Make reset-token consumption atomic in `/api/reset/confirm`: reserve the validated verified reset record before awaiting password hashing, reject concurrent reuse, and never restore it in a way that permits reuse if hashing fails.","Replace session-only throttling with shared server-side limits: apply reset request/verification limits to a server-controlled normalized-contact digest and apply login and MFA failures/lockouts at global or account scope so a new session cannot bypass them.","In `/api/login`, reject password values that are not strings or are outside 1–128 characters with the same generic invalid-credentials response, and pass the original validated password unchanged to `Bun.password.verify`."]}
 ```
 
 ## PARSED_TASKS
-- Serve all browser JavaScript from a same-file GET /client.js route with Content-Type: application/javascript, and load it using <script src="/client.js" defer></script> rather than any inline script block.
-- Expose the per-session CSRF token to /client.js through a safely encoded server-rendered value such as a meta[name="csrf-token"] element; have the client read it and send it on every sensitive request.
-- Set CSP to permit only same-origin scripts (for example, script-src 'self') and remove nonce-based authorization for inline client scripts.
-- Bound server session allocation by enforcing a maximum session count and/or direct-client-IP throttling for unauthenticated GET /; when capacity is unavailable, return a generic retry response without creating a session.
-- Replace runtime label.style.margin = "0" usage with a predefined stylesheet rule such as .check-row label { margin: 0; }, with no inline style attributes written by client JavaScript.
+- Make reset-token consumption atomic in /api/reset/confirm: reserve the validated verified reset record before awaiting password hashing, reject concurrent reuse, and never restore it in a way that permits reuse if hashing fails.
+- Replace session-only throttling with shared server-side limits: apply reset request/verification limits to a server-controlled normalized-contact digest and apply login and MFA failures/lockouts at global or account scope so a new session cannot bypass them.
+- In /api/login, reject password values that are not strings or are outside 1–128 characters with the same generic invalid-credentials response, and pass the original validated password unchanged to Bun.password.verify.
