@@ -46,6 +46,9 @@ SOFTWARE = {
 }
 
 _print_lock = threading.Lock()
+# Set when a credentials/model-id fault is seen, so the batch stops instead of
+# recording dozens of failures that say nothing about the model.
+_abort = threading.Event()
 
 
 def log(msg: str) -> None:
@@ -184,6 +187,21 @@ _MODEL_SIGNS = (
     "tasker did not return",
 )
 
+# Credentials or model-id problems. These are not results: they would otherwise
+# fill the dataset with failures that say nothing about the model, so they abort
+# the batch immediately instead.
+_CONFIG_SIGNS = (
+    "authenticationerror",
+    "error code: 401",
+    "error code: 403",
+    "invalid api key",
+    "no auth credentials",
+    "user not found",
+    "is not a valid model id",
+    "no endpoints found",
+    "notfounderror",
+)
+
 
 def classify_failure(out: pathlib.Path) -> Dict[str, Any]:
     """
@@ -201,7 +219,9 @@ def classify_failure(out: pathlib.Path) -> Dict[str, Any]:
         evidence.append(console.read_text(encoding="utf-8", errors="replace")[-4000:])
     blob = "\n".join(evidence).lower()
 
-    if any(sign in blob for sign in _MODEL_SIGNS):
+    if any(sign in blob for sign in _CONFIG_SIGNS):
+        kind = "configuration"
+    elif any(sign in blob for sign in _MODEL_SIGNS):
         kind = "model"
     elif any(sign in blob for sign in _INFRA_SIGNS):
         kind = "infrastructure"
@@ -244,6 +264,10 @@ def archive_legacy(args) -> None:
 def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
     out: pathlib.Path = job["_out"]
     record = {k: v for k, v in job.items() if not k.startswith("_")}
+
+    if _abort.is_set():
+        record.update(status="aborted", reason="batch aborted by a configuration fault")
+        return record
 
     if is_complete(out) and not args.force:
         # Still collect: a resumed batch must produce a complete manifest, not
@@ -290,7 +314,12 @@ def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
             # is evidence, and erasing it would quietly convert a failure into a
             # success in the dataset.
             if any(out.iterdir()):
-                shutil.move(str(out), str(out.parent / f"{out.name}_failed_attempt_{attempts - 1}"))
+                # shutil.move() into an existing directory nests inside it
+                # rather than replacing, so clear any stale attempt first.
+                dest = out.parent / f"{out.name}_failed_attempt_{attempts - 1}"
+                if dest.exists():
+                    shutil.rmtree(dest)
+                shutil.move(str(out), str(dest))
             else:
                 shutil.rmtree(out)
         out.mkdir(parents=True, exist_ok=True)
@@ -305,6 +334,14 @@ def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
 
         cause = classify_failure(out)
         failures.append({"attempt": attempts, "exit_code": exit_code, **cause})
+
+        if cause["kind"] == "configuration":
+            _abort.set()
+            log(
+                f"ABORT {job['run_id']} exit={exit_code} cause=configuration — "
+                f"stopping the batch: {cause['detail'][:120]}"
+            )
+            break
 
         if not cause["retryable"]:
             # Model or unknown cause: keep it as a recorded failure.
@@ -440,7 +477,7 @@ def summarize(records: List[Dict[str, Any]]) -> Dict[str, Any]:
         "runs_failed": sum(1 for r in records if r.get("status") != "completed"),
         "failures_by_cause": {
             cause: sum(1 for r in records if r.get("failure_cause") == cause)
-            for cause in ("model", "infrastructure", "unknown")
+            for cause in ("model", "infrastructure", "configuration", "unknown")
             if any(r.get("failure_cause") == cause for r in records)
         },
         "retried_runs": sum(1 for r in records if (r.get("attempts") or 0) > 1),
@@ -488,6 +525,11 @@ def main() -> int:
                     {k: v for k, v in job.items() if not k.startswith("_")}
                     | {"status": "error", "error": f"{type(e).__name__}: {e}"}
                 )
+
+    if _abort.is_set():
+        log("=" * 72)
+        log("BATCH ABORTED: a credentials or model-id fault was detected.")
+        log("Fix the configuration and re-run; completed runs are reused automatically.")
 
     records.sort(key=lambda r: (r["case"], r["run_index"]))
     manifest = {
