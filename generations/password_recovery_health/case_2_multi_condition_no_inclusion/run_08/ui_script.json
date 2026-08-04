@@ -1,0 +1,113 @@
+{
+  "variables": {
+    "email": "patient@example.com",
+    "new_password": "ValidPass1!xx"
+  },
+  "steps": [
+    {
+      "name": "recovery_start",
+      "actions": []
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#account",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "#recoverForm button[type='submit']"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#verifyStage:not([hidden])"
+        },
+        {
+          "do": "read",
+          "selector": "#logOutput",
+          "regex": "SIMULATED RESET DELIVERY — recovery token: ([A-Za-z0-9_-]+)",
+          "into": "recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#verifyForm button[type='submit']"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#passwordStage:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "security_code_verification",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirmPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "#passwordForm button[type='submit']"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfaStage:not([hidden])"
+        },
+        {
+          "do": "read",
+          "selector": "#logOutput",
+          "regex": "SIMULATED MFA DELIVERY — security code: (\\d{6})",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfaCode",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "#mfaForm button[type='submit']"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacyStage:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions_accepted",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#privacyCheck"
+        },
+        {
+          "do": "click",
+          "selector": "#privacyForm button[type='submit']"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#confirmationStage:not([hidden])"
+        }
+      ]
+    }
+  ]
+}

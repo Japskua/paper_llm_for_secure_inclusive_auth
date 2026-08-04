@@ -1,0 +1,132 @@
+{
+  "variables": {
+    "email": "helena@example.test",
+    "new_password": "ValidReset1!"
+  },
+  "steps": [
+    {
+      "name": "password_reset_start",
+      "actions": []
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "#requestCode"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#verify:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logOutput",
+          "regex": "SIMULATED recovery delivery\\. Code: ([a-f0-9]+)",
+          "into": "recovery_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "#verifyCode"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#newPassword:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "sign_in",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirmPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "#savePassword"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#signIn:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "mfa",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#loginPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "#loginButton"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "signed_in",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logOutput",
+          "regex": "SIMULATED MFA delivery\\. Verification code: (\\d+)",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#mfaCode",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "#confirmMfa"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#complete:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "privacy_statement_accepted",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#acceptPrivacy"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Privacy statement accepted. Hospital authorities may now book your appointment."
+        }
+      ]
+    }
+  ]
+}

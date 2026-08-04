@@ -1,0 +1,150 @@
+{
+  "variables": {
+    "email": "helena@hospital.test",
+    "new_password": "Renewed-Password!42"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "request_password_reset",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Start recovery')"
+        }
+      ]
+    },
+    {
+      "name": "authorize_recovery_delivery",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "SIMULATED TRUSTED DELIVERY: delivery authorization code = (\\d{6})",
+          "into": "delivery_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${delivery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Authorize delivery')"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#shown",
+          "regex": "([a-f0-9]{64})",
+          "into": "recovery_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#p",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#c",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        }
+      ]
+    },
+    {
+      "name": "sign_in",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue to sign in')"
+        }
+      ]
+    },
+    {
+      "name": "security_check",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#p",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in')"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "SIMULATED MFA DELIVERY: verification code = (\\d{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify security code')"
+        }
+      ]
+    },
+    {
+      "name": "confirm_appointment",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#accept"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept and continue')"
+        }
+      ]
+    },
+    {
+      "name": "appointment_request_confirmed",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm appointment request')"
+        }
+      ]
+    }
+  ]
+}

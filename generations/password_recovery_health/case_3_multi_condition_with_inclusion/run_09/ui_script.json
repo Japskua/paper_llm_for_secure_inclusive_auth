@@ -1,0 +1,136 @@
+{
+  "variables": {
+    "email": "helena@example.test",
+    "new_password": "ValidPass1!23"
+  },
+  "steps": [
+    {
+      "name": "request_recovery_code",
+      "actions": []
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#femail",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Request recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#ftoken"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Reset token: ([a-f0-9]{64})",
+          "into": "reset_token"
+        },
+        {
+          "do": "fill",
+          "selector": "#ftoken",
+          "value": "${reset_token}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#fnew"
+        }
+      ]
+    },
+    {
+      "name": "complete_safety_check",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#fnew",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#frepeat",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue to safety check')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#fmfa"
+        }
+      ]
+    },
+    {
+      "name": "sign_in",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "MFA safety code: (\\d{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#fmfa",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm safety code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#flogin"
+        }
+      ]
+    },
+    {
+      "name": "accept_privacy_conditions",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#flogin",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in securely')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#faccept"
+        }
+      ]
+    },
+    {
+      "name": "recovery_complete",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#faccept"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept privacy conditions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=All set"
+        }
+      ]
+    }
+  ]
+}

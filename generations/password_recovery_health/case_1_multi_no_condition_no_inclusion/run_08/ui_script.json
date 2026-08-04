@@ -1,0 +1,132 @@
+{
+  "variables": {
+    "email": "recovery.user@example.com",
+    "new_password": "ValidPassw0rd!"
+  },
+  "steps": [
+    {
+      "name": "recovery_start",
+      "actions": []
+    },
+    {
+      "name": "reset_instructions_requested",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Request reset instructions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#use-link-button"
+        },
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "\\[Mock delivery\\] Reset token: ([a-f0-9]+)",
+          "into": "reset_token"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=Enter a reset token"
+        },
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${reset_token}"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify token')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#screen-reset:not(.hidden)"
+        },
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm-password",
+          "value": "${new_password}"
+        }
+      ]
+    },
+    {
+      "name": "one_time_verification",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Save password and continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#screen-mfa:not(.hidden)"
+        },
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "\\[Mock MFA delivery\\] Verification code: ([0-9]{6})",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "enter_one_time_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${mfa_code}"
+        }
+      ]
+    },
+    {
+      "name": "updated_privacy_conditions",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify and sign in')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#screen-privacy:not(.hidden)"
+        },
+        {
+          "do": "click",
+          "selector": "#privacy-check"
+        }
+      ]
+    },
+    {
+      "name": "conditions_accepted",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept conditions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#screen-complete:not(.hidden)"
+        }
+      ]
+    }
+  ]
+}

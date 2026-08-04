@@ -1,0 +1,127 @@
+{
+  "variables": {
+    "email": "helena.demo@hospital.test",
+    "new_password": "ValidNewPass1!"
+  },
+  "steps": [
+    {
+      "name": "recovery_start",
+      "actions": []
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#identifier",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Check your recovery code"
+        }
+      ]
+    },
+    {
+      "name": "simulated_recovery_delivery",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Open simulated recovery delivery')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Simulated delivery opened. The code is ready in the box below."
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Mock hospital delivery: recovery code ([A-Za-z0-9_-]+)\\.",
+          "into": "recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Create a strong password"
+        }
+      ]
+    },
+    {
+      "name": "security_code_prompt",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Confirm your security code"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Mock hospital MFA code: (\\d+)\\.",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Review updated privacy conditions"
+        }
+      ]
+    },
+    {
+      "name": "appointment_confirmation",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept updated privacy conditions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=You are all set"
+        }
+      ]
+    }
+  ]
+}

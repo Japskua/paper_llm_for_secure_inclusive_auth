@@ -1,0 +1,153 @@
+{
+  "variables": {
+    "email": "helena.recovery@localhost",
+    "new_password": "Renewed!Pass2025"
+  },
+  "steps": [
+    {
+      "name": "request_password_reset",
+      "actions": []
+    },
+    {
+      "name": "recovery_instructions_sent",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#identifier",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery instructions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Open secure verification link"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Test reset code: ([A-Za-z0-9_-]+)",
+          "into": "reset_code"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=Open secure verification link"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#code"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password"
+        }
+      ]
+    },
+    {
+      "name": "sign_in",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Update password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#login-password"
+        }
+      ]
+    },
+    {
+      "name": "confirm_sign_in",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#login-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa-code"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated MFA code: (\\d{6})",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "updated_privacy_statement",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify and sign in')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "button:has-text('Accept privacy statement')"
+        }
+      ]
+    },
+    {
+      "name": "appointment_booking_confirmation",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept privacy statement')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "button:has-text('Confirm appointment request')"
+        }
+      ]
+    },
+    {
+      "name": "appointment_request_confirmed",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm appointment request')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Your appointment request has been confirmed."
+        }
+      ]
+    }
+  ]
+}

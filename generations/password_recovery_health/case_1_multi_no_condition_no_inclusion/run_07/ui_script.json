@@ -1,0 +1,96 @@
+{
+  "variables": {
+    "email": "patient@example.com",
+    "new_password": "New-Secure-Password-42!"
+  },
+  "steps": [
+    {
+      "name": "recover_password",
+      "actions": []
+    },
+    {
+      "name": "verify_recovery",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery verification')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#token"
+        },
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "SIMULATED DELIVERY — recovery code: ([A-Za-z0-9_-]+)",
+          "into": "recovery_token"
+        },
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "SIMULATED MFA — verification code: ([0-9]{6})",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "create_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify and continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save secure password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#accept"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions_accepted",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#accept"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Accepted securely. Hospital appointment booking may proceed."
+        }
+      ]
+    }
+  ]
+}

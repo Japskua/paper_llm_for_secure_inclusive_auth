@@ -1,0 +1,130 @@
+{
+  "variables": {
+    "email": "helena@example.test",
+    "new_password": "ValidPass1!xx"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "reset_instructions_sent",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send reset instructions')"
+        },
+        {
+          "do": "click",
+          "selector": "#logs-title"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "SIMULATED RESET DELIVERY: reset code ([A-Za-z0-9_-]+)\\.",
+          "into": "reset_code"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Enter reset code')"
+        },
+        {
+          "do": "fill",
+          "selector": "#reset-code",
+          "value": "${reset_code}"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        }
+      ]
+    },
+    {
+      "name": "new_password_entered",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#new-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm-password",
+          "value": "${new_password}"
+        }
+      ]
+    },
+    {
+      "name": "confirm_identity",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Update password')"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "SIMULATED MFA DELIVERY: verification code (\\d{6})\\.",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "mfa_code_entered",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${mfa_code}"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify and continue')"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions_accepted",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#privacy-check"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept and continue')"
+        }
+      ]
+    },
+    {
+      "name": "appointment_request_confirmed",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm appointment request')"
+        }
+      ]
+    }
+  ]
+}

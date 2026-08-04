@@ -1,0 +1,170 @@
+{
+  "variables": {
+    "email": "helena.demo@hospital.test",
+    "new_password": "N3wSecure!Pass"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "request_password_reset",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "#request button"
+        }
+      ]
+    },
+    {
+      "name": "recovery_code_delivered",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated registered-email recovery token \\(testing only\\): ([A-Za-z0-9_-]{43})",
+          "into": "reset_token"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${reset_token}"
+        },
+        {
+          "do": "click",
+          "selector": "#verify button"
+        }
+      ]
+    },
+    {
+      "name": "send_recovery_security_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#send"
+        }
+      ]
+    },
+    {
+      "name": "recovery_security_code_delivered",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated recovery security code \\(testing only\\): (\\d{6})",
+          "into": "recovery_security_code"
+        }
+      ]
+    },
+    {
+      "name": "verify_recovery_security_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${recovery_security_code}"
+        },
+        {
+          "do": "click",
+          "selector": "#mfaForm button"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "#passwordForm button"
+        }
+      ]
+    },
+    {
+      "name": "password_changed",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#toLogin"
+        }
+      ]
+    },
+    {
+      "name": "sign_in_with_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#loginPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "#loginForm button"
+        }
+      ]
+    },
+    {
+      "name": "sign_in_security_code_delivered",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated sign-in security code \\(testing only\\): (\\d{6})",
+          "into": "login_security_code"
+        }
+      ]
+    },
+    {
+      "name": "verify_sign_in_security_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#loginMfa",
+          "value": "${login_security_code}"
+        },
+        {
+          "do": "click",
+          "selector": "#loginMfaForm button"
+        }
+      ]
+    },
+    {
+      "name": "accept_privacy_conditions",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#privacyForm button"
+        }
+      ]
+    },
+    {
+      "name": "signed_out",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#logout"
+        }
+      ]
+    }
+  ]
+}

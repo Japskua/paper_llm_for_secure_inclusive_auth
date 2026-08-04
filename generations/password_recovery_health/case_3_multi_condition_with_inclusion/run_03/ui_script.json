@@ -1,0 +1,134 @@
+{
+  "variables": {
+    "email": "pre-filled practice recovery reference",
+    "new_password": "NewPassw0rd!"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "request_recovery_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Reset a forgotten password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Step 1: request a recovery code"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Step 2: verify your recovery code"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Mock recovery delivery: use this code here: ([A-Za-z0-9_-]{24,128})",
+          "into": "recovery_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Step 3: choose a strong password"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Step 4: confirm it is you"
+        }
+      ]
+    },
+    {
+      "name": "confirm_second_factor",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Mock MFA delivery after password reset: code ([0-9]{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm and continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Updated privacy conditions"
+        }
+      ]
+    },
+    {
+      "name": "accept_privacy_conditions",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#privacy"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept and continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Confirm appointment request"
+        }
+      ]
+    },
+    {
+      "name": "confirm_appointment_request",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm appointment request')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Request confirmed"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "variables": {
+    "email": "user@example.com",
+    "new_password": "StrongPass1!"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "recovery_instructions_sent",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#identifier",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery instructions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#link-holder:not(.hidden)"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#manual-verify"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#verify:not(.hidden)"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Mock reset delivery: recovery code ([A-Za-z0-9_-]+)",
+          "into": "reset_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${reset_code}"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password:not(.hidden)"
+        },
+        {
+          "do": "fill",
+          "selector": "#password-value",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#password-confirm",
+          "value": "${new_password}"
+        }
+      ]
+    },
+    {
+      "name": "security_confirmation",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Update password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa:not(.hidden)"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Mock MFA delivery: security code (\\d{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${mfa_code}"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacy:not(.hidden)"
+        },
+        {
+          "do": "click",
+          "selector": "#privacy-check"
+        }
+      ]
+    },
+    {
+      "name": "request_medication_review",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept conditions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#appointment:not(.hidden)"
+        }
+      ]
+    },
+    {
+      "name": "appointment_request_received",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#appointment-button"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#complete:not(.hidden)"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "variables": {
+    "email": "helena@example.com",
+    "new_password": "ResetPass1!xy"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#identifier",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Request recovery code')"
+        },
+        {
+          "do": "read",
+          "selector": "#logList",
+          "regex": "server-accepted manual recovery code: ([A-Za-z0-9_-]+)",
+          "into": "recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "confirm_second_factor",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "read",
+          "selector": "#logList",
+          "regex": "MFA delivery simulation: confirmation code: ([0-9]+)",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm code')"
+        }
+      ]
+    },
+    {
+      "name": "sign_in_with_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#newPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#repeatPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        }
+      ]
+    },
+    {
+      "name": "review_privacy_conditions",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#loginId",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#loginPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in')"
+        }
+      ]
+    },
+    {
+      "name": "confirmation_complete",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm privacy conditions')"
+        }
+      ]
+    }
+  ]
+}

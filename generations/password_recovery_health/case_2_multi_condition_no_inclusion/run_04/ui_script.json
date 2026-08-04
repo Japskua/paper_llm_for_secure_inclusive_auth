@@ -1,0 +1,119 @@
+{
+  "variables": {
+    "email": "test@example.com",
+    "new_password": "ValidPassword1!"
+  },
+  "steps": [
+    {
+      "name": "recovery_request",
+      "actions": [
+        {
+          "do": "wait_for",
+          "selector": "#contact"
+        }
+      ]
+    },
+    {
+      "name": "recovery_code_requested",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#contact",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Request recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": ".feedback:has-text('instructions have been sent')"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "wait_ms",
+          "ms": 500
+        },
+        {
+          "do": "wait_for",
+          "selector": "#token"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Test reset token: ([a-f0-9]{64})",
+          "into": "reset_token"
+        },
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${reset_token}"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password"
+        },
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm-password",
+          "value": "${new_password}"
+        }
+      ]
+    },
+    {
+      "name": "confirm_security_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue to security check')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Test MFA code: ([0-9]{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${mfa_code}"
+        }
+      ]
+    },
+    {
+      "name": "password_reset_complete",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Finish password reset')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h2:has-text('Password reset complete')"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "variables": {
+    "email": "helena@hospital.test",
+    "new_password": "Renewed!2026Care"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "request_password_reset",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=Forgot password?"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#recover-id"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#recover-id",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Prepare recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#code"
+        },
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "\\[SIMULATED DELIVERY\\] Current browser recovery code: ([^\\s]+)",
+          "into": "recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Check code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#new-password"
+        }
+      ]
+    },
+    {
+      "name": "review_privacy_conditions",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#new-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#accept"
+        }
+      ]
+    },
+    {
+      "name": "appointment_booking_confirmation",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#accept"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept and continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Privacy conditions accepted"
+        }
+      ]
+    },
+    {
+      "name": "sign_in_with_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=Return to sign in"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#login-id"
+        }
+      ]
+    },
+    {
+      "name": "verify_sign_in_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#login-id",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#login-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa-code"
+        },
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "\\[SIMULATED MFA\\] Browser test verification code: ([^\\s]+)",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "authenticated_appointment_booking_confirmation",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Check code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Privacy conditions accepted"
+        }
+      ]
+    }
+  ]
+}

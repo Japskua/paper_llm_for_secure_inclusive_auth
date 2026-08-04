@@ -1,0 +1,190 @@
+{
+  "variables": {
+    "email": "helena.recovery@hospital.test",
+    "new_password": "Recovered-Clinical!2026"
+  },
+  "steps": [
+    {
+      "name": "request_reset_page",
+      "actions": []
+    },
+    {
+      "name": "reset_code_delivered",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#contact",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "#request-form button:has-text('Request reset')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mock-token:not(:empty)"
+        },
+        {
+          "do": "read",
+          "selector": "#mock-token",
+          "regex": "Training-only mock reset code: ([A-Za-z0-9_-]{40,100})",
+          "into": "reset_code"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button[data-route='verify']"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#verify:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#verify-form button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "security_check_after_password_reset",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#new-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "#password-form button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa:not([hidden])"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "SIMULATED MFA: training security code is ([0-9]{6})",
+          "into": "reset_mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions_after_password_reset",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${reset_mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "#mfa-form button:has-text('Verify security code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacy:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions_accepted_after_password_reset",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#accept-privacy"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacy-status.good"
+        }
+      ]
+    },
+    {
+      "name": "sign_in",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button[data-route='login']"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#login:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "security_check_after_sign_in",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#login-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "#login-form button:has-text('Sign in securely')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa:not([hidden])"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "SIMULATED MFA: training security code is ([0-9]{6})",
+          "into": "login_mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions_after_sign_in",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${login_mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "#mfa-form button:has-text('Verify security code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacy:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions_accepted_after_sign_in",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#accept-privacy"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacy-status.good"
+        }
+      ]
+    }
+  ]
+}
