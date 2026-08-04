@@ -11,7 +11,7 @@
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "start recovery session",
+      "name": "open recovery page and establish session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "verify MFA code",
+      "name": "verify MFA security code",
       "method": "POST",
       "path": "/api/verify-mfa",
       "expect_failure": false,
@@ -43,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "set new password",
+      "name": "save new password",
       "method": "POST",
       "path": "/api/password",
       "expect_failure": false,
@@ -59,17 +59,9 @@
       "ok": true
     },
     {
-      "name": "missing CSRF rejected",
+      "name": "empty account reference rejected",
       "method": "POST",
       "path": "/api/recovery",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "invalid recovery code rejected",
-      "method": "POST",
-      "path": "/api/verify-reset",
       "expect_failure": true,
       "status_code": 200,
       "ok": true
@@ -83,11 +75,19 @@
       "ok": true
     },
     {
-      "name": "wrong MFA code rejected",
+      "name": "incorrect MFA code rejected",
       "method": "POST",
       "path": "/api/verify-mfa",
       "expect_failure": true,
       "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": true,
+      "status_code": 403,
       "ok": true
     }
   ],

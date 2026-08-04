@@ -1,17 +1,17 @@
 {
-  "ok": false,
+  "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 7,
-  "steps_passed": 3,
-  "happy_path_passed": 1,
+  "steps_total": 8,
+  "steps_passed": 8,
+  "happy_path_passed": 5,
   "happy_path_total": 5,
-  "negative_passed": 2,
-  "negative_total": 2,
-  "negatives_meaningful": false,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "load recovery page and establish session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -23,40 +23,32 @@
       "method": "POST",
       "path": "/api/request-reset",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'token' from 'testToken'",
-        "could not capture 'mfa_code' from 'testMfaCode'"
-      ],
-      "response_message": "Security validation failed. Refresh and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "verify recovery and MFA codes",
       "method": "POST",
       "path": "/api/verify-reset",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Security validation failed. Refresh and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "set new password",
       "method": "POST",
       "path": "/api/set-password",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Security validation failed. Refresh and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "accept privacy conditions",
+      "name": "accept updated privacy conditions",
       "method": "POST",
       "path": "/api/accept-privacy",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Security validation failed. Refresh and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "invalid email rejected",
@@ -67,14 +59,22 @@
       "ok": true
     },
     {
-      "name": "CSRF mismatch rejected",
+      "name": "incorrect MFA code rejected",
       "method": "POST",
-      "path": "/api/request-reset",
+      "path": "/api/verify-reset",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/set-password",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 7
+  "spec_steps": 8
 }

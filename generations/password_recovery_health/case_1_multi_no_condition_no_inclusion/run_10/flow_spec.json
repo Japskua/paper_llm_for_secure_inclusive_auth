@@ -1,7 +1,7 @@
 {
   "variables": {
     "email": "demo-account",
-    "new_password": "ValidPassword1!"
+    "new_password": "ValidPass123!"
   },
   "csrf": {
     "html_regex": "const CSRF = \"([^\"]+)\";",
@@ -10,7 +10,7 @@
   },
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "load recovery page and establish session",
       "method": "GET",
       "path": "/"
     },
@@ -25,7 +25,7 @@
         "identifier": "${email}"
       },
       "capture": {
-        "reset_token": "testToken"
+        "token": "testToken"
       }
     },
     {
@@ -36,7 +36,7 @@
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "token": "${reset_token}"
+        "token": "${token}"
       }
     },
     {
@@ -99,31 +99,7 @@
       "expect_failure": true
     },
     {
-      "name": "weak password rejected",
-      "method": "POST",
-      "path": "/api/reset-complete",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "password": "short"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "wrong MFA code rejected",
-      "method": "POST",
-      "path": "/api/mfa-verify",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "code": "000000"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "privacy acceptance required",
+      "name": "privacy acceptance requires true",
       "method": "POST",
       "path": "/api/privacy-accept",
       "headers": {

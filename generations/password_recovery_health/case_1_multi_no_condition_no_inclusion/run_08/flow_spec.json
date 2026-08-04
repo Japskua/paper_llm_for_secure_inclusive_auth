@@ -1,44 +1,36 @@
 {
   "variables": {
     "email": "patient@example.com",
-    "new_password": "NewPassword1!"
+    "new_password": "ValidPass1!xx"
   },
   "csrf": {
-    "html_regex": "const csrf=\"([^\"]+)\"",
+    "html_regex": "const csrf=\"([a-f0-9]+)\"",
     "field": "X-CSRF-Token",
     "in": "header"
   },
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "open recovery page and establish session",
       "method": "GET",
       "path": "/"
     },
     {
-      "name": "request reset token",
+      "name": "request recovery token",
       "method": "POST",
       "path": "/api/recovery",
-      "headers": {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "email": "${email}"
       },
       "capture": {
-        "reset_token": "mockToken"
+        "token": "mockToken"
       }
     },
     {
-      "name": "verify reset token",
+      "name": "verify recovery token",
       "method": "POST",
       "path": "/api/verify",
-      "headers": {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "token": "${reset_token}"
+        "token": "${token}"
       },
       "expect_json_true": "ok"
     },
@@ -46,10 +38,6 @@
       "name": "set new password",
       "method": "POST",
       "path": "/api/reset",
-      "headers": {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "password": "${new_password}",
         "confirmation": "${new_password}"
@@ -60,13 +48,9 @@
       }
     },
     {
-      "name": "verify MFA code",
+      "name": "complete MFA sign-in",
       "method": "POST",
       "path": "/api/mfa",
-      "headers": {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "${mfa_code}"
       },
@@ -76,10 +60,6 @@
       "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy",
-      "headers": {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "accepted": true
       },
@@ -88,25 +68,9 @@
   ],
   "negative_steps": [
     {
-      "name": "missing CSRF token rejected",
+      "name": "invalid recovery email rejected",
       "method": "POST",
       "path": "/api/recovery",
-      "headers": {
-        "Content-Type": "application/json"
-      },
-      "body": {
-        "email": "${email}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "invalid email rejected",
-      "method": "POST",
-      "path": "/api/recovery",
-      "headers": {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "email": "not-an-email"
       },
@@ -116,12 +80,27 @@
       "name": "invalid reset token rejected",
       "method": "POST",
       "path": "/api/verify",
-      "headers": {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "token": "not-a-token"
+        "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset",
+      "body": {
+        "password": "weakpassword",
+        "confirmation": "weakpassword"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "000000"
       },
       "expect_failure": true
     },
@@ -129,10 +108,6 @@
       "name": "privacy acceptance required",
       "method": "POST",
       "path": "/api/privacy",
-      "headers": {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "accepted": false
       },

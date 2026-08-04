@@ -1,8 +1,8 @@
 {
   "variables": {
     "email": "helena@hospital.test",
-    "seeded_password": "Welcome!2025Heart",
-    "new_password": "Renewed!2025Care"
+    "password": "Welcome!2025Heart",
+    "new_password": "Recovered!2026Pass"
   },
   "csrf": {
     "html_regex": "<meta name=\"csrf-token\" content=\"([^\"]+)\">",
@@ -11,9 +11,15 @@
   },
   "steps": [
     {
-      "name": "open recovery application",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/"
+    },
+    {
+      "name": "load initial state",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_json_true": "ok"
     },
     {
       "name": "request recovery code",
@@ -37,12 +43,34 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "set replacement password",
+      "name": "replace password",
       "method": "POST",
       "path": "/api/password",
       "body": {
         "password": "${new_password}",
         "confirmation": "${new_password}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign in with replaced password",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "identifier": "${email}",
+        "password": "${new_password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "testMfaCode"
+      }
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "body": {
+        "code": "${mfa_code}"
       },
       "expect_json_true": "ok"
     },
@@ -56,38 +84,10 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "confirm recovery completion state",
+      "name": "confirm completed state",
       "method": "GET",
       "path": "/api/state",
-      "expect_json_true": "privacyAccepted"
-    },
-    {
-      "name": "sign in with replacement password",
-      "method": "POST",
-      "path": "/api/login",
-      "body": {
-        "identifier": "${email}",
-        "password": "${new_password}"
-      },
-      "expect_json_true": "ok",
-      "capture": {
-        "mfa_code": "testMfaCode"
-      }
-    },
-    {
-      "name": "verify sign-in MFA code",
-      "method": "POST",
-      "path": "/api/mfa-verify",
-      "body": {
-        "code": "${mfa_code}"
-      },
       "expect_json_true": "ok"
-    },
-    {
-      "name": "confirm authenticated completion state",
-      "method": "GET",
-      "path": "/api/state",
-      "expect_json_true": "authenticated"
     }
   ],
   "negative_steps": [
@@ -97,28 +97,34 @@
       "path": "/api/login",
       "body": {
         "identifier": "${email}",
-        "password": "Wrong!Password2025"
+        "password": "WrongPassword!9"
       },
       "expect_failure": true
     },
     {
-      "name": "invalid recovery identifier rejected",
+      "name": "reused recovery code rejected",
       "method": "POST",
-      "path": "/api/recovery-request",
+      "path": "/api/recovery-verify",
       "body": {
-        "identifier": "invalid<identifier>"
+        "code": "${recovery_token}"
       },
       "expect_failure": true
     },
     {
-      "name": "invalid CSRF token rejected",
+      "name": "privacy acceptance required",
       "method": "POST",
-      "path": "/api/recovery-request",
-      "headers": {
-        "X-CSRF-Token": "invalid-csrf-token-value-more-than-twenty-characters"
-      },
+      "path": "/api/privacy-accept",
       "body": {
-        "identifier": "${email}"
+        "accept": false
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "MFA verification without pending sign-in rejected",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "body": {
+        "code": "${mfa_code}"
       },
       "expect_failure": true
     }

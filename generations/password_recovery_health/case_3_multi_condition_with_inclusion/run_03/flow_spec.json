@@ -1,23 +1,26 @@
 {
   "variables": {
     "email": null,
-    "new_password": "ValidPass!2025"
+    "new_password": "SecurePass123!"
   },
-  "csrf": null,
+  "html_variables": {
+    "recovery_reference": "id\\.value=\"(practice-[a-z0-9_-]+)\""
+  },
+  "csrf": {
+    "html_regex": null,
+    "field": "x-csrf-token",
+    "in": "header"
+  },
   "steps": [
     {
-      "name": "load recovery page",
+      "name": "open recovery portal",
       "method": "GET",
-      "path": "/",
-      "capture_html": {
-        "identifier": "id\\.value=\"([^\"]+)\""
-      }
+      "path": "/"
     },
     {
       "name": "start secure session",
       "method": "GET",
       "path": "/api/session?route=recover",
-      "expect_json_true": "csrf",
       "capture": {
         "csrf": "csrf"
       }
@@ -26,13 +29,9 @@
       "name": "request recovery code",
       "method": "POST",
       "path": "/api/recovery/initiate",
-      "headers": {
-        "x-csrf-token": "${csrf}"
-      },
       "body": {
-        "identifier": "${identifier}"
+        "identifier": "${recovery_reference}"
       },
-      "expect_json_true": "mockToken",
       "capture": {
         "recovery_token": "mockToken"
       }
@@ -41,61 +40,41 @@
       "name": "verify recovery code",
       "method": "POST",
       "path": "/api/recovery/verify",
-      "headers": {
-        "x-csrf-token": "${csrf}"
-      },
       "body": {
         "token": "${recovery_token}"
-      },
-      "expect_json_true": "message"
+      }
     },
     {
       "name": "set new password",
       "method": "POST",
       "path": "/api/recovery/reset",
-      "headers": {
-        "x-csrf-token": "${csrf}"
-      },
       "body": {
         "password": "${new_password}",
         "confirm": "${new_password}"
       },
-      "expect_json_true": "mockCode",
       "capture": {
         "mfa_code": "mockCode"
       }
     },
     {
-      "name": "complete reset MFA",
+      "name": "confirm reset MFA",
       "method": "POST",
       "path": "/api/mfa/verify",
-      "headers": {
-        "x-csrf-token": "${csrf}"
-      },
       "body": {
         "code": "${mfa_code}"
-      },
-      "expect_json_true": "message"
+      }
     },
     {
       "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy/accept",
-      "headers": {
-        "x-csrf-token": "${csrf}"
-      },
-      "body": {},
-      "expect_json_true": "message"
+      "body": {}
     },
     {
       "name": "confirm appointment request",
       "method": "POST",
       "path": "/api/appointment/confirm",
-      "headers": {
-        "x-csrf-token": "${csrf}"
-      },
-      "body": {},
-      "expect_json_true": "message"
+      "body": {}
     }
   ],
   "negative_steps": [
@@ -103,11 +82,17 @@
       "name": "invalid recovery reference rejected",
       "method": "POST",
       "path": "/api/recovery/initiate",
-      "headers": {
-        "x-csrf-token": "${csrf}"
-      },
       "body": {
         "identifier": "!"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "used recovery token rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "token": "${recovery_token}"
       },
       "expect_failure": true
     },
@@ -115,31 +100,9 @@
       "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/login",
-      "headers": {
-        "x-csrf-token": "${csrf}"
-      },
       "body": {
-        "identifier": "${identifier}",
-        "password": "WrongPass!2025"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "missing CSRF rejected",
-      "method": "POST",
-      "path": "/api/privacy/accept",
-      "body": {},
-      "expect_failure": true
-    },
-    {
-      "name": "invalid MFA code rejected",
-      "method": "POST",
-      "path": "/api/mfa/verify",
-      "headers": {
-        "x-csrf-token": "${csrf}"
-      },
-      "body": {
-        "code": "000000"
+        "identifier": "${recovery_reference}",
+        "password": "WrongPassword123!"
       },
       "expect_failure": true
     }

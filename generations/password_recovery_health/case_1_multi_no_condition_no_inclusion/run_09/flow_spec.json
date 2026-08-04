@@ -1,18 +1,22 @@
 {
   "variables": {
     "email": "helena@example.test",
-    "new_password": "ValidPass123!"
+    "new_password": "SecurePass1!23"
   },
-  "csrf": null,
+  "html_variables": {},
+  "csrf": {
+    "endpoint": "/api/bootstrap",
+    "field": "x-csrf-token",
+    "in": "header"
+  },
   "steps": [
     {
       "name": "load recovery portal",
       "method": "GET",
-      "path": "/",
-      "expect_status": 200
+      "path": "/"
     },
     {
-      "name": "bootstrap secure session",
+      "name": "establish secure session",
       "method": "GET",
       "path": "/api/bootstrap",
       "capture": {
@@ -25,12 +29,11 @@
       "path": "/api/reset-request",
       "headers": {
         "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}"
+        "x-csrf-token": "${csrf}"
       },
       "body": {
         "email": "${email}"
       },
-      "expect_json_true": "message",
       "capture": {
         "reset_token": "mockDeliveryToken"
       }
@@ -41,12 +44,11 @@
       "path": "/api/reset-validate",
       "headers": {
         "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}"
+        "x-csrf-token": "${csrf}"
       },
       "body": {
         "token": "${reset_token}"
-      },
-      "expect_json_true": "message"
+      }
     },
     {
       "name": "update password",
@@ -54,13 +56,12 @@
       "path": "/api/password-update",
       "headers": {
         "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}"
+        "x-csrf-token": "${csrf}"
       },
       "body": {
         "token": "${reset_token}",
         "password": "${new_password}"
       },
-      "expect_json_true": "message",
       "capture": {
         "mfa_code": "mockMfaCode"
       }
@@ -71,12 +72,11 @@
       "path": "/api/mfa-verify",
       "headers": {
         "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}"
+        "x-csrf-token": "${csrf}"
       },
       "body": {
         "code": "${mfa_code}"
-      },
-      "expect_json_true": "message"
+      }
     },
     {
       "name": "accept privacy conditions",
@@ -84,12 +84,11 @@
       "path": "/api/privacy-accept",
       "headers": {
         "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}"
+        "x-csrf-token": "${csrf}"
       },
       "body": {
         "accepted": true
-      },
-      "expect_json_true": "message"
+      }
     },
     {
       "name": "confirm appointment request",
@@ -97,20 +96,18 @@
       "path": "/api/appointment-confirm",
       "headers": {
         "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}"
+        "x-csrf-token": "${csrf}"
       },
-      "body": {},
-      "expect_json_true": "message"
+      "body": {}
     }
   ],
   "negative_steps": [
     {
-      "name": "invalid CSRF token rejected",
+      "name": "reset request without CSRF rejected",
       "method": "POST",
       "path": "/api/reset-request",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}-invalid"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "email": "${email}"
@@ -118,15 +115,42 @@
       "expect_failure": true
     },
     {
-      "name": "reused reset token rejected",
+      "name": "invalid reset code rejected",
       "method": "POST",
       "path": "/api/reset-validate",
       "headers": {
         "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}"
+        "x-csrf-token": "${csrf}"
       },
       "body": {
-        "token": "${reset_token}"
+        "token": "not-the-issued-reset-token"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/password-update",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "token": "${reset_token}",
+        "password": "weakpassword"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "incorrect MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "code": "000000"
       },
       "expect_failure": true
     },
@@ -136,7 +160,7 @@
       "path": "/api/privacy-accept",
       "headers": {
         "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}"
+        "x-csrf-token": "${csrf}"
       },
       "body": {
         "accepted": false

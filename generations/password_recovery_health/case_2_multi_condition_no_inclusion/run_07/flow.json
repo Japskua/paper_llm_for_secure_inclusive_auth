@@ -11,7 +11,7 @@
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "open recovery portal",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -29,7 +29,7 @@
     {
       "name": "open reset link",
       "method": "GET",
-      "path": "/reset?code=nImXWI-1-A1bgT6RBfjy5qoudZw-xWEyoX1CPtEOrx0",
+      "path": "/reset?code=TSuMzLyvMDtP07iSf5lH3TrKOd7lgLssTV9YociOHV0",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -51,7 +51,7 @@
       "ok": true
     },
     {
-      "name": "check verified recovery status",
+      "name": "check recovery verification status",
       "method": "GET",
       "path": "/api/recovery-status",
       "expect_failure": false,
@@ -67,7 +67,7 @@
       "ok": true
     },
     {
-      "name": "open sign in page",
+      "name": "open login page",
       "method": "GET",
       "path": "/login",
       "expect_failure": false,
@@ -83,7 +83,7 @@
       "ok": true
     },
     {
-      "name": "open mfa page",
+      "name": "open MFA page",
       "method": "GET",
       "path": "/mfa",
       "expect_failure": false,
@@ -91,7 +91,7 @@
       "ok": true
     },
     {
-      "name": "verify mfa code",
+      "name": "verify MFA code",
       "method": "POST",
       "path": "/api/mfa",
       "expect_failure": false,
@@ -131,7 +131,23 @@
       "ok": true
     },
     {
-      "name": "missing csrf rejected",
+      "name": "reused recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "missing CSRF rejected",
       "method": "POST",
       "path": "/api/recovery-request",
       "expect_failure": true,
@@ -139,27 +155,11 @@
       "ok": true
     },
     {
-      "name": "invalid recovery code rejected",
-      "method": "POST",
-      "path": "/api/verify-reset",
+      "name": "unverified reset page rejected",
+      "method": "GET",
+      "path": "/new-password",
       "expect_failure": true,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "used recovery code rejected",
-      "method": "POST",
-      "path": "/api/verify-reset",
-      "expect_failure": true,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "old password rejected after reset",
-      "method": "POST",
-      "path": "/api/login",
-      "expect_failure": true,
-      "status_code": 200,
+      "status_code": 403,
       "ok": true
     }
   ],

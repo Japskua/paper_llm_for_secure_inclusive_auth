@@ -2,16 +2,16 @@
   "variables": {
     "email": "helena@hospital.test",
     "initial_password": "Initial-Only-Password!42",
-    "new_password": "Renewed-Password!42"
+    "new_password": "Recovered-Password!42"
   },
   "csrf": {
-    "html_regex": "const csrf=\"([a-f0-9]+)\"",
+    "html_regex": "const csrf=\"([a-f0-9]{48})\"",
     "field": "X-CSRF-Token",
     "in": "header"
   },
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "load recovery page and establish session",
       "method": "GET",
       "path": "/"
     },
@@ -27,14 +27,14 @@
       }
     },
     {
-      "name": "authorize simulated delivery",
+      "name": "authorize trusted delivery",
       "method": "POST",
       "path": "/api/recovery-delivery",
       "body": {
         "code": "${delivery_code}"
       },
       "capture": {
-        "recovery_token": "evaluationToken"
+        "reset_token": "evaluationToken"
       }
     },
     {
@@ -42,7 +42,7 @@
       "method": "POST",
       "path": "/api/reset-validate",
       "body": {
-        "token": "${recovery_token}"
+        "token": "${reset_token}"
       },
       "expect_json_true": "verified"
     },
@@ -95,7 +95,7 @@
   ],
   "negative_steps": [
     {
-      "name": "malformed recovery email rejected",
+      "name": "invalid recovery email rejected",
       "method": "POST",
       "path": "/api/reset-request",
       "body": {
@@ -104,17 +104,36 @@
       "expect_failure": true
     },
     {
-      "name": "wrong password rejected",
+      "name": "invalid recovery token rejected",
       "method": "POST",
-      "path": "/api/login",
+      "path": "/api/reset-validate",
       "body": {
-        "identifier": "${email}",
-        "password": "Wrong-Password!42"
+        "token": "0000000000000000000000000000000000000000000000000000000000000000"
       },
       "expect_failure": true
     },
     {
-      "name": "privacy acceptance must be true",
+      "name": "weak replacement password rejected",
+      "method": "POST",
+      "path": "/api/reset-complete",
+      "body": {
+        "password": "short",
+        "confirm": "short"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "old password rejected after reset",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "identifier": "${email}",
+        "password": "${initial_password}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance requires true confirmation",
       "method": "POST",
       "path": "/api/privacy",
       "body": {
@@ -123,7 +142,7 @@
       "expect_failure": true
     },
     {
-      "name": "appointment confirmation must be true",
+      "name": "appointment confirmation requires true confirmation",
       "method": "POST",
       "path": "/api/appointment",
       "body": {

@@ -1,9 +1,14 @@
 {
   "variables": {
-    "email": "any.user@example.test",
-    "new_password": "StrongPass1!x"
+    "email": "test@example.com",
+    "new_password": "ValidPass1!23",
+    "mfa_code": "246810"
   },
-  "csrf": null,
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
   "steps": [
     {
       "name": "load recovery application",
@@ -11,7 +16,7 @@
       "path": "/"
     },
     {
-      "name": "bootstrap secure session",
+      "name": "initialize secure session",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_json_true": "ok",
@@ -20,7 +25,7 @@
       }
     },
     {
-      "name": "start recovery",
+      "name": "request recovery instructions",
       "method": "POST",
       "path": "/api/recovery",
       "headers": {
@@ -33,15 +38,6 @@
       "expect_json_true": "ok",
       "capture": {
         "token": "mockToken"
-      }
-    },
-    {
-      "name": "confirm token verification stage",
-      "method": "GET",
-      "path": "/api/recovery-status",
-      "expect_json_true": "ok",
-      "capture": {
-        "verification_stage": "stage"
       }
     },
     {
@@ -58,15 +54,6 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "confirm MFA stage",
-      "method": "GET",
-      "path": "/api/recovery-status",
-      "expect_json_true": "ok",
-      "capture": {
-        "mfa_stage": "stage"
-      }
-    },
-    {
       "name": "verify MFA code",
       "method": "POST",
       "path": "/api/verify-mfa",
@@ -74,19 +61,10 @@
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "code": "246810",
+        "code": "${mfa_code}",
         "csrf": "${csrf}"
       },
       "expect_json_true": "ok"
-    },
-    {
-      "name": "confirm password reset stage",
-      "method": "GET",
-      "path": "/api/recovery-status",
-      "expect_json_true": "ok",
-      "capture": {
-        "reset_stage": "stage"
-      }
     },
     {
       "name": "set new password",
@@ -102,15 +80,6 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "confirm privacy stage",
-      "method": "GET",
-      "path": "/api/recovery-status",
-      "expect_json_true": "ok",
-      "capture": {
-        "privacy_stage": "stage"
-      }
-    },
-    {
       "name": "accept privacy statement",
       "method": "POST",
       "path": "/api/accept-privacy",
@@ -124,18 +93,15 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "confirm recovery completion",
+      "name": "confirm completed recovery stage",
       "method": "GET",
       "path": "/api/recovery-status",
-      "expect_json_true": "ok",
-      "capture": {
-        "completion_stage": "stage"
-      }
+      "expect_json_true": "ok"
     }
   ],
   "negative_steps": [
     {
-      "name": "recovery request without CSRF rejected",
+      "name": "missing CSRF rejected",
       "method": "POST",
       "path": "/api/recovery",
       "body": {
@@ -144,14 +110,14 @@
       "expect_failure": true
     },
     {
-      "name": "used recovery token rejected",
+      "name": "wrong recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "headers": {
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "token": "${token}",
+        "token": "0000000000000000000000000000000000000000000000000000000000000000",
         "csrf": "${csrf}"
       },
       "expect_failure": true
@@ -183,7 +149,7 @@
       "expect_failure": true
     },
     {
-      "name": "privacy acceptance must be true",
+      "name": "privacy acknowledgement required",
       "method": "POST",
       "path": "/api/accept-privacy",
       "headers": {

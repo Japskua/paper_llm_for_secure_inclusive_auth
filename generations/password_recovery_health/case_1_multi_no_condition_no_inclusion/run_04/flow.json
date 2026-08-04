@@ -11,7 +11,7 @@
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "open recovery page and establish session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "request recovery",
+      "name": "request recovery instructions",
       "method": "POST",
       "path": "/api/recovery-request",
       "expect_failure": false,
@@ -29,13 +29,13 @@
     {
       "name": "open simulated verification link",
       "method": "GET",
-      "path": "/verify?token=IMxfYESjlE0VeLJ3ZbnAtHuRE2ZjUecRcTRwesuv0pw",
+      "path": "/verify?token=b8m9sSoWweeTn0AOKHYbfbuDqCghISyOSbeAf4fMePQ",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
     {
-      "name": "verify recovery token",
+      "name": "verify recovery code",
       "method": "POST",
       "path": "/api/verify-token",
       "expect_failure": false,
@@ -51,7 +51,7 @@
       "ok": true
     },
     {
-      "name": "verify MFA code",
+      "name": "confirm MFA code",
       "method": "POST",
       "path": "/api/verify-mfa",
       "expect_failure": false,
@@ -75,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "recovery request without CSRF rejected",
+      "name": "invalid recovery identifier rejected",
       "method": "POST",
       "path": "/api/recovery-request",
       "expect_failure": true,
@@ -83,7 +83,7 @@
       "ok": true
     },
     {
-      "name": "invalid recovery token rejected",
+      "name": "invalid recovery code rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "expect_failure": true,
@@ -91,7 +91,7 @@
       "ok": true
     },
     {
-      "name": "mismatched password confirmation rejected",
+      "name": "weak password rejected",
       "method": "POST",
       "path": "/api/reset-password",
       "expect_failure": true,

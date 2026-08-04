@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 11,
-  "steps_passed": 11,
+  "steps_total": 10,
+  "steps_passed": 10,
   "happy_path_passed": 6,
   "happy_path_total": 6,
-  "negative_passed": 5,
-  "negative_total": 5,
+  "negative_passed": 4,
+  "negative_total": 4,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "start recovery session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -59,15 +59,7 @@
       "ok": true
     },
     {
-      "name": "missing CSRF token rejected",
-      "method": "POST",
-      "path": "/api/recovery-request",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "invalid recovery token rejected",
+      "name": "reused recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "expect_failure": true,
@@ -91,7 +83,7 @@
       "ok": true
     },
     {
-      "name": "privacy acceptance must be true",
+      "name": "privacy acceptance requires true",
       "method": "POST",
       "path": "/api/accept-privacy",
       "expect_failure": true,
@@ -100,5 +92,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 11
+  "spec_steps": 10
 }

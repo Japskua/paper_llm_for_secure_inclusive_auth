@@ -1,7 +1,8 @@
 {
   "variables": {
+    "origin": "https://localhost:3000",
     "email": "helena.patient@hospital.test",
-    "new_password": "NewPassword1!"
+    "new_password": "ResetPass!2025"
   },
   "csrf": null,
   "steps": [
@@ -20,7 +21,7 @@
       }
     },
     {
-      "name": "check initial session status",
+      "name": "read initial recovery status",
       "method": "GET",
       "path": "/api/status",
       "expect_json_true": "ok"
@@ -30,7 +31,7 @@
       "method": "POST",
       "path": "/api/recovery/start",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "Origin": "${origin}",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -46,7 +47,7 @@
       "method": "POST",
       "path": "/api/recovery/channel",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "Origin": "${origin}",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -58,16 +59,11 @@
       }
     },
     {
-      "name": "open simulated recovery link",
-      "method": "GET",
-      "path": "/recovery/verify?token=${reset_token}"
-    },
-    {
       "name": "verify recovery code",
       "method": "POST",
       "path": "/api/recovery/verify",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "Origin": "${origin}",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -76,11 +72,11 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "set new password",
+      "name": "save new password",
       "method": "POST",
       "path": "/api/recovery/password",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "Origin": "${origin}",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -94,7 +90,7 @@
       "method": "POST",
       "path": "/api/login",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "Origin": "${origin}",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -107,11 +103,11 @@
       }
     },
     {
-      "name": "complete MFA",
+      "name": "verify MFA code",
       "method": "POST",
       "path": "/api/mfa",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "Origin": "${origin}",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -124,7 +120,7 @@
       "method": "POST",
       "path": "/api/privacy/accept",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "Origin": "${origin}",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {},
@@ -133,11 +129,11 @@
   ],
   "negative_steps": [
     {
-      "name": "recovery start without CSRF rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
       "path": "/api/recovery/start",
       "headers": {
-        "Origin": "https://localhost:3000"
+        "Origin": "${origin}"
       },
       "body": {
         "email": "${email}"
@@ -145,37 +141,11 @@
       "expect_failure": true
     },
     {
-      "name": "wrong approved channel secret rejected",
-      "method": "POST",
-      "path": "/api/recovery/channel",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "code": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "wrong recovery token rejected",
-      "method": "POST",
-      "path": "/api/recovery/verify",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "weak new password rejected",
+      "name": "weak replacement password rejected",
       "method": "POST",
       "path": "/api/recovery/password",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "Origin": "${origin}",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -189,12 +159,12 @@
       "method": "POST",
       "path": "/api/login",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "Origin": "${origin}",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
         "email": "${email}",
-        "password": "NotTheNewPassword1!"
+        "password": "WrongPass!2025"
       },
       "expect_failure": true
     },
@@ -203,7 +173,7 @@
       "method": "POST",
       "path": "/api/mfa",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "Origin": "${origin}",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {

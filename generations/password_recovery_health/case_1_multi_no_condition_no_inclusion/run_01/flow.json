@@ -1,15 +1,23 @@
 {
-  "ok": false,
+  "ok": true,
   "landing_status": 200,
-  "csrf_found": false,
+  "csrf_found": true,
   "steps_total": 9,
-  "steps_passed": 5,
-  "happy_path_passed": 2,
+  "steps_passed": 9,
+  "happy_path_passed": 6,
   "happy_path_total": 6,
   "negative_passed": 3,
   "negative_total": 3,
-  "negatives_meaningful": false,
+  "negatives_meaningful": true,
   "steps": [
+    {
+      "name": "start secure session and obtain CSRF token",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
     {
       "name": "load recovery page",
       "method": "GET",
@@ -19,67 +27,49 @@
       "ok": true
     },
     {
-      "name": "get session csrf token",
-      "method": "GET",
-      "path": "/api/session",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
       "name": "request recovery instructions",
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'reset_token' from 'testToken'"
-      ],
-      "response_message": "Your secure session has expired. Refresh the page and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "verify recovery code",
       "method": "POST",
       "path": "/api/reset-verify",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'mfa_code' from 'testMfaCode'"
-      ],
-      "response_message": "Your secure session has expired. Refresh the page and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "confirm mfa code",
+      "name": "confirm MFA code",
       "method": "POST",
       "path": "/api/mfa-verify",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure session has expired. Refresh the page and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "update password",
       "method": "POST",
       "path": "/api/password-update",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure session has expired. Refresh the page and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "reset request without csrf rejected",
+      "name": "invalid recovery code rejected",
       "method": "POST",
-      "path": "/api/reset-request",
+      "path": "/api/reset-verify",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     },
     {
-      "name": "invalid recovery token rejected",
+      "name": "MFA without recovery verification rejected",
       "method": "POST",
-      "path": "/api/reset-verify",
+      "path": "/api/mfa-verify",
       "expect_failure": true,
       "status_code": 403,
       "ok": true

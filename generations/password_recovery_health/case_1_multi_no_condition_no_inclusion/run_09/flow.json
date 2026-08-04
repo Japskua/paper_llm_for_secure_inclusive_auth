@@ -1,13 +1,13 @@
 {
   "ok": false,
   "landing_status": 200,
-  "csrf_found": false,
-  "steps_total": 11,
-  "steps_passed": 5,
-  "happy_path_passed": 2,
+  "csrf_found": true,
+  "steps_total": 13,
+  "steps_passed": 8,
+  "happy_path_passed": 3,
   "happy_path_total": 8,
-  "negative_passed": 3,
-  "negative_total": 3,
+  "negative_passed": 5,
+  "negative_total": 5,
   "negatives_meaningful": false,
   "steps": [
     {
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "bootstrap secure session",
+      "name": "establish secure session",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_failure": false,
@@ -31,63 +31,59 @@
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'reset_token' from 'mockDeliveryToken'"
-      ],
-      "response_message": "This request could not be verified. Refresh and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "validate reset code",
       "method": "POST",
       "path": "/api/reset-validate",
       "expect_failure": false,
-      "status_code": 403,
+      "status_code": 400,
       "ok": false,
-      "response_message": "This request could not be verified. Refresh and try again."
+      "response_message": "That reset code is invalid, expired, or has already been used."
     },
     {
       "name": "update password",
       "method": "POST",
       "path": "/api/password-update",
       "expect_failure": false,
-      "status_code": 403,
+      "status_code": 400,
       "ok": false,
       "warnings": [
         "could not capture 'mfa_code' from 'mockMfaCode'"
       ],
-      "response_message": "This request could not be verified. Refresh and try again."
+      "response_message": "Your reset code is no longer valid. Start a new recovery request."
     },
     {
       "name": "verify MFA code",
       "method": "POST",
       "path": "/api/mfa-verify",
       "expect_failure": false,
-      "status_code": 403,
+      "status_code": 400,
       "ok": false,
-      "response_message": "This request could not be verified. Refresh and try again."
+      "response_message": "That verification code is invalid or expired."
     },
     {
       "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy-accept",
       "expect_failure": false,
-      "status_code": 403,
+      "status_code": 401,
       "ok": false,
-      "response_message": "This request could not be verified. Refresh and try again."
+      "response_message": "Authentication is required before accepting conditions."
     },
     {
       "name": "confirm appointment request",
       "method": "POST",
       "path": "/api/appointment-confirm",
       "expect_failure": false,
-      "status_code": 403,
+      "status_code": 401,
       "ok": false,
-      "response_message": "This request could not be verified. Refresh and try again."
+      "response_message": "Authentication and privacy-condition acceptance are required."
     },
     {
-      "name": "invalid CSRF token rejected",
+      "name": "reset request without CSRF rejected",
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": true,
@@ -95,9 +91,25 @@
       "ok": true
     },
     {
-      "name": "reused reset token rejected",
+      "name": "invalid reset code rejected",
       "method": "POST",
       "path": "/api/reset-validate",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/password-update",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "incorrect MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa-verify",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
@@ -112,5 +124,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 11
+  "spec_steps": 13
 }

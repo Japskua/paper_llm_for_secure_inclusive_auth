@@ -1,19 +1,20 @@
 {
   "variables": {
     "email": "helena.demo@hospital.test",
-    "seeded_password": "password",
-    "new_password": "TestReset9!Aa"
+    "password": "password",
+    "new_password": "NewPassword!2025",
+    "mfa_code": "246810"
   },
   "csrf": {
     "html_regex": null,
     "field": "X-CSRF-Token",
     "in": "header",
     "endpoint": "/api/status",
-    "capture": "csrf"
+    "response_field": "csrf"
   },
   "steps": [
     {
-      "name": "Get session status and CSRF token",
+      "name": "get recovery status and CSRF token",
       "method": "GET",
       "path": "/api/status",
       "expect_json_true": "ok",
@@ -22,51 +23,71 @@
       }
     },
     {
-      "name": "Request recovery code",
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request recovery code",
       "method": "POST",
       "path": "/api/recovery",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "identifier": "${email}"
       },
       "expect_json_true": "ok"
     },
     {
-      "name": "Open simulated recovery delivery",
+      "name": "open simulated recovery delivery",
       "method": "POST",
       "path": "/api/demo/recovery-code",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {},
       "expect_json_true": "ok",
       "capture": {
-        "recovery_code": "mockRecoveryCode"
+        "token": "mockRecoveryCode"
       }
     },
     {
-      "name": "Verify recovery code",
+      "name": "verify recovery code",
       "method": "POST",
       "path": "/api/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
-        "token": "${recovery_code}"
+        "token": "${token}"
       },
       "expect_json_true": "ok"
     },
     {
-      "name": "Prepare replacement password grant",
+      "name": "prepare password reset approval",
       "method": "POST",
       "path": "/api/recovery/replacement-grant",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {},
       "expect_json_true": "ok",
       "capture": {
-        "reset_grant": "resetGrant"
+        "grant": "resetGrant"
       }
     },
     {
-      "name": "Set new password",
+      "name": "save new password",
       "method": "POST",
       "path": "/api/password",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "password": "${new_password}",
         "confirm": "${new_password}",
-        "grant": "${reset_grant}"
+        "grant": "${grant}"
       },
       "expect_json_true": "ok",
       "capture": {
@@ -74,60 +95,72 @@
       }
     },
     {
-      "name": "Confirm MFA code",
+      "name": "confirm MFA code",
       "method": "POST",
       "path": "/api/mfa",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "code": "${mfa_code}"
       },
       "expect_json_true": "ok"
     },
     {
-      "name": "Accept privacy conditions",
+      "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy/accept",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {},
       "expect_json_true": "ok"
     }
   ],
   "negative_steps": [
     {
-      "name": "Missing CSRF token rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
       "path": "/api/recovery",
-      "headers": {
-        "X-CSRF-Token": "invalid-csrf-token"
-      },
       "body": {
         "identifier": "${email}"
       },
       "expect_failure": true
     },
     {
-      "name": "Invalid recovery code rejected",
+      "name": "replayed recovery code rejected",
       "method": "POST",
       "path": "/api/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
-        "token": "AAAAAAAAAAAAAAAAAAAA"
+        "token": "${token}"
       },
       "expect_failure": true
     },
     {
-      "name": "Wrong password rejected",
+      "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/login",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "identifier": "${email}",
-        "password": "WrongPassword9!"
+        "password": "DefinitelyWrong!2025"
       },
       "expect_failure": true
     },
     {
-      "name": "Incorrect MFA code rejected",
+      "name": "invalid recovery identifier rejected",
       "method": "POST",
-      "path": "/api/mfa",
+      "path": "/api/recovery",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
-        "code": "000000"
+        "identifier": "x"
       },
       "expect_failure": true
     }

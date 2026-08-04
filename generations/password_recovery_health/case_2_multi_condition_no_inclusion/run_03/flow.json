@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "request recovery token",
+      "name": "prepare recovery instructions",
       "method": "POST",
       "path": "/api/recovery",
       "expect_failure": false,
@@ -59,6 +59,14 @@
       "ok": true
     },
     {
+      "name": "missing CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
       "name": "invalid recovery contact rejected",
       "method": "POST",
       "path": "/api/recovery",
@@ -67,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "invalid recovery token rejected",
+      "name": "malformed recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "expect_failure": true,
@@ -78,14 +86,6 @@
       "name": "weak replacement password rejected",
       "method": "POST",
       "path": "/api/password",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "privacy acceptance required",
-      "method": "POST",
-      "path": "/api/privacy",
       "expect_failure": true,
       "status_code": 403,
       "ok": true

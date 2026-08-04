@@ -1,7 +1,7 @@
 {
   "variables": {
     "email": "helena.recovery@hospital.test",
-    "new_password": "Str0ng!Pass2025"
+    "new_password": "NewSecurePass1!"
   },
   "csrf": {
     "html_regex": null,
@@ -18,13 +18,12 @@
       "name": "load session state and CSRF token",
       "method": "GET",
       "path": "/api/state",
-      "expect_json_true": "csrf",
       "capture": {
         "csrf": "csrf"
       }
     },
     {
-      "name": "request password recovery",
+      "name": "request password reset",
       "method": "POST",
       "path": "/api/request-reset",
       "body": {
@@ -80,20 +79,17 @@
       "body": {
         "csrf": "${csrf}"
       }
+    },
+    {
+      "name": "verify completed account state",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_json_true": "appointmentConfirmed"
     }
   ],
   "negative_steps": [
     {
-      "name": "missing CSRF token rejected",
-      "method": "POST",
-      "path": "/api/request-reset",
-      "body": {
-        "email": "${email}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "invalid CSRF token rejected",
+      "name": "missing valid CSRF token rejected",
       "method": "POST",
       "path": "/api/request-reset",
       "body": {
@@ -103,17 +99,17 @@
       "expect_failure": true
     },
     {
-      "name": "weak replacement password rejected",
+      "name": "used recovery token rejected",
       "method": "POST",
-      "path": "/api/reset-password",
+      "path": "/api/verify-reset",
       "body": {
-        "password": "weakpassword",
+        "token": "${reset_token}",
         "csrf": "${csrf}"
       },
       "expect_failure": true
     },
     {
-      "name": "wrong MFA code rejected",
+      "name": "MFA without pending confirmation rejected",
       "method": "POST",
       "path": "/api/verify-mfa",
       "body": {

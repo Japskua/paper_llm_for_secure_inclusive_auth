@@ -1,23 +1,15 @@
 {
-  "ok": false,
+  "ok": true,
   "landing_status": 200,
-  "csrf_found": false,
-  "steps_total": 11,
-  "steps_passed": 5,
-  "happy_path_passed": 2,
-  "happy_path_total": 8,
-  "negative_passed": 3,
-  "negative_total": 3,
-  "negatives_meaningful": false,
+  "csrf_found": true,
+  "steps_total": 9,
+  "steps_passed": 9,
+  "happy_path_passed": 7,
+  "happy_path_total": 7,
+  "negative_passed": 2,
+  "negative_total": 2,
+  "negatives_meaningful": true,
   "steps": [
-    {
-      "name": "open recovery page and establish session",
-      "method": "GET",
-      "path": "/",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
     {
       "name": "bootstrap secure session",
       "method": "GET",
@@ -31,63 +23,51 @@
       "method": "POST",
       "path": "/api/recovery/initiate",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'reset_token' from 'testDeliveryToken'"
-      ],
-      "response_message": "Your secure page needs to be refreshed before continuing."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "confirm recovery token",
       "method": "POST",
       "path": "/api/recovery/verify-token",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'mfa_code' from 'testMfaCode'"
-      ],
-      "response_message": "Your secure page needs to be refreshed before continuing."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "complete MFA safety check",
+      "name": "complete safety check",
       "method": "POST",
       "path": "/api/recovery/verify-mfa",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure page needs to be refreshed before continuing."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "save new password",
       "method": "POST",
       "path": "/api/recovery/password-update",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure page needs to be refreshed before continuing."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "sign in with new password",
       "method": "POST",
       "path": "/api/authenticate",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure page needs to be refreshed before continuing."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy/accept",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure page needs to be refreshed before continuing."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "reused recovery token rejected",
+      "name": "consumed recovery token rejected",
       "method": "POST",
       "path": "/api/recovery/verify-token",
       "expect_failure": true,
@@ -101,16 +81,8 @@
       "expect_failure": true,
       "status_code": 403,
       "ok": true
-    },
-    {
-      "name": "privacy acceptance must be confirmed",
-      "method": "POST",
-      "path": "/api/privacy/accept",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 11
+  "spec_steps": 9
 }

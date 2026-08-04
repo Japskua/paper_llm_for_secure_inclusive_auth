@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 12,
-  "steps_passed": 12,
-  "happy_path_passed": 8,
-  "happy_path_total": 8,
+  "steps_total": 13,
+  "steps_passed": 13,
+  "happy_path_passed": 9,
+  "happy_path_total": 9,
   "negative_passed": 4,
   "negative_total": 4,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "Get session status and CSRF token",
+      "name": "get recovery status and CSRF token",
       "method": "GET",
       "path": "/api/status",
       "expect_failure": false,
@@ -19,7 +19,15 @@
       "ok": true
     },
     {
-      "name": "Request recovery code",
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request recovery code",
       "method": "POST",
       "path": "/api/recovery",
       "expect_failure": false,
@@ -27,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "Open simulated recovery delivery",
+      "name": "open simulated recovery delivery",
       "method": "POST",
       "path": "/api/demo/recovery-code",
       "expect_failure": false,
@@ -35,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "Verify recovery code",
+      "name": "verify recovery code",
       "method": "POST",
       "path": "/api/verify",
       "expect_failure": false,
@@ -43,7 +51,7 @@
       "ok": true
     },
     {
-      "name": "Prepare replacement password grant",
+      "name": "prepare password reset approval",
       "method": "POST",
       "path": "/api/recovery/replacement-grant",
       "expect_failure": false,
@@ -51,7 +59,7 @@
       "ok": true
     },
     {
-      "name": "Set new password",
+      "name": "save new password",
       "method": "POST",
       "path": "/api/password",
       "expect_failure": false,
@@ -59,7 +67,7 @@
       "ok": true
     },
     {
-      "name": "Confirm MFA code",
+      "name": "confirm MFA code",
       "method": "POST",
       "path": "/api/mfa",
       "expect_failure": false,
@@ -67,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "Accept privacy conditions",
+      "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy/accept",
       "expect_failure": false,
@@ -75,7 +83,7 @@
       "ok": true
     },
     {
-      "name": "Missing CSRF token rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
       "path": "/api/recovery",
       "expect_failure": true,
@@ -83,7 +91,7 @@
       "ok": true
     },
     {
-      "name": "Invalid recovery code rejected",
+      "name": "replayed recovery code rejected",
       "method": "POST",
       "path": "/api/verify",
       "expect_failure": true,
@@ -91,7 +99,7 @@
       "ok": true
     },
     {
-      "name": "Wrong password rejected",
+      "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": true,
@@ -99,14 +107,14 @@
       "ok": true
     },
     {
-      "name": "Incorrect MFA code rejected",
+      "name": "invalid recovery identifier rejected",
       "method": "POST",
-      "path": "/api/mfa",
+      "path": "/api/recovery",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 12
+  "spec_steps": 13
 }

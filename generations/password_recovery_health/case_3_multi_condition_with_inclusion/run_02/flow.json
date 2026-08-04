@@ -1,27 +1,19 @@
 {
-  "ok": false,
+  "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 15,
-  "steps_passed": 6,
-  "happy_path_passed": 2,
+  "steps_total": 14,
+  "steps_passed": 14,
+  "happy_path_passed": 11,
   "happy_path_total": 11,
-  "negative_passed": 4,
-  "negative_total": 4,
-  "negatives_meaningful": false,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open secure portal",
+      "name": "open secure recovery portal",
       "method": "GET",
       "path": "/",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "read initial session state",
-      "method": "GET",
-      "path": "/api/state",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -31,92 +23,83 @@
       "method": "POST",
       "path": "/api/recovery/request",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'recovery_token' from 'testValue'",
-        "could not capture 'recovery_identity' from 'testIdentityValue'"
-      ],
-      "response_message": "This request could not be confirmed safely. Please try again in the portal."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "confirm recovery token",
+      "name": "confirm reset token",
       "method": "POST",
       "path": "/api/recovery/instruction",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "This request could not be confirmed safely. Please try again in the portal."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "verify recovery identity",
+      "name": "confirm recovery identity",
       "method": "POST",
       "path": "/api/recovery/identity",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "This request could not be confirmed safely. Please try again in the portal."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "save replacement password",
+      "name": "save new password",
       "method": "POST",
       "path": "/api/recovery/password",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "This request could not be confirmed safely. Please try again in the portal."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "sign in with replacement password",
+      "name": "sign in with new password",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'mfa_code' from 'testMfaCode'",
-        "could not capture 'possession_value' from 'testPossessionValue'"
-      ],
-      "response_message": "This request could not be confirmed safely. Please try again in the portal."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "confirm MFA code",
       "method": "POST",
       "path": "/api/mfa/code",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "This request could not be confirmed safely. Please try again in the portal."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "confirm MFA possession value",
+      "name": "confirm possession value",
       "method": "POST",
       "path": "/api/mfa/possession",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "This request could not be confirmed safely. Please try again in the portal."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy/accept",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "This request could not be confirmed safely. Please try again in the portal."
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "confirm appointment request",
       "method": "POST",
       "path": "/api/appointment",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "This request could not be confirmed safely. Please try again in the portal."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "invalid CSRF token rejected",
+      "name": "verify completed state",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "reject request without CSRF token",
       "method": "POST",
       "path": "/api/recovery/request",
       "expect_failure": true,
@@ -124,30 +107,22 @@
       "ok": true
     },
     {
-      "name": "wrong recovery token rejected",
-      "method": "POST",
-      "path": "/api/recovery/instruction",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "weak replacement password rejected",
-      "method": "POST",
-      "path": "/api/recovery/password",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "wrong password rejected",
+      "name": "reject wrong sign-in password",
       "method": "POST",
       "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "reject replayed used reset token",
+      "method": "POST",
+      "path": "/api/recovery/instruction",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 15
+  "spec_steps": 14
 }

@@ -1,14 +1,14 @@
 {
-  "ok": false,
+  "ok": true,
   "landing_status": 200,
-  "csrf_found": false,
-  "steps_total": 17,
-  "steps_passed": 12,
-  "happy_path_passed": 7,
-  "happy_path_total": 12,
+  "csrf_found": true,
+  "steps_total": 13,
+  "steps_passed": 13,
+  "happy_path_passed": 8,
+  "happy_path_total": 8,
   "negative_passed": 5,
   "negative_total": 5,
-  "negatives_meaningful": false,
+  "negatives_meaningful": true,
   "steps": [
     {
       "name": "load recovery application",
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "bootstrap secure session",
+      "name": "initialize secure session",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_failure": false,
@@ -27,21 +27,9 @@
       "ok": true
     },
     {
-      "name": "start recovery",
+      "name": "request recovery instructions",
       "method": "POST",
       "path": "/api/recovery",
-      "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'token' from 'mockToken'"
-      ],
-      "response_message": "We could not complete that request. Please try again."
-    },
-    {
-      "name": "confirm token verification stage",
-      "method": "GET",
-      "path": "/api/recovery-status",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -51,15 +39,6 @@
       "method": "POST",
       "path": "/api/verify-token",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "We could not complete that request. Please try again."
-    },
-    {
-      "name": "confirm MFA stage",
-      "method": "GET",
-      "path": "/api/recovery-status",
-      "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
@@ -67,15 +46,6 @@
       "name": "verify MFA code",
       "method": "POST",
       "path": "/api/verify-mfa",
-      "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "We could not complete that request. Please try again."
-    },
-    {
-      "name": "confirm password reset stage",
-      "method": "GET",
-      "path": "/api/recovery-status",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -85,15 +55,6 @@
       "method": "POST",
       "path": "/api/reset-password",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "We could not complete that request. Please try again."
-    },
-    {
-      "name": "confirm privacy stage",
-      "method": "GET",
-      "path": "/api/recovery-status",
-      "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
@@ -102,12 +63,11 @@
       "method": "POST",
       "path": "/api/accept-privacy",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "We could not complete that request. Please try again."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "confirm recovery completion",
+      "name": "confirm completed recovery stage",
       "method": "GET",
       "path": "/api/recovery-status",
       "expect_failure": false,
@@ -115,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "recovery request without CSRF rejected",
+      "name": "missing CSRF rejected",
       "method": "POST",
       "path": "/api/recovery",
       "expect_failure": true,
@@ -123,7 +83,7 @@
       "ok": true
     },
     {
-      "name": "used recovery token rejected",
+      "name": "wrong recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "expect_failure": true,
@@ -147,7 +107,7 @@
       "ok": true
     },
     {
-      "name": "privacy acceptance must be true",
+      "name": "privacy acknowledgement required",
       "method": "POST",
       "path": "/api/accept-privacy",
       "expect_failure": true,
@@ -156,5 +116,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 17
+  "spec_steps": 13
 }

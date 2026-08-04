@@ -1,8 +1,7 @@
 {
   "variables": {
     "email": "helena@hospital.test",
-    "initial_password": "Initial!Passw0rd2025",
-    "new_password": "Renewed!Passw0rd2025"
+    "new_password": "Recovered!Passw0rd2025"
   },
   "csrf": {
     "html_regex": "const csrf = \"([^\"]+)\";",
@@ -11,34 +10,34 @@
   },
   "steps": [
     {
-      "name": "open recovery page and establish session",
+      "name": "Load recovery page and establish session",
       "method": "GET",
       "path": "/"
     },
     {
-      "name": "request password recovery",
+      "name": "Request password recovery",
       "method": "POST",
       "path": "/api/reset-request",
       "body": {
         "email": "${email}"
       },
       "capture": {
-        "token": "mockToken"
+        "recovery_token": "mockToken"
       }
     },
     {
-      "name": "verify recovery token",
+      "name": "Verify recovery token",
       "method": "POST",
       "path": "/api/verify-reset",
       "body": {
-        "token": "${token}"
+        "token": "${recovery_token}"
       },
       "capture": {
         "mfa_code": "mockMfaCode"
       }
     },
     {
-      "name": "verify MFA code",
+      "name": "Verify MFA code",
       "method": "POST",
       "path": "/api/verify-mfa",
       "body": {
@@ -46,7 +45,7 @@
       }
     },
     {
-      "name": "set new password",
+      "name": "Set new password",
       "method": "POST",
       "path": "/api/update-password",
       "body": {
@@ -54,7 +53,7 @@
       }
     },
     {
-      "name": "sign in with new password",
+      "name": "Sign in with new password",
       "method": "POST",
       "path": "/api/login",
       "body": {
@@ -63,7 +62,7 @@
       }
     },
     {
-      "name": "accept privacy conditions",
+      "name": "Accept privacy conditions",
       "method": "POST",
       "path": "/api/accept-privacy",
       "body": {
@@ -71,13 +70,13 @@
       }
     },
     {
-      "name": "confirm portal access",
+      "name": "Confirm portal access",
       "method": "POST",
       "path": "/api/portal-check",
       "body": {}
     },
     {
-      "name": "sign out",
+      "name": "Sign out",
       "method": "POST",
       "path": "/api/logout",
       "body": {}
@@ -85,26 +84,26 @@
   ],
   "negative_steps": [
     {
-      "name": "used recovery token rejected",
-      "method": "POST",
-      "path": "/api/verify-reset",
-      "body": {
-        "token": "${token}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "wrong password rejected",
+      "name": "Original password rejected after reset",
       "method": "POST",
       "path": "/api/login",
       "body": {
         "email": "${email}",
-        "password": "Wrong!Passw0rd2025"
+        "password": "Initial!Passw0rd2025"
       },
       "expect_failure": true
     },
     {
-      "name": "portal denied after logout",
+      "name": "Privacy acceptance rejected after logout",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "accepted": true
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "Portal access rejected after logout",
       "method": "POST",
       "path": "/api/portal-check",
       "body": {},

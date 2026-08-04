@@ -1,9 +1,9 @@
 {
   "variables": {
-    "email": "qa@example.test",
-    "new_password": "ValidPassw0rd!"
+    "email": null,
+    "contact": "recovery.test@example.invalid",
+    "new_password": "ValidPass1!23"
   },
-  "seeded_demo_account_credentials": null,
   "csrf": {
     "html_regex": "<meta\\s+name=\"csrf-token\"\\s+content=\"([^\"]+)\">",
     "field": "X-CSRF-Token",
@@ -11,7 +11,7 @@
   },
   "steps": [
     {
-      "name": "start recovery session",
+      "name": "start secure recovery session",
       "method": "GET",
       "path": "/"
     },
@@ -20,7 +20,7 @@
       "method": "POST",
       "path": "/api/recovery/request",
       "body": {
-        "contact": "${email}"
+        "contact": "${contact}"
       },
       "expect_json_true": "ok",
       "capture": {
@@ -73,7 +73,7 @@
       "method": "POST",
       "path": "/api/recovery/verify-token",
       "body": {
-        "token": "not-the-issued-token"
+        "token": "invalid-reset-token"
       },
       "expect_failure": true
     },
@@ -82,12 +82,12 @@
       "method": "POST",
       "path": "/api/recovery/password",
       "body": {
-        "password": "short"
+        "password": "weakpassword"
       },
       "expect_failure": true
     },
     {
-      "name": "incorrect MFA code rejected",
+      "name": "wrong MFA code rejected",
       "method": "POST",
       "path": "/api/recovery/mfa",
       "body": {
@@ -96,7 +96,7 @@
       "expect_failure": true
     },
     {
-      "name": "privacy acceptance false rejected",
+      "name": "privacy acceptance requires true boolean",
       "method": "POST",
       "path": "/api/recovery/privacy-accept",
       "body": {

@@ -1,10 +1,10 @@
 {
   "variables": {
-    "email": "patient@example.test",
-    "new_password": "ValidPassw0rd!"
+    "email": "recovery@example.test",
+    "new_password": "ValidPass1!23"
   },
   "csrf": {
-    "html_regex": "const CONFIG = \\{\"csrf\":\"([^\"]+)\"\\};",
+    "html_regex": "CONFIG = \\{\"csrf\":\"([A-Za-z0-9_-]+)\"\\}",
     "field": "X-CSRF-Token",
     "in": "header"
   },
@@ -15,10 +15,11 @@
       "path": "/"
     },
     {
-      "name": "request recovery token",
+      "name": "prepare recovery instructions",
       "method": "POST",
       "path": "/api/recovery",
       "headers": {
+        "Content-Type": "application/json",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -34,6 +35,7 @@
       "method": "POST",
       "path": "/api/verify-token",
       "headers": {
+        "Content-Type": "application/json",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -46,6 +48,7 @@
       "method": "POST",
       "path": "/api/password",
       "headers": {
+        "Content-Type": "application/json",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -61,6 +64,7 @@
       "method": "POST",
       "path": "/api/mfa",
       "headers": {
+        "Content-Type": "application/json",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -73,6 +77,7 @@
       "method": "POST",
       "path": "/api/privacy",
       "headers": {
+        "Content-Type": "application/json",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -83,10 +88,23 @@
   ],
   "negative_steps": [
     {
+      "name": "missing CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "contact": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
       "name": "invalid recovery contact rejected",
       "method": "POST",
       "path": "/api/recovery",
       "headers": {
+        "Content-Type": "application/json",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -95,10 +113,11 @@
       "expect_failure": true
     },
     {
-      "name": "invalid recovery token rejected",
+      "name": "malformed recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "headers": {
+        "Content-Type": "application/json",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
@@ -111,22 +130,11 @@
       "method": "POST",
       "path": "/api/password",
       "headers": {
+        "Content-Type": "application/json",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "password": "short"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "privacy acceptance required",
-      "method": "POST",
-      "path": "/api/privacy",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "accept": false
+        "password": "weakpassword"
       },
       "expect_failure": true
     }

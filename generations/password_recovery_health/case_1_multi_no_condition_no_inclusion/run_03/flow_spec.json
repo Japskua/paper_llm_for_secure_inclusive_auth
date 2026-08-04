@@ -1,16 +1,17 @@
 {
   "variables": {
-    "email": "test@example.com",
-    "new_password": "Cedar!4829Maple"
+    "email": "any-nonempty@example.test",
+    "new_password": "Violet7!Cedar",
+    "origin": "https://localhost:3000"
   },
   "csrf": {
-    "html_regex": "const\\s+csrf\\s*=\\s*\"([a-f0-9]{64})\"",
+    "html_regex": "const csrf = \"([a-f0-9]{64})\";",
     "field": "csrf",
     "in": "body"
   },
   "steps": [
     {
-      "name": "start recovery session",
+      "name": "open recovery page and establish session",
       "method": "GET",
       "path": "/"
     },
@@ -19,9 +20,9 @@
       "method": "POST",
       "path": "/api/recovery",
       "headers": {
-        "Origin": "https://localhost:3000",
         "Content-Type": "application/json",
-        "X-Requested-With": "RecoverySPA"
+        "X-Requested-With": "RecoverySPA",
+        "Origin": "${origin}"
       },
       "body": {
         "account": "${email}",
@@ -37,9 +38,9 @@
       "method": "POST",
       "path": "/api/verify-reset",
       "headers": {
-        "Origin": "https://localhost:3000",
         "Content-Type": "application/json",
-        "X-Requested-With": "RecoverySPA"
+        "X-Requested-With": "RecoverySPA",
+        "Origin": "${origin}"
       },
       "body": {
         "token": "${token}",
@@ -51,13 +52,13 @@
       }
     },
     {
-      "name": "verify MFA code",
+      "name": "verify MFA security code",
       "method": "POST",
       "path": "/api/verify-mfa",
       "headers": {
-        "Origin": "https://localhost:3000",
         "Content-Type": "application/json",
-        "X-Requested-With": "RecoverySPA"
+        "X-Requested-With": "RecoverySPA",
+        "Origin": "${origin}"
       },
       "body": {
         "code": "${mfa_code}",
@@ -66,13 +67,13 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "set new password",
+      "name": "save new password",
       "method": "POST",
       "path": "/api/password",
       "headers": {
-        "Origin": "https://localhost:3000",
         "Content-Type": "application/json",
-        "X-Requested-With": "RecoverySPA"
+        "X-Requested-With": "RecoverySPA",
+        "Origin": "${origin}"
       },
       "body": {
         "password": "${new_password}",
@@ -85,9 +86,9 @@
       "method": "POST",
       "path": "/api/privacy",
       "headers": {
-        "Origin": "https://localhost:3000",
         "Content-Type": "application/json",
-        "X-Requested-With": "RecoverySPA"
+        "X-Requested-With": "RecoverySPA",
+        "Origin": "${origin}"
       },
       "body": {
         "accepted": true,
@@ -98,30 +99,16 @@
   ],
   "negative_steps": [
     {
-      "name": "missing CSRF rejected",
+      "name": "empty account reference rejected",
       "method": "POST",
       "path": "/api/recovery",
       "headers": {
-        "Origin": "https://localhost:3000",
         "Content-Type": "application/json",
-        "X-Requested-With": "RecoverySPA"
+        "X-Requested-With": "RecoverySPA",
+        "Origin": "${origin}"
       },
       "body": {
-        "account": "${email}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "invalid recovery code rejected",
-      "method": "POST",
-      "path": "/api/verify-reset",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-Requested-With": "RecoverySPA"
-      },
-      "body": {
-        "token": "0000000000000000000000000000000000000000000000000000000000000000",
+        "account": "",
         "csrf": "${csrf}"
       },
       "expect_failure": true
@@ -131,9 +118,9 @@
       "method": "POST",
       "path": "/api/verify-reset",
       "headers": {
-        "Origin": "https://localhost:3000",
         "Content-Type": "application/json",
-        "X-Requested-With": "RecoverySPA"
+        "X-Requested-With": "RecoverySPA",
+        "Origin": "${origin}"
       },
       "body": {
         "token": "${token}",
@@ -142,17 +129,31 @@
       "expect_failure": true
     },
     {
-      "name": "wrong MFA code rejected",
+      "name": "incorrect MFA code rejected",
       "method": "POST",
       "path": "/api/verify-mfa",
       "headers": {
-        "Origin": "https://localhost:3000",
         "Content-Type": "application/json",
-        "X-Requested-With": "RecoverySPA"
+        "X-Requested-With": "RecoverySPA",
+        "Origin": "${origin}"
       },
       "body": {
         "code": "000000",
         "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Requested-With": "RecoverySPA",
+        "Origin": "${origin}"
+      },
+      "body": {
+        "account": "${email}"
       },
       "expect_failure": true
     }

@@ -1,17 +1,17 @@
 {
-  "ok": false,
+  "ok": true,
   "landing_status": 200,
   "csrf_found": true,
   "steps_total": 12,
-  "steps_passed": 4,
-  "happy_path_passed": 1,
+  "steps_passed": 12,
+  "happy_path_passed": 9,
   "happy_path_total": 9,
   "negative_passed": 3,
   "negative_total": 3,
-  "negatives_meaningful": false,
+  "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page and establish session",
+      "name": "Load recovery page and establish session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -19,93 +19,71 @@
       "ok": true
     },
     {
-      "name": "request password recovery",
+      "name": "Request password recovery",
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'token' from 'mockToken'"
-      ],
-      "response_message": "Your secure session has expired. Please refresh the page and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "verify recovery token",
+      "name": "Verify recovery token",
       "method": "POST",
       "path": "/api/verify-reset",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
-        "could not capture 'mfa_code' from 'mockMfaCode'"
-      ],
-      "response_message": "Your secure session has expired. Please refresh the page and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "verify MFA code",
+      "name": "Verify MFA code",
       "method": "POST",
       "path": "/api/verify-mfa",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure session has expired. Please refresh the page and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "set new password",
+      "name": "Set new password",
       "method": "POST",
       "path": "/api/update-password",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure session has expired. Please refresh the page and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "sign in with new password",
+      "name": "Sign in with new password",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure session has expired. Please refresh the page and try again."
+      "status_code": 200,
+      "ok": true
     },
     {
-      "name": "accept privacy conditions",
+      "name": "Accept privacy conditions",
       "method": "POST",
       "path": "/api/accept-privacy",
       "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure session has expired. Please refresh the page and try again."
-    },
-    {
-      "name": "confirm portal access",
-      "method": "POST",
-      "path": "/api/portal-check",
-      "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure session has expired. Please refresh the page and try again."
-    },
-    {
-      "name": "sign out",
-      "method": "POST",
-      "path": "/api/logout",
-      "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "response_message": "Your secure session has expired. Please refresh the page and try again."
-    },
-    {
-      "name": "used recovery token rejected",
-      "method": "POST",
-      "path": "/api/verify-reset",
-      "expect_failure": true,
-      "status_code": 403,
+      "status_code": 200,
       "ok": true
     },
     {
-      "name": "wrong password rejected",
+      "name": "Confirm portal access",
+      "method": "POST",
+      "path": "/api/portal-check",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Original password rejected after reset",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": true,
@@ -113,7 +91,15 @@
       "ok": true
     },
     {
-      "name": "portal denied after logout",
+      "name": "Privacy acceptance rejected after logout",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "Portal access rejected after logout",
       "method": "POST",
       "path": "/api/portal-check",
       "expect_failure": true,

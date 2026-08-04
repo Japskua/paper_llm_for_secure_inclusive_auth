@@ -1,17 +1,17 @@
 {
   "ok": true,
   "landing_status": 200,
-  "csrf_found": false,
-  "steps_total": 11,
-  "steps_passed": 11,
+  "csrf_found": true,
+  "steps_total": 14,
+  "steps_passed": 14,
   "happy_path_passed": 8,
   "happy_path_total": 8,
-  "negative_passed": 3,
-  "negative_total": 3,
+  "negative_passed": 6,
+  "negative_total": 6,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "load recovery page",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "load recovery session status",
+      "name": "get session csrf token",
       "method": "GET",
       "path": "/api/recovery-status",
       "expect_failure": false,
@@ -59,7 +59,7 @@
       "ok": true
     },
     {
-      "name": "confirm MFA",
+      "name": "confirm mfa",
       "method": "POST",
       "path": "/api/mfa",
       "expect_failure": false,
@@ -75,19 +75,19 @@
       "ok": true
     },
     {
-      "name": "wrong password rejected",
+      "name": "missing csrf rejected",
       "method": "POST",
-      "path": "/api/login",
+      "path": "/api/request-reset",
       "expect_failure": true,
-      "status_code": 401,
+      "status_code": 403,
       "ok": true
     },
     {
-      "name": "privacy request without CSRF rejected",
+      "name": "invalid email rejected",
       "method": "POST",
-      "path": "/api/privacy",
+      "path": "/api/request-reset",
       "expect_failure": true,
-      "status_code": 403,
+      "status_code": 400,
       "ok": true
     },
     {
@@ -97,8 +97,32 @@
       "expect_failure": true,
       "status_code": 400,
       "ok": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "wrong mfa code rejected",
+      "method": "POST",
+      "path": "/api/mfa",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 11
+  "spec_steps": 14
 }

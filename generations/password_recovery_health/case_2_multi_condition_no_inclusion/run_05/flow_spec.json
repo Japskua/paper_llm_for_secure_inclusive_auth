@@ -3,19 +3,10 @@
     "email": "patient@example.com",
     "new_password": "SecureReset!2025"
   },
-  "csrf": {
-    "html_regex": "(?!)",
-    "field": "csrf",
-    "in": "body"
-  },
+  "csrf": null,
   "steps": [
     {
-      "name": "load recovery page",
-      "method": "GET",
-      "path": "/"
-    },
-    {
-      "name": "bootstrap secure session",
+      "name": "bootstrap recovery session",
       "method": "GET",
       "path": "/api/bootstrap",
       "capture": {
@@ -32,7 +23,7 @@
       },
       "expect_json_true": "ok",
       "capture": {
-        "reset_token": "testToken"
+        "token": "testToken"
       }
     },
     {
@@ -40,7 +31,7 @@
       "method": "POST",
       "path": "/api/verify-token",
       "body": {
-        "token": "${reset_token}",
+        "token": "${token}",
         "csrf": "${csrf}"
       },
       "expect_json_true": "ok",
@@ -49,7 +40,7 @@
       }
     },
     {
-      "name": "verify second factor",
+      "name": "verify MFA code",
       "method": "POST",
       "path": "/api/verify-mfa",
       "body": {
@@ -101,15 +92,6 @@
   ],
   "negative_steps": [
     {
-      "name": "missing csrf rejected",
-      "method": "POST",
-      "path": "/api/recover",
-      "body": {
-        "account": "${email}"
-      },
-      "expect_failure": true
-    },
-    {
       "name": "invalid recovery account rejected",
       "method": "POST",
       "path": "/api/recover",
@@ -120,17 +102,26 @@
       "expect_failure": true
     },
     {
-      "name": "wrong password rejected",
+      "name": "missing CSRF rejected",
       "method": "POST",
-      "path": "/api/sign-in",
+      "path": "/api/recover",
       "body": {
-        "password": "WrongPassword!2025",
+        "account": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "incorrect MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "body": {
+        "code": "000000",
         "csrf": "${csrf}"
       },
       "expect_failure": true
     },
     {
-      "name": "privacy requires acceptance",
+      "name": "privacy acceptance requires true",
       "method": "POST",
       "path": "/api/accept-privacy",
       "body": {

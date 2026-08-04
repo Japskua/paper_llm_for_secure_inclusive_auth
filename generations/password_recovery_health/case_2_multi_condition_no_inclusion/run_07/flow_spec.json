@@ -2,7 +2,7 @@
   "variables": {
     "email": "helena.recovery@localhost",
     "initial_password": "Initial!DemoPassword2025",
-    "new_password": "Reset!Pass2026"
+    "new_password": "Renewed!Pass2025"
   },
   "csrf": {
     "html_regex": "<meta name=\"csrf-token\" content=\"([^\"]+)\">",
@@ -11,7 +11,7 @@
   },
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "open recovery portal",
       "method": "GET",
       "path": "/"
     },
@@ -49,10 +49,10 @@
       "path": "/new-password"
     },
     {
-      "name": "check verified recovery status",
+      "name": "check recovery verification status",
       "method": "GET",
       "path": "/api/recovery-status",
-      "expect_json_true": "resetVerified"
+      "expect_json_true": "ok"
     },
     {
       "name": "set new password",
@@ -66,7 +66,7 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "open sign in page",
+      "name": "open login page",
       "method": "GET",
       "path": "/login"
     },
@@ -85,12 +85,12 @@
       }
     },
     {
-      "name": "open mfa page",
+      "name": "open MFA page",
       "method": "GET",
       "path": "/mfa"
     },
     {
-      "name": "verify mfa code",
+      "name": "verify MFA code",
       "method": "POST",
       "path": "/api/mfa",
       "body": {
@@ -130,26 +130,7 @@
   ],
   "negative_steps": [
     {
-      "name": "missing csrf rejected",
-      "method": "POST",
-      "path": "/api/recovery-request",
-      "body": {
-        "identifier": "${email}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "invalid recovery code rejected",
-      "method": "POST",
-      "path": "/api/verify-reset",
-      "body": {
-        "code": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-        "csrf": "${csrf}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "used recovery code rejected",
+      "name": "reused recovery code rejected",
       "method": "POST",
       "path": "/api/verify-reset",
       "body": {
@@ -159,13 +140,28 @@
       "expect_failure": true
     },
     {
-      "name": "old password rejected after reset",
+      "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/login",
       "body": {
         "password": "${initial_password}",
         "csrf": "${csrf}"
       },
+      "expect_failure": true
+    },
+    {
+      "name": "missing CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "unverified reset page rejected",
+      "method": "GET",
+      "path": "/new-password",
       "expect_failure": true
     }
   ]

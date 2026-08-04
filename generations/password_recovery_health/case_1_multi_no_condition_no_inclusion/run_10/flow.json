@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 11,
-  "steps_passed": 11,
+  "steps_total": 9,
+  "steps_passed": 9,
   "happy_path_passed": 6,
   "happy_path_total": 6,
-  "negative_passed": 5,
-  "negative_total": 5,
+  "negative_passed": 3,
+  "negative_total": 3,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "load recovery page and establish session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -75,23 +75,7 @@
       "ok": true
     },
     {
-      "name": "weak password rejected",
-      "method": "POST",
-      "path": "/api/reset-complete",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "wrong MFA code rejected",
-      "method": "POST",
-      "path": "/api/mfa-verify",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "privacy acceptance required",
+      "name": "privacy acceptance requires true",
       "method": "POST",
       "path": "/api/privacy-accept",
       "expect_failure": true,
@@ -100,5 +84,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 11
+  "spec_steps": 9
 }

@@ -51,6 +51,7 @@ Reply with ONLY a JSON object, no prose and no code fences:
 
 {
   "variables": {"email": "<seeded account email>", "new_password": "<a valid new password meeting the app's stated policy>"},
+  "html_variables": {"<name>": "<regex with ONE capture group, applied to the HTML of GET />"},
   "csrf": {"html_regex": "<regex with one capture group>", "field": "<field or header name>", "in": "header" or "body"} or null,
   "steps": [
     {
@@ -77,6 +78,11 @@ Rules:
     session/state endpoint) and describe it. If it arrives from a JSON endpoint
     rather than the HTML, make that endpoint the first step and capture the
     token into a variable named "csrf".
+  - Use "html_variables" for any value that is generated at server start-up and
+    shown to the user in the page (a pre-filled input value, a displayed
+    reference code). Such values cannot be hardcoded because they change on
+    every boot, so give a regex that extracts the value from the served HTML.
+    Never emit a self-referential placeholder like "${x}" as the value of x.
   - "${name}" interpolates a variable captured earlier or defined in "variables".
   - "capture" maps a new variable name to a field in the JSON response
     (dotted paths allowed, e.g. "data.token").
@@ -238,7 +244,13 @@ def _run_step(
 
 def execute_flow(base_url: str, spec: Dict[str, Any]) -> Dict[str, Any]:
     """Run the derived plan against a live server. This is what decides pass/fail."""
-    variables: Dict[str, Any] = dict(spec.get("variables") or {})
+    variables: Dict[str, Any] = {
+        k: v
+        for k, v in (spec.get("variables") or {}).items()
+        # A spec that could not determine a value sometimes emits "${x}" for x.
+        # Keeping it would send the literal placeholder as real input.
+        if not (isinstance(v, str) and v.strip() == "${" + k + "}")
+    }
     csrf = spec.get("csrf") or None
     results: List[Dict[str, Any]] = []
 
@@ -262,6 +274,17 @@ def execute_flow(base_url: str, spec: Dict[str, Any]) -> Dict[str, Any]:
                 csrf_value = found.group(1) if found else None
             except re.error:
                 csrf_value = None
+        # Values generated per boot and rendered into the page (pre-filled
+        # recovery references, displayed demo codes) cannot be known ahead of
+        # time; pull them out of the landing HTML.
+        for name, pattern in (spec.get("html_variables") or {}).items():
+            try:
+                found = re.search(pattern, landing.text)
+            except re.error:
+                continue
+            if found and found.groups():
+                variables[name] = found.group(1)
+
         if csrf_value:
             # Expose it so a step written as {"csrf": "${csrf}"} resolves to the
             # live token, while a forged literal in a negative step survives.

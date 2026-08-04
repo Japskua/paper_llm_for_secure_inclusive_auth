@@ -1,17 +1,23 @@
 {
   "variables": {
     "email": "helena@example.test",
-    "new_password": "N3wSecure!Pass"
+    "seeded_password": null,
+    "new_password": "NewSecure!2025"
   },
-  "csrf": null,
+  "csrf": {
+    "html_regex": null,
+    "field": "csrf",
+    "in": "body",
+    "endpoint": "/api/recovery-status"
+  },
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "load recovery page",
       "method": "GET",
       "path": "/"
     },
     {
-      "name": "load recovery session status",
+      "name": "get session csrf token",
       "method": "GET",
       "path": "/api/recovery-status",
       "capture": {
@@ -66,7 +72,7 @@
       }
     },
     {
-      "name": "confirm MFA",
+      "name": "confirm mfa",
       "method": "POST",
       "path": "/api/mfa",
       "body": {
@@ -87,20 +93,22 @@
   ],
   "negative_steps": [
     {
-      "name": "wrong password rejected",
+      "name": "missing csrf rejected",
       "method": "POST",
-      "path": "/api/login",
+      "path": "/api/request-reset",
       "body": {
-        "password": "WrongPassword!123",
-        "csrf": "${csrf}"
+        "email": "${email}"
       },
       "expect_failure": true
     },
     {
-      "name": "privacy request without CSRF rejected",
+      "name": "invalid email rejected",
       "method": "POST",
-      "path": "/api/privacy",
-      "body": {},
+      "path": "/api/request-reset",
+      "body": {
+        "email": "not-an-email",
+        "csrf": "${csrf}"
+      },
       "expect_failure": true
     },
     {
@@ -108,7 +116,38 @@
       "method": "POST",
       "path": "/api/verify-reset",
       "body": {
-        "token": "not-a-valid-recovery-code",
+        "token": "invalid-recovery-code",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "body": {
+        "password": "weak",
+        "confirm": "weak",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "password": "WrongPassword!2025",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong mfa code rejected",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "000000",
         "csrf": "${csrf}"
       },
       "expect_failure": true
