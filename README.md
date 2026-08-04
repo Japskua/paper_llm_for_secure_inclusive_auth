@@ -349,6 +349,49 @@ uv run python run.py --mode multi \
 | Runs per case | 10 | Independent draws |
 | Maximum Iterations | 12 | Upper bound for convergence |
 
+### Instrumentation and Threats to Validity
+
+The pipeline is a scaffold, not a neutral observer, so it is worth being explicit
+about where the harness can influence the result. Generation is always finished and
+`app.ts` written **before** any verification runs — nothing from the smoke or flow
+test feeds back into the model — but the generation loop itself is apparatus.
+
+**Affects what is generated.** The `NEW_TASKS` and `DECISION` parser corrections
+below change what the Coder is told to do and when a run stops, so they change the
+artifacts. There is no "unscaffolded model" baseline to compare against: the earlier
+parser was equally an intervention, just an undocumented and lossy one that discarded
+part of the Evaluator's instructions. `reasoning_effort` and the 900s timeout
+likewise shape output — the latter by no longer selecting against runs that generate
+a lot of text. All are held constant across cases, so they do not confound the
+case comparison, but they do define what is being measured and are recorded per run.
+
+**Must not hide model failures.** Non-working output is a result, so the harness is
+built to record rather than rescue:
+
+| Mechanism | Policy |
+|---|---|
+| Tasker emits unparseable JSON | One corrective re-ask, but every occurrence is counted in `protocol_violations`; an unrecoverable case writes `PROTOCOL_VIOLATION_*` and fails the run |
+| Run fails mid-generation | Cause is classified; **only positively identified infrastructure faults** (timeout, 429, 5xx, connection error) are retried. Model and unknown causes are kept as recorded failures |
+| Previous failed attempt | Preserved as `run_NN_failed_attempt_N/`, never deleted |
+| Run hits `--max-iters` | Recorded as `converged: false` with a `NO_CONVERGENCE` marker, and reported |
+| Artifact fails to boot | Recorded; a clash with an unrelated host process is reported as `port_conflict`, distinct from a defect |
+
+The smoke test supplies free ports via `PORT`/`HTTPS_PORT`/`HTTP_PORT` so artifacts
+are not failed for colliding with unrelated local services. This is charitable to the
+artifact, so `smoke.json` records `port_hints` and `used_hint_port`, making visible
+the cases where env configuration rather than the artifact itself avoided a clash.
+
+Batch-level counters (`runs_failed`, `failures_by_cause`, `retried_runs`,
+`tasker_json_parse_failures`) are aggregated in the manifest so any rescue the
+harness performed is visible in the reported results.
+
+**Measurement error.** The flow test is LLM-mediated: a badly derived plan can fail a
+working artifact, and a weak plan can pass a broken one. Its error rate is not
+quantified, so flow results are instrument readings rather than ground truth. Each
+run's derived plan is kept in `flow_spec.json` for audit. During development, four
+executor defects each produced confidently wrong verdicts that were caught only by
+manual inspection — at batch scale, some misclassification should be assumed.
+
 ### Changes to the Pipeline
 
 The generation loop was hardened for unattended batch execution. Two changes alter

@@ -154,6 +154,68 @@ def is_complete(out: pathlib.Path) -> bool:
     )
 
 
+# Signatures that identify a failure as infrastructure rather than the model's
+# doing. Only these are retried: a model or pipeline failure is a result and
+# must be recorded, not replaced by a fresh attempt.
+_INFRA_SIGNS = (
+    "readtimeout",
+    "connecttimeout",
+    "connecterror",
+    "connectionerror",
+    "remoteprotocolerror",
+    "ratelimit",
+    "rate_limit",
+    "http 429",
+    "http 500",
+    "http 502",
+    "http 503",
+    "http 504",
+    "http 529",
+    "apiconnectionerror",
+    "internalservererror",
+    "overloaded",
+    "retries exhausted",
+    "temporarily unavailable",
+)
+
+_MODEL_SIGNS = (
+    "did not return valid json",
+    "protocol_violation",
+    "tasker did not return",
+)
+
+
+def classify_failure(out: pathlib.Path) -> Dict[str, Any]:
+    """
+    Decide whether a failed run died from infrastructure or from the model.
+
+    Defaults to "unknown", which is NOT retried: only a positively identified
+    infrastructure fault may be absorbed by a retry. Anything else stays in the
+    dataset as a recorded failure, because non-working output is a result.
+    """
+    evidence = []
+    for crash in sorted(out.glob("CRASH_*.txt")):
+        evidence.append(crash.read_text(encoding="utf-8", errors="replace")[:2000])
+    console = out / "console.log"
+    if console.is_file():
+        evidence.append(console.read_text(encoding="utf-8", errors="replace")[-4000:])
+    blob = "\n".join(evidence).lower()
+
+    if any(sign in blob for sign in _MODEL_SIGNS):
+        kind = "model"
+    elif any(sign in blob for sign in _INFRA_SIGNS):
+        kind = "infrastructure"
+    else:
+        kind = "unknown"
+
+    detail = ""
+    for line in reversed(blob.splitlines()):
+        if any(t in line for t in ("error", "fatal", "exception", "traceback")):
+            detail = line.strip()[:200]
+            break
+    return {"kind": kind, "detail": detail, "retryable": kind == "infrastructure"}
+
+
 def archive_legacy(args) -> None:
     """
     Move the previously published single-run artifacts into a legacy/ subfolder,
@@ -188,6 +250,10 @@ def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
         # one where previously-finished runs appear as empty records.
         record.update(collect(out, exit_code=0, attempts=0, wall=0.0))
         record["reused"] = True
+        record.setdefault("failed_attempts", [])
+        record.setdefault("failure_cause", None)
+        # protocol_violations stays None for runs generated before it was
+        # recorded — absent is not the same as zero violations.
         log(f"SKIP  {job['run_id']} (already complete, results collected)")
         return record
 
@@ -215,13 +281,18 @@ def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
     attempts = 0
     exit_code = None
     started = time.time()
+    failures: List[Dict[str, Any]] = []
 
     while attempts <= args.retries:
         attempts += 1
-        # Start each attempt from a clean directory so no artifact survives from
-        # a previous, partially-completed attempt.
         if out.exists():
-            shutil.rmtree(out)
+            # Preserve the previous attempt instead of deleting it: a failed run
+            # is evidence, and erasing it would quietly convert a failure into a
+            # success in the dataset.
+            if any(out.iterdir()):
+                shutil.move(str(out), str(out.parent / f"{out.name}_failed_attempt_{attempts - 1}"))
+            else:
+                shutil.rmtree(out)
         out.mkdir(parents=True, exist_ok=True)
 
         log(f"START {job['run_id']} (attempt {attempts}/{args.retries + 1})")
@@ -231,9 +302,25 @@ def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
 
         if exit_code == 0:
             break
-        log(f"FAIL  {job['run_id']} exit={exit_code}" + (" — retrying" if attempts <= args.retries else ""))
+
+        cause = classify_failure(out)
+        failures.append({"attempt": attempts, "exit_code": exit_code, **cause})
+
+        if not cause["retryable"]:
+            # Model or unknown cause: keep it as a recorded failure.
+            log(
+                f"FAIL  {job['run_id']} exit={exit_code} cause={cause['kind']} "
+                f"— not retrying (recorded as a result)"
+            )
+            break
+        if attempts > args.retries:
+            log(f"FAIL  {job['run_id']} exit={exit_code} cause=infrastructure — retries exhausted")
+            break
+        log(f"FAIL  {job['run_id']} exit={exit_code} cause=infrastructure — retrying")
 
     record.update(collect(out, exit_code, attempts, round(time.time() - started, 2)))
+    record["failed_attempts"] = failures
+    record["failure_cause"] = failures[-1]["kind"] if failures and exit_code != 0 else None
     verdict = "OK" if record["status"] == "completed" else record["status"].upper()
     log(
         f"DONE  {job['run_id']} {verdict} iters={record.get('iterations')} "
@@ -262,6 +349,7 @@ def collect(out: pathlib.Path, exit_code: Optional[int], attempts: int, wall: fl
         "iterations": run_meta.get("iterations"),
         "max_iters": run_meta.get("max_iters"),
         "models": run_meta.get("models"),
+        "protocol_violations": run_meta.get("protocol_violations"),
         "models_served": run_meta.get("models_served"),
         "model_versions": run_meta.get("model_versions"),
         "providers_seen": run_meta.get("providers_seen"),
@@ -317,11 +405,17 @@ def summarize(records: List[Dict[str, Any]]) -> Dict[str, Any]:
                 "converged": 0,
                 "smoke_ok": 0,
                 "flow_ok": 0,
+                "failed": 0,
+                "json_violations": 0,
                 "iterations": [],
                 "cost_usd": 0.0,
             },
         )
         c["runs"] += 1
+        c["json_violations"] += ((r.get("protocol_violations") or {})
+                                 .get("tasker_json_parse_failures") or 0)
+        if r.get("status") != "completed":
+            c["failed"] += 1
         if r.get("status") == "completed":
             c["completed"] += 1
             if r.get("converged"):
@@ -343,6 +437,21 @@ def summarize(records: List[Dict[str, Any]]) -> Dict[str, Any]:
         "runs_converged": sum(1 for r in done if r.get("converged")),
         "runs_smoke_ok": sum(1 for r in done if (r.get("smoke") or {}).get("ok")),
         "runs_flow_ok": sum(1 for r in done if (r.get("flow") or {}).get("ok")),
+        "runs_failed": sum(1 for r in records if r.get("status") != "completed"),
+        "failures_by_cause": {
+            cause: sum(1 for r in records if r.get("failure_cause") == cause)
+            for cause in ("model", "infrastructure", "unknown")
+            if any(r.get("failure_cause") == cause for r in records)
+        },
+        "retried_runs": sum(1 for r in records if (r.get("attempts") or 0) > 1),
+        "tasker_json_parse_failures": sum(
+            ((r.get("protocol_violations") or {}).get("tasker_json_parse_failures") or 0)
+            for r in records
+        ),
+        "tasker_json_hard_failures": sum(
+            ((r.get("protocol_violations") or {}).get("tasker_json_hard_failures") or 0)
+            for r in records
+        ),
         "total_cost_usd": round(sum(r.get("cost_usd") or 0.0 for r in records), 6),
         "total_input_tokens": sum((r.get("tokens") or {}).get("input") or 0 for r in records),
         "total_output_tokens": sum((r.get("tokens") or {}).get("output") or 0 for r in records),
@@ -416,6 +525,13 @@ def main() -> int:
     )
     log(f"tokens in={s['total_input_tokens']:,} out={s['total_output_tokens']:,} (reasoning {s['total_reasoning_tokens']:,})")
     log(f"cost ${s['total_cost_usd']:.4f} | wall {manifest['batch_wall_seconds'] / 60:.1f} min")
+    if s.get("runs_failed"):
+        log(f"failures {s['runs_failed']} by cause {s.get('failures_by_cause')} | retried {s.get('retried_runs')}")
+    if s.get("tasker_json_parse_failures"):
+        log(
+            f"protocol: tasker JSON parse failures {s['tasker_json_parse_failures']} "
+            f"(unrecoverable {s['tasker_json_hard_failures']})"
+        )
     log(f"manifest -> {path.relative_to(REPO)}")
 
     return 0 if s["runs_completed"] == s["runs_total"] else 1

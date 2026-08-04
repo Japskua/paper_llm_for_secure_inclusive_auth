@@ -245,13 +245,17 @@ def smoke_test(
     # so an artifact that honours env config avoids colliding with whatever the
     # host already runs (Docker on 8080 has been observed).
     hint_port = _free_port()
+    http_hint = _free_port()
     env = {
         **os.environ,
         "PORT": str(hint_port),
         "HTTPS_PORT": str(hint_port),
-        "HTTP_PORT": str(_free_port()),
+        "HTTP_PORT": str(http_hint),
         "NODE_ENV": "production",
     }
+    # Recorded so it is visible when the harness, rather than the artifact,
+    # is what avoided a port clash with unrelated host services.
+    result["port_hints"] = {"PORT": hint_port, "HTTPS_PORT": hint_port, "HTTP_PORT": http_hint}
 
     out_path = run_path / "smoke_stdout.log"
     proc = None
@@ -326,6 +330,11 @@ def smoke_test(
                     )
                 else:
                     result["listening_ports"] = live_ports
+                    # True when the artifact took a port we supplied rather than
+                    # one it hardcoded, i.e. env config kept it off a busy port.
+                    result["used_hint_port"] = any(
+                        p in (hint_port, http_hint) for p in live_ports
+                    )
                     result["stage"] = "probing"
                     probe = _probe(live_ports)
                     result.update(

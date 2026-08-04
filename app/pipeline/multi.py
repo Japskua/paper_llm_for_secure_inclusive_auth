@@ -92,6 +92,15 @@ def run_multi(args) -> None:
                 f"evaluator in={pricing['evaluator']['in']}, cached_in={pricing['evaluator']['cached_in']}, out={pricing['evaluator']['out']}",
             )
 
+    # Protocol compliance counters. A model that cannot follow "output STRICT
+    # JSON" is a result in its own right, so the corrective retry below is
+    # recorded rather than silently absorbed.
+    protocol = {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0,
+    }
+
     # Initial state
     state: State = {
         "code_tsx": INIT_CODE,
@@ -143,10 +152,17 @@ def run_multi(args) -> None:
 
             try:
                 new_list = parse_task_list(text)
+                if attempt == 2:
+                    protocol["tasker_json_recovered_by_retry"] += 1
                 break
             except ValueError:
+                protocol["tasker_json_parse_failures"] += 1
                 if attempt == 2:
+                    protocol["tasker_json_hard_failures"] += 1
                     vprint(f"{prefix} TASKER JSON ERROR after retry. Raw:\n{text}")
+                    pathlib.Path(
+                        args.output, f"PROTOCOL_VIOLATION_tasker_json_iter{state.get('iter', 0)}.txt"
+                    ).write_text(text, encoding="utf-8")
                     raise ValueError(
                         f"Tasker did not return valid JSON after 2 attempts. Got:\n{text}"
                     )
@@ -442,6 +458,7 @@ def run_multi(args) -> None:
             "converged": converged,
             "iterations": int(state.get("iter", 0)),
             "max_iters": MAX_ITERS,
+            "protocol_violations": protocol,
             "models": resolved_models(),
             "models_served": dict(MODELS_SEEN),
             # resolve_providers() also populates MODEL_VERSIONS, so it must run first.
