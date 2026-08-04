@@ -2,12 +2,12 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 12,
-  "steps_passed": 12,
+  "steps_total": 11,
+  "steps_passed": 11,
   "happy_path_passed": 7,
   "happy_path_total": 7,
-  "negative_passed": 5,
-  "negative_total": 5,
+  "negative_passed": 4,
+  "negative_total": 4,
   "negatives_meaningful": true,
   "steps": [
     {
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "save new password",
+      "name": "set new password",
       "method": "POST",
       "path": "/api/password",
       "expect_failure": false,
@@ -59,7 +59,7 @@
       "ok": true
     },
     {
-      "name": "confirm completion",
+      "name": "confirm completed recovery",
       "method": "GET",
       "path": "/api/confirmation",
       "expect_failure": false,
@@ -67,7 +67,15 @@
       "ok": true
     },
     {
-      "name": "invalid account input rejected",
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid account format rejected",
       "method": "POST",
       "path": "/api/recovery",
       "expect_failure": true,
@@ -83,23 +91,7 @@
       "ok": true
     },
     {
-      "name": "weak password rejected",
-      "method": "POST",
-      "path": "/api/password",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "wrong MFA code rejected",
-      "method": "POST",
-      "path": "/api/mfa",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "privacy acceptance required",
+      "name": "privacy acceptance must be true",
       "method": "POST",
       "path": "/api/privacy",
       "expect_failure": true,
@@ -108,5 +100,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 12
+  "spec_steps": 11
 }

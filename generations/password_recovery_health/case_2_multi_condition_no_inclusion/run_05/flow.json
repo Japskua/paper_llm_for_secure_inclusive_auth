@@ -2,18 +2,26 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 12,
-  "steps_passed": 12,
-  "happy_path_passed": 8,
-  "happy_path_total": 8,
-  "negative_passed": 4,
-  "negative_total": 4,
+  "steps_total": 16,
+  "steps_passed": 15,
+  "happy_path_passed": 9,
+  "happy_path_total": 9,
+  "negative_passed": 6,
+  "negative_total": 7,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "bootstrap recovery session",
+      "name": "bootstrap secure session",
       "method": "GET",
       "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -51,7 +59,7 @@
       "ok": true
     },
     {
-      "name": "confirm sign in",
+      "name": "sign in with new password",
       "method": "POST",
       "path": "/api/sign-in",
       "expect_failure": false,
@@ -75,14 +83,6 @@
       "ok": true
     },
     {
-      "name": "invalid recovery account rejected",
-      "method": "POST",
-      "path": "/api/recover",
-      "expect_failure": true,
-      "status_code": 200,
-      "ok": true
-    },
-    {
       "name": "missing CSRF rejected",
       "method": "POST",
       "path": "/api/recover",
@@ -91,7 +91,32 @@
       "ok": true
     },
     {
-      "name": "incorrect MFA code rejected",
+      "name": "wrong origin rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": false,
+      "response_message": "If the account can be recovered, instructions are available in this secure browser session."
+    },
+    {
+      "name": "invalid account input rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong MFA code rejected",
       "method": "POST",
       "path": "/api/verify-mfa",
       "expect_failure": true,
@@ -99,14 +124,22 @@
       "ok": true
     },
     {
-      "name": "privacy acceptance requires true",
+      "name": "weak password rejected",
       "method": "POST",
-      "path": "/api/accept-privacy",
+      "path": "/api/reset-password",
       "expect_failure": true,
       "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong new password rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": true,
+      "status_code": 200,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 12
+  "spec_steps": 16
 }

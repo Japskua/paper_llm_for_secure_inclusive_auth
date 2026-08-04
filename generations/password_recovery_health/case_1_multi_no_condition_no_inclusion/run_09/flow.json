@@ -2,16 +2,16 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 13,
-  "steps_passed": 8,
+  "steps_total": 11,
+  "steps_passed": 6,
   "happy_path_passed": 3,
   "happy_path_total": 8,
-  "negative_passed": 5,
-  "negative_total": 5,
+  "negative_passed": 3,
+  "negative_total": 3,
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "load recovery portal",
+      "name": "open recovery portal",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "establish secure session",
+      "name": "start secure session",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_failure": false,
@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "name": "request reset instructions",
+      "name": "request password reset",
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": false,
@@ -83,7 +83,7 @@
       "response_message": "Authentication and privacy-condition acceptance are required."
     },
     {
-      "name": "reset request without CSRF rejected",
+      "name": "missing valid CSRF token rejected",
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": true,
@@ -91,7 +91,7 @@
       "ok": true
     },
     {
-      "name": "invalid reset code rejected",
+      "name": "wrong reset code rejected",
       "method": "POST",
       "path": "/api/reset-validate",
       "expect_failure": true,
@@ -99,23 +99,7 @@
       "ok": true
     },
     {
-      "name": "weak password rejected",
-      "method": "POST",
-      "path": "/api/password-update",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "incorrect MFA code rejected",
-      "method": "POST",
-      "path": "/api/mfa-verify",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "privacy acceptance requires true",
+      "name": "privacy acceptance required",
       "method": "POST",
       "path": "/api/privacy-accept",
       "expect_failure": true,
@@ -124,5 +108,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 13
+  "spec_steps": 11
 }

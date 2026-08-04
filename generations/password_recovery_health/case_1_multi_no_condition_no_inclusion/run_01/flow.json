@@ -59,7 +59,7 @@
       "ok": true
     },
     {
-      "name": "invalid recovery code rejected",
+      "name": "reused recovery code rejected",
       "method": "POST",
       "path": "/api/reset-verify",
       "expect_failure": true,
@@ -67,17 +67,17 @@
       "ok": true
     },
     {
-      "name": "MFA without recovery verification rejected",
+      "name": "password update without active recovery authorization rejected",
       "method": "POST",
-      "path": "/api/mfa-verify",
+      "path": "/api/password-update",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     },
     {
-      "name": "password update without active recovery rejected",
+      "name": "state change without CSRF token rejected",
       "method": "POST",
-      "path": "/api/password-update",
+      "path": "/api/reset-request",
       "expect_failure": true,
       "status_code": 403,
       "ok": true

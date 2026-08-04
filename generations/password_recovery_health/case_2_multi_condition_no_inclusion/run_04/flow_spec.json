@@ -4,25 +4,26 @@
     "new_password": "ValidPassword1!",
     "origin": "https://localhost:3000"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": null,
     "field": "X-CSRF-Token",
-    "in": "header"
+    "in": "header",
+    "body_field": "csrf"
   },
   "steps": [
-    {
-      "name": "bootstrap recovery session",
-      "method": "GET",
-      "path": "/api/bootstrap",
-      "expect_json_true": "csrf",
-      "capture": {
-        "csrf": "csrf"
-      }
-    },
     {
       "name": "load recovery page",
       "method": "GET",
       "path": "/"
+    },
+    {
+      "name": "bootstrap recovery session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "capture": {
+        "csrf": "csrf"
+      }
     },
     {
       "name": "request recovery code",
@@ -41,7 +42,7 @@
       }
     },
     {
-      "name": "verify recovery code",
+      "name": "verify recovery token",
       "method": "POST",
       "path": "/api/verify-token",
       "headers": {
@@ -88,21 +89,7 @@
   ],
   "negative_steps": [
     {
-      "name": "missing valid CSRF rejected",
-      "method": "POST",
-      "path": "/api/recovery-request",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "invalid"
-      },
-      "body": {
-        "contact": "${email}",
-        "csrf": "invalid"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "reused recovery token rejected",
+      "name": "invalid recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "headers": {
@@ -110,15 +97,37 @@
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "token": "${token}",
+        "token": "0000000000000000000000000000000000000000000000000000000000000000",
         "csrf": "${csrf}"
       },
       "expect_failure": true
     },
     {
-      "name": "wrong method rejected",
-      "method": "GET",
-      "path": "/api/recovery-request",
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/set-password",
+      "headers": {
+        "Origin": "${origin}",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "password": "short",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "headers": {
+        "Origin": "${origin}",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
       "expect_failure": true
     }
   ]

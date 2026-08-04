@@ -1,19 +1,24 @@
 {
   "variables": {
     "email": "helena.patient@hospital.test",
-    "password": "Initial-Demo-Password-Only!",
-    "new_password": "NewSecure!Pass9"
+    "seeded_password": "Initial-Demo-Password-Only!",
+    "new_password": "Updated-Demo-Password9!"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": null,
     "field": "X-CSRF-Token",
-    "in": "header"
+    "in": "header",
+    "endpoint": "/api/session",
+    "method": "GET",
+    "response_field": "csrf"
   },
   "steps": [
     {
       "name": "start secure session and obtain CSRF token",
       "method": "GET",
       "path": "/api/session",
+      "expect_json_true": "csrf",
       "capture": {
         "csrf": "csrf"
       }
@@ -27,9 +32,13 @@
       "name": "request recovery instructions",
       "method": "POST",
       "path": "/api/reset-request",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "identifier": "${email}"
       },
+      "expect_json_true": "message",
       "capture": {
         "reset_token": "testToken"
       }
@@ -38,9 +47,13 @@
       "name": "verify recovery code",
       "method": "POST",
       "path": "/api/reset-verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "token": "${reset_token}"
       },
+      "expect_json_true": "message",
       "capture": {
         "mfa_code": "testMfaCode"
       }
@@ -49,44 +62,58 @@
       "name": "confirm MFA code",
       "method": "POST",
       "path": "/api/mfa-verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "code": "${mfa_code}"
-      }
+      },
+      "expect_json_true": "message"
     },
     {
       "name": "update password",
       "method": "POST",
       "path": "/api/password-update",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "password": "${new_password}"
-      }
+      },
+      "expect_json_true": "message"
     }
   ],
   "negative_steps": [
     {
-      "name": "invalid recovery code rejected",
+      "name": "reused recovery code rejected",
       "method": "POST",
       "path": "/api/reset-verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
-        "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "token": "${reset_token}"
       },
       "expect_failure": true
     },
     {
-      "name": "MFA without recovery verification rejected",
-      "method": "POST",
-      "path": "/api/mfa-verify",
-      "body": {
-        "code": "246810"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "password update without active recovery rejected",
+      "name": "password update without active recovery authorization rejected",
       "method": "POST",
       "path": "/api/password-update",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "password": "${new_password}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "state change without CSRF token rejected",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "body": {
+        "identifier": "${email}"
       },
       "expect_failure": true
     }

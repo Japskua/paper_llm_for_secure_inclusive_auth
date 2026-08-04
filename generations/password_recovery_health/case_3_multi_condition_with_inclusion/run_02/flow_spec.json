@@ -1,17 +1,20 @@
 {
   "variables": {
     "email": "helena@example.com",
-    "new_password": "NewSecure!Pass9",
-    "origin": "https://localhost:3000"
+    "alternate_email": "helena.patient@hospital.test",
+    "account_reference": "helena patient",
+    "initial_password": "Initial!HospitalPassword9",
+    "new_password": "Renewed!HospitalPass9"
   },
+  "html_variables": {},
   "csrf": {
-    "html_regex": "const\\s+csrf=\"([^\"]+)\"",
+    "html_regex": "const csrf=\"([^\"]+)\"",
     "field": "X-CSRF-Token",
     "in": "header"
   },
   "steps": [
     {
-      "name": "open secure recovery portal",
+      "name": "open secure portal",
       "method": "GET",
       "path": "/"
     },
@@ -19,10 +22,6 @@
       "name": "request recovery instruction",
       "method": "POST",
       "path": "/api/recovery/request",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "identifier": "${email}"
       },
@@ -33,39 +32,27 @@
       }
     },
     {
-      "name": "confirm reset token",
+      "name": "confirm recovery token",
       "method": "POST",
       "path": "/api/recovery/instruction",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "value": "${reset_token}"
       },
       "expect_json_true": "ok"
     },
     {
-      "name": "confirm recovery identity",
+      "name": "verify recovery identity",
       "method": "POST",
       "path": "/api/recovery/identity",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "value": "${recovery_identity}"
       },
       "expect_json_true": "ok"
     },
     {
-      "name": "save new password",
+      "name": "save replacement password",
       "method": "POST",
       "path": "/api/recovery/password",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "password": "${new_password}",
         "confirmPassword": "${new_password}"
@@ -73,13 +60,9 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "sign in with new password",
+      "name": "sign in with replacement password",
       "method": "POST",
       "path": "/api/login",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "identifier": "${email}",
         "password": "${new_password}"
@@ -91,26 +74,18 @@
       }
     },
     {
-      "name": "confirm MFA code",
+      "name": "confirm MFA demonstration code",
       "method": "POST",
       "path": "/api/mfa/code",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "${mfa_code}"
       },
       "expect_json_true": "ok"
     },
     {
-      "name": "confirm possession value",
+      "name": "confirm MFA possession value",
       "method": "POST",
       "path": "/api/mfa/possession",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "value": "${possession_value}"
       },
@@ -120,10 +95,6 @@
       "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy/accept",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok"
     },
@@ -131,57 +102,39 @@
       "name": "confirm appointment request",
       "method": "POST",
       "path": "/api/appointment",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok"
-    },
-    {
-      "name": "verify completed state",
-      "method": "GET",
-      "path": "/api/state",
-      "expect_json_true": "appointmentBooked"
     }
   ],
   "negative_steps": [
     {
-      "name": "reject request without CSRF token",
+      "name": "invalid recovery identifier rejected",
+      "method": "POST",
+      "path": "/api/recovery/request",
+      "body": {
+        "identifier": "!"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "original password rejected after reset",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "identifier": "${email}",
+        "password": "${initial_password}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "incorrect CSRF token rejected",
       "method": "POST",
       "path": "/api/recovery/request",
       "headers": {
-        "Origin": "${origin}"
+        "X-CSRF-Token": "incorrect-csrf-token"
       },
       "body": {
         "identifier": "${email}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "reject wrong sign-in password",
-      "method": "POST",
-      "path": "/api/login",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "identifier": "${email}",
-        "password": "WrongPassword!9"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "reject replayed used reset token",
-      "method": "POST",
-      "path": "/api/recovery/instruction",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "value": "${reset_token}"
       },
       "expect_failure": true
     }

@@ -4,6 +4,7 @@
     "initial_password": "Initial!DemoPassword2025",
     "new_password": "Renewed!Pass2025"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": "<meta name=\"csrf-token\" content=\"([^\"]+)\">",
     "field": "csrf",
@@ -16,7 +17,7 @@
       "path": "/"
     },
     {
-      "name": "request recovery code",
+      "name": "request recovery instructions",
       "method": "POST",
       "path": "/api/recovery-request",
       "body": {
@@ -29,7 +30,7 @@
       }
     },
     {
-      "name": "open reset link",
+      "name": "open secure reset link",
       "method": "GET",
       "path": "/reset?code=${reset_code}"
     },
@@ -49,10 +50,10 @@
       "path": "/new-password"
     },
     {
-      "name": "check recovery verification status",
+      "name": "confirm verified recovery state",
       "method": "GET",
       "path": "/api/recovery-status",
-      "expect_json_true": "ok"
+      "expect_json_true": "resetVerified"
     },
     {
       "name": "set new password",
@@ -66,12 +67,12 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "open login page",
+      "name": "open sign in page",
       "method": "GET",
       "path": "/login"
     },
     {
-      "name": "sign in with new password",
+      "name": "sign in with updated password",
       "method": "POST",
       "path": "/api/login",
       "body": {
@@ -100,7 +101,7 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "open privacy page",
+      "name": "open privacy statement",
       "method": "GET",
       "path": "/privacy"
     },
@@ -114,7 +115,7 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "open appointment page",
+      "name": "open appointment confirmation",
       "method": "GET",
       "path": "/appointment"
     },
@@ -130,11 +131,11 @@
   ],
   "negative_steps": [
     {
-      "name": "reused recovery code rejected",
+      "name": "invalid recovery code rejected",
       "method": "POST",
       "path": "/api/verify-reset",
       "body": {
-        "code": "${reset_code}",
+        "code": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "csrf": "${csrf}"
       },
       "expect_failure": true
@@ -144,7 +145,7 @@
       "method": "POST",
       "path": "/api/login",
       "body": {
-        "password": "${initial_password}",
+        "password": "Wrong!Password2025",
         "csrf": "${csrf}"
       },
       "expect_failure": true
@@ -156,12 +157,6 @@
       "body": {
         "identifier": "${email}"
       },
-      "expect_failure": true
-    },
-    {
-      "name": "unverified reset page rejected",
-      "method": "GET",
-      "path": "/new-password",
       "expect_failure": true
     }
   ]

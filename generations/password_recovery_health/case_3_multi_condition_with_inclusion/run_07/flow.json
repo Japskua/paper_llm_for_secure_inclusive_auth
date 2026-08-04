@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 13,
-  "steps_passed": 13,
-  "happy_path_passed": 9,
-  "happy_path_total": 9,
+  "steps_total": 18,
+  "steps_passed": 18,
+  "happy_path_passed": 14,
+  "happy_path_total": 14,
   "negative_passed": 4,
   "negative_total": 4,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page",
+      "name": "load recovery application and establish session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "load initial state",
+      "name": "load initial session state",
       "method": "GET",
       "path": "/api/state",
       "expect_failure": false,
@@ -35,6 +35,14 @@
       "ok": true
     },
     {
+      "name": "refresh state after recovery request",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
       "name": "verify recovery code",
       "method": "POST",
       "path": "/api/recovery-verify",
@@ -43,7 +51,15 @@
       "ok": true
     },
     {
-      "name": "replace password",
+      "name": "refresh state after code verification",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "set replacement password",
       "method": "POST",
       "path": "/api/password",
       "expect_failure": false,
@@ -51,17 +67,9 @@
       "ok": true
     },
     {
-      "name": "sign in with replaced password",
-      "method": "POST",
-      "path": "/api/login",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "verify MFA code",
-      "method": "POST",
-      "path": "/api/mfa-verify",
+      "name": "refresh state after password replacement",
+      "method": "GET",
+      "path": "/api/state",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -75,7 +83,7 @@
       "ok": true
     },
     {
-      "name": "confirm completed state",
+      "name": "confirm recovery and appointment booking eligibility",
       "method": "GET",
       "path": "/api/state",
       "expect_failure": false,
@@ -83,7 +91,39 @@
       "ok": true
     },
     {
-      "name": "wrong password rejected",
+      "name": "sign in with replacement password",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "refresh state after sign in",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify sign-in MFA code",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm authenticated privacy-accepted state",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "old password rejected after reset",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": true,
@@ -99,7 +139,7 @@
       "ok": true
     },
     {
-      "name": "privacy acceptance required",
+      "name": "privacy acceptance requires true confirmation",
       "method": "POST",
       "path": "/api/privacy-accept",
       "expect_failure": true,
@@ -107,14 +147,14 @@
       "ok": true
     },
     {
-      "name": "MFA verification without pending sign-in rejected",
+      "name": "password change rejects mismatched confirmation",
       "method": "POST",
-      "path": "/api/mfa-verify",
+      "path": "/api/password",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 13
+  "spec_steps": 18
 }

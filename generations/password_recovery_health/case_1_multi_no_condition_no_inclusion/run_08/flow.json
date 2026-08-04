@@ -2,12 +2,12 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 11,
-  "steps_passed": 11,
+  "steps_total": 10,
+  "steps_passed": 10,
   "happy_path_passed": 6,
   "happy_path_total": 6,
-  "negative_passed": 5,
-  "negative_total": 5,
+  "negative_passed": 4,
+  "negative_total": 4,
   "negatives_meaningful": true,
   "steps": [
     {
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "request recovery token",
+      "name": "request reset instructions",
       "method": "POST",
       "path": "/api/recovery",
       "expect_failure": false,
@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "name": "verify recovery token",
+      "name": "verify reset token",
       "method": "POST",
       "path": "/api/verify",
       "expect_failure": false,
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "set new password",
+      "name": "save new password",
       "method": "POST",
       "path": "/api/reset",
       "expect_failure": false,
@@ -43,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "complete MFA sign-in",
+      "name": "verify MFA code and sign in",
       "method": "POST",
       "path": "/api/mfa",
       "expect_failure": false,
@@ -67,7 +67,7 @@
       "ok": true
     },
     {
-      "name": "invalid reset token rejected",
+      "name": "malformed reset token rejected",
       "method": "POST",
       "path": "/api/verify",
       "expect_failure": true,
@@ -75,17 +75,9 @@
       "ok": true
     },
     {
-      "name": "weak password rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
-      "path": "/api/reset",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "wrong MFA code rejected",
-      "method": "POST",
-      "path": "/api/mfa",
+      "path": "/api/recovery",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
@@ -100,5 +92,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 11
+  "spec_steps": 10
 }

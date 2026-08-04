@@ -2,26 +2,26 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 14,
-  "steps_passed": 14,
-  "happy_path_passed": 10,
-  "happy_path_total": 10,
-  "negative_passed": 4,
-  "negative_total": 4,
+  "steps_total": 16,
+  "steps_passed": 16,
+  "happy_path_passed": 11,
+  "happy_path_total": 11,
+  "negative_passed": 5,
+  "negative_total": 5,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "load recovery page",
+      "name": "bootstrap recovery session and CSRF",
       "method": "GET",
-      "path": "/",
+      "path": "/api/bootstrap",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
     {
-      "name": "bootstrap recovery session",
+      "name": "load recovery page",
       "method": "GET",
-      "path": "/api/bootstrap",
+      "path": "/",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -51,6 +51,14 @@
       "ok": true
     },
     {
+      "name": "open simulated recovery link",
+      "method": "GET",
+      "path": "/recovery/verify?token=YHfPlJj3-36o-53Xk4JjeWyG-fR18e2MrsdNlem-o4s",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
       "name": "verify recovery code",
       "method": "POST",
       "path": "/api/recovery/verify",
@@ -75,7 +83,7 @@
       "ok": true
     },
     {
-      "name": "verify MFA code",
+      "name": "complete MFA",
       "method": "POST",
       "path": "/api/mfa",
       "expect_failure": false,
@@ -91,7 +99,7 @@
       "ok": true
     },
     {
-      "name": "missing CSRF token rejected",
+      "name": "invalid recovery email rejected",
       "method": "POST",
       "path": "/api/recovery/start",
       "expect_failure": true,
@@ -99,7 +107,23 @@
       "ok": true
     },
     {
-      "name": "weak replacement password rejected",
+      "name": "wrong approved-channel secret rejected",
+      "method": "POST",
+      "path": "/api/recovery/channel",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "password policy violation rejected",
       "method": "POST",
       "path": "/api/recovery/password",
       "expect_failure": true,
@@ -113,16 +137,8 @@
       "expect_failure": true,
       "status_code": 403,
       "ok": true
-    },
-    {
-      "name": "wrong MFA code rejected",
-      "method": "POST",
-      "path": "/api/mfa",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 14
+  "spec_steps": 16
 }

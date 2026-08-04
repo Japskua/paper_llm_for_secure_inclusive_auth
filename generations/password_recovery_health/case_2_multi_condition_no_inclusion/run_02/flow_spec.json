@@ -1,9 +1,9 @@
 {
   "variables": {
-    "email": "any-nonempty-contact@example.test",
-    "new_password": "ValidPassw0rd!",
-    "seeded_account_credentials": null
+    "email": "demo@example.test",
+    "new_password": "ValidPassword1!"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": "const CSRF = \"([^\"]+)\";",
     "field": "X-CSRF-Token",
@@ -13,8 +13,7 @@
     {
       "name": "start recovery session",
       "method": "GET",
-      "path": "/",
-      "expect_status": 200
+      "path": "/"
     },
     {
       "name": "request recovery token",
@@ -70,11 +69,11 @@
   ],
   "negative_steps": [
     {
-      "name": "reused recovery token rejected",
+      "name": "invalid recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "body": {
-        "token": "${token}"
+        "token": "invalid_recovery_token_value"
       },
       "expect_failure": true
     },

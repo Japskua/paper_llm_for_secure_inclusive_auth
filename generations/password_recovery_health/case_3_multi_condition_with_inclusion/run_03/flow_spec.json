@@ -1,15 +1,15 @@
 {
   "variables": {
-    "email": null,
-    "new_password": "SecurePass123!"
+    "new_password": "NewPassw0rd!"
   },
   "html_variables": {
-    "recovery_reference": "id\\.value=\"(practice-[a-z0-9_-]+)\""
+    "recovery_reference": "id\\.value=\"([^\"]+)\""
   },
   "csrf": {
     "html_regex": null,
     "field": "x-csrf-token",
-    "in": "header"
+    "in": "header",
+    "session_path": "/api/session?route=home"
   },
   "steps": [
     {
@@ -18,9 +18,9 @@
       "path": "/"
     },
     {
-      "name": "start secure session",
+      "name": "initialize secure session",
       "method": "GET",
-      "path": "/api/session?route=recover",
+      "path": "/api/session?route=home",
       "capture": {
         "csrf": "csrf"
       }
@@ -29,6 +29,10 @@
       "name": "request recovery code",
       "method": "POST",
       "path": "/api/recovery/initiate",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
       "body": {
         "identifier": "${recovery_reference}"
       },
@@ -40,14 +44,22 @@
       "name": "verify recovery code",
       "method": "POST",
       "path": "/api/recovery/verify",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
       "body": {
         "token": "${recovery_token}"
       }
     },
     {
-      "name": "set new password",
+      "name": "set replacement password",
       "method": "POST",
       "path": "/api/recovery/reset",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
       "body": {
         "password": "${new_password}",
         "confirm": "${new_password}"
@@ -57,9 +69,13 @@
       }
     },
     {
-      "name": "confirm reset MFA",
+      "name": "confirm reset MFA code",
       "method": "POST",
       "path": "/api/mfa/verify",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
       "body": {
         "code": "${mfa_code}"
       }
@@ -68,12 +84,20 @@
       "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy/accept",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
       "body": {}
     },
     {
       "name": "confirm appointment request",
       "method": "POST",
       "path": "/api/appointment/confirm",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
       "body": {}
     }
   ],
@@ -82,17 +106,24 @@
       "name": "invalid recovery reference rejected",
       "method": "POST",
       "path": "/api/recovery/initiate",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
       "body": {
         "identifier": "!"
       },
       "expect_failure": true
     },
     {
-      "name": "used recovery token rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
-      "path": "/api/recovery/verify",
+      "path": "/api/recovery/initiate",
+      "headers": {
+        "content-type": "application/json"
+      },
       "body": {
-        "token": "${recovery_token}"
+        "identifier": "${recovery_reference}"
       },
       "expect_failure": true
     },
@@ -100,9 +131,13 @@
       "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/login",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
       "body": {
         "identifier": "${recovery_reference}",
-        "password": "WrongPassword123!"
+        "password": "WrongPassw0rd!"
       },
       "expect_failure": true
     }

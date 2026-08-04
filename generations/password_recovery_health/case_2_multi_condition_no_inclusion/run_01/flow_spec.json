@@ -1,8 +1,9 @@
 {
   "variables": {
-    "email": "patient@example.org",
-    "new_password": "N3wPassword!2025"
+    "email": "test@example.org",
+    "new_password": "ValidPassword1!"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": "const CSRF = \"([a-f0-9]{64})\";",
     "field": "X-CSRF-Token",
@@ -10,20 +11,18 @@
   },
   "steps": [
     {
-      "name": "load recovery page",
+      "name": "open recovery page and establish session",
       "method": "GET",
       "path": "/"
     },
     {
-      "name": "request recovery",
+      "name": "request recovery instructions",
       "method": "POST",
       "path": "/api/recovery",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "contact": "${email}"
       },
+      "expect_json_true": "message",
       "capture": {
         "recovery_token": "testingToken"
       }
@@ -32,83 +31,65 @@
       "name": "verify recovery token",
       "method": "POST",
       "path": "/api/reset/verify",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "token": "${recovery_token}"
       },
+      "expect_json_true": "message",
       "capture": {
         "recovery_mfa_code": "testingMfaCode"
       }
     },
     {
-      "name": "confirm recovery MFA",
+      "name": "confirm recovery MFA code",
       "method": "POST",
       "path": "/api/mfa",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "${recovery_mfa_code}"
-      }
+      },
+      "expect_json_true": "message"
     },
     {
       "name": "set new password",
       "method": "POST",
       "path": "/api/password",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "password": "${new_password}",
         "confirmation": "${new_password}"
-      }
+      },
+      "expect_json_true": "message"
     },
     {
       "name": "sign in with new password",
       "method": "POST",
       "path": "/api/login",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "password": "${new_password}"
       },
+      "expect_json_true": "message",
       "capture": {
         "login_mfa_code": "testingMfaCode"
       }
     },
     {
-      "name": "confirm sign-in MFA",
+      "name": "confirm sign-in MFA code",
       "method": "POST",
       "path": "/api/login/mfa",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "${login_mfa_code}"
-      }
-    },
-    {
-      "name": "verify authenticated session",
-      "method": "GET",
-      "path": "/api/session-status",
-      "expect_json_true": "authenticated"
+      },
+      "expect_json_true": "message"
     },
     {
       "name": "accept privacy statement",
       "method": "POST",
       "path": "/api/privacy",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "accepted": true
-      }
+      },
+      "expect_json_true": "message"
     },
     {
-      "name": "verify privacy acceptance",
+      "name": "verify completed workflow state",
       "method": "GET",
       "path": "/api/session-status",
       "expect_json_true": "privacyAccepted"
@@ -116,22 +97,9 @@
   ],
   "negative_steps": [
     {
-      "name": "missing CSRF rejected",
-      "method": "POST",
-      "path": "/api/recovery",
-      "headers": {},
-      "body": {
-        "contact": "${email}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "used recovery token rejected",
+      "name": "consumed recovery token rejected",
       "method": "POST",
       "path": "/api/reset/verify",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "token": "${recovery_token}"
       },
@@ -141,21 +109,15 @@
       "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/login",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "password": "WrongPassword!2025"
+        "password": "WrongPassword1!"
       },
       "expect_failure": true
     },
     {
-      "name": "privacy acceptance requires true",
+      "name": "privacy acceptance requires true acknowledgement",
       "method": "POST",
       "path": "/api/privacy",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "accepted": false
       },

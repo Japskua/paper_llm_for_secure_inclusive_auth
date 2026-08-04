@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 12,
-  "steps_passed": 12,
+  "steps_total": 13,
+  "steps_passed": 13,
   "happy_path_passed": 9,
   "happy_path_total": 9,
-  "negative_passed": 3,
-  "negative_total": 3,
+  "negative_passed": 4,
+  "negative_total": 4,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "Load recovery page and establish session",
+      "name": "open recovery page and establish session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "Request password recovery",
+      "name": "request recovery code",
       "method": "POST",
       "path": "/api/reset-request",
       "expect_failure": false,
@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "name": "Verify recovery token",
+      "name": "verify recovery code",
       "method": "POST",
       "path": "/api/verify-reset",
       "expect_failure": false,
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "Verify MFA code",
+      "name": "verify MFA code",
       "method": "POST",
       "path": "/api/verify-mfa",
       "expect_failure": false,
@@ -43,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "Set new password",
+      "name": "update password",
       "method": "POST",
       "path": "/api/update-password",
       "expect_failure": false,
@@ -51,7 +51,7 @@
       "ok": true
     },
     {
-      "name": "Sign in with new password",
+      "name": "sign in with new password",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": false,
@@ -59,7 +59,7 @@
       "ok": true
     },
     {
-      "name": "Accept privacy conditions",
+      "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/accept-privacy",
       "expect_failure": false,
@@ -67,7 +67,7 @@
       "ok": true
     },
     {
-      "name": "Confirm portal access",
+      "name": "check authorized portal access",
       "method": "POST",
       "path": "/api/portal-check",
       "expect_failure": false,
@@ -75,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "Sign out",
+      "name": "sign out",
       "method": "POST",
       "path": "/api/logout",
       "expect_failure": false,
@@ -83,7 +83,7 @@
       "ok": true
     },
     {
-      "name": "Original password rejected after reset",
+      "name": "old password rejected after reset",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": true,
@@ -91,7 +91,15 @@
       "ok": true
     },
     {
-      "name": "Privacy acceptance rejected after logout",
+      "name": "portal access rejected after logout",
+      "method": "POST",
+      "path": "/api/portal-check",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "privacy acceptance rejected when signed out",
       "method": "POST",
       "path": "/api/accept-privacy",
       "expect_failure": true,
@@ -99,14 +107,14 @@
       "ok": true
     },
     {
-      "name": "Portal access rejected after logout",
+      "name": "invalid CSRF token rejected",
       "method": "POST",
-      "path": "/api/portal-check",
+      "path": "/api/reset-request",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 12
+  "spec_steps": 13
 }

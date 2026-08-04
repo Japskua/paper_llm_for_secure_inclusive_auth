@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 12,
-  "steps_passed": 12,
+  "steps_total": 11,
+  "steps_passed": 11,
   "happy_path_passed": 8,
   "happy_path_total": 8,
-  "negative_passed": 4,
-  "negative_total": 4,
+  "negative_passed": 3,
+  "negative_total": 3,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page and establish session",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -29,7 +29,7 @@
     {
       "name": "open simulated verification link",
       "method": "GET",
-      "path": "/verify?token=b8m9sSoWweeTn0AOKHYbfbuDqCghISyOSbeAf4fMePQ",
+      "path": "/verify?token=CzY9Z5GkZPRYtG8TtrufZntViNmsvZs6Z4mRZzmm4vM",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -75,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "invalid recovery identifier rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
       "path": "/api/recovery-request",
       "expect_failure": true,
@@ -83,15 +83,7 @@
       "ok": true
     },
     {
-      "name": "invalid recovery code rejected",
-      "method": "POST",
-      "path": "/api/verify-token",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "weak password rejected",
+      "name": "mismatched password confirmation rejected",
       "method": "POST",
       "path": "/api/reset-password",
       "expect_failure": true,
@@ -108,5 +100,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 12
+  "spec_steps": 11
 }

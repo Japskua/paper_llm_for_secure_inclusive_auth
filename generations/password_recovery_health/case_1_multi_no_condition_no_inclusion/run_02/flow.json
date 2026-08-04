@@ -2,10 +2,10 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 18,
-  "steps_passed": 18,
-  "happy_path_passed": 14,
-  "happy_path_total": 14,
+  "steps_total": 17,
+  "steps_passed": 17,
+  "happy_path_passed": 13,
+  "happy_path_total": 13,
   "negative_passed": 4,
   "negative_total": 4,
   "negatives_meaningful": true,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "get session and CSRF token",
+      "name": "create session and obtain CSRF token",
       "method": "GET",
       "path": "/api/session",
       "expect_failure": false,
@@ -27,17 +27,9 @@
       "ok": true
     },
     {
-      "name": "request mock recovery",
+      "name": "request mock recovery delivery",
       "method": "POST",
       "path": "/api/recovery/request",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "refresh session after recovery request",
-      "method": "GET",
-      "path": "/api/session",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -51,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "refresh authorized reset session",
+      "name": "refresh verified recovery session",
       "method": "GET",
       "path": "/api/session",
       "expect_failure": false,
@@ -75,7 +67,7 @@
       "ok": true
     },
     {
-      "name": "verify MFA code",
+      "name": "verify mock MFA code",
       "method": "POST",
       "path": "/api/mfa/verify",
       "expect_failure": false,
@@ -115,7 +107,7 @@
       "ok": true
     },
     {
-      "name": "refresh confirmed session",
+      "name": "refresh confirmed appointment session",
       "method": "GET",
       "path": "/api/session",
       "expect_failure": false,
@@ -123,7 +115,7 @@
       "ok": true
     },
     {
-      "name": "missing CSRF token rejected",
+      "name": "recovery request without CSRF rejected",
       "method": "POST",
       "path": "/api/recovery/request",
       "expect_failure": true,
@@ -139,15 +131,15 @@
       "ok": true
     },
     {
-      "name": "reused recovery token rejected",
+      "name": "password reset without verified recovery rejected",
       "method": "POST",
-      "path": "/api/recovery/verify",
+      "path": "/api/recovery/reset-password",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     },
     {
-      "name": "invalid MFA code rejected",
+      "name": "MFA verification without pending reset rejected",
       "method": "POST",
       "path": "/api/mfa/verify",
       "expect_failure": true,
@@ -156,5 +148,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 18
+  "spec_steps": 17
 }

@@ -1,8 +1,9 @@
 {
   "variables": {
-    "email": "patient@example.com",
-    "new_password": "ValidPass1!xx"
+    "email": "recovery.user@example.com",
+    "new_password": "ValidPassw0rd!"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": "const csrf=\"([a-f0-9]+)\"",
     "field": "X-CSRF-Token",
@@ -15,27 +16,27 @@
       "path": "/"
     },
     {
-      "name": "request recovery token",
+      "name": "request reset instructions",
       "method": "POST",
       "path": "/api/recovery",
       "body": {
         "email": "${email}"
       },
       "capture": {
-        "token": "mockToken"
+        "reset_token": "mockToken"
       }
     },
     {
-      "name": "verify recovery token",
+      "name": "verify reset token",
       "method": "POST",
       "path": "/api/verify",
       "body": {
-        "token": "${token}"
+        "token": "${reset_token}"
       },
       "expect_json_true": "ok"
     },
     {
-      "name": "set new password",
+      "name": "save new password",
       "method": "POST",
       "path": "/api/reset",
       "body": {
@@ -48,7 +49,7 @@
       }
     },
     {
-      "name": "complete MFA sign-in",
+      "name": "verify MFA code and sign in",
       "method": "POST",
       "path": "/api/mfa",
       "body": {
@@ -77,30 +78,23 @@
       "expect_failure": true
     },
     {
-      "name": "invalid reset token rejected",
+      "name": "malformed reset token rejected",
       "method": "POST",
       "path": "/api/verify",
       "body": {
-        "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "token": "not-a-valid-reset-token"
       },
       "expect_failure": true
     },
     {
-      "name": "weak password rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
-      "path": "/api/reset",
-      "body": {
-        "password": "weakpassword",
-        "confirmation": "weakpassword"
+      "path": "/api/recovery",
+      "headers": {
+        "X-CSRF-Token": ""
       },
-      "expect_failure": true
-    },
-    {
-      "name": "wrong MFA code rejected",
-      "method": "POST",
-      "path": "/api/mfa",
       "body": {
-        "code": "000000"
+        "email": "${email}"
       },
       "expect_failure": true
     },

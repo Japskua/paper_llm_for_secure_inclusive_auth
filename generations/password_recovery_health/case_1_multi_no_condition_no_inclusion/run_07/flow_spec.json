@@ -1,16 +1,17 @@
 {
   "variables": {
     "email": "patient@example.com",
-    "new_password": "NewSecurePassword42!"
+    "new_password": "New-Secure-Password-42!"
   },
+  "html_variables": {},
   "csrf": {
-    "html_regex": "const CSRF = \"([A-Za-z0-9_-]+)\";",
+    "html_regex": "const CSRF = \"([^\"]+)\";",
     "field": "X-CSRF-Token",
     "in": "header"
   },
   "steps": [
     {
-      "name": "load recovery page and establish session",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/"
     },
@@ -62,7 +63,7 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "accept updated privacy conditions",
+      "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/accept-privacy",
       "headers": {
@@ -91,7 +92,7 @@
       "expect_failure": true
     },
     {
-      "name": "incorrect MFA code rejected",
+      "name": "wrong MFA code rejected",
       "method": "POST",
       "path": "/api/verify-reset",
       "headers": {
@@ -106,16 +107,15 @@
       "expect_failure": true
     },
     {
-      "name": "weak password rejected",
+      "name": "missing CSRF body field rejected",
       "method": "POST",
-      "path": "/api/set-password",
+      "path": "/api/request-reset",
       "headers": {
         "Origin": "https://localhost:3000",
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "password": "short",
-        "csrf": "${csrf}"
+        "email": "${email}"
       },
       "expect_failure": true
     }

@@ -2,26 +2,26 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 13,
-  "steps_passed": 13,
-  "happy_path_passed": 9,
-  "happy_path_total": 9,
+  "steps_total": 14,
+  "steps_passed": 14,
+  "happy_path_passed": 10,
+  "happy_path_total": 10,
   "negative_passed": 4,
   "negative_total": 4,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "get recovery status and CSRF token",
+      "name": "open recovery page",
       "method": "GET",
-      "path": "/api/status",
+      "path": "/",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
     {
-      "name": "load recovery page",
+      "name": "get session status and CSRF token",
       "method": "GET",
-      "path": "/",
+      "path": "/api/status",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -51,7 +51,7 @@
       "ok": true
     },
     {
-      "name": "prepare password reset approval",
+      "name": "prepare password reset grant",
       "method": "POST",
       "path": "/api/recovery/replacement-grant",
       "expect_failure": false,
@@ -83,6 +83,14 @@
       "ok": true
     },
     {
+      "name": "confirm completed recovery",
+      "method": "GET",
+      "path": "/api/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
       "name": "missing CSRF token rejected",
       "method": "POST",
       "path": "/api/recovery",
@@ -91,15 +99,7 @@
       "ok": true
     },
     {
-      "name": "replayed recovery code rejected",
-      "method": "POST",
-      "path": "/api/verify",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "wrong password rejected",
+      "name": "wrong sign-in password rejected",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": true,
@@ -107,14 +107,22 @@
       "ok": true
     },
     {
-      "name": "invalid recovery identifier rejected",
+      "name": "invalid MFA code rejected",
       "method": "POST",
-      "path": "/api/recovery",
+      "path": "/api/mfa",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "privacy acceptance without authentication rejected",
+      "method": "POST",
+      "path": "/api/privacy/accept",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 13
+  "spec_steps": 14
 }

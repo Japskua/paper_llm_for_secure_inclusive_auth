@@ -2,12 +2,12 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 9,
-  "steps_passed": 9,
+  "steps_total": 10,
+  "steps_passed": 10,
   "happy_path_passed": 7,
   "happy_path_total": 7,
-  "negative_passed": 2,
-  "negative_total": 2,
+  "negative_passed": 3,
+  "negative_total": 3,
   "negatives_meaningful": true,
   "steps": [
     {
@@ -67,7 +67,7 @@
       "ok": true
     },
     {
-      "name": "consumed recovery token rejected",
+      "name": "reused recovery token rejected",
       "method": "POST",
       "path": "/api/recovery/verify-token",
       "expect_failure": true,
@@ -75,14 +75,22 @@
       "ok": true
     },
     {
-      "name": "wrong password rejected",
+      "name": "old password rejected after reset",
       "method": "POST",
       "path": "/api/authenticate",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "privacy acceptance requires confirmation",
+      "method": "POST",
+      "path": "/api/privacy/accept",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 9
+  "spec_steps": 10
 }

@@ -2,10 +2,11 @@
   "variables": {
     "email": "helena@example.test",
     "seeded_password": "password",
-    "new_password": "Recovered!Pass9"
+    "new_password": "ValidPass1!23"
   },
+  "html_variables": {},
   "csrf": {
-    "html_regex": "csrf\\s*=\\s*d\\.(csrf)",
+    "html_regex": null,
     "field": "X-CSRF-Token",
     "in": "header"
   },
@@ -82,7 +83,7 @@
   ],
   "negative_steps": [
     {
-      "name": "consumed recovery token rejected",
+      "name": "reused recovery token rejected",
       "method": "POST",
       "path": "/api/recovery/verify-token",
       "body": {
@@ -91,11 +92,20 @@
       "expect_failure": true
     },
     {
-      "name": "wrong password rejected",
+      "name": "old password rejected after reset",
       "method": "POST",
       "path": "/api/authenticate",
       "body": {
-        "password": "WrongPassword!9"
+        "password": "${seeded_password}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance requires confirmation",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {
+        "accept": false
       },
       "expect_failure": true
     }

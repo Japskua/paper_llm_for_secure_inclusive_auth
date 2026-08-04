@@ -2,12 +2,12 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 10,
-  "steps_passed": 10,
+  "steps_total": 11,
+  "steps_passed": 11,
   "happy_path_passed": 6,
   "happy_path_total": 6,
-  "negative_passed": 4,
-  "negative_total": 4,
+  "negative_passed": 5,
+  "negative_total": 5,
   "negatives_meaningful": true,
   "steps": [
     {
@@ -75,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "wrong MFA code rejected",
+      "name": "incorrect MFA code rejected",
       "method": "POST",
       "path": "/api/recovery/mfa",
       "expect_failure": true,
@@ -89,8 +89,16 @@
       "expect_failure": true,
       "status_code": 403,
       "ok": true
+    },
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/recovery/request",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 10
+  "spec_steps": 11
 }

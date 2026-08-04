@@ -2,8 +2,9 @@
   "variables": {
     "email": "helena@hospital.test",
     "initial_password": "Initial-Only-Password!42",
-    "new_password": "Recovered-Password!42"
+    "new_password": "Renewed-Password!42"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": "const csrf=\"([a-f0-9]{48})\"",
     "field": "X-CSRF-Token",
@@ -11,7 +12,7 @@
   },
   "steps": [
     {
-      "name": "load recovery page and establish session",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/"
     },
@@ -27,22 +28,22 @@
       }
     },
     {
-      "name": "authorize trusted delivery",
+      "name": "authorize simulated delivery",
       "method": "POST",
       "path": "/api/recovery-delivery",
       "body": {
         "code": "${delivery_code}"
       },
       "capture": {
-        "reset_token": "evaluationToken"
+        "recovery_token": "evaluationToken"
       }
     },
     {
-      "name": "verify recovery code",
+      "name": "validate recovery code",
       "method": "POST",
       "path": "/api/reset-validate",
       "body": {
-        "token": "${reset_token}"
+        "token": "${recovery_token}"
       },
       "expect_json_true": "verified"
     },
@@ -69,7 +70,7 @@
       }
     },
     {
-      "name": "complete MFA security check",
+      "name": "complete security check",
       "method": "POST",
       "path": "/api/mfa",
       "body": {
@@ -95,30 +96,11 @@
   ],
   "negative_steps": [
     {
-      "name": "invalid recovery email rejected",
+      "name": "invalid email rejected",
       "method": "POST",
       "path": "/api/reset-request",
       "body": {
         "identifier": "not-an-email"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "invalid recovery token rejected",
-      "method": "POST",
-      "path": "/api/reset-validate",
-      "body": {
-        "token": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "weak replacement password rejected",
-      "method": "POST",
-      "path": "/api/reset-complete",
-      "body": {
-        "password": "short",
-        "confirm": "short"
       },
       "expect_failure": true
     },
@@ -133,7 +115,7 @@
       "expect_failure": true
     },
     {
-      "name": "privacy acceptance requires true confirmation",
+      "name": "privacy acceptance required",
       "method": "POST",
       "path": "/api/privacy",
       "body": {
@@ -142,7 +124,7 @@
       "expect_failure": true
     },
     {
-      "name": "appointment confirmation requires true confirmation",
+      "name": "appointment confirmation required",
       "method": "POST",
       "path": "/api/appointment",
       "body": {

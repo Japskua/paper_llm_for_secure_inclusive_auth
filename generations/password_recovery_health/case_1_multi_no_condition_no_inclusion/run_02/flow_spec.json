@@ -1,13 +1,13 @@
 {
   "variables": {
     "email": "local-recovery-demo",
-    "new_password": "ValidPass1!xy"
+    "new_password": "ValidPassword1!"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": null,
     "field": "X-CSRF-Token",
-    "in": "header",
-    "source_path": "/api/session"
+    "in": "header"
   },
   "steps": [
     {
@@ -16,7 +16,7 @@
       "path": "/"
     },
     {
-      "name": "get session and CSRF token",
+      "name": "create session and obtain CSRF token",
       "method": "GET",
       "path": "/api/session",
       "expect_json_true": "ok",
@@ -25,7 +25,7 @@
       }
     },
     {
-      "name": "request mock recovery",
+      "name": "request mock recovery delivery",
       "method": "POST",
       "path": "/api/recovery/request",
       "headers": {
@@ -37,15 +37,6 @@
       "expect_json_true": "ok",
       "capture": {
         "recovery_token": "mockDeliveryToken"
-      }
-    },
-    {
-      "name": "refresh session after recovery request",
-      "method": "GET",
-      "path": "/api/session",
-      "expect_json_true": "ok",
-      "capture": {
-        "csrf": "csrf"
       }
     },
     {
@@ -61,7 +52,7 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "refresh authorized reset session",
+      "name": "refresh verified recovery session",
       "method": "GET",
       "path": "/api/session",
       "expect_json_true": "ok",
@@ -94,7 +85,7 @@
       }
     },
     {
-      "name": "verify MFA code",
+      "name": "verify mock MFA code",
       "method": "POST",
       "path": "/api/mfa/verify",
       "headers": {
@@ -144,15 +135,18 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "refresh confirmed session",
+      "name": "refresh confirmed appointment session",
       "method": "GET",
       "path": "/api/session",
-      "expect_json_true": "ok"
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
     }
   ],
   "negative_steps": [
     {
-      "name": "missing CSRF token rejected",
+      "name": "recovery request without CSRF rejected",
       "method": "POST",
       "path": "/api/recovery/request",
       "body": {
@@ -173,19 +167,19 @@
       "expect_failure": true
     },
     {
-      "name": "reused recovery token rejected",
+      "name": "password reset without verified recovery rejected",
       "method": "POST",
-      "path": "/api/recovery/verify",
+      "path": "/api/recovery/reset-password",
       "headers": {
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "token": "${recovery_token}"
+        "password": "${new_password}"
       },
       "expect_failure": true
     },
     {
-      "name": "invalid MFA code rejected",
+      "name": "MFA verification without pending reset rejected",
       "method": "POST",
       "path": "/api/mfa/verify",
       "headers": {

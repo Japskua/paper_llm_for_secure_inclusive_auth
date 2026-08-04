@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 12,
-  "steps_passed": 12,
-  "happy_path_passed": 9,
-  "happy_path_total": 9,
-  "negative_passed": 3,
-  "negative_total": 3,
+  "steps_total": 14,
+  "steps_passed": 14,
+  "happy_path_passed": 10,
+  "happy_path_total": 10,
+  "negative_passed": 4,
+  "negative_total": 4,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "start secure session",
+      "name": "start secure recovery session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -27,9 +27,17 @@
       "ok": true
     },
     {
-      "name": "request password reset",
+      "name": "request recovery token",
       "method": "POST",
       "path": "/api/request-reset",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "open recovery verification link",
+      "method": "GET",
+      "path": "/reset?token=CbEmILngEVZ1Fbg9SzVCfmXkjEqdhHY2mRMtoZ0mJ5Y",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -83,7 +91,7 @@
       "ok": true
     },
     {
-      "name": "missing valid CSRF token rejected",
+      "name": "missing or invalid CSRF rejected",
       "method": "POST",
       "path": "/api/request-reset",
       "expect_failure": true,
@@ -91,7 +99,7 @@
       "ok": true
     },
     {
-      "name": "used recovery token rejected",
+      "name": "invalid recovery token rejected",
       "method": "POST",
       "path": "/api/verify-reset",
       "expect_failure": true,
@@ -99,7 +107,15 @@
       "ok": true
     },
     {
-      "name": "MFA without pending confirmation rejected",
+      "name": "weak replacement password rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong MFA code rejected",
       "method": "POST",
       "path": "/api/verify-mfa",
       "expect_failure": true,
@@ -108,5 +124,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 12
+  "spec_steps": 14
 }

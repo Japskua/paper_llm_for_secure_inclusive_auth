@@ -2,8 +2,9 @@
   "variables": {
     "email": "helena.recovery@hospital.test",
     "initial_password": "Initial-Clinical!2025",
-    "new_password": "Recovered-Access!2026"
+    "new_password": "Recovered-Clinical!2026"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": null,
     "field": "X-CSRF-Token",
@@ -11,18 +12,17 @@
   },
   "steps": [
     {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
       "name": "bootstrap secure session",
       "method": "GET",
       "path": "/api/bootstrap",
-      "expect_json_true": "csrf",
       "capture": {
         "csrf": "csrf"
       }
-    },
-    {
-      "name": "load recovery page",
-      "method": "GET",
-      "path": "/"
     },
     {
       "name": "request password reset",
@@ -31,7 +31,6 @@
       "body": {
         "contact": "${email}"
       },
-      "expect_json_true": "mockToken",
       "capture": {
         "reset_token": "mockToken"
       }
@@ -52,7 +51,6 @@
         "token": "${reset_token}",
         "password": "${new_password}"
       },
-      "expect_json_true": "mockMfaCode",
       "capture": {
         "mfa_code": "mockMfaCode"
       }
@@ -78,7 +76,6 @@
       "body": {
         "password": "${new_password}"
       },
-      "expect_json_true": "mockMfaCode",
       "capture": {
         "login_mfa_code": "mockMfaCode"
       }
@@ -90,45 +87,43 @@
       "body": {
         "code": "${login_mfa_code}"
       }
+    },
+    {
+      "name": "accept privacy after sign-in",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {}
     }
   ],
   "negative_steps": [
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/reset/request",
+      "headers": {
+        "X-CSRF-Token": ""
+      },
+      "body": {
+        "contact": "${email}"
+      },
+      "expect_failure": true
+    },
     {
       "name": "invalid reset code rejected",
       "method": "POST",
       "path": "/api/reset/verify",
       "body": {
-        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        "token": "not-a-valid-token"
       },
       "expect_failure": true
     },
     {
-      "name": "weak replacement password rejected",
-      "method": "POST",
-      "path": "/api/reset/confirm",
-      "body": {
-        "token": "${reset_token}",
-        "password": "short"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "previous password rejected after reset",
+      "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/login",
       "body": {
-        "password": "${initial_password}"
+        "password": "Definitely-Wrong!999"
       },
-      "expect_failure": true
-    },
-    {
-      "name": "invalid CSRF header rejected",
-      "method": "POST",
-      "path": "/api/privacy/accept",
-      "headers": {
-        "X-CSRF-Token": "invalid"
-      },
-      "body": {},
       "expect_failure": true
     }
   ]

@@ -1,9 +1,9 @@
 {
   "variables": {
-    "email": "test@example.com",
-    "new_password": "ValidPass1!23",
-    "mfa_code": "246810"
+    "email": "demo.patient@example.com",
+    "new_password": "ValidPass1!xx"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": null,
     "field": "X-CSRF-Token",
@@ -11,12 +11,12 @@
   },
   "steps": [
     {
-      "name": "load recovery application",
+      "name": "load recovery page",
       "method": "GET",
       "path": "/"
     },
     {
-      "name": "initialize secure session",
+      "name": "bootstrap secure session",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_json_true": "ok",
@@ -25,12 +25,15 @@
       }
     },
     {
+      "name": "check initial recovery stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_json_true": "ok"
+    },
+    {
       "name": "request recovery instructions",
       "method": "POST",
       "path": "/api/recovery",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "email": "${email}",
         "csrf": "${csrf}"
@@ -44,9 +47,6 @@
       "name": "verify recovery token",
       "method": "POST",
       "path": "/api/verify-token",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "token": "${token}",
         "csrf": "${csrf}"
@@ -54,25 +54,31 @@
       "expect_json_true": "ok"
     },
     {
+      "name": "check MFA stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_json_true": "ok"
+    },
+    {
       "name": "verify MFA code",
       "method": "POST",
       "path": "/api/verify-mfa",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "code": "${mfa_code}",
+        "code": "246810",
         "csrf": "${csrf}"
       },
       "expect_json_true": "ok"
     },
     {
-      "name": "set new password",
+      "name": "check password reset stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "reset password",
       "method": "POST",
       "path": "/api/reset-password",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "password": "${new_password}",
         "csrf": "${csrf}"
@@ -80,12 +86,15 @@
       "expect_json_true": "ok"
     },
     {
+      "name": "check privacy stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_json_true": "ok"
+    },
+    {
       "name": "accept privacy statement",
       "method": "POST",
       "path": "/api/accept-privacy",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "accepted": true,
         "csrf": "${csrf}"
@@ -93,7 +102,7 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "confirm completed recovery stage",
+      "name": "check confirmation stage",
       "method": "GET",
       "path": "/api/recovery-status",
       "expect_json_true": "ok"
@@ -101,23 +110,11 @@
   ],
   "negative_steps": [
     {
-      "name": "missing CSRF rejected",
-      "method": "POST",
-      "path": "/api/recovery",
-      "body": {
-        "email": "${email}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "wrong recovery token rejected",
+      "name": "used recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "token": "0000000000000000000000000000000000000000000000000000000000000000",
+        "token": "${token}",
         "csrf": "${csrf}"
       },
       "expect_failure": true
@@ -126,9 +123,6 @@
       "name": "wrong MFA code rejected",
       "method": "POST",
       "path": "/api/verify-mfa",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "000000",
         "csrf": "${csrf}"
@@ -139,9 +133,6 @@
       "name": "weak password rejected",
       "method": "POST",
       "path": "/api/reset-password",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "password": "weakpassword",
         "csrf": "${csrf}"
@@ -152,12 +143,19 @@
       "name": "privacy acknowledgement required",
       "method": "POST",
       "path": "/api/accept-privacy",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "accepted": false,
         "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid body CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "email": "${email}",
+        "csrf": "invalid"
       },
       "expect_failure": true
     }

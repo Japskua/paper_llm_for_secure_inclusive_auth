@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 15,
-  "steps_passed": 15,
+  "steps_total": 13,
+  "steps_passed": 13,
   "happy_path_passed": 9,
   "happy_path_total": 9,
-  "negative_passed": 6,
-  "negative_total": 6,
+  "negative_passed": 4,
+  "negative_total": 4,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "load recovery page and establish session",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "name": "authorize trusted delivery",
+      "name": "authorize simulated delivery",
       "method": "POST",
       "path": "/api/recovery-delivery",
       "expect_failure": false,
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "verify recovery code",
+      "name": "validate recovery code",
       "method": "POST",
       "path": "/api/reset-validate",
       "expect_failure": false,
@@ -59,7 +59,7 @@
       "ok": true
     },
     {
-      "name": "complete MFA security check",
+      "name": "complete security check",
       "method": "POST",
       "path": "/api/mfa",
       "expect_failure": false,
@@ -83,25 +83,9 @@
       "ok": true
     },
     {
-      "name": "invalid recovery email rejected",
+      "name": "invalid email rejected",
       "method": "POST",
       "path": "/api/reset-request",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "invalid recovery token rejected",
-      "method": "POST",
-      "path": "/api/reset-validate",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "weak replacement password rejected",
-      "method": "POST",
-      "path": "/api/reset-complete",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
@@ -115,7 +99,7 @@
       "ok": true
     },
     {
-      "name": "privacy acceptance requires true confirmation",
+      "name": "privacy acceptance required",
       "method": "POST",
       "path": "/api/privacy",
       "expect_failure": true,
@@ -123,7 +107,7 @@
       "ok": true
     },
     {
-      "name": "appointment confirmation requires true confirmation",
+      "name": "appointment confirmation required",
       "method": "POST",
       "path": "/api/appointment",
       "expect_failure": true,
@@ -132,5 +116,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 15
+  "spec_steps": 13
 }

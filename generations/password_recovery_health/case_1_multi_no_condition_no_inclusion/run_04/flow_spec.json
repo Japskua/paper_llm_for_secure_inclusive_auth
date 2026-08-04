@@ -1,8 +1,9 @@
 {
   "variables": {
-    "email": "patient@example.com",
-    "new_password": "ValidPassword1!"
+    "email": "user@example.com",
+    "new_password": "StrongPass1!"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": "const csrf = \"([^\"]+)\";",
     "field": "X-CSRF-Token",
@@ -10,7 +11,7 @@
   },
   "steps": [
     {
-      "name": "open recovery page and establish session",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/"
     },
@@ -18,25 +19,31 @@
       "name": "request recovery instructions",
       "method": "POST",
       "path": "/api/recovery-request",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "identifier": "${email}"
       },
       "expect_json_true": "ok",
       "capture": {
-        "token": "mockToken"
+        "reset_token": "mockToken"
       }
     },
     {
       "name": "open simulated verification link",
       "method": "GET",
-      "path": "/verify?token=${token}"
+      "path": "/verify?token=${reset_token}"
     },
     {
       "name": "verify recovery code",
       "method": "POST",
       "path": "/api/verify-token",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
-        "token": "${token}"
+        "token": "${reset_token}"
       },
       "expect_json_true": "ok"
     },
@@ -44,6 +51,9 @@
       "name": "set new password",
       "method": "POST",
       "path": "/api/reset-password",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "password": "${new_password}",
         "confirm": "${new_password}"
@@ -57,6 +67,9 @@
       "name": "confirm MFA code",
       "method": "POST",
       "path": "/api/verify-mfa",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "code": "${mfa_code}"
       },
@@ -66,6 +79,9 @@
       "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/accept-privacy",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "accepted": true
       },
@@ -75,36 +91,33 @@
       "name": "request medication review appointment",
       "method": "POST",
       "path": "/api/request-appointment",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {},
       "expect_json_true": "ok"
     }
   ],
   "negative_steps": [
     {
-      "name": "invalid recovery identifier rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
       "path": "/api/recovery-request",
       "body": {
-        "identifier": "x"
+        "identifier": "${email}"
       },
       "expect_failure": true
     },
     {
-      "name": "invalid recovery code rejected",
-      "method": "POST",
-      "path": "/api/verify-token",
-      "body": {
-        "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "weak password rejected",
+      "name": "mismatched password confirmation rejected",
       "method": "POST",
       "path": "/api/reset-password",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
-        "password": "weakpassword",
-        "confirm": "weakpassword"
+        "password": "${new_password}",
+        "confirm": "DifferentPass1!"
       },
       "expect_failure": true
     },
@@ -112,6 +125,9 @@
       "name": "privacy acceptance required",
       "method": "POST",
       "path": "/api/accept-privacy",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "accepted": false
       },

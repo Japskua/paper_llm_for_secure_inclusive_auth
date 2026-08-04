@@ -1,8 +1,9 @@
 {
   "variables": {
     "email": "helena@example.com",
-    "new_password": "NewSecurePass1!"
+    "new_password": "ResetPass1!xy"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": null,
     "field": "X-CSRF-Token",
@@ -10,7 +11,12 @@
   },
   "steps": [
     {
-      "name": "load recovery state and CSRF token",
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "load session state and csrf token",
       "method": "GET",
       "path": "/api/state",
       "expect_json_true": "csrf",
@@ -27,7 +33,8 @@
       },
       "expect_json_true": "stage",
       "capture": {
-        "recovery_code": "manualRecoveryCode"
+        "recovery_code": "manualRecoveryCode",
+        "verification_path": "verificationPath"
       }
     },
     {
@@ -43,7 +50,7 @@
       }
     },
     {
-      "name": "confirm MFA code",
+      "name": "confirm mfa code",
       "method": "POST",
       "path": "/api/mfa",
       "body": {
@@ -81,6 +88,15 @@
   ],
   "negative_steps": [
     {
+      "name": "invalid recovery identifier rejected",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "body": {
+        "identifier": "x"
+      },
+      "expect_failure": true
+    },
+    {
       "name": "wrong recovery code rejected",
       "method": "POST",
       "path": "/api/verify",
@@ -90,7 +106,7 @@
       "expect_failure": true
     },
     {
-      "name": "wrong MFA code rejected",
+      "name": "wrong mfa code rejected",
       "method": "POST",
       "path": "/api/mfa",
       "body": {
@@ -103,8 +119,8 @@
       "method": "POST",
       "path": "/api/password-change",
       "body": {
-        "password": "short",
-        "repeat": "short"
+        "password": "weakpassword",
+        "repeat": "weakpassword"
       },
       "expect_failure": true
     },
@@ -116,13 +132,6 @@
         "identifier": "${email}",
         "password": "WrongPassword1!"
       },
-      "expect_failure": true
-    },
-    {
-      "name": "privacy confirmation without authenticated session rejected",
-      "method": "POST",
-      "path": "/api/privacy-confirm",
-      "body": {},
       "expect_failure": true
     }
   ]

@@ -1,8 +1,9 @@
 {
   "variables": {
     "email": "demo-account",
-    "new_password": "ValidPass123!"
+    "new_password": "ValidReset1!Pass"
   },
+  "html_variables": {},
   "csrf": {
     "html_regex": "const CSRF = \"([^\"]+)\";",
     "field": "X-CSRF-Token",
@@ -10,7 +11,7 @@
   },
   "steps": [
     {
-      "name": "load recovery page and establish session",
+      "name": "load recovery page",
       "method": "GET",
       "path": "/"
     },
@@ -18,34 +19,25 @@
       "name": "request reset code",
       "method": "POST",
       "path": "/api/reset-request",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "identifier": "${email}"
       },
       "capture": {
-        "token": "testToken"
+        "reset_token": "testToken"
       }
     },
     {
       "name": "verify reset code",
       "method": "POST",
       "path": "/api/reset-verify",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "token": "${token}"
+        "token": "${reset_token}"
       }
     },
     {
-      "name": "set new password",
+      "name": "complete password reset",
       "method": "POST",
       "path": "/api/reset-complete",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "password": "${new_password}"
       },
@@ -57,9 +49,6 @@
       "name": "verify MFA code",
       "method": "POST",
       "path": "/api/mfa-verify",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "${mfa_code}"
       }
@@ -68,9 +57,6 @@
       "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/privacy-accept",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "accepted": true
       }
@@ -78,9 +64,12 @@
   ],
   "negative_steps": [
     {
-      "name": "missing CSRF token rejected",
+      "name": "reset request without CSRF is rejected",
       "method": "POST",
       "path": "/api/reset-request",
+      "headers": {
+        "X-CSRF-Token": ""
+      },
       "body": {
         "identifier": "demo-account"
       },
@@ -90,23 +79,35 @@
       "name": "invalid reset code rejected",
       "method": "POST",
       "path": "/api/reset-verify",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "token": "not-a-valid-reset-token"
+        "token": "invalid-reset-code"
       },
       "expect_failure": true
     },
     {
-      "name": "privacy acceptance requires true",
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset-complete",
+      "body": {
+        "password": "weakpassword"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "incorrect MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance requires authentication",
       "method": "POST",
       "path": "/api/privacy-accept",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "accepted": false
+        "accepted": true
       },
       "expect_failure": true
     }

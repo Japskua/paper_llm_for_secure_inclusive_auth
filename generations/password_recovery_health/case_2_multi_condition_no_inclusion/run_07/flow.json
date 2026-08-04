@@ -2,12 +2,12 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 19,
-  "steps_passed": 19,
+  "steps_total": 18,
+  "steps_passed": 18,
   "happy_path_passed": 15,
   "happy_path_total": 15,
-  "negative_passed": 4,
-  "negative_total": 4,
+  "negative_passed": 3,
+  "negative_total": 3,
   "negatives_meaningful": true,
   "steps": [
     {
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "request recovery code",
+      "name": "request recovery instructions",
       "method": "POST",
       "path": "/api/recovery-request",
       "expect_failure": false,
@@ -27,9 +27,9 @@
       "ok": true
     },
     {
-      "name": "open reset link",
+      "name": "open secure reset link",
       "method": "GET",
-      "path": "/reset?code=TSuMzLyvMDtP07iSf5lH3TrKOd7lgLssTV9YociOHV0",
+      "path": "/reset?code=HPTUZFTjFA1XyZx-PfctLA6UpRlfJ5hgSX0m6dw09rI",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -51,7 +51,7 @@
       "ok": true
     },
     {
-      "name": "check recovery verification status",
+      "name": "confirm verified recovery state",
       "method": "GET",
       "path": "/api/recovery-status",
       "expect_failure": false,
@@ -67,7 +67,7 @@
       "ok": true
     },
     {
-      "name": "open login page",
+      "name": "open sign in page",
       "method": "GET",
       "path": "/login",
       "expect_failure": false,
@@ -75,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "sign in with new password",
+      "name": "sign in with updated password",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": false,
@@ -99,7 +99,7 @@
       "ok": true
     },
     {
-      "name": "open privacy page",
+      "name": "open privacy statement",
       "method": "GET",
       "path": "/privacy",
       "expect_failure": false,
@@ -115,7 +115,7 @@
       "ok": true
     },
     {
-      "name": "open appointment page",
+      "name": "open appointment confirmation",
       "method": "GET",
       "path": "/appointment",
       "expect_failure": false,
@@ -131,7 +131,7 @@
       "ok": true
     },
     {
-      "name": "reused recovery code rejected",
+      "name": "invalid recovery code rejected",
       "method": "POST",
       "path": "/api/verify-reset",
       "expect_failure": true,
@@ -153,16 +153,8 @@
       "expect_failure": true,
       "status_code": 403,
       "ok": true
-    },
-    {
-      "name": "unverified reset page rejected",
-      "method": "GET",
-      "path": "/new-password",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 19
+  "spec_steps": 18
 }

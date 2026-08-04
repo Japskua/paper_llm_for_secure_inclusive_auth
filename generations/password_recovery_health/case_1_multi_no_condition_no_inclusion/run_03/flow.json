@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 10,
-  "steps_passed": 10,
+  "steps_total": 11,
+  "steps_passed": 11,
   "happy_path_passed": 6,
   "happy_path_total": 6,
-  "negative_passed": 4,
-  "negative_total": 4,
+  "negative_passed": 5,
+  "negative_total": 5,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "open recovery page and establish session",
+      "name": "initialize recovery session",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "verify MFA security code",
+      "name": "verify MFA code",
       "method": "POST",
       "path": "/api/verify-mfa",
       "expect_failure": false,
@@ -43,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "save new password",
+      "name": "set new password",
       "method": "POST",
       "path": "/api/password",
       "expect_failure": false,
@@ -59,11 +59,11 @@
       "ok": true
     },
     {
-      "name": "empty account reference rejected",
+      "name": "missing CSRF rejected",
       "method": "POST",
       "path": "/api/recovery",
       "expect_failure": true,
-      "status_code": 200,
+      "status_code": 403,
       "ok": true
     },
     {
@@ -75,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "incorrect MFA code rejected",
+      "name": "wrong MFA code rejected",
       "method": "POST",
       "path": "/api/verify-mfa",
       "expect_failure": true,
@@ -83,14 +83,22 @@
       "ok": true
     },
     {
-      "name": "missing CSRF token rejected",
+      "name": "duplicate password update rejected",
       "method": "POST",
-      "path": "/api/recovery",
+      "path": "/api/password",
+      "expect_failure": true,
+      "status_code": 409,
+      "ok": true
+    },
+    {
+      "name": "privacy acceptance false rejected",
+      "method": "POST",
+      "path": "/api/privacy",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 10
+  "spec_steps": 11
 }

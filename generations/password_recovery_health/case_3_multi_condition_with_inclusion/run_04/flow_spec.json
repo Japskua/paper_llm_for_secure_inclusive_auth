@@ -1,24 +1,28 @@
 {
   "variables": {
-    "origin": "https://localhost:3000",
     "email": "helena.patient@hospital.test",
-    "new_password": "ResetPass!2025"
+    "new_password": "ValidPassw0rd!"
   },
-  "csrf": null,
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "const b=await api\\(\"(/api/bootstrap)\"\\);if\\(!b\\.ok\\).*?csrf=b\\.csrf",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
   "steps": [
     {
-      "name": "load recovery page",
-      "method": "GET",
-      "path": "/"
-    },
-    {
-      "name": "bootstrap recovery session",
+      "name": "bootstrap recovery session and CSRF",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_json_true": "ok",
       "capture": {
         "csrf": "csrf"
       }
+    },
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/"
     },
     {
       "name": "read initial recovery status",
@@ -30,10 +34,6 @@
       "name": "start password recovery",
       "method": "POST",
       "path": "/api/recovery/start",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "email": "${email}"
       },
@@ -46,28 +46,25 @@
       "name": "confirm approved channel",
       "method": "POST",
       "path": "/api/recovery/channel",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "${authorization_secret}"
       },
       "expect_json_true": "ok",
       "capture": {
-        "reset_token": "token"
+        "token": "token"
       }
+    },
+    {
+      "name": "open simulated recovery link",
+      "method": "GET",
+      "path": "/recovery/verify?token=${token}"
     },
     {
       "name": "verify recovery code",
       "method": "POST",
       "path": "/api/recovery/verify",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "token": "${reset_token}"
+        "token": "${token}"
       },
       "expect_json_true": "ok"
     },
@@ -75,12 +72,8 @@
       "name": "save new password",
       "method": "POST",
       "path": "/api/recovery/password",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "token": "${reset_token}",
+        "token": "${token}",
         "password": "${new_password}"
       },
       "expect_json_true": "ok"
@@ -89,10 +82,6 @@
       "name": "sign in with new password",
       "method": "POST",
       "path": "/api/login",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "email": "${email}",
         "password": "${new_password}"
@@ -103,13 +92,9 @@
       }
     },
     {
-      "name": "verify MFA code",
+      "name": "complete MFA",
       "method": "POST",
       "path": "/api/mfa",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "${mfa_code}"
       },
@@ -119,37 +104,44 @@
       "name": "accept privacy statement",
       "method": "POST",
       "path": "/api/privacy/accept",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok"
     }
   ],
   "negative_steps": [
     {
-      "name": "missing CSRF token rejected",
+      "name": "invalid recovery email rejected",
       "method": "POST",
       "path": "/api/recovery/start",
-      "headers": {
-        "Origin": "${origin}"
-      },
       "body": {
-        "email": "${email}"
+        "email": "not-an-email"
       },
       "expect_failure": true
     },
     {
-      "name": "weak replacement password rejected",
+      "name": "wrong approved-channel secret rejected",
+      "method": "POST",
+      "path": "/api/recovery/channel",
+      "body": {
+        "code": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "password policy violation rejected",
       "method": "POST",
       "path": "/api/recovery/password",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "token": "${reset_token}",
+        "token": "${token}",
         "password": "short"
       },
       "expect_failure": true
@@ -158,26 +150,9 @@
       "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/login",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "email": "${email}",
-        "password": "WrongPass!2025"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "wrong MFA code rejected",
-      "method": "POST",
-      "path": "/api/mfa",
-      "headers": {
-        "Origin": "${origin}",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "code": "000000"
+        "password": "WrongPassw0rd!"
       },
       "expect_failure": true
     }

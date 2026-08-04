@@ -11,7 +11,7 @@
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "load recovery page and establish session",
+      "name": "open recovery page",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -43,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "accept updated privacy conditions",
+      "name": "accept privacy conditions",
       "method": "POST",
       "path": "/api/accept-privacy",
       "expect_failure": false,
@@ -59,7 +59,7 @@
       "ok": true
     },
     {
-      "name": "incorrect MFA code rejected",
+      "name": "wrong MFA code rejected",
       "method": "POST",
       "path": "/api/verify-reset",
       "expect_failure": true,
@@ -67,9 +67,9 @@
       "ok": true
     },
     {
-      "name": "weak password rejected",
+      "name": "missing CSRF body field rejected",
       "method": "POST",
-      "path": "/api/set-password",
+      "path": "/api/request-reset",
       "expect_failure": true,
       "status_code": 403,
       "ok": true

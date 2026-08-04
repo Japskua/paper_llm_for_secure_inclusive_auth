@@ -19,9 +19,9 @@
       "ok": true
     },
     {
-      "name": "start secure session",
+      "name": "initialize secure session",
       "method": "GET",
-      "path": "/api/session?route=recover",
+      "path": "/api/session?route=home",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -43,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "set new password",
+      "name": "set replacement password",
       "method": "POST",
       "path": "/api/recovery/reset",
       "expect_failure": false,
@@ -51,7 +51,7 @@
       "ok": true
     },
     {
-      "name": "confirm reset MFA",
+      "name": "confirm reset MFA code",
       "method": "POST",
       "path": "/api/mfa/verify",
       "expect_failure": false,
@@ -83,9 +83,9 @@
       "ok": true
     },
     {
-      "name": "used recovery token rejected",
+      "name": "missing CSRF token rejected",
       "method": "POST",
-      "path": "/api/recovery/verify",
+      "path": "/api/recovery/initiate",
       "expect_failure": true,
       "status_code": 403,
       "ok": true

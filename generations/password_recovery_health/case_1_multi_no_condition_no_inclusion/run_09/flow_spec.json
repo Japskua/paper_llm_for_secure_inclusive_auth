@@ -1,22 +1,23 @@
 {
   "variables": {
     "email": "helena@example.test",
-    "new_password": "SecurePass1!23"
+    "new_password": "ValidPass1!xx"
   },
   "html_variables": {},
   "csrf": {
-    "endpoint": "/api/bootstrap",
+    "html_regex": null,
     "field": "x-csrf-token",
-    "in": "header"
+    "in": "header",
+    "endpoint": "/api/bootstrap"
   },
   "steps": [
     {
-      "name": "load recovery portal",
+      "name": "open recovery portal",
       "method": "GET",
       "path": "/"
     },
     {
-      "name": "establish secure session",
+      "name": "start secure session",
       "method": "GET",
       "path": "/api/bootstrap",
       "capture": {
@@ -24,11 +25,11 @@
       }
     },
     {
-      "name": "request reset instructions",
+      "name": "request password reset",
       "method": "POST",
       "path": "/api/reset-request",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "origin": "https://localhost:3000",
         "x-csrf-token": "${csrf}"
       },
       "body": {
@@ -43,7 +44,7 @@
       "method": "POST",
       "path": "/api/reset-validate",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "origin": "https://localhost:3000",
         "x-csrf-token": "${csrf}"
       },
       "body": {
@@ -55,7 +56,7 @@
       "method": "POST",
       "path": "/api/password-update",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "origin": "https://localhost:3000",
         "x-csrf-token": "${csrf}"
       },
       "body": {
@@ -71,7 +72,7 @@
       "method": "POST",
       "path": "/api/mfa-verify",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "origin": "https://localhost:3000",
         "x-csrf-token": "${csrf}"
       },
       "body": {
@@ -83,7 +84,7 @@
       "method": "POST",
       "path": "/api/privacy-accept",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "origin": "https://localhost:3000",
         "x-csrf-token": "${csrf}"
       },
       "body": {
@@ -95,7 +96,7 @@
       "method": "POST",
       "path": "/api/appointment-confirm",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "origin": "https://localhost:3000",
         "x-csrf-token": "${csrf}"
       },
       "body": {}
@@ -103,11 +104,12 @@
   ],
   "negative_steps": [
     {
-      "name": "reset request without CSRF rejected",
+      "name": "missing valid CSRF token rejected",
       "method": "POST",
       "path": "/api/reset-request",
       "headers": {
-        "Origin": "https://localhost:3000"
+        "origin": "https://localhost:3000",
+        "x-csrf-token": "invalid-csrf-token"
       },
       "body": {
         "email": "${email}"
@@ -115,51 +117,24 @@
       "expect_failure": true
     },
     {
-      "name": "invalid reset code rejected",
+      "name": "wrong reset code rejected",
       "method": "POST",
       "path": "/api/reset-validate",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "origin": "https://localhost:3000",
         "x-csrf-token": "${csrf}"
       },
       "body": {
-        "token": "not-the-issued-reset-token"
+        "token": "aaaaaaaaaaaaaaaaaaaa"
       },
       "expect_failure": true
     },
     {
-      "name": "weak password rejected",
-      "method": "POST",
-      "path": "/api/password-update",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "x-csrf-token": "${csrf}"
-      },
-      "body": {
-        "token": "${reset_token}",
-        "password": "weakpassword"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "incorrect MFA code rejected",
-      "method": "POST",
-      "path": "/api/mfa-verify",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "x-csrf-token": "${csrf}"
-      },
-      "body": {
-        "code": "000000"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "privacy acceptance requires true",
+      "name": "privacy acceptance required",
       "method": "POST",
       "path": "/api/privacy-accept",
       "headers": {
-        "Origin": "https://localhost:3000",
+        "origin": "https://localhost:3000",
         "x-csrf-token": "${csrf}"
       },
       "body": {

@@ -11,17 +11,17 @@
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "bootstrap recovery session",
+      "name": "load recovery page",
       "method": "GET",
-      "path": "/api/bootstrap",
+      "path": "/",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
     {
-      "name": "load recovery page",
+      "name": "bootstrap recovery session",
       "method": "GET",
-      "path": "/",
+      "path": "/api/bootstrap",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "verify recovery code",
+      "name": "verify recovery token",
       "method": "POST",
       "path": "/api/verify-token",
       "expect_failure": false,
@@ -59,15 +59,7 @@
       "ok": true
     },
     {
-      "name": "missing valid CSRF rejected",
-      "method": "POST",
-      "path": "/api/recovery-request",
-      "expect_failure": true,
-      "status_code": 403,
-      "ok": true
-    },
-    {
-      "name": "reused recovery token rejected",
+      "name": "invalid recovery token rejected",
       "method": "POST",
       "path": "/api/verify-token",
       "expect_failure": true,
@@ -75,11 +67,19 @@
       "ok": true
     },
     {
-      "name": "wrong method rejected",
-      "method": "GET",
-      "path": "/api/recovery-request",
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/set-password",
       "expect_failure": true,
-      "status_code": 405,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": true,
+      "status_code": 403,
       "ok": true
     }
   ],
