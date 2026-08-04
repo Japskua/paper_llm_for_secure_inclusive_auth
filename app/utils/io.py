@@ -1,3 +1,4 @@
+import json
 import pathlib
 import random
 import time
@@ -43,6 +44,14 @@ def _status_code(e: Exception):
 def _is_transient(e: Exception) -> bool:
     """Retry timeouts, connection errors and transient HTTP statuses; not 4xx client errors."""
     if isinstance(e, (ReadTimeout,)):
+        return True
+    # A truncated or corrupted response body: the client raises JSONDecodeError
+    # while parsing an otherwise-200 reply, so the status check below would call
+    # it permanent. Observed in practice, and it killed a run outright.
+    # Note this is the HTTP layer, not the Tasker's own output — a model that
+    # emits malformed JSON surfaces as ValueError from app.utils.parsing and is
+    # recorded as a protocol violation rather than retried here.
+    if isinstance(e, json.JSONDecodeError):
         return True
     code = _status_code(e)
     if code is not None:

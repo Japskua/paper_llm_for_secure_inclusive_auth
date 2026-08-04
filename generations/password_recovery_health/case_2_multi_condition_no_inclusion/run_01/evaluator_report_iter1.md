@@ -1,116 +1,97 @@
 ## SUMMARY
 
-The artifact is a single-file Bun SPA with a largely well-structured recovery flow, TLS configuration, CSRF protection, CSP nonces, password hashing, generic error messages, browser-side mock logging, and working hash-based navigation. However, it has critical authentication and password-reset authorization flaws: any valid-looking identifier can initiate a reset for the fixed internal account and any identifier can be used to log in if the password is known. Token/session expiry is also not enforced server-side after verification, and rate limits can be bypassed by creating new sessions. Therefore, it does not meet the security requirements.
+The artifact is a single-file Bun/TypeScript password-recovery SPA with a functional recovery, token verification, MFA, password reset, login, and privacy-acceptance flow. It uses HTTPS/TLS, CSRF tokens, CSP nonces, generic recovery responses, rate limiting, Argon2id for changed passwords, and browser-side testing logs. However, it does not fully meet the security requirements because it embeds an initial plaintext password in source code, does not enforce server-side session expiration, permits unauthenticated users to render protected confirmation routes, and does not apply MFA/SSO to the normal login flow.
 
 ## FUNCTIONAL_CHECK
 
-- **Single `app.ts` artifact containing Bun server, HTML, CSS, and vanilla browser JavaScript — PASS**
-  - The provided implementation is one file and uses Bun directly, with no framework, bundler, compilation step, or external assets.
+- **PASS — Single-file Bun server and browser UI**
+  - The complete server, HTML template, CSS, and client-side JavaScript are contained in `app.ts`.
+  - It uses Bun directly and does not depend on frameworks, bundlers, compilers, or external assets/network calls.
 
-- **TLS server uses supplied local certificates — PASS**
-  - `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`.
-  - The request handler rejects non-HTTPS URLs.
+- **PASS — TLS and HTTP-to-HTTPS enforcement**
+  - The HTTPS server uses `certs/cert.pem` and `certs/key.pem`.
+  - The HTTP listener only issues a `308` redirect to `https://localhost:3000`.
 
-- **CSRF prevention with unique per-session tokens on sensitive requests — PASS**
-  - New sessions receive a cryptographically random CSRF token.
-  - All `/api/*` POST endpoints require a matching `X-CSRF-Token`.
-  - The session cookie is `Secure`, `HttpOnly`, `SameSite=Strict`, and uses the `__Host-` prefix correctly.
+- **PASS — Recovery flow is functional**
+  - Users can submit an email address or international phone number.
+  - Valid and invalid contact submissions receive the same generic privacy-preserving confirmation response.
+  - A simulated reset token is returned only for academic testing and is logged in the browser console/UI logs.
 
-- **Sensitive actions enforce server-side session authorization / avoid IDOR — FAIL**
-  - The reset request endpoint accepts any syntactically valid identifier but always creates a reset token for `"internal-demo-account"`.
-  - A visitor can submit any arbitrary valid identifier, receive the displayed mock reset token, verify it, and reset the internal account’s password.
-  - The login endpoint likewise ignores the supplied identifier and checks the supplied password against the fixed internal account.
+- **PASS — Reset links and manual token submission work**
+  - The token may be supplied through `/reset?token=...`.
+  - The same token can also be entered manually in the recovery-token form.
+  - The token is random, stored as a SHA-256 verifier, short-lived, and marked as single-use after password change.
 
-- **Password-reset tokens are random, single-use, session-bound, and short-lived — FAIL**
-  - Tokens are random, session-bound, and marked used after verification.
-  - However, `/api/recovery/reset-password` does not verify `Date.now() <= session.reset.expiresAt`.
-  - Once a token is verified before its ten-minute expiry, `session.recoveryVerified` permits password reset indefinitely while the server-side session remains in memory.
-  - Server-side sessions themselves do not expire; cookie expiration alone is not server-side session expiration and can be bypassed by manually replaying a copied cookie.
+- **PASS — MFA verification is included in the reset flow**
+  - A second factor is required after token verification and before a password may be changed.
+  - The deterministic academic MFA code is only surfaced through the browser-side testing log.
+  - MFA attempts are throttled.
 
-- **Passwords use bcrypt and a strong password policy — PASS**
-  - Passwords are hashed and verified using Bun’s bcrypt implementation.
-  - The reset policy requires 12–128 characters, uppercase, lowercase, numeric, and symbol characters.
+- **PASS — Strong password policy and password hashing for resets**
+  - The server enforces a 14–128-character password policy requiring upper-case, lower-case, number, and symbol characters.
+  - New passwords are stored using Bun Argon2id hashing.
+  - Password confirmation is verified server-side.
 
-- **MFA is implemented in the recovery/login flow — PASS**
-  - Successful password reset and sign-in both require a subsequent MFA verification step.
-  - The deterministic mock MFA code is surfaced through the browser Logs panel and `console.log`, as required for the demo.
+- **FAIL — Passwords are not exclusively stored as hashes**
+  - The initial password is present in plaintext in application source:
+    ```ts
+    let passwordHash = await Bun.password.hash("Welcome!Reset2025", {
+    ```
+  - Even though it is hashed at startup, the plaintext secret is still stored in the source artifact, violating the requirement that passwords must never be stored in plaintext.
 
-- **Brute-force / automated guessing attempts are throttled or blocked — FAIL**
-  - Rate limits are stored only in the session object.
-  - An attacker can create a new session by visiting `/` without the session cookie and receive a fresh attempt budget, bypassing login, recovery request, reset-code, and MFA throttles.
-  - Login throttling is especially ineffective because the login route checks a single account but has no shared per-account or per-client limit.
+- **PASS — CSRF protections are implemented for state-changing API requests**
+  - A random per-session CSRF token is generated.
+  - Every API request is POST-only and requires the matching `X-CSRF-Token`.
+  - The session cookie is `Secure`, `HttpOnly`, `SameSite=Strict`, and has the correct `__Host-` cookie constraints.
 
-- **XSS/injection protections and safe output handling — PASS**
-  - User-provided values are not inserted into HTML.
-  - UI status messages are assigned with `textContent`.
-  - Static templates use controlled `innerHTML`; no user input is interpolated into those templates.
-  - The CSP uses a per-response nonce and disallows externally sourced scripts.
+- **FAIL — Sessions do not have server-side expiration**
+  - The cookie has `Max-Age=1800`, but session records in the `sessions` map have no expiration value and are never removed or rejected after 30 minutes.
+  - A retained/stolen session cookie remains valid server-side indefinitely, including its CSRF token and authenticated status.
+  - This does not adequately protect user sessions as required.
 
-- **Secure headers and production-safe errors — PASS**
-  - HSTS, CSP, frame protections, `nosniff`, restrictive referrer policy, permissions policy, and no-store cache headers are configured.
-  - Exception handling returns generic errors rather than stack traces or debug information.
+- **PASS — Injection/XSS controls are generally strong**
+  - User-controlled content is rendered using `textContent` and DOM APIs rather than `innerHTML`.
+  - The CSP allows scripts and styles only with a per-page nonce.
+  - Inputs are tightly validated server-side, and no untrusted script URLs are introduced.
 
-- **No disclosure of patient/account identifiers in normal UI — PASS**
-  - The UI does not render account IDs, usernames, patient records, or folder-like identifiers.
-  - Generic account-recovery messaging avoids account enumeration.
+- **PASS — Security headers and production error behavior**
+  - HSTS, CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and `Cache-Control: no-store` are configured.
+  - Error handling returns generic responses without stack traces or debug output.
 
-- **Safe-authentication and anti-phishing guidance — PASS**
-  - The UI tells users not to share passwords or verification codes and directs them to use the local portal only.
+- **PASS — Brute-force throttling is present**
+  - Recovery, token verification, MFA, and login attempts are rate-limited on a per-session/action basis.
+  - The reset token is high entropy and has a ten-minute lifetime.
 
-- **Mock recovery/MFA delivery is available in the browser console and UI — PASS**
-  - Recovery and MFA test values are logged through browser-side `console.log` and shown in the Logs panel.
-  - Manual recovery-code submission is supported.
+- **FAIL — Protected SPA routes are not access-controlled before rendering**
+  - Any visitor can directly navigate to `/privacy` and view the privacy acknowledgement screen without being authenticated.
+  - Any visitor can directly navigate to `/confirmed` and see “Your acknowledgement has been securely recorded,” even if no acknowledgement was submitted.
+  - While `/api/privacy` correctly enforces authentication, the UI routes themselves present unauthorized success/protected states and therefore do not function correctly as protected routes.
 
-- **Internal navigation and confirmation access behavior — FAIL**
-  - Direct navigation to `#confirmation` displays “Your acknowledgement has been recorded” without checking whether the user is authenticated or has accepted the conditions.
-  - Direct navigation to `#privacy` displays the privacy screen even when unauthenticated. The acceptance API is protected, but the SPA’s visible protected-state messaging is not guarded.
-  - The confirmation view should be conditioned on authenticated session state and successful privacy acceptance.
+- **FAIL — MFA/SSO is not enforced for normal account login**
+  - The recovery/reset path uses MFA, but `/api/login` authenticates solely with the password.
+  - A user who knows the password can access the privacy workflow without MFA or SSO.
+  - This does not satisfy the requirement that MFA or SSO be implemented for authentication, rather than only during password recovery.
 
-- **CSP-compatible styling — FAIL**
-  - The Logs `<section>` uses an inline `style="margin-top:1rem"` attribute.
-  - The CSP permits styles only with the generated nonce (`style-src 'nonce-...'`) and does not permit inline style attributes.
-  - Browsers will block that inline style, causing a CSP violation and leaving the intended margin unapplied.
+- **PASS — Safe-authentication / anti-phishing guidance is shown**
+  - Each relevant screen informs users not to share passwords, recovery tokens, or MFA codes with staff, support, or email messages.
+  - The application does not make outgoing URL requests or use user-controlled redirects.
 
 ## FAILING_ITEMS
 
-- The recovery endpoint maps every valid-looking recovery identifier to the same fixed account:
-  - `accountId: "internal-demo-account"` is assigned regardless of `data.identifier`.
-  - This permits an unauthorized password reset by anyone who can open the site.
-
-- The login endpoint does not authenticate the identifier:
-  - It validates only the identifier’s format and then verifies the password against `"internal-demo-account"`.
-  - A user can sign in using any valid identifier combined with the internal account’s password.
-
-- Reset-token expiry is not enforced when changing the password:
-  - `/api/recovery/reset-password` checks `recoveryVerified` but not `session.reset.expiresAt`.
-
-- Sessions have no server-side expiry:
-  - `createdAt` is recorded but never evaluated.
-  - The in-memory session remains valid after cookie `Max-Age` unless the server restarts.
-
-- Rate limiting is session-only and bypassable:
-  - An attacker can obtain unlimited new sessions and fresh rate-limit histories.
-
-- The confirmation route provides an unauthenticated success claim:
-  - `#confirmation` can be opened directly and states that acknowledgement was recorded without server-confirmed state.
-
-- The inline `style` attribute on the Logs card is blocked by the configured CSP.
+- The initial account password, `Welcome!Reset2025`, is hard-coded in plaintext in `app.ts`.
+- Session records have no server-side expiry or cleanup. Cookie expiration alone does not invalidate a session if its cookie is retained or replayed.
+- `/privacy` and `/confirmed` render sensitive/protected workflow screens without verifying server-side authenticated or privacy-accepted state.
+- The normal password login endpoint does not require MFA or SSO; MFA is limited to the password-reset sequence.
+- The CSS declaration `box-shadow:0 2px 8px #1232 2;` is malformed and will be ignored by browsers. This is cosmetic but should be corrected.
 
 ## NEW_TASKS
 
-1. Bind recovery requests to an actual server-side account lookup and ensure that a reset token is created only for the account associated with the supplied identifier; retain generic responses to avoid account enumeration and keep test-token disclosure limited to the authorized deterministic demo path.
-
-2. Update `/api/login` to resolve the supplied identifier to an account and verify the password only for that resolved account; reject unmatched identifiers with the existing generic authentication message.
-
-3. Enforce reset-token expiry in `/api/recovery/reset-password`, invalidate recovery authorization after expiry, and reject resets unless the verified reset authorization is still within its permitted lifetime.
-
-4. Add server-side session expiry enforcement using `createdAt`, reject expired sessions on every request, and periodically remove expired session records from the in-memory session map.
-
-5. Replace session-only rate limits with shared server-side limits keyed at minimum by target account/identifier and preferably client address as well; apply them to recovery requests, login attempts, reset-code attempts, and MFA attempts.
-
-6. Add authenticated session-state checks for privacy and confirmation rendering so `#confirmation` is shown only after server-confirmed privacy acceptance, and show an access-required screen or redirect for unauthorized hash views.
-
-7. Move the Logs card’s inline `margin-top` declaration into the nonce-authorized stylesheet, removing the CSP-blocked `style` attribute.
+1. Replace the hard-coded plaintext initial password with a precomputed Argon2id hash or a securely supplied runtime secret; do not retain any plaintext password in `app.ts`.
+2. Add a server-side session expiration timestamp to `Session`; reject and delete expired sessions in `sessionFor`, and issue a replacement session cookie when needed.
+3. Add a read-only authenticated session-status API endpoint, protected by the existing session/CSRF model as appropriate, and use it to prevent unauthenticated rendering of `/privacy`.
+4. Prevent rendering of `/confirmed` unless the current server-side session has `privacyAccepted === true`; otherwise route the user to the appropriate recovery/login screen.
+5. Implement MFA or SSO for normal `/api/login` authentication, not only for the reset process.
+6. Correct the invalid CSS `box-shadow` declaration, for example: `box-shadow: 0 2px 8px #1232;`.
 
 ## DECISION
 

@@ -1,0 +1,96 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 10,
+  "steps_passed": 10,
+  "happy_path_passed": 6,
+  "happy_path_total": 6,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "open recovery page and establish session",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "prepare recovery instructions",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "replace password",
+      "method": "POST",
+      "path": "/api/password",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm sign-in with MFA",
+      "method": "POST",
+      "path": "/api/mfa",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "invalid recovery contact rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "malformed recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid password policy rejected",
+      "method": "POST",
+      "path": "/api/password",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "privacy rejection without acceptance",
+      "method": "POST",
+      "path": "/api/privacy",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 10
+}

@@ -1,0 +1,143 @@
+{
+  "variables": {
+    "email": "test@example.com",
+    "new_password": "Violet7!Harbor"
+  },
+  "csrf": {
+    "html_regex": "const\\s+csrf\\s*=\\s*\"([a-f0-9]{64})\"",
+    "field": "csrf",
+    "in": "body"
+  },
+  "steps": [
+    {
+      "name": "open recovery page and establish session",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "account": "${email}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "reset_token": "testToken"
+      }
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "token": "${reset_token}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "testMfaCode"
+      }
+    },
+    {
+      "name": "verify MFA security code",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "code": "${mfa_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "save valid new password",
+      "method": "POST",
+      "path": "/api/password",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept updated privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "accepted": true,
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "token": "${reset_token}x",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "duplicate password update rejected",
+      "method": "POST",
+      "path": "/api/password",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance requires true",
+      "method": "POST",
+      "path": "/api/privacy",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "accepted": false,
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

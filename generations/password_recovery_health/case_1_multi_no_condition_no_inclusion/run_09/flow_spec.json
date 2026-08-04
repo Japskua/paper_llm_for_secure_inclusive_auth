@@ -1,0 +1,159 @@
+{
+  "variables": {
+    "email": "helena@example.test",
+    "new_password": "ValidPass1!xx"
+  },
+  "csrf": null,
+  "steps": [
+    {
+      "name": "load recovery portal",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request password reset",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}"
+      },
+      "expect_json_true": "message",
+      "capture": {
+        "reset_token": "mockDeliveryToken"
+      }
+    },
+    {
+      "name": "validate reset code",
+      "method": "POST",
+      "path": "/api/reset-validate",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "${reset_token}"
+      },
+      "expect_json_true": "message"
+    },
+    {
+      "name": "update password",
+      "method": "POST",
+      "path": "/api/password-update",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "${reset_token}",
+        "password": "${new_password}"
+      },
+      "expect_json_true": "message",
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "message"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "accepted": true
+      },
+      "expect_json_true": "message"
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment-confirm",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "message"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "reset request without CSRF rejected",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "reset request with wrong origin rejected",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "headers": {
+        "Origin": "https://example.test",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid reset code rejected",
+      "method": "POST",
+      "path": "/api/reset-validate",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "invalid_reset_code_1234567890"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+[13:11:27] CONFIG (multi): tasker=prompts/prompt_tasker.txt coder=prompts/prompt_coder.txt eval=prompts/prompt_evaluator.txt requirements=requirements/password_recovery_health/password_recovery_health_no_inclusivity.md output=generations/password_recovery_health/case_2_multi_condition_no_inclusion/run_03 criteria=(none) max_iters=12
+[13:11:27] LLMs: TASKER=openai/gpt-5.6-terra CODER=openai/gpt-5.6-terra EVALUATOR=openai/gpt-5.6-terra
+[13:11:27] PRICING (USD per 1M): default in=1.25, cached_in=0.125, out=10.0 tasker in=None, cached_in=None, out=None coder in=None, cached_in=None, out=None evaluator in=None, cached_in=None, out=None
+Starting loop… (if this hangs, a network call is stuck; use --verbose and check CRASH_* files)
+[13:11:27] ==== Iteration 1/12 ====
+[13:11:27] [iter 1 | step 1] TASKER: invoking
+[13:11:27] [iter 1] TASKER: invoking
+[13:11:39] [iter 1 | step 1] TASKER tokens: input=1772, cached_input=1769, output=780, reasoning=66
+[13:11:39] [iter 1 | step 1] TASKER output (preview): {"task_list":["Create a single runnable `app.ts` that starts a Bun HTTPS server using `certs/cert.pem` and `certs/key.pem`, serves the complete HTML/CSS/vanilla-JS SPA, and exposes no local modules, build steps, or external assets.","Enforce HTTPS-only operation and send production security headers on every response: HSTS, restrictive CSP with a per-response nonce for the required inline client sc…
+[13:11:39] [iter 1 | step 1] TASKER: effective tasks=16
+[13:11:39] [iter 1 | step 1] TASKER: wrote tasker_report.md and tasker_report_iter1.md
+[13:11:39] [iter 1 | step 2] CODER: invoking with 16 task(s)
+[13:11:39] [iter 1] CODER: invoking
+[13:13:16] [iter 1 | step 2] CODER tokens: input=1994, cached_input=0, output=7732, reasoning=1934
+[13:13:16] [iter 1 | step 2] CODER: wrote app.ts and code_iter1.tsx (chars=22912)
+[13:13:16] [iter 1 | step 3] EVALUATOR: invoking
+[13:13:16] [iter 1] EVALUATOR: invoking
+[13:13:45] [iter 1 | step 3] EVALUATOR tokens: input=6878, cached_input=0, output=2265, reasoning=1357
+[13:13:45] [iter 1 | step 3] EVALUATOR: parsed decision=PASS, current tasks sample=['Create a single runnable app.ts that starts a Bun HTTPS server using certs/cert.pem and certs/key.pem, serves the complete HTML/CSS/vanilla-JS SPA, and exposes no local modules, build steps, or external assets.', 'Enforce HTTPS-only operation and send production security headers on every response: HSTS, restrictive CSP with a per-response nonce for the required inline client script, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy: no-referrer, and a restrictive permissions policy.', 'Implement only explicit same-origin routes in app.ts, return generic error responses without stack traces or directory listings, and ensure unknown paths, parameters, and redirect destinations cannot disclose data or produce open redirects.']
+[13:13:45] [iter 1] cycle duration: 138.64s, done=True, tasks=0, tokens(in=10644, out=10777)
+Iter 1 done. done=True, tasks=0
+Finished. See workspace artifacts.
+Token usage — input: 10644, cached input: 1769, output: 10777 (of which reasoning: 3357)
+Cost: $0.0759 USD (see generations/password_recovery_health/case_2_multi_condition_no_inclusion/run_03/tokens_summary.json)
+Smoke test OK: stage=served port=3000 status=200
+Flow test OK: stage=executed happy_path=6/6 negatives=4/4

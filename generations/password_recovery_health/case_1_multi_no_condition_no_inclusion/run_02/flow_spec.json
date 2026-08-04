@@ -1,0 +1,187 @@
+{
+  "variables": {
+    "email": "local-recovery-demo",
+    "new_password": "ValidPassw0rd!"
+  },
+  "csrf": null,
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "create session and obtain CSRF token",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request mock recovery delivery",
+      "method": "POST",
+      "path": "/api/recovery/request",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_token": "mockDeliveryToken"
+      }
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "${recovery_token}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "refresh authorized reset session",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/recovery/reset-password",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "password": "${new_password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "refresh MFA-pending session",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "refresh authenticated session",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "refresh privacy-accepted session",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment/confirm",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "refresh confirmed session",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "reject reused recovery token",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "${recovery_token}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "reject reset without recovery authorization",
+      "method": "POST",
+      "path": "/api/recovery/reset-password",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "password": "${new_password}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "reject invalid recovery token",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "not-a-valid-token"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "reject state change without CSRF token",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {},
+      "expect_failure": true
+    }
+  ]
+}

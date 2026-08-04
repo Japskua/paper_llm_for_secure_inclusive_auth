@@ -1,18 +1,19 @@
 {
-  "ok": true,
-  "stage": "served",
-  "port": 3000,
-  "status_code": 200,
-  "boot_seconds": 0.44,
-  "error": null,
-  "stdout_tail": "Secure hospital recovery demo running at https://localhost:3000\n",
+  "ok": false,
+  "stage": "port_conflict",
+  "port": null,
+  "status_code": null,
+  "boot_seconds": 0.32,
+  "error": "port already in use on this host — environment conflict, not necessarily a defect in the artifact",
+  "stdout_tail": "574 |   tls: { cert: Bun.file(CERT_PATH), key: Bun.file(KEY_PATH) },\n575 |   fetch: httpsFetch,\n576 | });\n577 | \n578 | /* Requirement 3: plaintext HTTP is never served; it only redirects to HTTPS. */\n579 | Bun.serve({\n          ^\nerror: Failed to start server. Is port 80 in use?\n syscall: \"listen\",\n   errno: 0,\n    code: \"EADDRINUSE\"\n\n      at /Users/japskua/projects/lut/paper_llm_for_secure_inclusive_auth/generations/password_recovery_health/case_2_multi_condition_no_inclusion/run_01/app.ts:579:5\n\nBun v1.3.14 (macOS arm64)\n",
   "stderr_tail": "",
   "certs_available": true,
-  "occupied_before": [],
-  "port_source": "os",
-  "listening_ports": [
-    3000
-  ],
-  "url": "https://127.0.0.1:3000/",
-  "scheme": "https"
+  "port_hints": {
+    "PORT": 52773,
+    "HTTPS_PORT": 52773,
+    "HTTP_PORT": 52774
+  },
+  "occupied_before": [
+    80
+  ]
 }

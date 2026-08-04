@@ -106,11 +106,22 @@ def _candidate_ports(stream_text: str, source: str, hint: int) -> List[int]:
     return ordered
 
 
+# Artifacts have been observed binding all interfaces (*:443) and IPv6 loopback
+# only ([::1]:PORT). Probing just 127.0.0.1 reports the latter as dead.
+LOOPBACKS = (("127.0.0.1", socket.AF_INET), ("::1", socket.AF_INET6))
+
+
 def _port_open(port: int, timeout: float = 0.3) -> bool:
     """Cheap liveness check — far faster than a full HTTP request while polling."""
-    with socket.socket() as s:
-        s.settimeout(timeout)
-        return s.connect_ex(("127.0.0.1", port)) == 0
+    for host, family in LOOPBACKS:
+        try:
+            with socket.socket(family, socket.SOCK_STREAM) as s:
+                s.settimeout(timeout)
+                if s.connect_ex((host, port)) == 0:
+                    return True
+        except OSError:
+            continue
+    return False
 
 
 @contextlib.contextmanager
@@ -162,29 +173,34 @@ def _probe(ports: List[int]) -> Dict[str, Any]:
     """
     errors = []
     for port in ports:
-        for scheme in ("https", "http"):
-            url = f"{scheme}://127.0.0.1:{port}/"
-            try:
-                with httpx.Client(verify=False, timeout=PROBE_TIMEOUT_S) as client:
-                    resp = client.get(url, follow_redirects=True)
-            except Exception as e:  # connection refused, TLS mismatch, ...
-                errors.append(f"{scheme}://:{port}: {type(e).__name__}")
-                continue
-            if resp.status_code < 500:
-                return {
-                    "ok": True,
-                    "url": url,
-                    "port": port,
-                    "scheme": scheme,
-                    "status_code": resp.status_code,
-                    "body_bytes": len(resp.content),
-                    "error": None,
-                }
-            errors.append(f"{scheme}://:{port}: HTTP {resp.status_code}")
+        # Try both loopback families: an artifact bound to [::1] only is
+        # unreachable over 127.0.0.1 and would look dead.
+        for host in ("127.0.0.1", "[::1]"):
+            for scheme in ("https", "http"):
+                url = f"{scheme}://{host}:{port}/"
+                try:
+                    with httpx.Client(verify=False, timeout=PROBE_TIMEOUT_S) as client:
+                        resp = client.get(url, follow_redirects=True)
+                except Exception as e:  # connection refused, TLS mismatch, ...
+                    errors.append(f"{scheme}://{host}:{port}: {type(e).__name__}")
+                    continue
+                if resp.status_code < 500:
+                    return {
+                        "ok": True,
+                        "url": url,
+                        "port": port,
+                        "host": host,
+                        "scheme": scheme,
+                        "status_code": resp.status_code,
+                        "body_bytes": len(resp.content),
+                        "error": None,
+                    }
+                errors.append(f"{scheme}://{host}:{port}: HTTP {resp.status_code}")
     return {
         "ok": False,
         "url": None,
         "port": ports[0] if ports else None,
+        "host": None,
         "scheme": None,
         "status_code": None,
         "body_bytes": 0,
@@ -340,6 +356,7 @@ def smoke_test(
                     result.update(
                         ok=probe["ok"],
                         port=probe["port"],
+                        host=probe.get("host"),
                         status_code=probe["status_code"],
                         url=probe["url"],
                         scheme=probe["scheme"],
@@ -347,7 +364,7 @@ def smoke_test(
                         stage="served" if probe["ok"] else "no_response",
                     )
                     if probe["ok"] and on_ready is not None:
-                        base = f"{probe['scheme']}://127.0.0.1:{probe['port']}"
+                        base = f"{probe['scheme']}://{probe['host']}:{probe['port']}"
                         try:
                             result["on_ready_result"] = on_ready(base, live_ports)
                         except Exception as e:

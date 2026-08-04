@@ -111,6 +111,15 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--certs", default="workspace/certs")
     p.add_argument("--force", action="store_true", help="Re-run runs that already completed")
+    p.add_argument(
+        "--reverify",
+        action="store_true",
+        help=(
+            "Re-run smoke/flow verification on already-complete runs without "
+            "regenerating them. Use after fixing a harness defect so stale "
+            "verdicts are corrected in place."
+        ),
+    )
     p.add_argument("--dry-run", action="store_true", help="List planned runs and exit")
     p.add_argument("--verbose", action="store_true", default=True)
     p.add_argument("--quiet", dest="verbose", action="store_false")
@@ -261,6 +270,24 @@ def archive_legacy(args) -> None:
         log("archive: nothing to do")
 
 
+def reverify(out: pathlib.Path, args) -> None:
+    """
+    Re-run verification against an existing artifact, leaving the generated code
+    untouched. Needed because a harness defect can leave a correct artifact
+    marked broken, and regenerating would replace the very sample under review.
+    """
+    from app.utils.smoke import smoke_test
+
+    if args.smoke_test:
+        smoke_test(str(out), certs_src=args.certs)
+    if args.flow_test:
+        from app.utils.flow import flow_test
+        from provider import make_llm
+
+        # reuse_spec=False: a stale plan may itself be the reason a run failed.
+        flow_test(str(out), make_llm("evaluator"), certs_src=args.certs, reuse_spec=False)
+
+
 def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
     out: pathlib.Path = job["_out"]
     record = {k: v for k, v in job.items() if not k.startswith("_")}
@@ -270,6 +297,8 @@ def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
         return record
 
     if is_complete(out) and not args.force:
+        if args.reverify:
+            reverify(out, args)
         # Still collect: a resumed batch must produce a complete manifest, not
         # one where previously-finished runs appear as empty records.
         record.update(collect(out, exit_code=0, attempts=0, wall=0.0))

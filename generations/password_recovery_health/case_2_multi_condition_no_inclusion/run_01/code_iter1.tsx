@@ -1,475 +1,507 @@
 
-import { randomBytes, timingSafeEqual } from "node:crypto";
+const CERT_PATH = "certs/cert.pem";
+const KEY_PATH = "certs/key.pem";
+const HTTPS_PORT = 3000;
+const HTTP_PORT = 80;
 
-/*
-  Password Recovery Demo — all data below is an internal, deterministic in-memory mock.
-  Security requirements:
-  1) session-bound access control + CSRF
-  2) validation and safe client-side text rendering
-  3) TLS, headers, random short-lived reset tokens
-  4) strong passwords, throttling, mocked MFA
-  5) internal-only navigation and anti-phishing guidance
-*/
-
+type Attempt = { count: number; until: number };
 type Session = {
   id: string;
   csrf: string;
-  createdAt: number;
-  recoveryRequests: number[];
-  resetAttempts: number[];
-  mfaAttempts: number[];
-  loginAttempts: number[];
-  reset?: { token: string; expiresAt: number; used: boolean; accountId: string };
-  recoveryVerified?: boolean;
-  pendingMfaAccount?: string;
-  authenticatedAccount?: string;
+  attempts: Record<string, Attempt>;
+  resetHash?: string;
+  mfaVerified?: boolean;
+  authenticated?: boolean;
   privacyAccepted?: boolean;
 };
-
-type Account = {
-  id: string;
-  passwordHash: string;
+type ResetRecord = {
+  verifier: string;
+  sessionId: string;
+  expiresAt: number;
+  used: boolean;
+  mfaCode: string;
 };
 
 const sessions = new Map<string, Session>();
-const accounts = new Map<string, Account>();
+const resetRecords = new Map<string, ResetRecord>();
 
-// Requirement 4: password storage uses bcrypt, never plaintext.
-accounts.set("internal-demo-account", {
-  id: "internal-demo-account",
-  passwordHash: await Bun.password.hash("Initial!Secure2025", { algorithm: "bcrypt" }),
+/* Requirement 4: Argon2id password hashing; no plaintext password is stored. */
+let passwordHash = await Bun.password.hash("Welcome!Reset2025", {
+  algorithm: "argon2id",
 });
 
-const COOKIE_NAME = "__Host-recovery_session";
-const MFA_TEST_CODE = "246810";
-const RESET_TTL_MS = 10 * 60 * 1000;
-const MAX_BODY_BYTES = 8 * 1024;
+function randomHex(bytes: number): string {
+  const value = new Uint8Array(bytes);
+  crypto.getRandomValues(value);
+  return Array.from(value, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
 
-function randomValue(bytes = 32): string {
-  return randomBytes(bytes).toString("base64url");
+async function sha256(value: string): Promise<string> {
+  const bytes = new TextEncoder().encode(value);
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(hash), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 function makeSession(): Session {
-  return {
-    id: randomValue(32),
-    csrf: randomValue(32),
-    createdAt: Date.now(),
-    recoveryRequests: [],
-    resetAttempts: [],
-    mfaAttempts: [],
-    loginAttempts: [],
+  const session: Session = {
+    id: randomHex(32),
+    csrf: randomHex(32),
+    attempts: {},
   };
+  sessions.set(session.id, session);
+  return session;
 }
 
-function parseCookies(request: Request): Record<string, string> {
-  const raw = request.headers.get("cookie") || "";
-  const result: Record<string, string> = {};
-  for (const part of raw.split(";")) {
-    const index = part.indexOf("=");
-    if (index > 0) result[part.slice(0, index).trim()] = part.slice(index + 1).trim();
+function cookieValue(request: Request, name: string): string | null {
+  const cookie = request.headers.get("cookie") || "";
+  for (const part of cookie.split(";")) {
+    const [key, ...rest] = part.trim().split("=");
+    if (key === name) return rest.join("=");
   }
-  return result;
+  return null;
 }
 
-function getSession(request: Request): Session | undefined {
-  const id = parseCookies(request)[COOKIE_NAME];
-  return id ? sessions.get(id) : undefined;
+function sessionFor(request: Request): { session: Session; isNew: boolean } {
+  const id = cookieValue(request, "__Host-recovery");
+  if (id && sessions.has(id)) return { session: sessions.get(id)!, isNew: false };
+  return { session: makeSession(), isNew: true };
 }
 
-function secureCookie(session: Session): string {
-  return `${COOKIE_NAME}=${session.id}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=1800`;
+function sessionCookie(session: Session): string {
+  return `__Host-recovery=${session.id}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=1800`;
 }
 
-function baseHeaders(nonce?: string): Headers {
-  const headers = new Headers({
+function securityHeaders(nonce: string): Headers {
+  return new Headers({
+    "Content-Type": "text/html; charset=utf-8",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-    "Content-Security-Policy": `default-src 'self'; script-src 'nonce-${nonce || "none"}'; style-src 'nonce-${nonce || "none"}'; connect-src 'self'; img-src 'self' data:; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`,
-    "X-Frame-Options": "DENY",
+    "Content-Security-Policy":
+      `default-src 'self'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; ` +
+      "connect-src 'self'; img-src 'none'; font-src 'none'; object-src 'none'; " +
+      "base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
     "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
     "Referrer-Policy": "no-referrer",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
-    "Cache-Control": "no-store, max-age=0",
-    "Pragma": "no-cache",
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Content-Type": "application/json; charset=utf-8",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Cache-Control": "no-store",
   });
-  return headers;
 }
 
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), { status, headers: baseHeaders() });
+function apiHeaders(): Headers {
+  return new Headers({
+    "Content-Type": "application/json; charset=utf-8",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Cache-Control": "no-store",
+  });
 }
 
-function genericError(status = 400): Response {
-  return json({ ok: false, message: "We could not complete that request. Please try again." }, status);
+function json(data: unknown, status = 200, cookie?: string): Response {
+  const headers = apiHeaders();
+  if (cookie) headers.set("Set-Cookie", cookie);
+  return new Response(JSON.stringify(data), { status, headers });
 }
 
-function constantTimeEqual(a: string, b: string): boolean {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
-  return left.length === right.length && timingSafeEqual(left, right);
-}
-
-function validCsrf(request: Request, session: Session): boolean {
-  const supplied = request.headers.get("x-csrf-token") || "";
-  return supplied.length === session.csrf.length && constantTimeEqual(supplied, session.csrf);
-}
-
-function withinLimit(history: number[], limit: number, windowMs: number): boolean {
-  const now = Date.now();
-  const recent = history.filter((time) => now - time < windowMs);
-  history.splice(0, history.length, ...recent);
-  if (history.length >= limit) return false;
-  history.push(now);
-  return true;
-}
-
-async function body(request: Request): Promise<Record<string, unknown> | null> {
-  const length = Number(request.headers.get("content-length") || "0");
-  if (length > MAX_BODY_BYTES) return null;
+async function requestBody(request: Request): Promise<Record<string, unknown> | null> {
+  const type = request.headers.get("content-type") || "";
+  if (!type.includes("application/json")) return null;
   try {
-    const parsed = await request.json();
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
-    return parsed as Record<string, unknown>;
+    const data = await request.json();
+    if (!data || typeof data !== "object" || Array.isArray(data)) return null;
+    return data as Record<string, unknown>;
   } catch {
     return null;
   }
 }
 
-// Requirement 2: validate input without reflecting it back to any response.
-function validIdentifier(value: unknown): boolean {
-  if (typeof value !== "string") return false;
-  const clean = value.trim();
-  return clean.length >= 3 && clean.length <= 128 && !/[\x00-\x1f<>]/.test(clean);
+/* Requirement 1: every state-changing endpoint validates this per-session CSRF token. */
+function csrfOK(request: Request, session: Session): boolean {
+  const value = request.headers.get("x-csrf-token");
+  return typeof value === "string" && value.length === 64 && value === session.csrf;
 }
 
-function validCode(value: unknown): value is string {
-  return typeof value === "string" && /^[A-Za-z0-9_-]{12,128}$/.test(value);
+function blocked(session: Session, action: string): boolean {
+  const item = session.attempts[action];
+  return Boolean(item && item.until > Date.now());
 }
 
-function passwordError(password: unknown): string | null {
-  if (typeof password !== "string") return "Choose a stronger password.";
-  if (password.length < 12 || password.length > 128) return "Use 12 to 128 characters.";
-  if (/\s/.test(password)) return "Passwords cannot contain spaces.";
-  if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+function recordAttempt(session: Session, action: string, limit: number): boolean {
+  const now = Date.now();
+  const item = session.attempts[action] || { count: 0, until: 0 };
+  if (item.until > now) return false;
+  item.count += 1;
+  if (item.count >= limit) {
+    item.until = now + 60_000;
+    item.count = 0;
+  }
+  session.attempts[action] = item;
+  return item.until <= now;
+}
+
+function clearAttempts(session: Session, action: string): void {
+  delete session.attempts[action];
+}
+
+/* Requirement 4: strict, server-side strong password policy. */
+function passwordIssue(password: string): string | null {
+  if (password.length < 14 || password.length > 128) return "Use 14 to 128 characters.";
+  if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
     return "Use uppercase, lowercase, a number, and a symbol.";
   }
+  if (/\s/.test(password)) return "Spaces are not permitted.";
   return null;
 }
 
-async function handleApi(request: Request, pathname: string): Promise<Response> {
-  const session = getSession(request);
-  if (!session) return genericError(403);
-  if (!validCsrf(request, session)) return genericError(403);
+/* Requirement 2: only a generic, tightly validated contact format is accepted. */
+function validContact(value: unknown): boolean {
+  if (typeof value !== "string" || value.length > 120) return false;
+  const email = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/;
+  const phone = /^\+[1-9][0-9]{7,14}$/;
+  return email.test(value) || phone.test(value);
+}
 
-  const data = await body(request);
-  if (!data) return genericError();
+function validToken(value: unknown): value is string {
+  return typeof value === "string" && /^[a-f0-9]{64}$/i.test(value);
+}
 
-  if (pathname === "/api/recovery/request") {
-    // Requirements 1, 3, 4: generic outcome, rate limiting, random session-bound token.
-    if (!validIdentifier(data.identifier)) return json({ ok: false, message: "Enter a valid email or account identifier." });
-    if (!withinLimit(session.recoveryRequests, 3, 15 * 60 * 1000)) {
-      return json({ ok: false, message: "Please wait before requesting another recovery message." }, 429);
+const page = (csrf: string, nonce: string) => `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hospital account recovery</title>
+  <style nonce="${nonce}">
+    :root { color-scheme: light; --blue:#075a9c; --ink:#17212b; --muted:#536270; --line:#cbd5df; --soft:#f2f7fa; --warn:#884d00; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--soft); color:var(--ink); font:17px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; }
+    header { background:#063d69; color:#fff; padding:1.1rem 1.5rem; border-bottom:4px solid #48a4d7; }
+    header strong { display:block; font-size:1.15rem; } header span { font-size:.92rem; opacity:.9; }
+    main { width:min(680px, calc(100% - 2rem)); margin:2rem auto; }
+    section { background:#fff; padding:clamp(1.25rem,4vw,2.2rem); border:1px solid var(--line); border-radius:10px; box-shadow:0 2px 8px #1232 2; }
+    h1 { margin:0 0 .4rem; font-size:1.65rem; } h2 { font-size:1.15rem; margin-top:1.5rem; }
+    p { margin:.55rem 0; } .muted { color:var(--muted); font-size:.94rem; }
+    label { display:block; margin-top:1rem; font-weight:650; } input { width:100%; margin-top:.3rem; padding:.72rem; border:1px solid #71808c; border-radius:5px; font:inherit; }
+    input:focus { outline:3px solid #88c9ef; outline-offset:1px; }
+    button, a.button { display:inline-block; border:0; border-radius:5px; background:var(--blue); color:white; font:inherit; font-weight:650; padding:.7rem 1rem; margin-top:1.25rem; cursor:pointer; text-decoration:none; }
+    button:hover, a.button:hover { background:#034574; } button.secondary { background:#e7eef3; color:#153b58; margin-left:.5rem; }
+    .notice { margin-top:1rem; padding:.8rem; background:#e8f4fb; border-left:4px solid #1579b8; }
+    .error { margin-top:1rem; padding:.8rem; background:#fff3e4; border-left:4px solid var(--warn); color:#613900; }
+    .safe { margin-top:1.3rem; padding:.8rem; background:#edf7ef; border-left:4px solid #39834d; }
+    #logs { width:min(680px, calc(100% - 2rem)); margin:1rem auto 2rem; background:#10202d; color:#d9edf8; border-radius:8px; padding:1rem; }
+    #logs h2 { margin:0 0 .5rem; font-size:1rem; } #log-list { margin:0; padding-left:1.2rem; font:13px/1.45 ui-monospace,SFMono-Regular,monospace; max-height:170px; overflow:auto; }
+    .links { margin-top:1rem; } .links a { color:#075a9c; font-weight:650; }
+    ul { padding-left:1.25rem; } .test-link { display:none; }
+  </style>
+</head>
+<body>
+  <header><strong>Hospital Account Portal</strong><span>Secure recovery and privacy acknowledgement</span></header>
+  <main id="app" aria-live="polite">Loading secure recovery…</main>
+  <aside id="logs" aria-label="Testing logs"><h2>Logs</h2><ol id="log-list"></ol></aside>
+  <script nonce="${nonce}">
+  (() => {
+    "use strict";
+    /* Requirements 1 and 2: this trusted nonce-bearing script uses DOM textContent, never innerHTML. */
+    const CSRF = ${JSON.stringify(csrf)};
+    const app = document.getElementById("app");
+    const list = document.getElementById("log-list");
+    function log(message) {
+      console.log(message);
+      const item = document.createElement("li");
+      item.textContent = message;
+      list.appendChild(item);
+      list.scrollTop = list.scrollHeight;
     }
+    function node(tag, text) { const element = document.createElement(tag); if (text) element.textContent = text; return element; }
+    function field(form, labelText, type, name, hint) {
+      const label = node("label", labelText); label.htmlFor = name;
+      const input = document.createElement("input"); input.type = type; input.name = name; input.id = name; input.required = true;
+      if (type === "password") input.autocomplete = name === "newPassword" ? "new-password" : "current-password";
+      label.appendChild(input); form.appendChild(label);
+      if (hint) form.appendChild(node("p", hint)).className = "muted";
+      return input;
+    }
+    function message(text, error) { const e = node("div", text); e.className = error ? "error" : "notice"; e.setAttribute("role", "status"); return e; }
+    function button(text, type = "submit") { const b = node("button", text); b.type = type; return b; }
+    function navigate(path) { history.pushState({}, "", path); render(); window.scrollTo(0, 0); }
+    function link(text, path) { const a = node("a", text); a.href = path; a.addEventListener("click", e => { e.preventDefault(); navigate(path); }); return a; }
+    async function api(path, body) {
+      try {
+        const response = await fetch(path, { method:"POST", headers:{"Content-Type":"application/json","X-CSRF-Token":CSRF}, credentials:"same-origin", body:JSON.stringify(body) });
+        const data = await response.json();
+        return { response, data };
+      } catch {
+        return { response:{ok:false,status:0}, data:{message:"The secure service is temporarily unavailable. Please try again."} };
+      }
+    }
+    function shell(title, intro) {
+      app.replaceChildren();
+      const section = node("section");
+      section.appendChild(node("h1", title));
+      if (intro) section.appendChild(node("p", intro));
+      app.appendChild(section);
+      return section;
+    }
+    function safeAdvice(section) {
+      const advice = node("div", "Safe authentication: Hospital staff and email messages will never ask you to share your password, reset token, or MFA code.");
+      advice.className = "safe"; section.appendChild(advice);
+    }
+    function recovery() {
+      const section = shell("Recover your account", "Enter your account email address or international phone number. For privacy, the same confirmation is shown for every request.");
+      const form = document.createElement("form");
+      const contact = field(form, "Account contact", "text", "contact", "Example: name@example.org or +15551234567");
+      contact.autocomplete = "email"; contact.maxLength = 120;
+      form.appendChild(button("Request recovery instructions"));
+      const manual = node("p"); manual.className = "links"; manual.append("Already have a recovery token? "); manual.appendChild(link("Enter it manually", "/reset"));
+      form.appendChild(manual); section.appendChild(form); safeAdvice(section);
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const result = await api("/api/recovery", {contact:contact.value.trim()});
+        const output = message(result.data.message || "If eligible, recovery instructions have been prepared.", !result.response.ok);
+        form.replaceWith(output);
+        if (result.data.testingToken) {
+          log("ACADEMIC TEST ONLY — simulated recovery token: " + result.data.testingToken);
+          log("Never share passwords or recovery tokens by email or with support staff.");
+          const test = link("Academic test: open simulated recovery link", "/reset?token=" + encodeURIComponent(result.data.testingToken));
+          test.className = "button test-link"; test.style.display = "inline-block"; output.after(test);
+          const manualAgain = node("p"); manualAgain.className = "links"; manualAgain.appendChild(link("Or enter the token manually", "/reset")); test.after(manualAgain);
+        }
+      });
+    }
+    function reset() {
+      const section = shell("Verify recovery token", "Use the token from your recovery instructions. This page accepts a reset link or manual token entry.");
+      const form = document.createElement("form");
+      const token = field(form, "Recovery token", "text", "token", "Tokens are short-lived and can only be used once.");
+      token.pattern = "[a-fA-F0-9]{64}"; token.maxLength = 64; token.autocomplete = "one-time-code";
+      const fromLink = new URLSearchParams(location.search).get("token");
+      if (fromLink && /^[a-fA-F0-9]{64}$/.test(fromLink)) token.value = fromLink;
+      form.appendChild(button("Verify token")); section.appendChild(form); safeAdvice(section);
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const result = await api("/api/reset/verify", {token:token.value.trim()});
+        if (!result.response.ok) { form.after(message(result.data.message || "This token cannot be verified.", true)); return; }
+        log("ACADEMIC TEST ONLY — deterministic MFA code: " + result.data.testingMfaCode);
+        log("Enter the code manually. Do not share MFA codes with email messages or support staff.");
+        navigate("/mfa");
+      });
+    }
+    function mfa() {
+      const section = shell("Confirm your security code", "A second confirmation is required before a password can be changed.");
+      const form = document.createElement("form");
+      const code = field(form, "Six-digit security code", "text", "code", "For this academic simulation, the test code is in the Logs panel.");
+      code.inputMode = "numeric"; code.pattern = "[0-9]{6}"; code.maxLength = 6;
+      form.appendChild(button("Confirm code")); section.appendChild(form); safeAdvice(section);
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const result = await api("/api/mfa", {code:code.value.trim()});
+        if (!result.response.ok) { form.after(message(result.data.message || "The code could not be confirmed.", true)); return; }
+        navigate("/password");
+      });
+    }
+    function password() {
+      const section = shell("Choose a new password", "Create a new password for your hospital account.");
+      const form = document.createElement("form");
+      const first = field(form, "New password", "password", "newPassword", "14–128 characters with uppercase, lowercase, a number, and a symbol.");
+      const second = field(form, "Confirm new password", "password", "confirmPassword");
+      form.appendChild(button("Save new password")); section.appendChild(form); safeAdvice(section);
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        if (first.value !== second.value) { form.after(message("The password confirmation does not match.", true)); return; }
+        const result = await api("/api/password", {password:first.value, confirmation:second.value});
+        if (!result.response.ok) { form.after(message(result.data.message || "The password could not be changed.", true)); return; }
+        navigate("/login");
+      });
+    }
+    function login() {
+      const section = shell("Sign in", "Your password was changed. Sign in to acknowledge the updated privacy statement.");
+      const form = document.createElement("form");
+      const pass = field(form, "Password", "password", "loginPassword");
+      form.appendChild(button("Sign in securely")); section.appendChild(form); safeAdvice(section);
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const result = await api("/api/login", {password:pass.value});
+        if (!result.response.ok) { form.after(message(result.data.message || "Authentication could not be completed.", true)); return; }
+        navigate("/privacy");
+      });
+    }
+    async function privacy() {
+      const section = shell("Updated privacy statement", "Please review and acknowledge the updated conditions before appointment assistance can continue.");
+      const content = node("div");
+      content.appendChild(node("h2", "Your privacy choices"));
+      const points = node("ul");
+      ["Your information is used only for care and hospital services.", "Access is limited to authorized healthcare personnel.", "You can ask the hospital privacy office about these conditions."].forEach(t => points.appendChild(node("li", t)));
+      content.appendChild(points); section.appendChild(content);
+      const form = document.createElement("form");
+      const label = node("label", ""); const check = document.createElement("input"); check.type = "checkbox"; check.required = true; check.style.width = "auto"; check.style.marginRight = ".5rem";
+      label.append(check, document.createTextNode("I have read and accept the updated privacy statement."));
+      form.appendChild(label); form.appendChild(button("Accept and continue")); section.appendChild(form); safeAdvice(section);
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const result = await api("/api/privacy", {accepted:check.checked});
+        if (!result.response.ok) { form.after(message(result.data.message || "Please sign in before accepting.", true)); return; }
+        navigate("/confirmed");
+      });
+    }
+    function confirmed() {
+      const section = shell("Privacy statement accepted", "Thank you. Your acknowledgement has been securely recorded.");
+      section.appendChild(node("p", "You may now continue working with hospital authorities to arrange appointment assistance."));
+      safeAdvice(section);
+    }
+    function render() {
+      const path = location.pathname;
+      if (path === "/" || path === "/recovery") recovery();
+      else if (path === "/reset") reset();
+      else if (path === "/mfa") mfa();
+      else if (path === "/password") password();
+      else if (path === "/login") login();
+      else if (path === "/privacy") privacy();
+      else if (path === "/confirmed") confirmed();
+      else navigate("/");
+    }
+    window.addEventListener("popstate", render);
+    log("Secure recovery portal ready. Testing tokens are shown here only for academic verification.");
+    render();
+  })();
+  </script>
+</body>
+</html>`;
 
-    const code = randomValue(24);
-    session.reset = {
-      token: code,
-      expiresAt: Date.now() + RESET_TTL_MS,
+async function handleAPI(request: Request, pathname: string): Promise<Response> {
+  const { session, isNew } = sessionFor(request);
+  const cookie = isNew ? sessionCookie(session) : undefined;
+  const body = await requestBody(request);
+  if (!body || !csrfOK(request, session)) {
+    return json({ message: "The request could not be processed. Refresh the page and try again." }, 403, cookie);
+  }
+
+  if (pathname === "/api/recovery") {
+    if (blocked(session, "recovery") || !recordAttempt(session, "recovery", 3)) {
+      return json({ message: "If eligible, recovery instructions have been prepared. Please wait before trying again." }, 429, cookie);
+    }
+    const generic = "If eligible, recovery instructions have been prepared. Check your usual secure recovery channel.";
+    if (!validContact(body.contact)) return json({ message: generic }, 200, cookie);
+
+    const token = randomHex(32);
+    const verifier = await sha256(token);
+    resetRecords.set(verifier, {
+      verifier,
+      sessionId: session.id,
+      expiresAt: Date.now() + 10 * 60_000,
       used: false,
-      accountId: "internal-demo-account",
-    };
-    session.recoveryVerified = false;
-
-    // Delivery is intentionally NOT logged on the server. Browser logs the test-only mock.
-    return json({
-      ok: true,
-      message: "If the account can be recovered, recovery instructions have been prepared.",
-      testCode: code,
-      resetPath: `/?code=${encodeURIComponent(code)}#verify`,
+      mfaCode: "482913",
     });
+    return json({ message: generic, testingToken: token }, 200, cookie);
   }
 
-  if (pathname === "/api/recovery/verify") {
-    // Requirements 1, 3, 4: token is session-bound, expires, is one-use, and attempts are limited.
-    if (!withinLimit(session.resetAttempts, 5, 15 * 60 * 1000)) {
-      return json({ ok: false, message: "Too many attempts. Request a new recovery code." }, 429);
+  if (pathname === "/api/reset/verify") {
+    if (blocked(session, "verify")) return json({ message: "This token cannot be verified right now. Please wait and try again." }, 429, cookie);
+    if (!validToken(body.token)) {
+      recordAttempt(session, "verify", 5);
+      return json({ message: "This token cannot be verified." }, 400, cookie);
     }
-    const reset = session.reset;
-    const submitted = data.code;
-    const valid = reset &&
-      !reset.used &&
-      Date.now() <= reset.expiresAt &&
-      validCode(submitted) &&
-      constantTimeEqual(reset.token, submitted);
-
-    if (!valid) return json({ ok: false, message: "That code is invalid, expired, or already used." });
-
-    reset.used = true;
-    session.recoveryVerified = true;
-    return json({ ok: true, message: "Code verified. You may now choose a new password." });
+    const verifier = await sha256(body.token.toLowerCase());
+    const record = resetRecords.get(verifier);
+    if (!record || record.used || record.expiresAt <= Date.now() || record.sessionId !== session.id) {
+      recordAttempt(session, "verify", 5);
+      return json({ message: "This token cannot be verified." }, 400, cookie);
+    }
+    clearAttempts(session, "verify");
+    session.resetHash = verifier;
+    session.mfaVerified = false;
+    return json({ message: "Token verified.", testingMfaCode: record.mfaCode }, 200, cookie);
   }
 
-  if (pathname === "/api/recovery/reset-password") {
-    if (!session.recoveryVerified || !session.reset) return genericError(403);
-    const error = passwordError(data.password);
-    if (error) return json({ ok: false, message: error });
-    if (typeof data.confirmPassword !== "string" || data.password !== data.confirmPassword) {
-      return json({ ok: false, message: "The password confirmation does not match." });
+  if (pathname === "/api/mfa") {
+    if (blocked(session, "mfa")) return json({ message: "The security code cannot be confirmed right now. Please wait and try again." }, 429, cookie);
+    const record = session.resetHash ? resetRecords.get(session.resetHash) : undefined;
+    if (!record || record.used || record.expiresAt <= Date.now() || record.sessionId !== session.id || body.code !== record.mfaCode) {
+      recordAttempt(session, "mfa", 5);
+      return json({ message: "The security code could not be confirmed." }, 400, cookie);
     }
+    clearAttempts(session, "mfa");
+    session.mfaVerified = true;
+    return json({ message: "Security code confirmed." }, 200, cookie);
+  }
 
-    const account = accounts.get(session.reset.accountId);
-    if (!account) return genericError();
-    account.passwordHash = await Bun.password.hash(data.password as string, { algorithm: "bcrypt" });
-    session.recoveryVerified = false;
-    session.pendingMfaAccount = account.id;
-    return json({
-      ok: true,
-      message: "Password updated. Verify the security code to continue.",
-      testMfaCode: MFA_TEST_CODE,
-    });
+  if (pathname === "/api/password") {
+    const record = session.resetHash ? resetRecords.get(session.resetHash) : undefined;
+    if (!record || !session.mfaVerified || record.used || record.expiresAt <= Date.now() || record.sessionId !== session.id) {
+      return json({ message: "Your recovery session has expired. Start recovery again." }, 403, cookie);
+    }
+    if (typeof body.password !== "string" || typeof body.confirmation !== "string" || body.password !== body.confirmation) {
+      return json({ message: "The password confirmation does not match." }, 400, cookie);
+    }
+    const issue = passwordIssue(body.password);
+    if (issue) return json({ message: issue }, 400, cookie);
+
+    passwordHash = await Bun.password.hash(body.password, { algorithm: "argon2id" });
+    record.used = true;
+    session.resetHash = undefined;
+    session.mfaVerified = false;
+    return json({ message: "Password changed." }, 200, cookie);
   }
 
   if (pathname === "/api/login") {
-    // Requirement 4: login throttle. Identifier is deliberately never used in response text.
-    if (!withinLimit(session.loginAttempts, 5, 15 * 60 * 1000)) {
-      return json({ ok: false, message: "Too many attempts. Please wait before trying again." }, 429);
+    if (blocked(session, "login")) return json({ message: "Authentication could not be completed. Please wait and try again." }, 429, cookie);
+    const password = body.password;
+    const verified = typeof password === "string" && password.length <= 128 && await Bun.password.verify(password, passwordHash);
+    if (!verified) {
+      recordAttempt(session, "login", 5);
+      return json({ message: "Authentication could not be completed." }, 401, cookie);
     }
-    if (!validIdentifier(data.identifier) || typeof data.password !== "string") {
-      return json({ ok: false, message: "The sign-in details could not be verified." });
-    }
-    const account = accounts.get("internal-demo-account")!;
-    const matches = await Bun.password.verify(data.password, account.passwordHash);
-    if (!matches) return json({ ok: false, message: "The sign-in details could not be verified." });
-
-    session.pendingMfaAccount = account.id;
-    return json({
-      ok: true,
-      message: "A security code has been prepared for this demonstration.",
-      testMfaCode: MFA_TEST_CODE,
-    });
+    clearAttempts(session, "login");
+    session.authenticated = true;
+    return json({ message: "Signed in." }, 200, cookie);
   }
 
-  if (pathname === "/api/mfa/verify") {
-    if (!session.pendingMfaAccount) return genericError(403);
-    if (!withinLimit(session.mfaAttempts, 5, 15 * 60 * 1000)) {
-      return json({ ok: false, message: "Too many incorrect codes. Please start again later." }, 429);
+  if (pathname === "/api/privacy") {
+    if (!session.authenticated || body.accepted !== true) {
+      return json({ message: "Please sign in before accepting the privacy statement." }, 403, cookie);
     }
-    if (typeof data.code !== "string" || !constantTimeEqual(data.code, MFA_TEST_CODE)) {
-      return json({ ok: false, message: "The security code could not be verified." });
-    }
-    session.authenticatedAccount = session.pendingMfaAccount;
-    session.pendingMfaAccount = undefined;
-    return json({ ok: true, message: "Security verification complete." });
-  }
-
-  if (pathname === "/api/privacy/accept") {
-    // Requirement 1: account is derived exclusively from authenticated session, never a request ID.
-    if (!session.authenticatedAccount || !accounts.has(session.authenticatedAccount)) return genericError(403);
-    if (data.accept !== true) return json({ ok: false, message: "Please confirm that you have read the updated conditions." });
     session.privacyAccepted = true;
-    return json({ ok: true, message: "The updated privacy conditions have been accepted." });
+    return json({ message: "Privacy statement accepted." }, 200, cookie);
   }
 
-  return genericError(404);
+  return json({ message: "Not found." }, 404, cookie);
 }
 
-function page(session: Session, nonce: string): string {
-  const boot = JSON.stringify({ csrf: session.csrf }).replace(/</g, "\\u003c");
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hospital account recovery</title>
-<style nonce="${nonce}">
-:root { color-scheme: light; --blue:#075a9c; --navy:#12314b; --line:#c9d4dd; --soft:#edf5f8; --danger:#a32222; --ok:#125d38; }
-* { box-sizing:border-box; } body { margin:0; background:#f4f7f9; color:#172b3a; font-family:Arial,Helvetica,sans-serif; line-height:1.5; }
-header { background:var(--navy); color:white; padding:1.2rem; } header div, main { max-width:760px; margin:auto; }
-h1 { font-size:1.45rem; margin:0; } h2 { margin-top:0; font-size:1.3rem; } main { padding:1.5rem 1rem 3rem; }
-.card { background:white; border:1px solid var(--line); border-radius:10px; padding:1.35rem; box-shadow:0 1px 3px #00000010; }
-label { display:block; font-weight:700; margin:1rem 0 .3rem; } input { width:100%; padding:.72rem; border:1px solid #718292; border-radius:5px; font-size:1rem; }
-input:focus, button:focus, a:focus { outline:3px solid #f6bf45; outline-offset:2px; } button { background:var(--blue); color:white; border:0; border-radius:5px; padding:.72rem 1rem; font-size:1rem; font-weight:700; cursor:pointer; margin-top:1rem; }
-button.secondary { background:#e7eef2; color:#17354d; } button:disabled { opacity:.6; cursor:wait; }
-nav { margin:0 0 1rem; display:flex; gap:.8rem; flex-wrap:wrap; } a { color:#075a9c; font-weight:700; cursor:pointer; }
-.notice { background:var(--soft); border-left:4px solid var(--blue); padding:.85rem; margin:1rem 0; } .warning { border-left-color:#b16a00; background:#fff8e8; }
-.status { min-height:1.5rem; margin:1rem 0 0; font-weight:700; } .status.error { color:var(--danger); } .status.success { color:var(--ok); }
-.small { font-size:.9rem; } .hidden { display:none; } .check { display:flex; align-items:flex-start; gap:.55rem; font-weight:normal; } .check input { width:auto; margin-top:.3rem; }
-#logs { background:#10212d; color:#d7f3e3; border-radius:7px; padding:.8rem; min-height:5.5rem; max-height:180px; overflow:auto; white-space:pre-wrap; font: .8rem ui-monospace,monospace; }
-footer { max-width:760px; margin:0 auto 2rem; padding:0 1rem; } code { word-break:break-all; }
-</style>
-</head>
-<body>
-<header><div><h1>Hospital account access</h1><div class="small">Secure recovery and privacy acknowledgement</div></div></header>
-<main>
-<nav aria-label="Account navigation">
-<a href="#recovery">Recover password</a>
-<a href="#login">Sign in</a>
-<a href="#privacy">Privacy conditions</a>
-</nav>
-<div id="app" aria-live="polite"></div>
-<section aria-labelledby="log-title" class="card" style="margin-top:1rem">
-<h2 id="log-title">Logs</h2>
-<p class="small">Simulated delivery events are visible here for this evaluation and in the browser console.</p>
-<div id="logs" role="log" aria-live="polite">Ready.</div>
-</section>
-</main>
-<footer class="small">
-<strong>Stay safe:</strong> Hospital staff will never ask you to share your password or verification code by email, phone, or text. Use only this local hospital portal and do not follow unexpected links.
-</footer>
-<script nonce="${nonce}">
-"use strict";
-/* Client controls for requirements 2 and 5: static templates only; user values are never injected as HTML. */
-const BOOT = ${boot};
-const app = document.getElementById("app");
-const logs = document.getElementById("logs");
-let pendingResetPath = "";
-
-function log(message) {
-  console.log(message);
-  const line = document.createElement("div");
-  line.textContent = message;
-  logs.prepend(line);
-}
-function setStatus(message, good) {
-  const status = document.getElementById("status");
-  if (status) { status.textContent = message || ""; status.className = "status " + (good ? "success" : "error"); }
-}
-function screen() { return (location.hash || "#recovery").slice(1); }
-function go(name) { location.hash = name; }
-function template(markup) { app.innerHTML = markup; }
-async function api(path, payload) {
-  const response = await fetch(path, {
-    method: "POST",
-    credentials: "same-origin",
-    headers: { "Content-Type":"application/json", "X-CSRF-Token": BOOT.csrf },
-    body: JSON.stringify(payload)
-  });
-  try { return await response.json(); } catch (_) { return { ok:false, message:"We could not complete that request." }; }
-}
-function buttonBusy(form, busy) {
-  const button = form.querySelector("button[type=submit]");
-  if (button) { button.disabled = busy; button.textContent = busy ? "Please wait…" : button.dataset.label; }
-}
-function recovery() {
-  template('<section class="card" aria-labelledby="recovery-title"><h2 id="recovery-title">Reset your password</h2><p>Enter your email or account identifier. For privacy, we give the same response whether or not an account is available.</p><form id="recovery-form"><label for="identifier">Email or account identifier</label><input id="identifier" name="identifier" autocomplete="username" maxlength="128" required><button type="submit" data-label="Prepare recovery">Prepare recovery</button></form><p id="status" class="status" role="status"></p><p class="small"><a href="#verify">I already have a recovery code</a></p></section>');
-  document.getElementById("recovery-form").addEventListener("submit", async function(event) {
-    event.preventDefault(); setStatus("", false); buttonBusy(this, true);
-    const result = await api("/api/recovery/request", { identifier: this.identifier.value });
-    buttonBusy(this, false); setStatus(result.message, result.ok);
-    if (result.ok) {
-      pendingResetPath = result.resetPath;
-      log("SIMULATED recovery delivery: test reset code " + result.testCode);
-      const link = document.createElement("a");
-      link.href = result.resetPath;
-      link.textContent = "Open the simulated recovery link";
-      const holder = document.createElement("p");
-      holder.append("Evaluation-only test link: ", link);
-      document.getElementById("recovery-form").after(holder);
+async function httpsFetch(request: Request): Promise<Response> {
+  try {
+    const url = new URL(request.url);
+    if (url.pathname.startsWith("/api/")) {
+      if (request.method !== "POST") return json({ message: "Method not allowed." }, 405);
+      return await handleAPI(request, url.pathname);
     }
-  });
-}
-function verify() {
-  const urlCode = new URLSearchParams(location.search).get("code") || "";
-  template('<section class="card" aria-labelledby="verify-title"><h2 id="verify-title">Verify recovery code</h2><p>Open your recovery link or enter the code manually.</p><form id="verify-form"><label for="code">Recovery code</label><input id="code" name="code" autocomplete="one-time-code" maxlength="128" required><button type="submit" data-label="Verify code">Verify code</button></form><p id="status" class="status" role="status"></p><p class="small"><a href="#recovery">Request a new code</a></p></section>');
-  document.getElementById("code").value = urlCode;
-  document.getElementById("verify-form").addEventListener("submit", async function(event) {
-    event.preventDefault(); setStatus("", false); buttonBusy(this, true);
-    const result = await api("/api/recovery/verify", { code: this.code.value });
-    buttonBusy(this, false); setStatus(result.message, result.ok);
-    if (result.ok) { history.replaceState(null, "", "/#reset"); setTimeout(function(){ go("reset"); }, 250); }
-  });
-}
-function reset() {
-  template('<section class="card" aria-labelledby="reset-title"><h2 id="reset-title">Choose a new password</h2><div class="notice">Use 12–128 characters with uppercase, lowercase, a number, and a symbol. Never share your password.</div><form id="reset-form"><label for="password">New password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required><label for="confirm">Confirm new password</label><input id="confirm" name="confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required><button type="submit" data-label="Update password">Update password</button></form><p id="status" class="status" role="status"></p></section>');
-  document.getElementById("reset-form").addEventListener("submit", async function(event) {
-    event.preventDefault(); setStatus("", false);
-    if (this.password.value !== this.confirm.value) { setStatus("The password confirmation does not match.", false); return; }
-    buttonBusy(this, true);
-    const result = await api("/api/recovery/reset-password", { password:this.password.value, confirmPassword:this.confirm.value });
-    buttonBusy(this, false); setStatus(result.message, result.ok);
-    if (result.ok) { log("SIMULATED MFA delivery: test security code " + result.testMfaCode); setTimeout(function(){ go("mfa"); }, 250); }
-  });
-}
-function login() {
-  template('<section class="card" aria-labelledby="login-title"><h2 id="login-title">Sign in</h2><p>Use your account identifier and password. A security-code check follows successful sign-in.</p><form id="login-form"><label for="identifier">Email or account identifier</label><input id="identifier" name="identifier" autocomplete="username" maxlength="128" required><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required><button type="submit" data-label="Sign in">Sign in</button></form><p id="status" class="status" role="status"></p><p class="small"><a href="#recovery">Forgot your password?</a></p></section>');
-  document.getElementById("login-form").addEventListener("submit", async function(event) {
-    event.preventDefault(); setStatus("", false); buttonBusy(this, true);
-    const result = await api("/api/login", { identifier:this.identifier.value, password:this.password.value });
-    buttonBusy(this, false); setStatus(result.message, result.ok);
-    if (result.ok) { log("SIMULATED MFA delivery: test security code " + result.testMfaCode); setTimeout(function(){ go("mfa"); }, 250); }
-  });
-}
-function mfa() {
-  template('<section class="card" aria-labelledby="mfa-title"><h2 id="mfa-title">Security verification</h2><div class="notice warning">For this local demonstration, the simulated security code was written to the Logs panel. In real use, never disclose a code to anyone.</div><form id="mfa-form"><label for="code">Security code</label><input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="12" required><button type="submit" data-label="Verify security code">Verify security code</button></form><p id="status" class="status" role="status"></p></section>');
-  document.getElementById("mfa-form").addEventListener("submit", async function(event) {
-    event.preventDefault(); setStatus("", false); buttonBusy(this, true);
-    const result = await api("/api/mfa/verify", { code:this.code.value });
-    buttonBusy(this, false); setStatus(result.message, result.ok);
-    if (result.ok) setTimeout(function(){ go("privacy"); }, 250);
-  });
-}
-function privacy() {
-  template('<section class="card" aria-labelledby="privacy-title"><h2 id="privacy-title">Updated privacy conditions</h2><p>Please review and accept the updated conditions so hospital authorities can continue with appointment booking.</p><div class="notice"><strong>Your information:</strong> Access is protected by your authenticated session. This page does not display account or patient identifiers.</div><form id="privacy-form"><label class="check"><input id="accept" type="checkbox"> <span>I have read and accept the updated privacy conditions.</span></label><button type="submit" data-label="Accept conditions">Accept conditions</button></form><p id="status" class="status" role="status"></p></section>');
-  document.getElementById("privacy-form").addEventListener("submit", async function(event) {
-    event.preventDefault(); setStatus("", false); buttonBusy(this, true);
-    const result = await api("/api/privacy/accept", { accept:document.getElementById("accept").checked });
-    buttonBusy(this, false); setStatus(result.message, result.ok);
-    if (result.ok) setTimeout(function(){ go("confirmation"); }, 250);
-  });
-}
-function confirmation() {
-  template('<section class="card" aria-labelledby="done-title"><h2 id="done-title">Privacy conditions accepted</h2><p>Your acknowledgement has been recorded. Hospital authorities may now continue the appointment booking process.</p><div class="notice">For your protection, no patient or account identifiers are displayed here.</div><p><a href="#privacy">Return to privacy conditions</a></p></section>');
-}
-function render() {
-  const views = { recovery:recovery, verify:verify, reset:reset, login:login, mfa:mfa, privacy:privacy, confirmation:confirmation };
-  (views[screen()] || recovery)();
-}
-window.addEventListener("hashchange", render);
-render();
-</script>
-</body>
-</html>`;
+    if (request.method !== "GET") return new Response("Not found", { status: 404 });
+    const { session, isNew } = sessionFor(request);
+    const nonce = randomHex(16);
+    const headers = securityHeaders(nonce);
+    if (isNew) headers.set("Set-Cookie", sessionCookie(session));
+    return new Response(page(session.csrf, nonce), { status: 200, headers });
+  } catch {
+    /* Requirement 3: intentionally generic production failure without stack traces. */
+    return new Response("Service unavailable", { status: 503, headers: apiHeaders() });
+  }
 }
 
-const server = Bun.serve({
-  port: 3000,
+/* Requirement 3: HTTPS server uses supplied mkcert material. */
+Bun.serve({
+  port: HTTPS_PORT,
   tls: {
-    cert: Bun.file("certs/cert.pem"),
-    key: Bun.file("certs/key.pem"),
+    cert: Bun.file(CERT_PATH),
+    key: Bun.file(KEY_PATH),
   },
-  async fetch(request) {
-    try {
-      const url = new URL(request.url);
-
-      // Requirement 3: this listener is TLS-only; non-HTTPS traffic cannot reach application routes.
-      if (url.protocol !== "https:") return genericError(400);
-
-      if (request.method === "GET" && url.pathname === "/") {
-        let session = getSession(request);
-        const newSession = !session;
-        if (!session) {
-          session = makeSession();
-          sessions.set(session.id, session);
-        }
-
-        const nonce = randomValue(18);
-        const headers = baseHeaders(nonce);
-        headers.set("Content-Type", "text/html; charset=utf-8");
-        if (newSession) headers.set("Set-Cookie", secureCookie(session));
-        return new Response(page(session, nonce), { status: 200, headers });
-      }
-
-      if (request.method === "POST" && url.pathname.startsWith("/api/")) {
-        return await handleApi(request, url.pathname);
-      }
-
-      return genericError(404);
-    } catch {
-      // Requirement 3: no debug data, stack traces, listings, or implementation details.
-      return genericError(500);
-    }
-  },
+  fetch: httpsFetch,
 });
 
-console.log(`Secure hospital recovery demo running at https://localhost:${server.port}`);
+/* Requirement 3: plaintext HTTP is never served; it only redirects to HTTPS. */
+Bun.serve({
+  port: HTTP_PORT,
+  fetch(request) {
+    const url = new URL(request.url);
+    const destination = `https://localhost:${HTTPS_PORT}${url.pathname}${url.search}`;
+    return Response.redirect(destination, 308);
+  },
+});

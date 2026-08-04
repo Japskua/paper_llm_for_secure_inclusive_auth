@@ -1,14 +1,16 @@
-# TASKER REPORT — Iteration 8 · Step 22
+# TASKER REPORT — Iteration 3 · Step 7
 
 ## SUMMARY
-- Raw tasks from Tasker: 1
-- Effective task_list after retention: 1
+- Raw tasks from Tasker: 3
+- Effective task_list after retention: 3
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Update `/api/recovery/request` to enforce the result of `allowed(\"request\", request, \"generic\", 3)`: when it is false, return HTTP 429 with a generic non-enumerating response; otherwise continue the normal mock recovery response."]}
+{"task_list":["Modify `/api/reset/verify` so a successfully verified reset token is immediately consumed and cannot be submitted again; retain only the necessary server-side, session-bound recovery/MFA authorization state for `/api/mfa` and `/api/password`.","Replace `test.style.display = \"inline-block\"` with a CSP-compatible class-based mechanism. Add a CSS class inside the nonce-bearing stylesheet, such as `.test-link.is-visible { display:inline-block; }`, and reveal the link using `test.classList.add(\"is-visible\")`.","Replace `check.style.width` and `check.style.marginRight` with a predefined CSS class applied to the checkbox, avoiding style-attribute mutations under the strict CSP."]}
 ```
 
 ## PARSED_TASKS
-- Update /api/recovery/request to enforce the result of allowed("request", request, "generic", 3): when it is false, return HTTP 429 with a generic non-enumerating response; otherwise continue the normal mock recovery response.
+- Modify /api/reset/verify so a successfully verified reset token is immediately consumed and cannot be submitted again; retain only the necessary server-side, session-bound recovery/MFA authorization state for /api/mfa and /api/password.
+- Replace test.style.display = "inline-block" with a CSP-compatible class-based mechanism. Add a CSS class inside the nonce-bearing stylesheet, such as .test-link.is-visible { display:inline-block; }, and reveal the link using test.classList.add("is-visible").
+- Replace check.style.width and check.style.marginRight with a predefined CSS class applied to the checkbox, avoiding style-attribute mutations under the strict CSP.

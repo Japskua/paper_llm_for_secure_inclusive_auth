@@ -1,0 +1,134 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 13,
+  "steps_passed": 5,
+  "happy_path_passed": 1,
+  "happy_path_total": 9,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "open recovery page and establish session",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request password recovery",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'reset_token' from 'mockToken'"
+      ],
+      "response_message": "Your secure session has expired. Please refresh the page and try again."
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'mfa_code' from 'mockMfaCode'"
+      ],
+      "response_message": "Your secure session has expired. Please refresh the page and try again."
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Your secure session has expired. Please refresh the page and try again."
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/update-password",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Your secure session has expired. Please refresh the page and try again."
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Your secure session has expired. Please refresh the page and try again."
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Your secure session has expired. Please refresh the page and try again."
+    },
+    {
+      "name": "confirm portal access",
+      "method": "POST",
+      "path": "/api/portal-check",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Your secure session has expired. Please refresh the page and try again."
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Your secure session has expired. Please refresh the page and try again."
+    },
+    {
+      "name": "used recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "old password rejected after reset",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "portal unavailable after logout",
+      "method": "POST",
+      "path": "/api/portal-check",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "unknown recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 13
+}

@@ -1,30 +1,72 @@
 ## SUMMARY
 
-The artifact is a valid single-file Bun application implementing a password recovery, password reset, MFA, login, and privacy-acceptance flow. It uses TLS, session-bound CSRF protection, secure session cookies, bcrypt password hashing, random short-lived single-use reset tokens, throttling, safe DOM output handling, and browser-console simulated delivery logs. The client UI is served directly from the same `app.ts` file without build tooling or external assets.
+The artifact is a single-file Bun/TypeScript password recovery SPA with inline HTML, CSS, and vanilla browser JavaScript. It implements HTTPS, CSP nonces, server-side sessions and CSRF validation, random single-use reset tokens, Argon2id password hashing, throttling, MFA simulation, strong password policy, and a complete privacy-acceptance flow. The recovery link and manual token-entry paths function within the initiating browser session. No critical functional, security, compilation, or single-file compliance defects were identified.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file Bun application:** Server, HTML template, CSS, browser JavaScript, and API logic are all contained in `app.ts`. `/app.js` is generated and served from the in-memory `CLIENT` constant in that same file.
-- **PASS — No frameworks, bundlers, compilers, or external assets:** The implementation uses Bun plus vanilla browser JavaScript. No package imports beyond Node’s built-in crypto compatibility module are used, and no external network resources are loaded.
-- **PASS — TLS usage:** `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`, as required. Requests not identified as HTTPS are rejected.
-- **PASS — HTTPS/security headers:** Responses include HSTS, CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP, and no-store cache controls.
-- **PASS — CSRF protection:** A cryptographically random CSRF token is generated per session, supplied to the same-origin client via a meta tag, and validated on every state-changing POST endpoint.
-- **PASS — Secure session handling:** Session IDs are random; cookies use the `__Host-` prefix, `Secure`, `HttpOnly`, `SameSite=Strict`, `Path=/`, and a finite lifetime. Server-side session expiration is also enforced.
-- **PASS — Access control / IDOR prevention:** Recovery state, reset authorization, MFA state, authentication state, and privacy acceptance are all tied to the current server-side session. No account IDs, usernames, patient information, folders, or user-specific resources are exposed.
-- **PASS — Account enumeration protection:** The recovery-request endpoint returns the same generic response irrespective of whether an identifier corresponds to an eligible account.
-- **PASS — Reset-token security:** Reset tokens are generated using cryptographically secure random bytes, are session-bound, expire after ten minutes, are single-use after verification, and are checked using timing-safe comparison.
-- **PASS — Manual and link-based code verification:** The recovery code is available through a simulated recovery link and can also be entered manually in the verification form.
-- **PASS — Browser-only simulated delivery logs:** The reset token and deterministic MFA code are returned to the client, logged with `console.log` in browser JavaScript, and displayed in the UI’s Logs section for evaluation.
-- **PASS — Brute-force mitigation:** Recovery request, factor verification, reset-code verification, password reset, login, and MFA actions are rate-limited using per-client/per-subject in-memory throttling.
-- **PASS — Password policy:** The server enforces 12–128 characters, disallows whitespace, and requires uppercase, lowercase, numeric, and symbol characters.
-- **PASS — Password hashing:** Passwords are stored only as bcrypt hashes using Bun’s password API with bcrypt cost 12. Plaintext passwords are not persisted in session state.
-- **PASS — MFA flow:** Password reset and login both require a second deterministic demonstration security code before the session becomes authenticated.
-- **PASS — Privacy acceptance authorization:** The privacy-acceptance endpoint requires an authenticated MFA-completed session and requires explicit checkbox confirmation.
-- **PASS — XSS safeguards:** User-controlled values are not interpolated into HTML templates. Client-rendered log and status values use `textContent`; query-string reset codes are assigned to input `.value`; server messages are fixed strings.
-- **PASS — CSP / script safety:** Client JavaScript is served as a same-origin script from `/app.js`; CSP limits scripts to `'self'`, uses a nonce for the inline style block, and blocks objects, framing, and external connections.
-- **PASS — Internal navigation:** Hash-based navigation is implemented for recovery, factor verification, reset, login, MFA, privacy conditions, and confirmation. Server-side access checks still protect sensitive actions regardless of route visibility.
-- **PASS — Safe-authentication guidance:** The UI clearly warns users not to share passwords or verification codes with hospital staff, email, phone, or text contacts.
-- **PASS — Error handling / production behavior:** The server catches unexpected errors and returns a generic response rather than exposing stack traces or debug data.
+- **Single `app.ts` file containing Bun server, HTML, CSS, and JavaScript: PASS**
+  - The complete server implementation and client UI template are contained in the provided `app.ts`. There are no framework imports, bundlers, compilation steps, or external frontend assets.
+
+- **Bun serves the application directly with TLS certificates: PASS**
+  - `Bun.serve` is configured with `tls: { cert: Bun.file(CERT_PATH), key: Bun.file(KEY_PATH) }` using `certs/cert.pem` and `certs/key.pem`.
+  - A separate HTTP listener redirects all plaintext requests to HTTPS using HTTP 308.
+
+- **HTTPS and secure response headers: PASS**
+  - HTTPS page responses include HSTS, CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and `Cache-Control: no-store`.
+  - API responses are also configured with restrictive security headers and no-store caching.
+
+- **CSRF prevention on sensitive actions: PASS**
+  - Each server-side session receives a cryptographically random CSRF token.
+  - Every state-changing API endpoint requires and validates the `X-CSRF-Token` header.
+  - The session cookie is `Secure`, `HttpOnly`, `SameSite=Strict`, and uses the `__Host-` prefix correctly.
+
+- **Access control and workflow enforcement: PASS**
+  - Reset-token verification is bound to the issuing session.
+  - Password changes require recovery MFA verification.
+  - Privacy acceptance requires successful password login plus sign-in MFA.
+  - The protected SPA views query server-side workflow status before rendering privacy-sensitive confirmation content.
+
+- **Password-reset token security: PASS**
+  - Tokens use 32 bytes of cryptographic randomness (`randomHex(32)`).
+  - Only a SHA-256 verifier is retained server-side; raw reset tokens are not stored.
+  - Tokens expire after ten minutes.
+  - Tokens are deleted immediately after successful verification, enforcing single use.
+  - Invalid verification attempts are throttled.
+
+- **Manual reset-token entry and verification-link flow: PASS**
+  - The recovery UI provides a manual “Enter it manually” token path.
+  - The academic simulated recovery link opens `/reset?token=...`.
+  - The reset form pre-populates a valid query-string token and also permits manual entry.
+
+- **Browser console mock delivery/testing values: PASS**
+  - The server returns the academic testing token/MFA values only to the active session.
+  - The browser client logs the recovery token and deterministic MFA codes through `console.log`.
+  - The UI Logs panel mirrors those values for academic testing.
+
+- **XSS/input handling: PASS**
+  - Untrusted user values are not inserted through `innerHTML`.
+  - The client uses `textContent`, `createElement`, and `replaceChildren`.
+  - Contact, token, code, and password inputs are validated server-side.
+  - The CSP allows only nonce-authorized application code and blocks external scripts, objects, frames, images, and external connections.
+
+- **Password security and authentication controls: PASS**
+  - Newly set passwords are hashed with `Bun.password.hash(..., { algorithm: "argon2id" })`.
+  - Passwords are not stored in plaintext.
+  - Password policy requires 14–128 characters with upper/lowercase letters, numbers, and symbols, and rejects spaces.
+  - Login and recovery/MFA verification attempts are throttled.
+  - Password login requires an additional MFA step before authentication is granted.
+
+- **Phishing and social-engineering safety guidance: PASS**
+  - Every major recovery/authentication view displays guidance not to share passwords, reset tokens, or MFA codes with staff or email messages.
+  - The application does not implement outgoing redirects, remote fetches, or externally supplied URLs.
+
+- **No external network calls: PASS**
+  - Client fetches use only same-origin `/api/...` paths.
+  - No third-party scripts, fonts, images, APIs, or assets are referenced.
+
+- **Error handling and production disclosure: PASS**
+  - Server exceptions return a generic `503 Service unavailable` response without stack traces or debug information.
+  - User-facing failures use generic privacy-preserving messages where appropriate.
 
 ## FAILING_ITEMS
 
@@ -32,7 +74,7 @@ The artifact is a valid single-file Bun application implementing a password reco
 
 ## NEW_TASKS
 
-1. No changes required.
+1. No remediation tasks required.
 
 ## DECISION
 

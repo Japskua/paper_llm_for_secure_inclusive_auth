@@ -7,14 +7,14 @@
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Bind recovery requests to a real server-side account lookup, create reset authorization only for the resolved account, and retain generic non-enumerating responses with mock-token disclosure limited to the authorized demo account path.","Resolve the submitted identifier to an account during login and verify the password only against that account; return the existing generic authentication failure for unmatched identifiers.","Enforce reset-token and verified-recovery authorization expiry in the password-reset endpoint, and invalidate recovery state when it has expired.","Enforce a server-side session lifetime on every request and periodically remove expired in-memory session records.","Replace session-only throttling with shared server-side rate limits keyed by identifier/account and client address for recovery requests, login attempts, reset-code verification, and MFA verification.","Require server-confirmed authenticated state before rendering privacy or confirmation hash views, and show an access-required view or redirect when the required state is absent.","Move the Logs card margin declaration from its inline style attribute into the nonce-authorized stylesheet."]}
+{"task_list":["Replace the hard-coded plaintext initial password with a precomputed Argon2id hash or securely supplied runtime secret; no plaintext password may remain in app.ts.","Add a server-side expiration timestamp to each session; session lookup must reject and delete expired records and issue a replacement cookie when a new session is created.","Add a read-only authenticated session-status API endpoint that returns only the current session’s authorized workflow state.","Use server-verified session status to prevent unauthenticated visitors from rendering the /privacy screen.","Render /confirmed only when the current server-side session has privacyAccepted === true; otherwise route the visitor to the appropriate recovery or login screen.","Require and verify MFA or SSO during normal /api/login authentication, with throttling and browser-console-only mock delivery of the deterministic academic code.","Correct the malformed CSS box-shadow declaration so it is valid CSS."]}
 ```
 
 ## PARSED_TASKS
-- Bind recovery requests to a real server-side account lookup, create reset authorization only for the resolved account, and retain generic non-enumerating responses with mock-token disclosure limited to the authorized demo account path.
-- Resolve the submitted identifier to an account during login and verify the password only against that account; return the existing generic authentication failure for unmatched identifiers.
-- Enforce reset-token and verified-recovery authorization expiry in the password-reset endpoint, and invalidate recovery state when it has expired.
-- Enforce a server-side session lifetime on every request and periodically remove expired in-memory session records.
-- Replace session-only throttling with shared server-side rate limits keyed by identifier/account and client address for recovery requests, login attempts, reset-code verification, and MFA verification.
-- Require server-confirmed authenticated state before rendering privacy or confirmation hash views, and show an access-required view or redirect when the required state is absent.
-- Move the Logs card margin declaration from its inline style attribute into the nonce-authorized stylesheet.
+- Replace the hard-coded plaintext initial password with a precomputed Argon2id hash or securely supplied runtime secret; no plaintext password may remain in app.ts.
+- Add a server-side expiration timestamp to each session; session lookup must reject and delete expired records and issue a replacement cookie when a new session is created.
+- Add a read-only authenticated session-status API endpoint that returns only the current session’s authorized workflow state.
+- Use server-verified session status to prevent unauthenticated visitors from rendering the /privacy screen.
+- Render /confirmed only when the current server-side session has privacyAccepted === true; otherwise route the visitor to the appropriate recovery or login screen.
+- Require and verify MFA or SSO during normal /api/login authentication, with throttling and browser-console-only mock delivery of the deterministic academic code.
+- Correct the malformed CSS box-shadow declaration so it is valid CSS.

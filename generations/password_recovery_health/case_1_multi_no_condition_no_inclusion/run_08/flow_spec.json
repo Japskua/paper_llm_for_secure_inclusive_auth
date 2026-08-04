@@ -1,0 +1,98 @@
+{
+  "variables": {
+    "email": "patient@example.com",
+    "new_password": "ValidPassword1!"
+  },
+  "csrf": {
+    "html_regex": "const csrf=\"([^\"]+)\"",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "start recovery session",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request password reset",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "email": "${email}"
+      },
+      "capture": {
+        "reset_token": "mockToken"
+      }
+    },
+    {
+      "name": "verify reset token",
+      "method": "POST",
+      "path": "/api/verify",
+      "body": {
+        "token": "${reset_token}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "save new password",
+      "method": "POST",
+      "path": "/api/reset",
+      "body": {
+        "password": "${new_password}",
+        "confirmation": "${new_password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "accepted": true
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid recovery email rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "email": "not-an-email"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid reset token rejected",
+      "method": "POST",
+      "path": "/api/verify",
+      "body": {
+        "token": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance required",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "accepted": false
+      },
+      "expect_failure": true
+    }
+  ]
+}

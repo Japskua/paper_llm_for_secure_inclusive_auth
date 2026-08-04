@@ -1,0 +1,123 @@
+{
+  "variables": {
+    "email": "helena@hospital.test",
+    "initial_password": "Initial!Passw0rd2025",
+    "new_password": "Renewed!Passw0rd2025"
+  },
+  "csrf": {
+    "html_regex": "const csrf = \"([^\"]+)\";",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open recovery page and establish session",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request password recovery",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "body": {
+        "email": "${email}"
+      },
+      "capture": {
+        "reset_token": "mockToken"
+      }
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "body": {
+        "token": "${reset_token}"
+      },
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "body": {
+        "code": "${mfa_code}"
+      }
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/update-password",
+      "body": {
+        "password": "${new_password}"
+      }
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "email": "${email}",
+        "password": "${new_password}"
+      }
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "confirm portal access",
+      "method": "POST",
+      "path": "/api/portal-check",
+      "body": {}
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {}
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "used recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "body": {
+        "token": "${reset_token}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "old password rejected after reset",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "email": "${email}",
+        "password": "${initial_password}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "portal unavailable after logout",
+      "method": "POST",
+      "path": "/api/portal-check",
+      "body": {},
+      "expect_failure": true
+    },
+    {
+      "name": "unknown recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "body": {
+        "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expect_failure": true
+    }
+  ]
+}

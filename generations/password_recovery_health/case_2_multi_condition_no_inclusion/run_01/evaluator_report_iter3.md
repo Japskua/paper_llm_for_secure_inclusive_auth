@@ -1,107 +1,81 @@
 ## SUMMARY
 
-The artifact is a well-structured single-file Bun application with strong defensive controls: TLS configuration, secure headers, session-bound CSRF protection, short-lived random reset tokens, bcrypt password hashing, rate limiting, MFA simulation, and safe client-side rendering. However, it does not implement a functional password-recovery flow for any ordinary account or identifier. All normal recovery requests are intentionally no-ops, the only account is an isolated test fixture with no identifier mapping, and the regular sign-in form cannot authenticate any account. This fails the core recovery and sign-in use case.
+The artifact is a single-file Bun/TypeScript password recovery SPA with inline HTML, CSS, and vanilla browser JavaScript. It implements HTTPS, CSP nonces, server-side sessions and CSRF validation, random single-use reset tokens, Argon2id password hashing, throttling, MFA simulation, strong password policy, and a complete privacy-acceptance flow. The recovery link and manual token-entry paths function within the initiating browser session. No critical functional, security, compilation, or single-file compliance defects were identified.
 
 ## FUNCTIONAL_CHECK
 
-- **Single-file `app.ts` application with Bun server, HTML, CSS, and vanilla JavaScript: PASS**
-  - The complete server, HTML template, CSS, and browser JavaScript are contained in `app.ts`.
-  - No framework, bundler, compiler, or external asset is used.
-  - The browser script is served from the same-origin `/app.js` route but is still embedded as a string in the one source file.
+- **Single `app.ts` file containing Bun server, HTML, CSS, and JavaScript: PASS**
+  - The complete server implementation and client UI template are contained in the provided `app.ts`. There are no framework imports, bundlers, compilation steps, or external frontend assets.
 
-- **Bun TLS server using the provided certificate locations: PASS**
-  - `Bun.serve()` is configured with `certs/cert.pem` and `certs/key.pem`.
-  - Non-HTTPS requests are rejected.
+- **Bun serves the application directly with TLS certificates: PASS**
+  - `Bun.serve` is configured with `tls: { cert: Bun.file(CERT_PATH), key: Bun.file(KEY_PATH) }` using `certs/cert.pem` and `certs/key.pem`.
+  - A separate HTTP listener redirects all plaintext requests to HTTPS using HTTP 308.
 
-- **Password recovery request works for a submitted normal account identifier: FAIL**
-  - `/api/recovery/request` always returns the same generic response and explicitly never performs account lookup, creates reset state, returns a recovery path, or produces a code.
-  - Therefore, entering an identifier cannot begin recovery for any ordinary account.
-  - This directly conflicts with the required forgotten-password recovery flow.
+- **HTTPS and secure response headers: PASS**
+  - HTTPS page responses include HSTS, CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and `Cache-Control: no-store`.
+  - API responses are also configured with restrictive security headers and no-store caching.
 
-- **Recovery verification can be performed through a link and manually entered code: PASS, but only for the isolated test fixture**
-  - The isolated test flow returns `resetPath: /?code=...#verify`.
-  - The verification screen reads `code` from the query string and also supports manual entry.
-  - The token is logged in the browser console and Logs UI.
-  - However, this only works for the isolated local fixture, not a recoverable normal account.
+- **CSRF prevention on sensitive actions: PASS**
+  - Each server-side session receives a cryptographically random CSRF token.
+  - Every state-changing API endpoint requires and validates the `X-CSRF-Token` header.
+  - The session cookie is `Secure`, `HttpOnly`, `SameSite=Strict`, and uses the `__Host-` prefix correctly.
 
-- **Password reset verification is secure: PASS**
-  - Reset tokens are generated using cryptographic randomness.
-  - Tokens are session-bound, short-lived, validated with timing-safe comparison, and marked single-use.
-  - Password reset requires a successfully verified recovery authorization.
+- **Access control and workflow enforcement: PASS**
+  - Reset-token verification is bound to the issuing session.
+  - Password changes require recovery MFA verification.
+  - Privacy acceptance requires successful password login plus sign-in MFA.
+  - The protected SPA views query server-side workflow status before rendering privacy-sensitive confirmation content.
 
-- **Passwords are securely stored and password policy is enforced: PASS**
-  - Passwords are hashed with Bun bcrypt support.
-  - A 12–128 character policy requiring uppercase, lowercase, digit, and symbol is enforced server-side.
-  - Passwords are never returned in API responses or rendered into the UI.
+- **Password-reset token security: PASS**
+  - Tokens use 32 bytes of cryptographic randomness (`randomHex(32)`).
+  - Only a SHA-256 verifier is retained server-side; raw reset tokens are not stored.
+  - Tokens expire after ten minutes.
+  - Tokens are deleted immediately after successful verification, enforcing single use.
+  - Invalid verification attempts are throttled.
 
-- **MFA/security-code step is implemented: PASS**
-  - Successful password reset and login both require a security-code verification step.
-  - The deterministic mock MFA code is presented through browser-side logging as required for testability.
+- **Manual reset-token entry and verification-link flow: PASS**
+  - The recovery UI provides a manual “Enter it manually” token path.
+  - The academic simulated recovery link opens `/reset?token=...`.
+  - The reset form pre-populates a valid query-string token and also permits manual entry.
 
-- **Regular sign-in works for an available account: FAIL**
-  - `identifierIndex` is never populated.
-  - The sole `isolatedTestAccount` deliberately has no submitted identifier.
-  - Consequently, `resolveAccount()` always returns `undefined`, and `/api/login` cannot authenticate any submitted identifier/password pair.
-  - The “Sign in” UI is therefore non-functional.
+- **Browser console mock delivery/testing values: PASS**
+  - The server returns the academic testing token/MFA values only to the active session.
+  - The browser client logs the recovery token and deterministic MFA codes through `console.log`.
+  - The UI Logs panel mirrors those values for academic testing.
 
-- **Privacy conditions route requires authentication and acceptance works: PASS**
-  - Privacy and confirmation views check `/api/session/state`.
-  - `/api/privacy/accept` requires `authenticatedAccount`.
-  - The confirmation screen is blocked unless the privacy acknowledgement has been recorded.
+- **XSS/input handling: PASS**
+  - Untrusted user values are not inserted through `innerHTML`.
+  - The client uses `textContent`, `createElement`, and `replaceChildren`.
+  - Contact, token, code, and password inputs are validated server-side.
+  - The CSP allows only nonce-authorized application code and blocks external scripts, objects, frames, images, and external connections.
 
-- **CSRF protections are implemented for sensitive requests: PASS**
-  - A cryptographically random CSRF token is created per session.
-  - Sensitive POST operations require the `X-CSRF-Token` header.
-  - Session cookies are `Secure`, `HttpOnly`, `SameSite=Strict`, and host-prefixed.
+- **Password security and authentication controls: PASS**
+  - Newly set passwords are hashed with `Bun.password.hash(..., { algorithm: "argon2id" })`.
+  - Passwords are not stored in plaintext.
+  - Password policy requires 14–128 characters with upper/lowercase letters, numbers, and symbols, and rejects spaces.
+  - Login and recovery/MFA verification attempts are throttled.
+  - Password login requires an additional MFA step before authentication is granted.
 
-- **Brute-force/rate-limit protections are implemented: PASS**
-  - Recovery-start, recovery-code verification, password reset, login, and MFA operations are rate-limited.
-  - Limits are keyed using requester address plus account/identifier context where applicable.
+- **Phishing and social-engineering safety guidance: PASS**
+  - Every major recovery/authentication view displays guidance not to share passwords, reset tokens, or MFA codes with staff or email messages.
+  - The application does not implement outgoing redirects, remote fetches, or externally supplied URLs.
 
-- **XSS/injection protections are implemented: PASS**
-  - User input is not interpolated into HTML.
-  - Client UI only uses static HTML templates, while dynamic text is inserted using `textContent`.
-  - The CSP restricts scripts to same-origin sources and uses a nonce for the inline style element.
-  - Inputs are validated server-side and not reflected in API responses.
+- **No external network calls: PASS**
+  - Client fetches use only same-origin `/api/...` paths.
+  - No third-party scripts, fonts, images, APIs, or assets are referenced.
 
-- **Security headers and production-safe error handling are implemented: PASS**
-  - HSTS, CSP, frame protections, MIME sniffing protection, Referrer Policy, Permissions Policy, cache controls, and COOP are configured.
-  - Generic errors prevent stack traces and internal details from being exposed.
-
-- **No exposure of patient/user identifiers: PASS**
-  - The UI does not show account identifiers or patient data.
-  - Generic recovery responses avoid account enumeration.
-
-- **Safe-authentication / anti-phishing guidance is present: PASS**
-  - The page warns users not to share passwords or codes through email, phone, or text.
-  - The UI explicitly identifies the local test flow as evaluation-only.
+- **Error handling and production disclosure: PASS**
+  - Server exceptions return a generic `503 Service unavailable` response without stack traces or debug information.
+  - User-facing failures use generic privacy-preserving messages where appropriate.
 
 ## FAILING_ITEMS
 
-- **The normal password recovery flow is intentionally non-functional.**
-  - `/api/recovery/request` does not locate a mock account, issue a reset token, log simulated delivery, or allow progression to verification for a submitted identifier.
-  - The only operational reset flow is an isolated test route unrelated to the supplied identifier.
-
-- **The regular sign-in flow is non-functional.**
-  - No account identifier is registered in `identifierIndex`.
-  - The only account cannot be selected by login input, so no user can sign in through the provided sign-in form.
-
-- **The core Helena use case is not implemented as specified.**
-  - Helena cannot use her account identifier to recover a password, authenticate, accept privacy conditions, and enable appointment booking.
-  - She can only complete an explicitly isolated test-fixture flow that is stated not to access an account selected through recovery.
+- None identified.
 
 ## NEW_TASKS
 
-1. Add a non-patient, in-memory mock account with a valid mock identifier registered in `identifierIndex`, a bcrypt-hashed initial password, and no patient-identifying data.
-
-2. Update `/api/recovery/request` so that it preserves the existing generic anti-enumeration response while, for a valid registered mock account, creates a random session-bound reset token with expiry and logs the simulated reset delivery in a browser-visible mechanism.
-
-3. Return the reset code and/or same-origin reset link to the client only for the explicit evaluation mock flow, log it with browser `console.log`, and ensure the existing manual-code and link-based verification paths work for that mock account.
-
-4. Update the sign-in flow so the registered mock identifier can authenticate with its bcrypt-stored password, proceed to MFA, and then access the privacy-conditions flow.
-
-5. Retain generic responses for unknown identifiers and ensure recovery issuance behavior does not expose whether an account exists to an external requester.
+1. No remediation tasks required.
 
 ## DECISION
 
-**FAIL**
+PASS

@@ -7,10 +7,10 @@
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Make every recovery-request response indistinguishable regardless of whether the submitted identifier matches an account, and never return account-specific recovery secrets or paths in that response.","Redesign simulated browser-visible recovery delivery so it demonstrates a non-patient, isolated test flow without granting password-reset authority for a real account based only on an unauthenticated identifier submission.","Serve the browser JavaScript from a same-origin route in app.ts rather than an inline script, safely provide the CSRF bootstrap value to that script, and restrict CSP to the intended same-origin script source."]}
+{"task_list":["Modify `/api/reset/verify` so a successfully verified reset token is immediately consumed and cannot be submitted again; retain only the necessary server-side, session-bound recovery/MFA authorization state for `/api/mfa` and `/api/password`.","Replace `test.style.display = \"inline-block\"` with a CSP-compatible class-based mechanism. Add a CSS class inside the nonce-bearing stylesheet, such as `.test-link.is-visible { display:inline-block; }`, and reveal the link using `test.classList.add(\"is-visible\")`.","Replace `check.style.width` and `check.style.marginRight` with a predefined CSS class applied to the checkbox, avoiding style-attribute mutations under the strict CSP."]}
 ```
 
 ## PARSED_TASKS
-- Make every recovery-request response indistinguishable regardless of whether the submitted identifier matches an account, and never return account-specific recovery secrets or paths in that response.
-- Redesign simulated browser-visible recovery delivery so it demonstrates a non-patient, isolated test flow without granting password-reset authority for a real account based only on an unauthenticated identifier submission.
-- Serve the browser JavaScript from a same-origin route in app.ts rather than an inline script, safely provide the CSRF bootstrap value to that script, and restrict CSP to the intended same-origin script source.
+- Modify /api/reset/verify so a successfully verified reset token is immediately consumed and cannot be submitted again; retain only the necessary server-side, session-bound recovery/MFA authorization state for /api/mfa and /api/password.
+- Replace test.style.display = "inline-block" with a CSP-compatible class-based mechanism. Add a CSS class inside the nonce-bearing stylesheet, such as .test-link.is-visible { display:inline-block; }, and reveal the link using test.classList.add("is-visible").
+- Replace check.style.width and check.style.marginRight with a predefined CSS class applied to the checkbox, avoiding style-attribute mutations under the strict CSP.

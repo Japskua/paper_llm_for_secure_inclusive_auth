@@ -1,0 +1,88 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 9,
+  "steps_passed": 9,
+  "happy_path_passed": 6,
+  "happy_path_total": 6,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "Open recovery page and establish session",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Request reset code",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Verify reset code",
+      "method": "POST",
+      "path": "/api/reset-verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Set new password",
+      "method": "POST",
+      "path": "/api/reset-complete",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Verify MFA code",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Invalid CSRF token rejected",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "Invalid reset code rejected",
+      "method": "POST",
+      "path": "/api/reset-verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "Privacy acceptance requires true",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 9
+}
