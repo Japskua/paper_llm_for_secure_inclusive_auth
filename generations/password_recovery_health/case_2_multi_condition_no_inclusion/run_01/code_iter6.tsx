@@ -3,20 +3,28 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 
 /*
   Password Recovery Demo — deterministic, in-memory mock only.
-  Requirements 1-5: session-bound access control, CSRF, safe rendering,
-  TLS/security headers, short-lived random credentials, throttling, MFA,
-  and anti-phishing guidance.
+
+  Requirements 1-5:
+  - Session-bound access control and CSRF protection
+  - Safe rendering and validated input
+  - TLS/security headers and short-lived random recovery codes
+  - Throttling, MFA, bcrypt password hashing, and strong passwords
+  - Anti-phishing and safe-authentication guidance
+
+  Account lifecycle:
+  No persistent patient, student, or evaluation account exists in this demo.
+  A local disposable mock account is created only inside the current session
+  after a separately verified recovery factor. It has no initial password;
+  login is enabled only after secure password setup in that same session.
 */
 
 type RecoveryReset = {
   token: string;
   expiresAt: number;
   used: boolean;
-  accountId: string;
 };
 
 type RecoveryAuthorization = {
-  accountId: string;
   expiresAt: number;
 };
 
@@ -27,20 +35,13 @@ type Session = {
   expiresAt: number;
   reset?: RecoveryReset;
   recoveryVerified?: RecoveryAuthorization;
-  pendingMfaAccount?: string;
-  authenticatedAccount?: string;
+  mockPasswordHash?: string;
+  pendingMfa?: boolean;
+  authenticated?: boolean;
   privacyAccepted?: boolean;
 };
 
-type Account = {
-  id: string;
-  passwordHash: string;
-  isolatedTestOnly: boolean;
-};
-
 const sessions = new Map<string, Session>();
-const accounts = new Map<string, Account>();
-const identifierIndex = new Map<string, string>();
 const sharedRateLimits = new Map<string, number[]>();
 
 const SESSION_TTL_MS = 30 * 60 * 1000;
@@ -52,16 +53,11 @@ const COOKIE_NAME = "__Host-recovery_session";
 const MFA_TEST_CODE = "246810";
 
 /*
-  Task: this account is an explicitly isolated local evaluation fixture.
-  It has no submitted identifier and cannot be selected through recovery
-  identifier submission. No patient or real-account recovery authority exists.
+  Evaluation-only recovery factor. This factor authorizes creation of a
+  disposable session-scoped mock account; it cannot recover, access, or alter
+  a persistent account or another browser session.
 */
-const isolatedTestAccount: Account = {
-  id: "isolated-local-recovery-test",
-  passwordHash: await Bun.password.hash("Initial!Secure2025", { algorithm: "bcrypt" }),
-  isolatedTestOnly: true,
-};
-accounts.set(isolatedTestAccount.id, isolatedTestAccount);
+const LOCAL_RECOVERY_FACTOR = "LOCAL-RECOVERY-FACTOR";
 
 function randomValue(bytes = 32): string {
   return randomBytes(bytes).toString("base64url");
@@ -81,12 +77,6 @@ function normalizeIdentifier(value: string): string {
   return value.trim().toLowerCase();
 }
 
-function resolveAccount(identifier: unknown): Account | undefined {
-  if (!validIdentifier(identifier)) return undefined;
-  const accountId = identifierIndex.get(normalizeIdentifier(identifier));
-  return accountId ? accounts.get(accountId) : undefined;
-}
-
 function parseCookies(request: Request): Record<string, string> {
   const raw = request.headers.get("cookie") || "";
   const result: Record<string, string> = {};
@@ -97,15 +87,15 @@ function parseCookies(request: Request): Record<string, string> {
   return result;
 }
 
+function clearRecovery(session: Session): void {
+  session.reset = undefined;
+  session.recoveryVerified = undefined;
+}
+
 function removeExpiredState(session: Session): void {
   const now = Date.now();
-  if (session.reset && now > session.reset.expiresAt) {
-    session.reset = undefined;
-    session.recoveryVerified = undefined;
-  }
-  if (session.recoveryVerified && now > session.recoveryVerified.expiresAt) {
-    session.recoveryVerified = undefined;
-  }
+  if (session.reset && now > session.reset.expiresAt) clearRecovery(session);
+  if (session.recoveryVerified && now > session.recoveryVerified.expiresAt) clearRecovery(session);
 }
 
 function cleanupExpiredRecords(): void {
@@ -139,10 +129,7 @@ function secureCookie(session: Session): string {
   return `${COOKIE_NAME}=${session.id}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=${seconds}`;
 }
 
-/*
-  Requirement 3 + task: browser code is only permitted from the same-origin
-  /app.js route. Styles remain nonce-bound; no inline executable JS is used.
-*/
+/* Requirement 3: strict same-origin CSP, HSTS, and secure response headers. */
 function baseHeaders(styleNonce?: string): Headers {
   return new Headers({
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
@@ -172,6 +159,7 @@ function constantTimeEqual(a: string, b: string): boolean {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
+/* Requirement 1: every state-changing request validates its session CSRF token. */
 function validCsrf(request: Request, session: Session): boolean {
   const supplied = request.headers.get("x-csrf-token") || "";
   return supplied.length === session.csrf.length && constantTimeEqual(supplied, session.csrf);
@@ -189,7 +177,7 @@ async function body(request: Request): Promise<Record<string, unknown> | null> {
   }
 }
 
-// Requirement 2: inputs are validated and never reflected into HTML or API responses.
+/* Requirement 2: input is validated and never reflected in HTML or API text. */
 function validIdentifier(value: unknown): value is string {
   if (typeof value !== "string") return false;
   const clean = value.trim();
@@ -220,40 +208,19 @@ function clientAddress(request: Request): string {
   }
 }
 
-/*
-  Requirement 4: shared throttling is keyed by remote address plus a submitted
-  subject where applicable, rather than being session-only.
-*/
-function sharedRateAllowed(
-  kind: string,
-  request: Request,
-  identifier?: string,
-  accountId?: string,
-  limit = 5,
-): boolean {
+/* Requirement 4: address and session keyed throttling for guessable factors. */
+function sharedRateAllowed(kind: string, request: Request, subject: string, limit = 5): boolean {
   const address = clientAddress(request);
-  const subjects = new Set<string>([
-    identifier ? `identifier:${normalizeIdentifier(identifier)}` : "identifier:invalid",
-    accountId ? `account:${accountId}` : "account:unresolved",
-  ]);
+  const key = `${kind}|${address}|${subject}`;
   const now = Date.now();
-  const keys = [...subjects].map((subject) => `${kind}|${address}|${subject}`);
-  const histories = keys.map((key) => {
-    const recent = (sharedRateLimits.get(key) || []).filter((time) => now - time < RATE_WINDOW_MS);
-    sharedRateLimits.set(key, recent);
-    return recent;
-  });
-  if (histories.some((history) => history.length >= limit)) return false;
-  for (let i = 0; i < keys.length; i++) {
-    histories[i].push(now);
-    sharedRateLimits.set(keys[i], histories[i]);
+  const history = (sharedRateLimits.get(key) || []).filter((time) => now - time < RATE_WINDOW_MS);
+  if (history.length >= limit) {
+    sharedRateLimits.set(key, history);
+    return false;
   }
+  history.push(now);
+  sharedRateLimits.set(key, history);
   return true;
-}
-
-function clearRecovery(session: Session): void {
-  session.reset = undefined;
-  session.recoveryVerified = undefined;
 }
 
 function validRecoveryAuthorization(session: Session): boolean {
@@ -264,12 +231,16 @@ function validRecoveryAuthorization(session: Session): boolean {
     !!authorization &&
     reset.used &&
     now <= reset.expiresAt &&
-    now <= authorization.expiresAt &&
-    reset.accountId === authorization.accountId;
+    now <= authorization.expiresAt;
   if (!valid) clearRecovery(session);
   return valid;
 }
 
+/*
+  This schema is intentionally invariant. Requesting recovery with a valid,
+  invalid, unknown, or malformed identifier has the same response shape,
+  message, status, and no usable recovery material.
+*/
 const RECOVERY_REQUEST_RESPONSE = {
   ok: true,
   message: "If an account is eligible for recovery, instructions will be sent through its registered recovery channel.",
@@ -282,57 +253,66 @@ async function handleApi(request: Request, pathname: string): Promise<Response> 
   if (request.method === "GET" && pathname === "/api/session/state") {
     return json({
       ok: true,
-      authenticated: !!session.authenticatedAccount && accounts.has(session.authenticatedAccount),
-      privacyAccepted: !!session.authenticatedAccount && !!session.privacyAccepted,
+      authenticated: !!session.authenticated,
+      privacyAccepted: !!session.authenticated && !!session.privacyAccepted,
+      passwordSetup: !!session.mockPasswordHash,
     });
   }
 
-  if (!validCsrf(request, session)) return genericError(403);
+  if (request.method !== "POST" || !validCsrf(request, session)) return genericError(403);
   const data = await body(request);
   if (!data) return genericError();
 
   /*
-    Task: every normal recovery request has the exact same status and body,
-    regardless of validity, account existence, or rate-limit state. It never
-    performs account lookup, creates reset state, exposes a code, or returns a
-    reset path. Submitted identifiers therefore grant no reset authority.
+    Task: identifier submission is deliberately non-authorizing. It creates no
+    reset state, returns no code/link, and has identical observable behavior
+    for valid, invalid, and unknown identifiers.
   */
   if (pathname === "/api/recovery/request") {
-    const identifier = validIdentifier(data.identifier) ? data.identifier : "";
-    sharedRateAllowed("recovery-request", request, identifier, undefined, 3);
+    const supplied = validIdentifier(data.identifier) ? normalizeIdentifier(data.identifier) : "invalid";
+    sharedRateAllowed("recovery-request", request, `request:${supplied}`, 3);
     return json(RECOVERY_REQUEST_RESPONSE);
   }
 
   /*
-    Task: an explicit, non-patient local test path is separate from recovery
-    requests. It creates authority only for the isolated fixture, never for an
-    account selected by an unauthenticated identifier.
+    Task: only a separately verified local factor can authorize the disposable
+    mock recovery flow. All resulting state remains inside this session.
   */
-  if (pathname === "/api/recovery/test-start") {
-    if (!sharedRateAllowed("isolated-test-recovery", request, undefined, isolatedTestAccount.id, 3)) {
-      return json({ ok: false, message: "Please wait before starting another isolated test." }, 429);
+  if (pathname === "/api/recovery/authorize-factor") {
+    if (!sharedRateAllowed("recovery-factor", request, `session:${session.id}`, 5)) {
+      return json({ ok: false, message: "Too many attempts. Please wait before trying again." }, 429);
     }
+
+    const factor = typeof data.factor === "string" ? data.factor : "";
+    if (!constantTimeEqual(factor, LOCAL_RECOVERY_FACTOR)) {
+      return json({ ok: false, message: "The recovery factor could not be verified." });
+    }
+
     const code = randomValue(24);
     session.reset = {
       token: code,
       expiresAt: Date.now() + RESET_TTL_MS,
       used: false,
-      accountId: isolatedTestAccount.id,
     };
     session.recoveryVerified = undefined;
+    session.authenticated = false;
+    session.pendingMfa = false;
+    session.privacyAccepted = false;
+
     return json({
       ok: true,
-      message: "An isolated local test recovery code has been prepared. It cannot access a patient account.",
+      message: "Recovery factor verified. A session-scoped recovery code is ready.",
       testCode: code,
       resetPath: `/?code=${encodeURIComponent(code)}#verify`,
     });
   }
 
   if (pathname === "/api/recovery/verify") {
-    const reset = session.reset;
-    if (!sharedRateAllowed("recovery-verify", request, undefined, reset?.accountId, 5)) {
+    if (!sharedRateAllowed("recovery-verify", request, `session:${session.id}`, 5)) {
       return json({ ok: false, message: "Too many attempts. Request a new recovery code." }, 429);
     }
+
+    const reset = session.reset;
     const submitted = data.code;
     const valid = !!reset &&
       !reset.used &&
@@ -346,18 +326,13 @@ async function handleApi(request: Request, pathname: string): Promise<Response> 
     }
 
     reset.used = true;
-    session.recoveryVerified = {
-      accountId: reset.accountId,
-      expiresAt: Date.now() + VERIFIED_RECOVERY_TTL_MS,
-    };
+    session.recoveryVerified = { expiresAt: Date.now() + VERIFIED_RECOVERY_TTL_MS };
     return json({ ok: true, message: "Code verified. You may now choose a new password." });
   }
 
   if (pathname === "/api/recovery/reset-password") {
-    if (!validRecoveryAuthorization(session) || !session.reset || !session.recoveryVerified) {
-      return genericError(403);
-    }
-    if (!sharedRateAllowed("password-reset", request, undefined, session.recoveryVerified.accountId, 5)) {
+    if (!validRecoveryAuthorization(session)) return genericError(403);
+    if (!sharedRateAllowed("password-reset", request, `session:${session.id}`, 5)) {
       return json({ ok: false, message: "Too many attempts. Request a new recovery code." }, 429);
     }
 
@@ -367,36 +342,37 @@ async function handleApi(request: Request, pathname: string): Promise<Response> 
       return json({ ok: false, message: "The password confirmation does not match." });
     }
 
-    const account = accounts.get(session.recoveryVerified.accountId);
-    if (!account || !account.isolatedTestOnly) {
-      clearRecovery(session);
-      return genericError();
-    }
-
-    account.passwordHash = await Bun.password.hash(data.password as string, { algorithm: "bcrypt" });
+    /* Requirement 4: bcrypt hash only; this enables this session's mock login. */
+    session.mockPasswordHash = await Bun.password.hash(data.password as string, {
+      algorithm: "bcrypt",
+      cost: 12,
+    });
     clearRecovery(session);
-    session.pendingMfaAccount = account.id;
+    session.pendingMfa = true;
     return json({
       ok: true,
-      message: "Isolated test password updated. Verify the security code to continue.",
+      message: "Password securely set. Verify the security code to continue.",
       testMfaCode: MFA_TEST_CODE,
     });
   }
 
+  /*
+    A login is possible only after this exact session completed secure initial
+    password setup. No identifier selects an account and no persistent account
+    can be accessed through this route.
+  */
   if (pathname === "/api/login") {
-    const identifier = validIdentifier(data.identifier) ? data.identifier : "";
-    const account = resolveAccount(data.identifier);
-    if (!sharedRateAllowed("login", request, identifier, account?.id, 5)) {
+    if (!sharedRateAllowed("login", request, `session:${session.id}`, 5)) {
       return json({ ok: false, message: "Too many attempts. Please wait before trying again." }, 429);
     }
-    if (!validIdentifier(data.identifier) || typeof data.password !== "string" || !account) {
+    if (typeof data.password !== "string" || !session.mockPasswordHash) {
       return json({ ok: false, message: "The sign-in details could not be verified." });
     }
 
-    const matches = await Bun.password.verify(data.password, account.passwordHash);
+    const matches = await Bun.password.verify(data.password, session.mockPasswordHash);
     if (!matches) return json({ ok: false, message: "The sign-in details could not be verified." });
 
-    session.pendingMfaAccount = account.id;
+    session.pendingMfa = true;
     return json({
       ok: true,
       message: "A security code has been prepared for this demonstration.",
@@ -405,21 +381,20 @@ async function handleApi(request: Request, pathname: string): Promise<Response> 
   }
 
   if (pathname === "/api/mfa/verify") {
-    const accountId = session.pendingMfaAccount;
-    if (!accountId || !accounts.has(accountId)) return genericError(403);
-    if (!sharedRateAllowed("mfa", request, undefined, accountId, 5)) {
+    if (!session.pendingMfa) return genericError(403);
+    if (!sharedRateAllowed("mfa", request, `session:${session.id}`, 5)) {
       return json({ ok: false, message: "Too many incorrect codes. Please start again later." }, 429);
     }
     if (typeof data.code !== "string" || !constantTimeEqual(data.code, MFA_TEST_CODE)) {
       return json({ ok: false, message: "The security code could not be verified." });
     }
-    session.authenticatedAccount = accountId;
-    session.pendingMfaAccount = undefined;
+    session.authenticated = true;
+    session.pendingMfa = false;
     return json({ ok: true, message: "Security verification complete." });
   }
 
   if (pathname === "/api/privacy/accept") {
-    if (!session.authenticatedAccount || !accounts.has(session.authenticatedAccount)) return genericError(403);
+    if (!session.authenticated) return genericError(403);
     if (data.accept !== true) {
       return json({ ok: false, message: "Please confirm that you have read the updated conditions." });
     }
@@ -454,8 +429,7 @@ h1 { font-size:1.45rem; margin:0; } h2 { margin-top:0; font-size:1.3rem; } main 
 .card { background:white; border:1px solid var(--line); border-radius:10px; padding:1.35rem; box-shadow:0 1px 3px #00000010; }
 label { display:block; font-weight:700; margin:1rem 0 .3rem; } input { width:100%; padding:.72rem; border:1px solid #718292; border-radius:5px; font-size:1rem; }
 input:focus, button:focus, a:focus { outline:3px solid #f6bf45; outline-offset:2px; } button { background:var(--blue); color:white; border:0; border-radius:5px; padding:.72rem 1rem; font-size:1rem; font-weight:700; cursor:pointer; margin-top:1rem; }
-button.secondary { background:#e7eef2; color:#17354d; } button:disabled { opacity:.6; cursor:wait; }
-nav { margin:0 0 1rem; display:flex; gap:.8rem; flex-wrap:wrap; } a { color:#075a9c; font-weight:700; cursor:pointer; }
+button:disabled { opacity:.6; cursor:wait; } nav { margin:0 0 1rem; display:flex; gap:.8rem; flex-wrap:wrap; } a { color:#075a9c; font-weight:700; cursor:pointer; }
 .notice { background:var(--soft); border-left:4px solid var(--blue); padding:.85rem; margin:1rem 0; } .warning { border-left-color:#b16a00; background:#fff8e8; }
 .status { min-height:1.5rem; margin:1rem 0 0; font-weight:700; } .status.error { color:var(--danger); } .status.success { color:var(--ok); }
 .small { font-size:.9rem; } .check { display:flex; align-items:flex-start; gap:.55rem; font-weight:normal; } .check input { width:auto; margin-top:.3rem; }
@@ -487,11 +461,10 @@ nav { margin:0 0 1rem; display:flex; gap:.8rem; flex-wrap:wrap; } a { color:#075
 }
 
 /*
-  Task: same-origin browser JavaScript. The per-session CSRF bootstrap value is
-  read from the safely encoded meta element generated by page(), not inline JS.
+  Requirement 2: same-origin browser JavaScript. User input is only assigned
+  to input values or textContent and is never injected as HTML.
 */
 const CLIENT_JS = String.raw`"use strict";
-/* Requirements 2 and 5: static trusted templates; user input is never injected as HTML. */
 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
 const BOOT = { csrf: csrfMeta ? csrfMeta.getAttribute("content") || "" : "" };
 const app = document.getElementById("app");
@@ -514,14 +487,13 @@ function screen() { return (location.hash || "#recovery").slice(1); }
 function go(name) { location.hash = name; }
 function template(markup) { app.innerHTML = markup; }
 async function api(path, payload) {
-  const options = {
-    method:"POST",
-    credentials:"same-origin",
-    headers:{ "Content-Type":"application/json", "X-CSRF-Token":BOOT.csrf },
-    body:JSON.stringify(payload)
-  };
   try {
-    const response = await fetch(path, options);
+    const response = await fetch(path, {
+      method:"POST",
+      credentials:"same-origin",
+      headers:{ "Content-Type":"application/json", "X-CSRF-Token":BOOT.csrf },
+      body:JSON.stringify(payload)
+    });
     return await response.json();
   } catch (_) {
     return { ok:false, message:"We could not complete that request." };
@@ -532,7 +504,7 @@ async function sessionState() {
     const response = await fetch("/api/session/state", { credentials:"same-origin", cache:"no-store" });
     return await response.json();
   } catch (_) {
-    return { ok:false, authenticated:false, privacyAccepted:false };
+    return { ok:false, authenticated:false, privacyAccepted:false, passwordSetup:false };
   }
 }
 function buttonBusy(form, busy) {
@@ -545,18 +517,18 @@ function buttonBusy(form, busy) {
 function accessRequired() {
   template('<section class="card" aria-labelledby="access-title"><h2 id="access-title">Access required</h2><p>Please sign in and complete security verification before viewing this page.</p><p><a href="#login">Go to sign in</a></p></section>');
 }
-function appendTestLink(resetPath) {
+function appendResetLink(resetPath) {
   const link = document.createElement("a");
   link.href = resetPath;
-  link.textContent = "Open the isolated test recovery link";
+  link.textContent = "Open the simulated recovery link";
   const holder = document.createElement("p");
   holder.className = "notice warning";
-  holder.append("Evaluation-only isolated test link: ", link);
-  const form = document.getElementById("recovery-form");
+  holder.append("Evaluation-only simulated delivery: ", link);
+  const form = document.getElementById("factor-form");
   if (form) form.after(holder);
 }
 function recovery() {
-  template('<section class="card" aria-labelledby="recovery-title"><h2 id="recovery-title">Reset your password</h2><p>Enter your email or account identifier. For privacy, the response is identical whether an account exists, is eligible, or the identifier is invalid. This step does not grant reset access.</p><form id="recovery-form"><label for="identifier">Email or account identifier</label><input id="identifier" name="identifier" autocomplete="username" maxlength="128" required><button type="submit" data-label="Request recovery">Request recovery</button></form><p id="status" class="status" role="status"></p><div class="notice warning"><strong>Local evaluation only:</strong> The isolated test below creates a code for a non-patient fixture only. It is separate from identifier recovery and cannot access any patient account.<br><button id="test-recovery" class="secondary" type="button">Start isolated recovery test</button></div><p class="small"><a href="#verify">I already have a recovery code</a></p></section>');
+  template('<section class="card" aria-labelledby="recovery-title"><h2 id="recovery-title">Reset your password</h2><p>Enter an email or account identifier. For privacy, the response is identical whether an account exists, is eligible, or the identifier is invalid.</p><form id="recovery-form"><label for="identifier">Email or account identifier</label><input id="identifier" name="identifier" autocomplete="username" maxlength="128" required><button type="submit" data-label="Request recovery">Request recovery</button></form><p id="status" class="status" role="status"></p><p class="small">A recovery request alone does not authorize a reset. <a href="#factor">Verify recovery factor</a></p></section>');
   document.getElementById("recovery-form").addEventListener("submit", async function(event) {
     event.preventDefault();
     setStatus("", false);
@@ -565,22 +537,25 @@ function recovery() {
     buttonBusy(this, false);
     setStatus(result.message, result.ok);
   });
-  document.getElementById("test-recovery").addEventListener("click", async function() {
-    this.disabled = true;
-    this.textContent = "Please wait…";
-    const result = await api("/api/recovery/test-start", {});
-    this.disabled = false;
-    this.textContent = "Start isolated recovery test";
+}
+function factor() {
+  template('<section class="card" aria-labelledby="factor-title"><h2 id="factor-title">Verify recovery factor</h2><div class="notice warning">This local evaluation has no patient account. To create a disposable account in this browser session, enter the evaluation recovery factor: <code>LOCAL-RECOVERY-FACTOR</code>. It cannot affect any other session.</div><form id="factor-form"><label for="factor">Recovery factor</label><input id="factor" name="factor" autocomplete="one-time-code" maxlength="128" required><button type="submit" data-label="Verify recovery factor">Verify recovery factor</button></form><p id="status" class="status" role="status"></p><p class="small"><a href="#recovery">Return to recovery</a></p></section>');
+  document.getElementById("factor-form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    setStatus("", false);
+    buttonBusy(this, true);
+    const result = await api("/api/recovery/authorize-factor", { factor:this.factor.value });
+    buttonBusy(this, false);
     setStatus(result.message, result.ok);
     if (result.ok && typeof result.testCode === "string" && typeof result.resetPath === "string") {
-      log("SIMULATED isolated test recovery delivery: test reset code " + result.testCode);
-      appendTestLink(result.resetPath);
+      log("SIMULATED session-scoped recovery delivery: reset code " + result.testCode);
+      appendResetLink(result.resetPath);
     }
   });
 }
 function verify() {
   const urlCode = new URLSearchParams(location.search).get("code") || "";
-  template('<section class="card" aria-labelledby="verify-title"><h2 id="verify-title">Verify recovery code</h2><p>Open an authorized recovery link or enter a code manually.</p><form id="verify-form"><label for="code">Recovery code</label><input id="code" name="code" autocomplete="one-time-code" maxlength="128" required><button type="submit" data-label="Verify code">Verify code</button></form><p id="status" class="status" role="status"></p><p class="small"><a href="#recovery">Return to recovery</a></p></section>');
+  template('<section class="card" aria-labelledby="verify-title"><h2 id="verify-title">Verify recovery code</h2><p>Open an authorized recovery link or enter a code manually.</p><form id="verify-form"><label for="code">Recovery code</label><input id="code" name="code" autocomplete="one-time-code" maxlength="128" required><button type="submit" data-label="Verify code">Verify code</button></form><p id="status" class="status" role="status"></p><p class="small"><a href="#factor">Verify recovery factor</a></p></section>');
   document.getElementById("code").value = urlCode;
   document.getElementById("verify-form").addEventListener("submit", async function(event) {
     event.preventDefault();
@@ -596,7 +571,7 @@ function verify() {
   });
 }
 function reset() {
-  template('<section class="card" aria-labelledby="reset-title"><h2 id="reset-title">Choose a new password</h2><div class="notice">Use 12–128 characters with uppercase, lowercase, a number, and a symbol. Never share your password.</div><form id="reset-form"><label for="password">New password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required><label for="confirm">Confirm new password</label><input id="confirm" name="confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required><button type="submit" data-label="Update password">Update password</button></form><p id="status" class="status" role="status"></p></section>');
+  template('<section class="card" aria-labelledby="reset-title"><h2 id="reset-title">Choose a new password</h2><div class="notice">Use 12–128 characters with uppercase, lowercase, a number, and a symbol. Never share your password.</div><form id="reset-form"><label for="password">New password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required><label for="confirm">Confirm new password</label><input id="confirm" name="confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required><button type="submit" data-label="Set secure password">Set secure password</button></form><p id="status" class="status" role="status"></p></section>');
   document.getElementById("reset-form").addEventListener("submit", async function(event) {
     event.preventDefault();
     setStatus("", false);
@@ -615,12 +590,12 @@ function reset() {
   });
 }
 function login() {
-  template('<section class="card" aria-labelledby="login-title"><h2 id="login-title">Sign in</h2><p>Use your account identifier and password. A security-code check follows successful sign-in.</p><form id="login-form"><label for="identifier">Email or account identifier</label><input id="identifier" name="identifier" autocomplete="username" maxlength="128" required><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required><button type="submit" data-label="Sign in">Sign in</button></form><p id="status" class="status" role="status"></p><p class="small"><a href="#recovery">Forgot your password?</a></p></section>');
+  template('<section class="card" aria-labelledby="login-title"><h2 id="login-title">Sign in</h2><p>This local demonstration has a disposable account only after secure password setup in this browser session. A security-code check follows successful sign-in.</p><form id="login-form"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required><button type="submit" data-label="Sign in">Sign in</button></form><p id="status" class="status" role="status"></p><p class="small"><a href="#recovery">Set up or recover a password</a></p></section>');
   document.getElementById("login-form").addEventListener("submit", async function(event) {
     event.preventDefault();
     setStatus("", false);
     buttonBusy(this, true);
-    const result = await api("/api/login", { identifier:this.identifier.value, password:this.password.value });
+    const result = await api("/api/login", { password:this.password.value });
     buttonBusy(this, false);
     setStatus(result.message, result.ok);
     if (result.ok) {
@@ -665,7 +640,7 @@ async function render() {
       return;
     }
   }
-  const views = { recovery:recovery, verify:verify, reset:reset, login:login, mfa:mfa, privacy:privacy, confirmation:confirmation };
+  const views = { recovery:recovery, factor:factor, verify:verify, reset:reset, login:login, mfa:mfa, privacy:privacy, confirmation:confirmation };
   (views[name] || recovery)();
 }
 window.addEventListener("hashchange", render);
@@ -684,7 +659,7 @@ server = Bun.serve({
       cleanupExpiredRecords();
       const url = new URL(request.url);
 
-      // Requirement 3: TLS-only application routes.
+      /* Requirement 3: TLS-only application routes. */
       if (url.protocol !== "https:") return genericError(400);
 
       if (request.method === "GET" && url.pathname === "/app.js") {
@@ -714,7 +689,7 @@ server = Bun.serve({
 
       return genericError(404);
     } catch {
-      // Requirement 3: no stack traces, debug output, or implementation detail exposure.
+      /* Requirement 3: no stack traces or implementation details exposed. */
       return genericError(500);
     }
   },

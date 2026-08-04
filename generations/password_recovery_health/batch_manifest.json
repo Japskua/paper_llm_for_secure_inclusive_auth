@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-04T06:47:48.333313+00:00",
+  "generated_at": "2026-08-04T08:33:56.138985+00:00",
   "software": "password_recovery_health",
   "output_root": "generations",
   "config": {
@@ -10,9 +10,10 @@
     "seed": null,
     "max_iters": 12,
     "runs_per_case": 1,
-    "concurrency": 3,
+    "concurrency": 6,
     "retries": 2,
-    "smoke_test": true
+    "smoke_test": true,
+    "flow_test": true
   },
   "batch_wall_seconds": 0.0,
   "summary": {
@@ -20,16 +21,18 @@
     "runs_completed": 3,
     "runs_converged": 3,
     "runs_smoke_ok": 3,
-    "total_cost_usd": 1.047351,
-    "total_input_tokens": 181121,
-    "total_output_tokens": 120967,
-    "total_reasoning_tokens": 31456,
+    "runs_flow_ok": 3,
+    "total_cost_usd": 1.51931,
+    "total_input_tokens": 282678,
+    "total_output_tokens": 178471,
+    "total_reasoning_tokens": 45488,
     "by_case": {
       "case_1_multi_no_condition_no_inclusion": {
         "runs": 1,
         "completed": 1,
         "converged": 1,
         "smoke_ok": 1,
+        "flow_ok": 1,
         "iterations": [
           3
         ],
@@ -41,17 +44,19 @@
         "completed": 1,
         "converged": 1,
         "smoke_ok": 1,
+        "flow_ok": 1,
         "iterations": [
-          3
+          8
         ],
-        "cost_usd": 0.257226,
-        "mean_iterations": 3.0
+        "cost_usd": 0.729185,
+        "mean_iterations": 8.0
       },
       "case_3_multi_condition_with_inclusion": {
         "runs": 1,
         "completed": 1,
         "converged": 1,
         "smoke_ok": 1,
+        "flow_ok": 1,
         "iterations": [
           4
         ],
@@ -135,6 +140,15 @@
         "status_code": 200,
         "error": null
       },
+      "flow": {
+        "ok": true,
+        "stage": "executed",
+        "happy_path_passed": 9,
+        "happy_path_total": 9,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
       "reused": true
     },
     {
@@ -149,7 +163,7 @@
       "attempts": 0,
       "wall_seconds": 0.0,
       "converged": true,
-      "iterations": 3,
+      "iterations": 8,
       "max_iters": 12,
       "models": [
         {
@@ -158,7 +172,9 @@
           "temperature_supported": false,
           "reasoning_effort": "medium",
           "seed": null,
-          "provider_order": null,
+          "provider_order": [
+            "openai"
+          ],
           "role": "tasker",
           "llm_provider": "openrouter"
         },
@@ -168,7 +184,9 @@
           "temperature_supported": false,
           "reasoning_effort": "medium",
           "seed": null,
-          "provider_order": null,
+          "provider_order": [
+            "openai"
+          ],
           "role": "coder",
           "llm_provider": "openrouter"
         },
@@ -178,37 +196,48 @@
           "temperature_supported": false,
           "reasoning_effort": "medium",
           "seed": null,
-          "provider_order": null,
+          "provider_order": [
+            "openai"
+          ],
           "role": "evaluator",
           "llm_provider": "openrouter"
         }
       ],
       "models_served": {
-        "openai/gpt-5.6-terra": 9
+        "openai/gpt-5.6-terra": 24
       },
       "model_versions": {
-        "openai/gpt-5.6-terra-20260709": 9
+        "openai/gpt-5.6-terra-20260709": 24
       },
       "providers_seen": {
-        "OpenAI": 9
+        "OpenAI": 24
       },
       "tokens": {
-        "input": 47746,
-        "output": 32925,
-        "reasoning": 9321,
+        "input": 149303,
+        "output": 90429,
+        "reasoning": 23353,
         "cached_input": 0,
-        "calls": 9
+        "calls": 24
       },
-      "cost_usd": 0.25722575,
+      "cost_usd": 0.72918475,
       "cost_source": "reported_by_provider",
-      "app_ts_sha256": "60510dabfc18f06cc1974b8d26d5f39ab4b8f2960f3679be290f50a2fb33dfc6",
-      "app_ts_bytes": 24961,
-      "app_ts_lines": 350,
+      "app_ts_sha256": "46f02404bcc18c58fefc60ad80bfa2b1df9e491080e155e912e2657cdc28fd40",
+      "app_ts_bytes": 20126,
+      "app_ts_lines": 246,
       "smoke": {
         "ok": true,
         "stage": "served",
         "port": 3000,
         "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": true,
+        "stage": "executed",
+        "happy_path_passed": 9,
+        "happy_path_total": 9,
+        "negative_passed": 4,
+        "negative_total": 4,
         "error": null
       },
       "reused": true
@@ -286,6 +315,15 @@
         "stage": "served",
         "port": 62218,
         "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": true,
+        "stage": "executed",
+        "happy_path_passed": 8,
+        "happy_path_total": 8,
+        "negative_passed": 3,
+        "negative_total": 3,
         "error": null
       },
       "reused": true

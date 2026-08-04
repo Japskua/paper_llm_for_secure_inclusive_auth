@@ -1,0 +1,129 @@
+{
+  "variables": {
+    "email": "helena.recovery@hospital.test",
+    "seeded_password": "HospitalDemo!2026",
+    "new_password": "SafeReset!2026"
+  },
+  "csrf": {
+    "html_regex": "const csrf=\"([^\"]+)\"",
+    "field": "csrf",
+    "in": "body"
+  },
+  "steps": [
+    {
+      "name": "load recovery page and establish session",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/reset/request",
+      "body": {
+        "contact": "${email}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "reset_token": "mockToken"
+      }
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "body": {
+        "token": "${reset_token}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/reset/password",
+      "body": {
+        "token": "${reset_token}",
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "identifier": "${email}",
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "confirm MFA code",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "${mfa_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "old seeded password rejected after reset",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "identifier": "${email}",
+        "password": "${seeded_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "used recovery token cannot reset password again",
+      "method": "POST",
+      "path": "/api/reset/password",
+      "body": {
+        "token": "${reset_token}",
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "missing valid CSRF token rejected",
+      "method": "POST",
+      "path": "/api/reset/request",
+      "body": {
+        "contact": "${email}",
+        "csrf": "invalid"
+      },
+      "expect_failure": true
+    }
+  ]
+}

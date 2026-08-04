@@ -1,64 +1,117 @@
 ## SUMMARY
 
-The artifact is a single-file Bun/vanilla HTML-CSS-JS application with strong security-oriented structure: TLS, secure session cookies, CSRF validation, CSP nonces, server-side state, bcrypt password hashing, MFA, throttling, and safe DOM output handling are largely implemented correctly. However, the core password-recovery flow is non-functional because the server rejects every generated recovery code before verification. This also means the internal mock recovery link cannot complete its intended action.
+The artifact is a single-file Bun SPA with a largely well-structured recovery flow, TLS configuration, CSRF protection, CSP nonces, password hashing, generic error messages, browser-side mock logging, and working hash-based navigation. However, it has critical authentication and password-reset authorization flaws: any valid-looking identifier can initiate a reset for the fixed internal account and any identifier can be used to log in if the password is known. Token/session expiry is also not enforced server-side after verification, and rate limits can be bypassed by creating new sessions. Therefore, it does not meet the security requirements.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file app and zero-compilation compliance:** All server logic, HTML, CSS, and browser JavaScript are contained in `app.ts`. It uses Bun directly, without bundlers, frameworks, build tools, or external assets.
+- **Single `app.ts` artifact containing Bun server, HTML, CSS, and vanilla browser JavaScript — PASS**
+  - The provided implementation is one file and uses Bun directly, with no framework, bundler, compilation step, or external assets.
 
-- **PASS — Bun TLS server uses the supplied certificate paths:** `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`, and the application is intended to be served over `https://localhost:3000`.
+- **TLS server uses supplied local certificates — PASS**
+  - `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`.
+  - The request handler rejects non-HTTPS URLs.
 
-- **PASS — HTTPS and key browser security headers are configured:** The HTML response includes HSTS, CSP with a per-response nonce, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`, `COOP`, and no-cache headers.
+- **CSRF prevention with unique per-session tokens on sensitive requests — PASS**
+  - New sessions receive a cryptographically random CSRF token.
+  - All `/api/*` POST endpoints require a matching `X-CSRF-Token`.
+  - The session cookie is `Secure`, `HttpOnly`, `SameSite=Strict`, and uses the `__Host-` prefix correctly.
 
-- **PASS — Session cookies use appropriate security flags:** The session cookie is opaque and uses `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, and a finite `Max-Age`.
+- **Sensitive actions enforce server-side session authorization / avoid IDOR — FAIL**
+  - The reset request endpoint accepts any syntactically valid identifier but always creates a reset token for `"internal-demo-account"`.
+  - A visitor can submit any arbitrary valid identifier, receive the displayed mock reset token, verify it, and reset the internal account’s password.
+  - The login endpoint likewise ignores the supplied identifier and checks the supplied password against the fixed internal account.
 
-- **PASS — CSRF protection is implemented for sensitive requests:** Every API action requires a session-specific CSRF token. The server validates it before processing `recover`, `verify`, `reset`, `mfa`, `signin`, or `privacy` actions.
+- **Password-reset tokens are random, single-use, session-bound, and short-lived — FAIL**
+  - Tokens are random, session-bound, and marked used after verification.
+  - However, `/api/recovery/reset-password` does not verify `Date.now() <= session.reset.expiresAt`.
+  - Once a token is verified before its ten-minute expiry, `session.recoveryVerified` permits password reset indefinitely while the server-side session remains in memory.
+  - Server-side sessions themselves do not expire; cookie expiration alone is not server-side session expiration and can be bypassed by manually replaying a copied cookie.
 
-- **PASS — Sensitive state is server-side and not controlled by client identifiers:** The client does not submit account IDs, usernames, authorization flags, or redirect URLs. Reset records are bound to the active server-side session.
+- **Passwords use bcrypt and a strong password policy — PASS**
+  - Passwords are hashed and verified using Bun’s bcrypt implementation.
+  - The reset policy requires 12–128 characters, uppercase, lowercase, numeric, and symbol characters.
 
-- **PASS — User-controlled browser output is handled safely:** Dynamic UI messages and mock values are written with `textContent`; no user input is interpolated into HTML. The application does not use `innerHTML`, untrusted script loading, or external URLs.
+- **MFA is implemented in the recovery/login flow — PASS**
+  - Successful password reset and sign-in both require a subsequent MFA verification step.
+  - The deterministic mock MFA code is surfaced through the browser Logs panel and `console.log`, as required for the demo.
 
-- **PASS — Password policy and hashing are implemented:** Passwords require 12–128 characters with uppercase, lowercase, number, and symbol requirements. Passwords are hashed with Bun bcrypt at cost 12 and are not logged or persisted as plaintext.
+- **Brute-force / automated guessing attempts are throttled or blocked — FAIL**
+  - Rate limits are stored only in the session object.
+  - An attacker can create a new session by visiting `/` without the session cookie and receive a fresh attempt budget, bypassing login, recovery request, reset-code, and MFA throttles.
+  - Login throttling is especially ineffective because the login route checks a single account but has no shared per-account or per-client limit.
 
-- **PASS — MFA and sign-in protections are implemented:** A six-digit mock MFA code is generated securely, stored only as a hash, and checked with attempt throttling. Sign-in is also throttled after repeated failures.
+- **XSS/injection protections and safe output handling — PASS**
+  - User-provided values are not inserted into HTML.
+  - UI status messages are assigned with `textContent`.
+  - Static templates use controlled `innerHTML`; no user input is interpolated into those templates.
+  - The CSP uses a per-response nonce and disallows externally sourced scripts.
 
-- **PASS — Reset token construction is random, hashed, single-use, and time-limited:** Reset IDs and secrets are generated with `crypto.getRandomValues`, only the secret hash is stored, reset tokens expire after 15 minutes, and successful password reset marks the token as used.
+- **Secure headers and production-safe errors — PASS**
+  - HSTS, CSP, frame protections, `nosniff`, restrictive referrer policy, permissions policy, and no-store cache headers are configured.
+  - Exception handling returns generic errors rather than stack traces or debug information.
 
-- **FAIL — Recovery-code verification works:** The generated recovery code has the form `id.secret`, but `validCode()` only permits `[A-Za-z0-9_-]` and rejects the mandatory `.` separator. Therefore, every valid generated recovery code is rejected before the parser reaches the intended `split(".")` validation.
+- **No disclosure of patient/account identifiers in normal UI — PASS**
+  - The UI does not render account IDs, usernames, patient records, or folder-like identifiers.
+  - Generic account-recovery messaging avoids account enumeration.
 
-- **FAIL — The mock recovery link functions correctly:** The mock link correctly pre-fills the recovery code in the verification form, but submission always fails because the server-side `validCode()` validation rejects the dot-separated token format.
+- **Safe-authentication and anti-phishing guidance — PASS**
+  - The UI tells users not to share passwords or verification codes and directs them to use the local portal only.
 
-- **FAIL — End-to-end password recovery flow is functional:** Since verification cannot succeed, users cannot reach password reset, MFA verification, sign-in, or privacy-condition acceptance through the normal recovery flow.
+- **Mock recovery/MFA delivery is available in the browser console and UI — PASS**
+  - Recovery and MFA test values are logged through browser-side `console.log` and shown in the Logs panel.
+  - Manual recovery-code submission is supported.
 
-- **PASS — Manual recovery code submission is present:** The verification screen provides a manual recovery-code input. Its UI is correct, but the backend validation defect prevents successful submission.
+- **Internal navigation and confirmation access behavior — FAIL**
+  - Direct navigation to `#confirmation` displays “Your acknowledgement has been recorded” without checking whether the user is authenticated or has accepted the conditions.
+  - Direct navigation to `#privacy` displays the privacy screen even when unauthenticated. The acceptance API is protected, but the SPA’s visible protected-state messaging is not guarded.
+  - The confirmation view should be conditioned on authenticated session state and successful privacy acceptance.
 
-- **PASS — Browser-side mock logging is implemented:** Recovery and MFA mock codes are logged with `console.log` in browser JavaScript and mirrored in the on-page logs area. Password values are not logged.
-
-- **PASS — Safe-authentication guidance is displayed:** The UI explicitly tells users not to share passwords, recovery codes, or security codes with staff or email senders.
-
-- **PASS — No outgoing URL / open redirect behavior exists:** The application does not accept return URLs or redirect targets from the client and does not make external network calls.
+- **CSP-compatible styling — FAIL**
+  - The Logs `<section>` uses an inline `style="margin-top:1rem"` attribute.
+  - The CSP permits styles only with the generated nonce (`style-src 'nonce-...'`) and does not permit inline style attributes.
+  - Browsers will block that inline style, causing a CSP violation and leaving the intended margin unapplied.
 
 ## FAILING_ITEMS
 
-- The recovery token format produced by the server is incompatible with the first validation check in the verification endpoint.
-  - Generated code: `id.secret`
-  - Current pre-validation: `^[A-Za-z0-9_-]{10,180}$`
-  - Problem: the regular expression excludes `.`, so all valid generated codes are rejected as invalid or expired.
+- The recovery endpoint maps every valid-looking recovery identifier to the same fixed account:
+  - `accountId: "internal-demo-account"` is assigned regardless of `data.identifier`.
+  - This permits an unauthorized password reset by anyone who can open the site.
 
-- Because recovery-code verification is blocked, the internal `#verify?code=...` mock recovery link cannot complete verification.
+- The login endpoint does not authenticate the identifier:
+  - It validates only the identifier’s format and then verifies the password against `"internal-demo-account"`.
+  - A user can sign in using any valid identifier combined with the internal account’s password.
 
-- Because recovery-code verification is blocked, the required password-reset journey is unusable end-to-end.
+- Reset-token expiry is not enforced when changing the password:
+  - `/api/recovery/reset-password` checks `recoveryVerified` but not `session.reset.expiresAt`.
+
+- Sessions have no server-side expiry:
+  - `createdAt` is recorded but never evaluated.
+  - The in-memory session remains valid after cookie `Max-Age` unless the server restarts.
+
+- Rate limiting is session-only and bypassable:
+  - An attacker can obtain unlimited new sessions and fresh rate-limit histories.
+
+- The confirmation route provides an unauthenticated success claim:
+  - `#confirmation` can be opened directly and states that acknowledgement was recorded without server-confirmed state.
+
+- The inline `style` attribute on the Logs card is blocked by the configured CSP.
 
 ## NEW_TASKS
 
-1. Update `validCode()` so it accepts the actual dot-separated recovery-code format, for example by allowing `.` in the preliminary character validation or by replacing the preliminary validation with the existing structured `id.secret` validation.
+1. Bind recovery requests to an actual server-side account lookup and ensure that a reset token is created only for the account associated with the supplied identifier; retain generic responses to avoid account enumeration and keep test-token disclosure limited to the authorized deterministic demo path.
 
-2. Verify that a generated `mockCode` can be:
-   - submitted manually in the verification form, and
-   - used through the `#verify?code=...` mock recovery link.
+2. Update `/api/login` to resolve the supplied identifier to an account and verify the password only for that resolved account; reject unmatched identifiers with the existing generic authentication message.
 
-3. Run an end-to-end recovery test after the validation fix: recover → verify → reset password → MFA → sign in → accept privacy conditions.
+3. Enforce reset-token expiry in `/api/recovery/reset-password`, invalidate recovery authorization after expiry, and reject resets unless the verified reset authorization is still within its permitted lifetime.
+
+4. Add server-side session expiry enforcement using `createdAt`, reject expired sessions on every request, and periodically remove expired session records from the in-memory session map.
+
+5. Replace session-only rate limits with shared server-side limits keyed at minimum by target account/identifier and preferably client address as well; apply them to recovery requests, login attempts, reset-code attempts, and MFA attempts.
+
+6. Add authenticated session-state checks for privacy and confirmation rendering so `#confirmation` is shown only after server-confirmed privacy acceptance, and show an access-required screen or redirect for unauthorized hash views.
+
+7. Move the Logs card’s inline `margin-top` declaration into the nonce-authorized stylesheet, removing the CSP-blocked `style` attribute.
 
 ## DECISION
 
-**FAIL**
+FAIL

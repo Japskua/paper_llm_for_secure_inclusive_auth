@@ -26,7 +26,7 @@ import socket
 import subprocess
 import tempfile
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import httpx
 
@@ -197,10 +197,17 @@ def smoke_test(
     certs_src: Optional[str] = None,
     boot_timeout_s: float = BOOT_TIMEOUT_S,
     lock_path: Optional[pathlib.Path] = None,
+    on_ready: Optional[Callable[[str, List[int]], Any]] = None,
+    write_result: bool = True,
 ) -> Dict[str, Any]:
     """
     Boot run_dir/app.ts under Bun and verify it serves. Always tears the
     process down. Writes run_dir/smoke.json and returns the same dict.
+
+    on_ready, if given, is called as on_ready(base_url, listening_ports) while
+    the server is up and its return value is stored under "on_ready_result".
+    This lets the flow test (app/utils/flow.py) drive a live server without
+    duplicating the boot, port-discovery and locking logic.
     """
     run_path = pathlib.Path(run_dir)
     app_path = run_path / "app.ts"
@@ -219,12 +226,14 @@ def smoke_test(
 
     if not app_path.is_file():
         result.update(stage="missing_artifact", error="app.ts not found")
-        _write(run_path, result)
+        if write_result:
+            _write(run_path, result)
         return result
 
     if shutil.which("bun") is None:
         result.update(stage="no_bun", error="bun executable not on PATH")
-        _write(run_path, result)
+        if write_result:
+            _write(run_path, result)
         return result
 
     source = app_path.read_text(encoding="utf-8", errors="replace")
@@ -328,6 +337,15 @@ def smoke_test(
                         error=probe["error"],
                         stage="served" if probe["ok"] else "no_response",
                     )
+                    if probe["ok"] and on_ready is not None:
+                        base = f"{probe['scheme']}://127.0.0.1:{probe['port']}"
+                        try:
+                            result["on_ready_result"] = on_ready(base, live_ports)
+                        except Exception as e:
+                            result["on_ready_result"] = {
+                                "ok": False,
+                                "error": f"{type(e).__name__}: {e}",
+                            }
     except Exception as e:
         result.update(stage="exception", error=f"{type(e).__name__}: {e}")
     finally:
@@ -346,7 +364,8 @@ def smoke_test(
         log_text = out_path.read_text(encoding="utf-8", errors="replace")
         result["stdout_tail"] = log_text[-2000:]
 
-    _write(run_path, result)
+    if write_result:
+        _write(run_path, result)
     return result
 
 

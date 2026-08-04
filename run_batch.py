@@ -101,6 +101,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--retries", type=int, default=2, help="Retries per failed run (default: 2)")
     p.add_argument("--smoke-test", action="store_true", default=True)
     p.add_argument("--no-smoke-test", dest="smoke_test", action="store_false")
+    p.add_argument(
+        "--flow-test",
+        action="store_true",
+        help="Also walk the full recovery journey against each artifact (see app/utils/flow.py)",
+    )
     p.add_argument("--certs", default="workspace/certs")
     p.add_argument("--force", action="store_true", help="Re-run runs that already completed")
     p.add_argument("--dry-run", action="store_true", help="List planned runs and exit")
@@ -202,6 +207,8 @@ def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
         cmd += ["--temperature", str(args.temperature)]
     if args.smoke_test:
         cmd += ["--smoke-test", "--certs", args.certs]
+    if args.flow_test:
+        cmd += ["--flow-test", "--certs", args.certs]
     if args.verbose:
         cmd += ["--verbose"]
 
@@ -230,7 +237,8 @@ def execute(job: Dict[str, Any], args) -> Dict[str, Any]:
     verdict = "OK" if record["status"] == "completed" else record["status"].upper()
     log(
         f"DONE  {job['run_id']} {verdict} iters={record.get('iterations')} "
-        f"converged={record.get('converged')} smoke={record.get('smoke', {}).get('ok')} "
+        f"converged={record.get('converged')} smoke={(record.get('smoke') or {}).get('ok')} "
+        f"flow={(record.get('flow') or {}).get('ok')} "
         f"cost=${record.get('cost_usd') or 0:.4f} {record['wall_seconds']}s"
     )
     return record
@@ -240,6 +248,7 @@ def collect(out: pathlib.Path, exit_code: Optional[int], attempts: int, wall: fl
     """Gather everything Phase 2 needs from a finished run directory."""
     summary = read_json(out / "tokens_summary.json") or {}
     smoke = read_json(out / "smoke.json") or {}
+    flow = read_json(out / "flow.json") or {}
     run_meta = summary.get("run", {})
     totals = (summary.get("by_agent") or {}).get("total", {})
     app_ts = out / "app.ts"
@@ -281,6 +290,17 @@ def collect(out: pathlib.Path, exit_code: Optional[int], attempts: int, wall: fl
         }
         if smoke
         else None,
+        "flow": {
+            "ok": flow.get("ok"),
+            "stage": flow.get("stage"),
+            "happy_path_passed": flow.get("happy_path_passed"),
+            "happy_path_total": flow.get("happy_path_total"),
+            "negative_passed": flow.get("negative_passed"),
+            "negative_total": flow.get("negative_total"),
+            "error": flow.get("error"),
+        }
+        if flow
+        else None,
     }
     return rec
 
@@ -290,7 +310,16 @@ def summarize(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     by_case: Dict[str, Dict[str, Any]] = {}
     for r in records:
         c = by_case.setdefault(
-            r["case"], {"runs": 0, "completed": 0, "converged": 0, "smoke_ok": 0, "iterations": [], "cost_usd": 0.0}
+            r["case"],
+            {
+                "runs": 0,
+                "completed": 0,
+                "converged": 0,
+                "smoke_ok": 0,
+                "flow_ok": 0,
+                "iterations": [],
+                "cost_usd": 0.0,
+            },
         )
         c["runs"] += 1
         if r.get("status") == "completed":
@@ -299,6 +328,8 @@ def summarize(records: List[Dict[str, Any]]) -> Dict[str, Any]:
                 c["converged"] += 1
             if (r.get("smoke") or {}).get("ok"):
                 c["smoke_ok"] += 1
+            if (r.get("flow") or {}).get("ok"):
+                c["flow_ok"] += 1
             if r.get("iterations"):
                 c["iterations"].append(r["iterations"])
             c["cost_usd"] = round(c["cost_usd"] + (r.get("cost_usd") or 0.0), 6)
@@ -311,6 +342,7 @@ def summarize(records: List[Dict[str, Any]]) -> Dict[str, Any]:
         "runs_completed": len(done),
         "runs_converged": sum(1 for r in done if r.get("converged")),
         "runs_smoke_ok": sum(1 for r in done if (r.get("smoke") or {}).get("ok")),
+        "runs_flow_ok": sum(1 for r in done if (r.get("flow") or {}).get("ok")),
         "total_cost_usd": round(sum(r.get("cost_usd") or 0.0 for r in records), 6),
         "total_input_tokens": sum((r.get("tokens") or {}).get("input") or 0 for r in records),
         "total_output_tokens": sum((r.get("tokens") or {}).get("output") or 0 for r in records),
@@ -364,6 +396,7 @@ def main() -> int:
             "concurrency": args.concurrency,
             "retries": args.retries,
             "smoke_test": args.smoke_test,
+            "flow_test": args.flow_test,
         },
         "batch_wall_seconds": round(time.time() - started, 2),
         "summary": summarize(records),
@@ -376,7 +409,11 @@ def main() -> int:
 
     s = manifest["summary"]
     log("=" * 72)
-    log(f"completed {s['runs_completed']}/{s['runs_total']} | converged {s['runs_converged']} | smoke ok {s['runs_smoke_ok']}")
+    log(
+        f"completed {s['runs_completed']}/{s['runs_total']} | converged {s['runs_converged']}"
+        f" | smoke ok {s['runs_smoke_ok']}"
+        + (f" | flow ok {s['runs_flow_ok']}" if args.flow_test else "")
+    )
     log(f"tokens in={s['total_input_tokens']:,} out={s['total_output_tokens']:,} (reasoning {s['total_reasoning_tokens']:,})")
     log(f"cost ${s['total_cost_usd']:.4f} | wall {manifest['batch_wall_seconds'] / 60:.1f} min")
     log(f"manifest -> {path.relative_to(REPO)}")

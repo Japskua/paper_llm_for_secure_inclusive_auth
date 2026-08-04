@@ -1,92 +1,70 @@
 ## SUMMARY
 
-The artifact is a single `app.ts` Bun application with an operational browser-based recovery flow, TLS configuration, CSRF validation, CSP nonces, token hashing, bcrypt password hashing, MFA, and throttling for verification/sign-in attempts. However, it has two security-design defects that prevent acceptance: server-side sessions never expire, and password state is globally shared rather than associated with a specific account/recovery context. These issues undermine secure session handling and account isolation.
+The artifact is a well-structured single-file Bun application with functional recovery, reset, MFA, login, and privacy-acceptance flows. It uses TLS, secure cookies, CSRF tokens, CSP nonces, bcrypt password hashing, server-side authorization checks, throttling, and browser-side mock-delivery logs. However, it does not fully meet the security requirements because its recovery API leaks account existence and provides an actionable reset token to anyone who submits the demo account identifier. It also uses an inline browser `<script>`, contrary to the explicit requirement that inline scripts are not allowed.
 
 ## FUNCTIONAL_CHECK
 
-- **Single-file Bun server + HTML/CSS/vanilla browser JavaScript: PASS**
-  - The server, page template, styles, and client-side logic are all contained in `app.ts`.
-  - No framework, bundler, compiler, or external assets are used.
+- **1. Broken Access Control — FAIL**
+  - **CSRF protection:** PASS. Sessions receive unique random CSRF values, and all state-changing API routes validate `X-CSRF-Token` against the session token using constant-time comparison.
+  - **Sensitive authorization / IDOR:** PASS. Password resets are bound to server-side session recovery authorization; privacy acceptance derives the account only from the authenticated session.
+  - **No exposure of usernames/private identifiers:** FAIL. `POST /api/recovery/request` returns `testCode` and `resetPath` only when the submitted identifier resolves to the demo account. This gives a requester a direct account-existence oracle and exposes an actionable recovery secret based only on knowledge of an identifier.
 
-- **TLS / HTTPS enforcement using provided certificates: PASS**
-  - `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`.
-  - Requests whose URL protocol is not `https:` are rejected.
+- **2. Injection (XSS) — FAIL**
+  - Input validation and safe output handling are generally strong: user input is not reflected into HTML, dynamic mock content is inserted with `textContent`, and the CSRF bootstrap escapes `<`.
+  - However, the generated page includes an inline `<script nonce="...">` block. The requirements explicitly state that inline scripts are not allowed. A nonce makes the script CSP-authorized, but it does not make it non-inline.
 
-- **Security headers and CSP: PASS**
-  - The HTML response includes HSTS, CSP with a per-response nonce, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and `Cross-Origin-Opener-Policy`.
-  - The CSP allows only same-origin resources and nonce-authorized inline style/script blocks.
+- **3. Security Misconfiguration — PASS**
+  - Bun is configured with the required TLS certificate and key files.
+  - Application requests are rejected unless `url.protocol === "https:"`.
+  - HSTS, CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, permissions policy, no-store cache controls, and COOP are configured.
+  - Session cookies are `Secure`, `HttpOnly`, `SameSite=Strict`, and use the `__Host-` prefix correctly.
+  - Recovery tokens are random, session-bound, single-use, and expire after ten minutes.
+  - Error responses do not expose stack traces or debug details.
 
-- **CSRF protection on sensitive actions: PASS**
-  - A cryptographically random CSRF token is generated per session.
-  - Every state-changing API action requires and validates the CSRF token.
-  - The session cookie uses `HttpOnly`, `Secure`, and `SameSite=Strict`.
+- **4. Identification and Authentication Failures — FAIL**
+  - **Password hashing:** PASS. Passwords are stored as bcrypt hashes using `Bun.password.hash(..., { algorithm: "bcrypt" })`.
+  - **Strong password policy:** PASS. The server enforces length, upper/lowercase, numeric, and symbol requirements.
+  - **MFA:** PASS for the simulation. MFA is required after password reset and login, and the mock MFA code is logged in the browser.
+  - **Rate limiting:** PASS. Recovery, recovery verification, reset, login, and MFA routes have server-side IP/account/identifier-aware throttling.
+  - **Unauthorized password reset prevention:** FAIL. An unauthenticated requester who knows the demo identifier can request recovery, receive the reset token in the API response/browser logs, verify it, choose a new password, receive the deterministic MFA code, and authenticate. The code comment calling a successful account lookup an “authorized demonstration account path” is incorrect; account lookup is not authorization.
 
-- **Session security and lifecycle: FAIL**
-  - The cookie has `Max-Age=1800`, but server-side session objects in `sessions` never expire or are removed.
-  - A copied/stolen `recovery_session` cookie can remain valid indefinitely on the server even after its browser-side expiration time.
-  - Authenticated state, CSRF tokens, and recovery state can consequently persist without a server-enforced lifetime.
+- **5. SSRF and Social Engineering — PASS**
+  - The server makes no outgoing network requests and accepts no external URL destinations, so SSRF and open redirects are not present.
+  - The UI includes anti-phishing guidance instructing users not to share passwords or verification codes and to use only the local portal.
+  - Recovery links are local relative paths and are not supplied by user-controlled URL input.
 
-- **No user/private identifier exposure: PASS**
-  - The UI does not expose usernames, patient identifiers, account existence, course folders, or other private data.
-  - Recovery responses are intentionally generic to reduce account enumeration.
+- **Single-file + zero-compilation compliance — PASS**
+  - The server, HTML, CSS, and browser JavaScript are contained in one `app.ts` file.
+  - The implementation uses Bun directly and does not depend on frameworks, bundlers, external assets, or external network calls.
 
-- **Recovery token quality, expiration, and verification: PASS**
-  - Recovery IDs and secrets are generated using cryptographic randomness.
-  - Only a SHA-256 hash of the token secret is stored.
-  - Tokens are scoped to the initiating session, expire after 15 minutes, and are marked used after password reset.
-  - Verification attempts are throttled after repeated failures.
-
-- **Manual recovery-code submission and recovery link functionality: PASS**
-  - The mock recovery code is shown in the browser console and mock UI.
-  - The user can either paste the code manually or follow the fragment-based mock recovery link.
-  - The fragment-based link avoids sending the recovery token in an HTTP request/referrer.
-
-- **XSS / injection prevention: PASS**
-  - User-controlled values are not interpolated into HTML.
-  - Browser-visible dynamic output uses `textContent`.
-  - The page uses a restrictive CSP and no external/untrusted scripts.
-
-- **Strong password policy and secure password storage: PASS**
-  - Passwords require 12–128 characters with uppercase, lowercase, numeric, and symbol characters.
-  - Passwords are stored with bcrypt using cost 12.
-  - Passwords are neither logged nor rendered back into the UI.
-
-- **MFA and brute-force protection: PASS**
-  - A six-digit additional security code is required after password reset.
-  - MFA and sign-in attempts are locked for one minute after five failed attempts.
-  - The mock MFA code is logged in the browser console and displayed in the academic mock UI as required.
-
-- **Account isolation / password ownership: FAIL**
-  - `passwordHash` is a single global variable shared by every session and every recovery attempt.
-  - A password reset in one session overwrites the password used by all previously reset/authentication-capable sessions.
-  - For example, session A can complete recovery and MFA; session B can then reset the global password; session A can sign in using session B’s new password because sign-in verifies against the same global `passwordHash`.
-  - This does not model password data as belonging to a specific account/recovery subject and violates proper access-control/account-isolation expectations.
-
-- **Privacy-condition acceptance access control: PASS**
-  - Privacy acceptance requires a successfully authenticated session.
-  - The acceptance operation is CSRF-protected.
-
-- **No external network calls / safe URL handling: PASS**
-  - The client only calls same-origin `/api/recovery`.
-  - There are no redirects, user-controlled outgoing URLs, or external resources.
-
-- **Browser mock logging requirement: PASS**
-  - Recovery delivery, MFA delivery, verification, sign-in, and privacy acceptance events are logged through browser-side `console.log`.
-  - Passwords are not logged.
+- **Code validity / runtime error review — PASS**
+  - The TypeScript structure is valid for Bun’s runtime model.
+  - `Bun.serve`, TLS file usage, `Bun.password.hash/verify`, request handling, session storage, and browser event handlers are internally consistent.
+  - No obvious syntax or control-flow error prevents the primary flows from operating.
 
 ## FAILING_ITEMS
 
-- Server-side sessions have no expiration timestamp, expiration validation, or cleanup. The cookie lifetime does not enforce a backend session lifetime and can be bypassed by replaying a retained cookie value.
-- The application stores the password hash in one global `passwordHash` variable rather than binding it to an account or recovery subject. This permits cross-session password interference and breaks account isolation.
+- The recovery-request response is distinguishable for a real account:
+  - Known/valid demo identifier: returns `testCode` and `resetPath`.
+  - Unknown identifier: returns only a generic message.
+  - This permits account enumeration and violates the requirement not to expose private account information.
+
+- The same recovery-response behavior permits unauthorized account takeover in the provided application:
+  - No proof of control over an email address, existing session, or other authenticated recovery factor is required before issuing the reset secret.
+  - The reset token and deterministic MFA code are available to the unauthenticated requester through the UI/browser console.
+
+- The page uses an inline browser script:
+  - `<script nonce="${nonce}"> ... </script>` remains inline even though it is nonce-authorized.
+  - This does not satisfy the explicit “No inline ... scripts are allowed” requirement.
 
 ## NEW_TASKS
 
-1. Add an `expiresAt` field to `Session`, set it when creating a session, and reject/delete expired sessions before serving the page or processing any API action.
-2. Add periodic or opportunistic cleanup of expired entries from both `sessions` and `resets`.
-3. Replace the global `passwordHash` variable with account-scoped password state, such as a server-side account record keyed by a non-exposed internal account identifier.
-4. Bind each reset record and authenticated session to the same internal account identifier, and ensure sign-in verifies only that account’s stored password hash.
-5. Ensure a reset in one account/recovery context cannot alter sign-in behavior or password verification for any other session/account context.
+1. Redesign the simulated recovery delivery so unauthenticated submission of an identifier cannot reveal whether an account exists or grant an actionable reset token for that account. Keep the generic response identical for all valid identifiers.
+
+2. Preserve evaluator-visible mock delivery without making it an account-enumeration or takeover mechanism. Use a clearly isolated non-patient demonstration flow or a server-side test mechanism that does not issue a real account’s password-reset authority solely from a submitted identifier.
+
+3. Move the browser JavaScript from the inline `<script>` block to a same-origin JavaScript route served by the same `app.ts` file, such as `/assets/app.js`. Pass the CSRF bootstrap value through a safely encoded HTML data attribute or a server-generated JSON endpoint, and update CSP to permit only the intended same-origin script.
 
 ## DECISION
 
-FAIL
+**FAIL**

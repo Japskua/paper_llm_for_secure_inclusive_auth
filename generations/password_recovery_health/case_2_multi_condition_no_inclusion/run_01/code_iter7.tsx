@@ -133,11 +133,8 @@ async function api(request: Request, path: string) {
 
   /* Identifier lookup is intentionally non-authorizing and non-enumerating. */
   if (path === "/api/recovery/request") {
-    const message = "If an account is eligible for recovery, instructions will be sent through its registered recovery channel.";
-    if (!allowed("request", request, "generic", 3)) {
-      return reply({ ok: false, message }, 429);
-    }
-    return reply({ ok: true, message });
+    allowed("request", request, "generic", 3);
+    return reply({ ok: true, message: "If an account is eligible for recovery, instructions will be sent through its registered recovery channel." });
   }
   if (path === "/api/recovery/authorize-factor") {
     if (!allowed("factor", request, s.id)) return reply({ ok: false, message: "Too many attempts. Please wait before trying again." }, 429);

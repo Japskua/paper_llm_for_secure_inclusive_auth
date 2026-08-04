@@ -375,10 +375,50 @@ present.
 ### Verifying Generated Artifacts
 
 `PASS_MARKER` records only that the Evaluator LLM judged the code complete; it does
-not execute anything. With `--smoke-test`, each artifact is booted under Bun and
-probed for a response, and the result is written to `run_NN/smoke.json` and
-aggregated in the manifest. Ports are detected from the server's own startup log,
-since generated apps variously hardcode a port or read `process.env.PORT`.
+not execute anything. Two levels of execution-based verification are available.
+
+**`--smoke-test` (liveness).** Boots the artifact under Bun and checks that it
+answers `GET /`. Result in `run_NN/smoke.json`. Listening ports are read from the
+OS for the child process, because generated apps declare ports through variables,
+read non-standard env names (`PORT`, `HTTPS_PORT`, `HTTP_PORT` have all been
+observed) and may log nothing on startup. Boot-and-probe is serialised by a file
+lock across processes: artifacts hardcode ports such as 443, 80 and 3000, so
+concurrent smoke tests otherwise report working artifacts as broken. A port already
+held by another host process is reported as `port_conflict`, distinct from a defect
+in the artifact.
+
+**`--flow-test` (functional).** Walks the whole recovery journey — request code,
+verify, set password, sign in, MFA, and any later steps — plus negative checks such
+as replayed tokens and forged CSRF. Results in `run_NN/flow.json`, with the derived
+plan preserved in `run_NN/flow_spec.json` for audit.
+
+The call sequence has to be derived per artifact, because every run invents its own
+API. Across the validation runs:
+
+| Artifact | API shape | CSRF transport |
+|----------|-----------|----------------|
+| Case 1 | 7 granular routes (`/api/request-reset`, `/api/verify-token`, …), no `<form>` elements | token from `/api/session` |
+| Case 2 (first generation) | a single `/api/recovery` endpoint with 6 server-rendered forms | JSON body field |
+| Case 2 (regenerated) | 7 routes (`/api/recovery/request`, `/api/recovery/authorize-factor`, …) | `X-CSRF-Token` header |
+| Case 3 | 9 routes (`/api/reset/request`, `/api/reset/verify`, …) plus appointment booking | JSON body field |
+
+The two case 2 rows are the same case and the same prompt, generated twice — the API
+shape and even the CSRF transport differ between runs. A hardcoded probe would
+therefore pass on one run and fail on the next for reasons unrelated to artifact
+quality. An LLM reads `app.ts` and emits the call sequence; it never judges the
+outcome. **Pass/fail comes solely from executing real HTTP requests against the
+running server**, so the verdict stays objective even though the test plan is
+generated. Cost is roughly $0.02 per run.
+
+`ok` reflects the happy path only. Negative checks are reported alongside but do not
+veto it, since they are model-authored and can be poorly chosen — asserting rejection
+on a route that deliberately returns a uniform response to prevent account
+enumeration, for example, where the uniform reply is correct behaviour. When the
+happy path fails, every request fails and the negatives pass for the wrong reason;
+`negatives_meaningful` in `flow.json` flags exactly that.
+
+All three validation artifacts pass in full: happy paths 9/9, 9/9 and 8/8, with
+11/11 negative checks across them.
 
 ## Evaluation Data
 

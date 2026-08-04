@@ -35,6 +35,25 @@ def main():
         if not result["ok"]:
             print(f"  {result['error']}")
 
+    if getattr(args, "flow_test", False):
+        from app.utils.flow import flow_test
+        from provider import make_llm
+
+        result = flow_test(args.output, make_llm("evaluator"), certs_src=args.certs)
+        status = "OK" if result.get("ok") else "FAILED"
+        print(
+            f"Flow test {status}: stage={result.get('stage')} "
+            f"happy_path={result.get('happy_path_passed')}/{result.get('happy_path_total')} "
+            f"negatives={result.get('negative_passed')}/{result.get('negative_total')}"
+        )
+        if not result.get("ok"):
+            failed = [
+                s["name"]
+                for s in (result.get("steps") or [])
+                if not s["ok"] and not s["expect_failure"]
+            ]
+            print(f"  {result.get('error') or 'failed steps: ' + ', '.join(failed)}")
+
 
 if __name__ == "__main__":
     main()

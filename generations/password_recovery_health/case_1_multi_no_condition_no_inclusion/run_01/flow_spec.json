@@ -1,0 +1,139 @@
+{
+  "variables": {
+    "email": null,
+    "identifier": "academic-test-user",
+    "initial_password": "Initial-Demo-Password!9",
+    "new_password": "Reset-Valid!2025"
+  },
+  "csrf": null,
+  "steps": [
+    {
+      "name": "open recovery portal",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "create recovery session",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request password reset",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "body": {
+        "identifier": "${identifier}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "prove account ownership",
+      "method": "POST",
+      "path": "/api/prove-ownership",
+      "body": {
+        "proof": "ACADEMIC-PROOF-4821",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "token": "delivery.token"
+      }
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "body": {
+        "token": "${token}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/change-password",
+      "body": {
+        "password": "${new_password}",
+        "confirmation": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mfaCode"
+      }
+    },
+    {
+      "name": "complete MFA verification",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "body": {
+        "code": "${mfa_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "accepted": true,
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm completed session state",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "request reset without CSRF is rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "body": {
+        "identifier": "${identifier}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "reused recovery token is rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "body": {
+        "token": "${token}",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong MFA code is rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance requires true",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "accepted": false,
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

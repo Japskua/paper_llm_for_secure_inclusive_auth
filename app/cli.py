@@ -76,6 +76,15 @@ def parse_args() -> argparse.Namespace:
         help="After the loop, boot the generated app.ts under Bun and verify it serves.",
     )
     parser.add_argument(
+        "--flow-test",
+        action="store_true",
+        help=(
+            "After the loop, walk the full password-recovery journey against the "
+            "running app. The call sequence is derived from app.ts by an LLM (each "
+            "run invents its own API); pass/fail comes from real HTTP responses."
+        ),
+    )
+    parser.add_argument(
         "--certs",
         required=False,
         default="workspace/certs",
