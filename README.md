@@ -233,7 +233,80 @@ PRICE_INPUT_PER_1M=1.25
 PRICE_OUTPUT_PER_1M=10.00
 ```
 
-### Running Code Generation
+### Running Code Generation (repeated-runs design)
+
+The experiment generates **10 independent runs per case** (30 runs total) so that
+between-case differences can be tested against between-run variance. Use the batch
+runner:
+
+```bash
+uv run python run_batch.py \
+  --software password_recovery_health \
+  --runs 10 \
+  --concurrency 6 \
+  --max-iters 12 \
+  --model openai/gpt-5.6-terra \
+  --reasoning-effort medium \
+  --smoke-test
+```
+
+Useful flags: `--dry-run` lists the planned runs, `--cases` restricts to a subset,
+`--run-start` extends an existing batch, `--force` re-runs completed runs. Runs
+already completed are skipped, so an interrupted batch can simply be re-invoked.
+
+Each run executes in its own subprocess (isolating token counters and containing
+crashes) and writes to `generations/<software>/<case>/run_NN/`. The batch writes
+`generations/<software>/batch_manifest.json`, which records per run: model, exact
+dated model snapshot, resolved upstream provider, sampling configuration, iteration
+count, convergence, token usage including reasoning tokens, cost, `app.ts` SHA-256,
+and smoke-test result. That manifest is the input to the evaluation stage.
+
+The earlier single-run GPT-4o dataset remains under
+`workspace/<software>/<case>/legacy_single_run_gpt4o/` (moved there by
+`--archive-legacy`), keeping the two generations of results clearly separated.
+
+#### Pinning the upstream provider
+
+OpenRouter may serve one model id from several upstream backends. In a validation
+batch, 11 of 12 calls in one run went to OpenAI and 1 to Azure. Because different
+backends can differ in serving configuration, pin routing before a real batch:
+
+```env
+OPENROUTER_PROVIDER_ORDER=openai
+```
+
+This sets `allow_fallbacks: false`; transient failures are absorbed by the retry
+logic in `app/utils/io.py` rather than by silently switching backend. The provider
+actually used is recorded per run either way.
+
+#### Sampling configuration
+
+Runs are **independent draws**: no seed is ever sent, since a fixed seed would
+suppress the between-run variance the design exists to measure.
+
+Frontier reasoning models — the entire GPT-5.x family, Claude Sonnet 5 — do **not**
+expose `temperature`; they sample at a fixed internal temperature. `provider.py`
+queries each model's `supported_parameters` and sends `temperature` only when the
+model accepts it, recording the effective setting per run. With
+`openai/gpt-5.6-terra` the reported configuration is therefore
+`temperature: null, temperature_supported: false`, and repeated runs vary through
+the model's own sampling rather than a client-set parameter.
+
+`reasoning_effort` **is** exposed, and materially affects both output quality and
+token cost, so it is treated as a recorded experimental parameter (default
+`medium`). If an explicitly set temperature is required, use a frontier model that
+exposes one — `x-ai/grok-4.5`, `google/gemini-3.6-flash` and
+`qwen/qwen3.8-max` all do — and pass `--temperature`.
+
+#### Convergence
+
+A run that reaches `--max-iters` without a PASS verdict writes a `NO_CONVERGENCE`
+marker and is recorded with `converged: false`. Such runs are reported rather than
+discarded: convergence rate is itself a per-case outcome.
+
+#### Single run
+
+To reproduce one artifact in isolation:
 
 ```bash
 # Case 1: No inclusivity specification
@@ -269,9 +342,43 @@ uv run python run.py --mode multi \
 | Parameter | Value | Description |
 |-----------|-------|-------------|
 | LLM Provider | OpenRouter | API aggregation service |
-| Code Generation Model | GPT-5 | Consistent across all cases |
-| Temperature | 0.0 | Deterministic output |
+| Code Generation Model | `openai/gpt-5.6-terra` | Same model for Tasker, Coder and Evaluator, consistent across all cases |
+| Temperature | not client-exposed | Model samples at a fixed internal temperature; see *Sampling configuration* |
+| Reasoning effort | `medium` | Recorded experimental parameter |
+| Seed | none | Deliberately unset, to preserve between-run variance |
+| Runs per case | 10 | Independent draws |
 | Maximum Iterations | 12 | Upper bound for convergence |
+
+### Changes to the Pipeline
+
+The generation loop was hardened for unattended batch execution. Two changes alter
+behaviour relative to the pipeline that produced the earlier single-run artifacts,
+and are noted here for transparency:
+
+1. **`NEW_TASKS` parsing.** The original parser accepted only `-`, `1.`, `2.` and
+   `3.` line prefixes and stopped at the first blank line, so tasks numbered 4 and
+   above were silently dropped and hierarchical task lists were flattened into a
+   mixture of headings and sub-details. The parser in `app/utils/parsing.py` reads
+   every outermost item and folds nested detail into its parent task.
+2. **`DECISION` parsing.** The original required a line beginning literally with
+   `DECISION` and fell back to `FAIL` otherwise, so a model writing
+   `**DECISION:** PASS` would be forced to run to `--max-iters`. Markdown emphasis
+   and heading markers are now tolerated.
+
+Supporting changes without behavioural effect on a successful run: request timeout
+raised from 60s to 900s (reasoning models routinely exceed 60s), transient API
+failures retried with exponential backoff, Tasker JSON tolerant of code fences with
+one corrective retry, reasoning tokens counted, cost taken from OpenRouter usage
+accounting, and per-run artifacts always overwritten rather than skipped when
+present.
+
+### Verifying Generated Artifacts
+
+`PASS_MARKER` records only that the Evaluator LLM judged the code complete; it does
+not execute anything. With `--smoke-test`, each artifact is booted under Bun and
+probed for a response, and the result is written to `run_NN/smoke.json` and
+aggregated in the manifest. Ports are detected from the server's own startup log,
+since generated apps variously hardcode a port or read `process.env.PORT`.
 
 ## Evaluation Data
 
