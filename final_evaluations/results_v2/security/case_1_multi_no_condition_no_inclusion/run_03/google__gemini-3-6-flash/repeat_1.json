@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T07:33:50.502126+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system verifies that the submitted reset token matches the SHA-256 digest stored specifically in the current user's session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are cryptographically random and checked against the session's unique digest, so a token generated for one user session cannot be used by another."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating the password only modifies the active session object without invalidating other existing sessions in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The Bun server requires TLS certificate files to operate and includes Strict-Transport-Security headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed using SHA-256 digests and passwords are saved using bcrypt hashes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The recovery flow uses generic messages that do not expose private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated for type and length, and values are injected safely via DOM textContent and JSON responses."
+    },
+    "8": {
+      "score": 5,
+      "why": "The recovery link is constructed as a relative URI fragment pointing strictly to the same host."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates are used, and no user input is evaluated as executable HTML or script code."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generated test recovery tokens and MFA codes are explicitly output to the client-side log panel and console logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA security code '246810' is hardcoded directly in the backend source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not establish or accept default administrative or user credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "The application limits recovery and password attempts to 5 per window and locks out MFA verification after 5 failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the exact same success response whether or not a matching account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using 32 cryptographically secure random bytes and assigned per session."
+    }
+  },
+  "cost_usd": 0.0490095,
+  "generation_id": "gen-1785915205-gJ4YbWP2Au9IDuktZvjd",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

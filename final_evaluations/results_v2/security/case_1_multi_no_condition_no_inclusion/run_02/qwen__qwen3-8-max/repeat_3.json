@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:51:06.174514+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify endpoint checks the submitted token against the recovery token stored in the current server-side session and requires the associated accountRef before allowing a password reset."
+    },
+    "2": {
+      "score": 1,
+      "why": "Recovery tokens are stored per session and marked used after verification, so the same token does not work for another user's session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset changes only the current session state and the shared password hash, leaving other unexpired server-side sessions valid."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is TLS-only with certificate and key configured, but the source does not specify or prove which TLS protocol version is negotiated."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are protected with bcrypt and transport uses TLS, but recovery tokens and session state are stored in plaintext in server memory rather than encrypted."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email message is implemented, and the mock recovery token is returned in the API response and written to logs rather than being guarded in an email."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied values are validated with identifier and password rules, and dynamic client output uses textContent instead of inserting untrusted HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is performed with same-origin history.pushState using an allowlisted view parameter, with no external redirect targets."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the code, so the safety of email templates cannot be directly observed, although no user-supplied HTML or script is placed into any email-like output."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error responses are generic, but the client-side log and console output display the mock recovery token and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is stored as a bcrypt hash, but the MFA code is hardcoded in the source and recovery tokens are stored unencrypted."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no default password, but the fixed MFA_TEST_CODE value functions as a default or test credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Token and MFA verification both track failures and block further attempts for one minute after five failures."
+    },
+    "14": {
+      "score": 2,
+      "why": "The visible message is generic, but the JSON response reveals eligibility by adding mockDeliveryToken and mockRecoveryLink only for the known local-recovery-demo identifier."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery tokens are generated with crypto.getRandomValues as long base64url values and are tied to the session's recovery record and protected account."
+    }
+  },
+  "cost_usd": 0.08156,
+  "generation_id": "gen-1785912349-YcFnhft8mABcUSui00Vg",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

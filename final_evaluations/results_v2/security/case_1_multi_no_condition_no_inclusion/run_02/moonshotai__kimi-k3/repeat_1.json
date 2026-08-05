@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:47:11.405315+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The token is stored in server-side session state and both verification and reset-password compare it against that session's stored recovery record and accountRef, so the code is bound to the requesting session/account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens exist only in the owning session's state and are marked used on verification, so another session/user has no matching recovery record and cannot redeem the same code."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing invalidates or deletes other sessions after a password reset (only resetAuthorized is flipped), so any other unexpired session in the sessions Map continues to work."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server listens exclusively over TLS with HSTS and rejects non-HTTPS requests, but no explicit TLS version is pinned, so 'latest version' cannot be confirmed from the code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords are hashed with bcrypt (cost 10) and reset codes are 32-byte CSPRNG values held only in server memory, though tokens are not literally encrypted at rest (nothing is persisted)."
+    },
+    "6": {
+      "score": 4,
+      "why": "The recovery response is generic and the simulated delivery (mockRecoveryLink) contains only a random token with no private data; no real email is sent in this mock."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers are validated against strict regexes, tokens are trimmed and length-checked, JSON bodies are type-checked, passwords must meet a policy, and all client output uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is restricted to a whitelist of same-origin views via safeView() and relative pushState URLs, and the mock recovery link is a same-origin relative path with no external redirects."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user input is ever interpolated into HTML (the DOM is built exclusively with textContent) and a nonce-based CSP blocks inline or injected scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Although error responses are generic, the client log() function writes the mock delivery token, recovery link, and MFA code to the visible on-page log panel and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are stored only as bcrypt hashes, but the MFA secret 246810 is hardcoded directly in the source code."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default password exists, but the fixed, hardcoded MFA code 246810 (even returned to the client in the API response) functions as a default credential in the sign-in flow."
+    },
+    "13": {
+      "score": 5,
+      "why": "Both token and MFA verification enforce throttling via attempt counters with a 5-failure threshold, a 60-second block, and 429 responses."
+    },
+    "14": {
+      "score": 2,
+      "why": "The recovery response includes mockDeliveryToken/mockRecoveryLink only for the eligible identifier, so the API response observably differs depending on whether the identifier is recoverable."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is a 256-bit CSPRNG base64url value, single-use, 10-minute expiry, and tied to the session's accountRef for the protected account."
+    }
+  },
+  "cost_usd": 0.1765305,
+  "generation_id": "gen-1785912350-aX7t2hiUppaRYBIU2nwu",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:43:53.110849+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "/api/reset-verify checks only the token digest, expiry, and used flag, not a user/account binding."
+    },
+    "2": {
+      "score": 4,
+      "why": "A valid unused reset token is accepted from any session and bound to that session, although it is then consumed."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password update only clears the current session’s recovery authorization and does not invalidate other session IDs."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS certificates and HSTS, but the source does not specify or verify the latest TLS version."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are stored as SHA-256 digests and the password as an Argon2 hash, not encrypted user data."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is sent; the simulated delivery returns and displays the reset token in the client response/logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifier, token, MFA code, and password inputs are validated with strict patterns/lengths, and dynamic UI uses textContent rather than HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only reset link is a same-origin relative URL, and CSP restricts form-action/base-uri to self."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the source, so their safety cannot be observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client-side safeLog writes the simulated reset token and MFA code into the visible logs/console."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is Argon2-hashed, but the MFA code is a hardcoded plaintext constant in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The fixed MFA_TEST_CODE value is accepted as a credential, and an initial demo password is hardcoded before hashing."
+    },
+    "13": {
+      "score": 4,
+      "why": "Request, reset-verify, and MFA attempts are limited per session with 429 responses after thresholds."
+    },
+    "14": {
+      "score": 5,
+      "why": "reset-request returns the same generic message and a test token for both known and unknown identifiers."
+    },
+    "15": {
+      "score": 2,
+      "why": "Tokens are generated with randomBytes and match a long base64url pattern, but records contain no user binding and verification does not check ownership."
+    }
+  },
+  "cost_usd": 0.060002,
+  "generation_id": "gen-1785912012-BaST6FjeqPgdt2PEif4B",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 2,
+    "3": 2,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 4,
+    "14": 5,
+    "15": 2
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.6667,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 2.4667,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:50:42.915974+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify endpoint only accepts a token that matches the recovery object stored in the current session and tied to the protected account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A recovery token is stored per session, so a token from one session is not valid for another user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset does not clear or invalidate other unexpired server-side sessions, so prior sessions can remain usable."
+    },
+    "4": {
+      "score": 3,
+      "why": "TLS is configured and non-HTTPS requests are rejected, but the code does not show or pin the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS protects data in transit and passwords are bcrypt-hashed, but recovery tokens are stored unencrypted in server memory."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is sent, and the mock delivery exposes the recovery token in the API response and UI logs rather than guarding it in an email message."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifier, token, and password inputs are validated with strict checks, and dynamic UI content is rendered with textContent rather than HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is restricted to same-origin views via an allowlist and pushState, and no external redirect targets are constructed."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the code, so their safety or inclusion of user-supplied scripts/HTML cannot be directly observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client logs the mock recovery token, recovery link, and MFA code to the UI log and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although the password is bcrypt-hashed, the MFA code is a hardcoded secret in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The hardcoded MFA test code 246810 acts as a default credential for the verification step."
+    },
+    "13": {
+      "score": 5,
+      "why": "Token and MFA verification track failures and block further attempts for one minute after five failures."
+    },
+    "14": {
+      "score": 1,
+      "why": "The recovery response adds mockDeliveryToken and mockRecoveryLink only for the known mock identifier, revealing that this identifier is recoverable."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is generated with crypto.getRandomValues as a 32-byte random value and is bound to the requesting session's recovery state."
+    }
+  },
+  "cost_usd": 0.076802,
+  "generation_id": "gen-1785912349-ryKKh2miKG06c1rxCRei",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 2.8667,
+  "capture_complete": true
+}

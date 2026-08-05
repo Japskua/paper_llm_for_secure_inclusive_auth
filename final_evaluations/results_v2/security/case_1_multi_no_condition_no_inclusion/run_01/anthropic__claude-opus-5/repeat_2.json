@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:39:46.208981+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "Reset records store only a digest, expiry, used flag and an `actionable` boolean — no account/user identifier is bound to the token, so verification cannot actually confirm the code belongs to the requesting user (only that it was minted for the single mock account)."
+    },
+    "2": {
+      "score": 3,
+      "why": "There is only one mock account and tokens are consumed on first verification (`record.used = true`), so reuse across users is limited, but because tokens carry no user binding any session presenting a valid token gains the recovery authorization."
+    },
+    "3": {
+      "score": 4,
+      "why": "`/api/password-update` only deletes the `recoveryAuthorizations` entry; the `sessions` map and issued `sid` cookies are never invalidated after a password change, so pre-existing sessions remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is started with TLS cert/key, HSTS and `upgrade-insecure-requests` are set, and non-HTTPS forwarded requests are rejected with 426, though no explicit minimum TLS version is pinned."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 digests and compared with `timingSafeEqual`, and passwords are hashed with Argon2id via `Bun.password.hash`, which are appropriate algorithms for these secrets."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is ever sent; the 'simulated delivery' instead returns the raw reset token in the JSON response and prints it (plus the MFA code) into the on-page log, which is the opposite of guarding delivery content."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated — `validIdentifier` and `validResetToken` regexes, numeric-only MFA regex, `passwordProblem` policy checks, JSON-only content-type enforcement, and cookie value whitelisting."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link is the relative `/?reset=` URL with `encodeURIComponent`, there are no user-controlled redirects, and CSP sets `form-action 'self'` and `base-uri 'none'`."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates in the code at all, and all dynamic client rendering uses `textContent`/`createTextNode` with a nonce-based CSP, so no user input is ever interpolated as HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server logging is sanitised (`[audit] Password recovery update completed securely.`) and error pages return generic text, but the client explicitly logs the raw reset token and MFA code via `safeLog` to the console and visible log panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Secrets are hardcoded in the source: `MFA_TEST_CODE = \"246810\"`, `MOCK_ACCOUNT_IDENTIFIER`, and the initial password literal `\"Initial-Demo-Password-Only!\"`."
+    },
+    "12": {
+      "score": 2,
+      "why": "A fixed default MFA value (`246810`) always satisfies the second factor and a hardcoded default initial password hash is seeded, so default credentials effectively exist even though there is no login endpoint."
+    },
+    "13": {
+      "score": 4,
+      "why": "`limited()` throttles to 3 reset requests, 5 verify attempts, and 5 MFA attempts per 10-minute window, though the buckets are stored per-session and reset by simply discarding the `sid` cookie."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/reset-request` always returns the identical generic message plus a token (a decoy for unknown identifiers), and decoy tokens even progress through verify/MFA/update with identical responses, so existence is never disclosed."
+    },
+    "15": {
+      "score": 3,
+      "why": "Tokens are 32 bytes from `randomBytes` (base64url, high entropy) and single-use, but they are not user-specific since no account identifier is associated with the reset record."
+    }
+  },
+  "cost_usd": 0.133225,
+  "generation_id": "gen-1785911944-EPKpCKIzWP42SuVMigLQ",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 3,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.2667,
+  "capture_complete": true
+}

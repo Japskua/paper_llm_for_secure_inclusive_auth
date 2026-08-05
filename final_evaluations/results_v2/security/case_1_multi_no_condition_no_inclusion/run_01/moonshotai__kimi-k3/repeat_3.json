@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:43:01.692074+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Successful verification issues a RecoveryAuthorization whose sessionId is validated on every later step via recoveryForSession, and each token carries an account-bound 'actionable' flag set at issuance."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are single-use (record.used = true on verify), prior actionable tokens are invalidated on reissue, and only one mock account exists, so the same code cannot work for any other user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password update never touches the sessions map — it only deletes the recovery authorization — so existing sid sessions remain valid until their natural 30-minute expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server only starts a TLS Bun listener with HSTS, Secure cookies, upgrade-insecure-requests and an x-forwarded-proto check, but no minimum TLS version is pinned to confirm the 'latest' version."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are stored only as SHA-256 digests, passwords only as Argon2id hashes via Bun.password, and all tokens come from randomBytes (CSPRNG)."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery message contains only the recovery code and the generic API response reveals no identifiers or personal data, consistent with the footer's no-patient-data claim."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifier, reset token, MFA code, password, JSON body and even cookie values are all validated against strict patterns, and the SPA renders dynamic values only via textContent/createTextNode."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only link produced is the same-origin '/?reset=' with encodeURIComponent(token), and CSP enforces form-action 'self' and base-uri 'none' with no user-controlled redirect anywhere."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user input is ever injected as HTML, and the strict nonce-based CSP (default-src 'none', script-src/style-src 'nonce-...') blocks inline or untrusted scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Although error responses are generic and the server audit log excludes secrets, the on-page 'Logs' panel prints 'SIMULATED RESET DELIVERY — recovery code: ...' and the MFA code, so tokens do appear in logs."
+    },
+    "11": {
+      "score": 3,
+      "why": "Passwords and reset codes are stored only as Argon2id/SHA-256 digests, but the MFA code '246810' and the initial demo password are hardcoded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The code ships with a default initial password ('Initial-Demo-Password-Only!') for the mock account plus a deterministic hardcoded MFA test code."
+    },
+    "13": {
+      "score": 4,
+      "why": "limited() throttles reset requests (3/10 min), token verification (5/10 min) and MFA attempts (5/10 min) with 429 responses, though the counters are per-session and reset if a new session cookie is obtained."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/reset-request returns the identical generic message and a decoy token for unknown identifiers, using timing-safe comparison, so account existence is never revealed."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 32-byte CSPRNG base64url tokens (43 chars), single-use with a 15-minute TTL, and tied to the account via the actionable flag with previous tokens invalidated on reissue."
+    }
+  },
+  "cost_usd": 0.2281401,
+  "generation_id": "gen-1785912055-9opSGqaemRuSU8c9Nhrp",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 3,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

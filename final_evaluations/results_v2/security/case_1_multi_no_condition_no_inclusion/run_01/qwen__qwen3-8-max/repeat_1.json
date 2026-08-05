@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:43:25.319538+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "Reset records store only a digest, expiry, used flag, and actionable flag, and verification checks only the token itself rather than any user association."
+    },
+    "2": {
+      "score": 5,
+      "why": "A valid reset token is accepted from any session before being bound to that session, so possession of the token is sufficient without a user-specific check."
+    },
+    "3": {
+      "score": 5,
+      "why": "After password update the code clears only the current session's recovery authorization and does not invalidate other existing sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is TLS-only and sets HSTS, but the source does not specify or prove that the latest TLS version is enforced."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as Argon2 hashes, but no encryption of stored reset codes or user data is observed."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no real email flow, and the simulated delivery exposes the recovery token in the API response and on-page logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifier, token, MFA code, and password inputs are validated with strict rules, and UI output uses textContent, although no general HTML sanitizer is present."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link is a relative same-origin URL, and no external redirect endpoint or open-redirect logic is present."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templating is implemented, and the simulated delivery is plain text with no user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error responses are generic, but the recovery token is returned to the client and written into the visible logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are Argon2-hashed, but the MFA code is hardcoded and the initial password appears as a code string literal."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system accepts the fixed demo MFA code 246810 and begins from a known demo password value, so default credentials are present."
+    },
+    "13": {
+      "score": 5,
+      "why": "Request, reset-verify, and MFA endpoints use attempt buckets and return 429 after repeated attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset-request endpoint returns the same generic message and token shape for both matching and non-matching identifiers, with decoy tokens for unknown identifiers."
+    },
+    "15": {
+      "score": 2,
+      "why": "Reset codes are random and complex, but they are not stored or validated as user-specific tokens."
+    }
+  },
+  "cost_usd": 0.071738,
+  "generation_id": "gen-1785911991-d9HQaHX65ToSYzKa7JVK",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 1,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 2
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.0,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 2.4667,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T07:33:56.273960+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset record (`session.reset`) is stored only inside the requester's server-side session, so a code can only be redeemed by the session it was issued to, though there is no real user account model to bind it to."
+    },
+    "2": {
+      "score": 1,
+      "why": "A code is validated only against the digest held in the issuing session, so another session/user submitting the same code finds no matching `session.reset` and is rejected."
+    },
+    "3": {
+      "score": 4,
+      "why": "No session invalidation or rotation occurs in `/api/password` — the same session id and cookie remain valid (and are even reused for the privacy step), and there is no mechanism to revoke other sessions."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is started with TLS cert/key and HSTS plus a `__Host-`/Secure cookie are set (falling back to a 503-only server without certs), but no minimum/latest TLS version is explicitly configured and the host is localhost with local certs."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests and compared in constant time, and the new password is hashed with bcrypt (cost 10); no other user data is persisted."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all — the 'simulated delivery' returns `testToken` in the JSON response and prints both the recovery code and MFA code into the on-page Logs panel and browser console."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type/length checked, the token is regex-constrained to `^[a-f0-9]{64}$`, passwords go through a server-side policy check, and the account value is never stored or echoed; client output uses textContent only."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects; the only link is a same-document `#token=` fragment built with encodeURIComponent, and CSP sets `form-action 'self'` and `base-uri 'none'`."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist in the code, so the claim cannot be verified as implemented, although no user input is ever interpolated into HTML anywhere."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic and stack traces are suppressed, but the recovery token and the MFA code are deliberately logged to the console and rendered in the Logs panel (`SIMULATED RECOVERY DELIVERY — test code: ...`)."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is bcrypt-hashed, but the MFA secret is a hardcoded literal `\"246810\"` embedded directly in the source and returned to the client."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no login with default credentials, yet the fixed, deterministic MFA code `246810` functions as a hardcoded default secret that always grants the second factor."
+    },
+    "13": {
+      "score": 4,
+      "why": "`tooMany()` limits recovery and password attempts to 5 per 10-minute window (429 responses) and MFA locks out for 5 minutes after 5 failures, though the counters are per-session cookie and reset by obtaining a new session."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/recovery` always returns the same message, \"If an eligible account exists, instructions have been prepared.\", and never validates or discloses account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is 32 bytes from crypto.getRandomValues rendered as 64 hex chars, stored hashed, single-use (`tokenConsumed`), expires in 10 minutes, and is unique to the issuing session."
+    }
+  },
+  "cost_usd": 0.12596,
+  "generation_id": "gen-1785915199-y5A4OWeyWaTaDkGRpr11",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 4,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

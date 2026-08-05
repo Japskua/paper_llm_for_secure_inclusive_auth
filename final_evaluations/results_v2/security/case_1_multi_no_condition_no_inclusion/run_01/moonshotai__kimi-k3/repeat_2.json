@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:42:18.979348+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The verify endpoint checks the token was issued, is unused and unexpired, and password update is gated by a recovery authorization bound to the verifying session (auth.sessionId === session.id), tying the code to the presenting user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are consumed on first verification (record.used = true) and the resulting recovery authorization is bound to a single sessionId, so the same code cannot work for any other user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password update deletes only the recovery authorization and never removes entries from the sessions map, so prior sessions remain usable until their 30-minute TTL, though they are anonymous CSRF sessions rather than authenticated user sessions."
+    },
+    "4": {
+      "score": 4,
+      "why": "The listener is TLS-only with HSTS, Secure cookies and rejection of non-HTTPS x-forwarded-proto, but the code does not explicitly configure or pin a TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 digests and passwords as argon2id hashes, which are appropriate storage algorithms, though this is hashing rather than encryption and all data is held in memory."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery message contains only generic non-enumerating text plus the recipient's own token, with the mock account identifier never returned to clients, though the delivery is an on-screen simulation rather than a real guarded email."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are validated and normalized (identifier whitelist regex, token pattern, strict JSON body typing, cookie value regex) and all dynamic output uses textContent/createTextNode rather than HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only link constructed is a same-origin relative '/?reset=…' URL, there are no redirect endpoints or user-controlled redirect targets, and CSP enforces form-action 'self' and base-uri 'none'."
+    },
+    "9": {
+      "score": 5,
+      "why": "The simulated delivery is rendered via document.createTextNode and every dynamic UI value uses textContent, so no user input is ever inserted as HTML or script."
+    },
+    "10": {
+      "score": 3,
+      "why": "Error responses and the server audit log are generic and exclude IDs, tokens and passwords, but the UI panel literally labelled 'Logs' deliberately displays the recovery token and MFA code as the simulated delivery channel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Runtime storage is secure (argon2id password hashing, SHA-256 token digests), but the initial password 'Initial-Demo-Password-Only!' and the MFA secret '246810' are hardcoded plaintext constants in the source code."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system ships with a known built-in initial password and a fixed MFA test code, which function as default credentials until a reset occurs."
+    },
+    "13": {
+      "score": 4,
+      "why": "The limited() function throttles reset-request (3/10min), token verify (5/10min) and MFA (5/10min) attempts with 429 responses, though the buckets are per-session and can be reset by obtaining a new session."
+    },
+    "14": {
+      "score": 5,
+      "why": "reset-request returns an identical generic message and same-shaped response with a decoy token for unknown identifiers, using constant-time comparison, so account existence is never revealed."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are 256-bit CSPRNG base64url values (random and complex) that become bound to the verifying session via the recovery authorization, though they are not explicitly bound to a user account at issuance."
+    }
+  },
+  "cost_usd": 0.219348,
+  "generation_id": "gen-1785912047-6QXkEhZApm4THI7pUhOR",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 3,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

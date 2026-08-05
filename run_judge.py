@@ -42,7 +42,11 @@ REPO = pathlib.Path(__file__).resolve().parent
 RUBRICS = REPO / "final_evaluations" / "evaluation_rubrics"
 RESULTS = REPO / "final_evaluations" / "results_v2"
 
-_print_lock = threading.Lock()
+# Reentrant by necessity: work() holds this while updating counters and then
+# calls log(), which acquires it again. With a plain Lock that is a self
+# deadlock — every run stopped dead on its 25th completion, with the remaining
+# workers blocking behind the stuck one.
+_print_lock = threading.RLock()
 
 
 def log(msg: str) -> None:

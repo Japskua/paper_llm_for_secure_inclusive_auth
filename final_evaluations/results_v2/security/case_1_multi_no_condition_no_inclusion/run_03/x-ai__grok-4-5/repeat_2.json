@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T07:34:59.016901+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "Reset tokens are bound only to the anonymous browser session that requested them; the submitted account is not retained or checked, so there is no true per-user ownership verification."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset digest lives only on the creating session, so the same code cannot be verified from a different user’s session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password update only sets flags/hash on the current session and never invalidates or enumerates any other sessions."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server refuses to serve the app without TLS certs and sends HSTS, but it does not pin or document a specific latest TLS version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens are SHA-256-digested and passwords bcrypt-hashed in memory; nothing is encrypted at rest, and account data is not stored."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email sender; API messages are generic and do not echo the account or other private fields."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type/length/format-checked and not HTML-interpolated; client errors use textContent, though there is no general-purpose sanitizer library."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only recovery link is same-origin path + hash built in the client; no server-side open redirect exists."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates consume user input; delivery is simulated without rendering account-controlled HTML/scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error JSON is generic, but test recovery/MFA codes are returned in API responses and written to the on-page log panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in session state, yet the MFA secret is the hardcoded string \"246810\" in source."
+    },
+    "12": {
+      "score": 3,
+      "why": "There is no password login or default admin user, but the fixed demo MFA code acts as a known default second factor."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery, password, and MFA paths throttle or lock out after repeated failures (windowed counters and MFA lockedUntil)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery always returns the same eligible-account wording and never indicates whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are 32-byte crypto random values (64 hex chars), stored only as digests on the requesting session."
+    }
+  },
+  "cost_usd": 0.017866,
+  "generation_id": "gen-1785915252-3mz1YaZU4fxghj7lG1bG",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:39:46.784852+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating the token against the session-bound recovery authorization."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for any other user because tokens are consumed upon use and bound to a specific session."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after a password reset by clearing the recoveryAuthKey and session-bound authorizations."
+    },
+    "4": {
+      "score": 5,
+      "why": "The website enforces HTTPS with TLS (certificate and key are loaded, and plaintext HTTP is rejected)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed with SHA-256 and stored securely, and user data is not exposed in plaintext."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages (simulated logs) hide private user data; only test tokens are shown."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., email, passwords) is validated and sanitized (e.g., `validIdentifier`, `passwordProblem`)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are only to the hospital’s site (simulated reset link is relative to the same origin)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates (simulated logs) contain no scripts or HTML from user input; only text is appended."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs explicitly exclude account IDs, tokens, and passwords (e.g., audit log omits sensitive data)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are stored as Argon2id hashes; no plaintext or hardcoded secrets are in the code."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials are present; all sessions and tokens are dynamically generated."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system bars excessive attempts via rate-limiting (e.g., `limited` function for request/verify/MFA attempts)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether the username/email exists (generic message for all identifiers)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset codes are random (32-byte tokens), complex, and user-specific (bound to session and actionable flag)."
+    }
+  },
+  "cost_usd": 0.015903,
+  "generation_id": "gen-1785911982-lc1ySSEya9BNktCcJxhx",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

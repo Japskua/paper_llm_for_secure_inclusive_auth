@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:40:32.592159+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Actionable reset tokens are issued only when the identifier matches the mock account, and verification consumes that token before binding recovery auth to the session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A non-actionable decoy token cannot change the password, and an actionable token is single-use and not shared across users, so the same code does not work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "password-update clears only the current recovery authorization and never invalidates other entries in the sessions map, so prior sessions keep working."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is started with TLS cert/key and HSTS plus upgrade-insecure-requests are set, but the TLS protocol version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords use argon2id and reset tokens are stored as SHA-256 digests, which is appropriate protection but not encryption of reset codes or user data."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email body; the API always returns the same generic message and does not include account identifiers, though a demo testToken is returned for simulation."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers, tokens, and passwords are validated with strict allowlists/rules, JSON bodies are type-checked, and the SPA inserts values only via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only reset link built is a same-origin relative URL (/?reset=...), and the server has no open-redirect parameter handling."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML templates exist; simulated delivery does not interpolate user input into scripts or HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server error responses and the audit log avoid secrets, but the API returns testToken/testMfaCode and the on-page Logs UI prints recovery and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "The live password is kept as an argon2id hash, yet MFA_TEST_CODE and the initial password plaintext are hardcoded in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed demo MFA code 246810 and known initial mock password act as default credentials that the flow accepts."
+    },
+    "13": {
+      "score": 5,
+      "why": "limited() throttles reset-request (3/10min), reset-verify (5/10min), and mfa-verify (5/10min) and returns 429 when exceeded."
+    },
+    "14": {
+      "score": 5,
+      "why": "reset-request always returns the same generic message and shape for every identifier, issuing decoy tokens for non-matches."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are 32-byte base64url values from randomBytes, stored by SHA-256 digest, single-use/expiry-bound, and only the matching account gets an actionable token."
+    }
+  },
+  "cost_usd": 0.0172452,
+  "generation_id": "gen-1785911986-9DCbHpNVuXxGJCJOocPx",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:46:41.507890+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Verify and reset handlers only accept the recovery token bound to the current session's recovery state and require accountRef === \"protected-account\" before password change."
+    },
+    "2": {
+      "score": 1,
+      "why": "The reset token lives only in the requesting session's state.recovery; another session has no matching recovery token so the same code cannot authorize a different user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only updates the current session flags and protectedAccount.passwordHash; no code invalidates or removes other existing sessions in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and non-HTTPS requests are rejected, but the TLS protocol version is not explicitly pinned to the latest."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are bcrypt-hashed, but recovery tokens and session fields are stored as plaintext in memory rather than encrypted at rest."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email body with user PII; API messaging is generic, though the mock delivery returns the raw token in the JSON response."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers and passwords are validated with strict allowlists/policies, JSON is parsed safely, and the client inserts values only via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses same-origin history.pushState with a fixed view allowlist; mockRecoveryLink is only a relative path on this host."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates render user-controlled HTML/scripts; recovery is mock-only without composing HTML from input."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but mock recovery tokens and MFA codes are returned in API JSON and written to the on-page log/UI."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hashes use bcrypt in memory, but MFA_TEST_CODE and the mock recovery identifier are hardcoded secrets in source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed MFA_TEST_CODE \"246810\" and known MOCK_RECOVERY_SCENARIO act as built-in default credentials for the flow."
+    },
+    "13": {
+      "score": 5,
+      "why": "tokenAttempts and mfaAttempts lock out after MAX_FAILURES (5) for BLOCK_MS (60s) and return HTTP 429 while blocked."
+    },
+    "14": {
+      "score": 2,
+      "why": "The generic message is always the same, but only the eligible mock identifier receives mockDeliveryToken/mockRecoveryLink, revealing account eligibility."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery tokens are 32-byte crypto.getRandomValues values, URL-safe encoded, single-use, expiring, and bound to the session/accountRef."
+    }
+  },
+  "cost_usd": 0.0367144,
+  "generation_id": "gen-1785912341-IFPV2M0PZ77QDNPJR1yG",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

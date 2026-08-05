@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:48:40.812588+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "reset-verify checks only the token digest, expiry, and used flag, not that the code is bound to the requesting user's account."
+    },
+    "2": {
+      "score": 3,
+      "why": "An unused reset token is accepted by any session that presents it because verification does not bind it to a user, although it is consumed after first successful verification."
+    },
+    "3": {
+      "score": 5,
+      "why": "password-update deletes only the recovery authorization and does not invalidate or rotate entries in the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is started with Bun.serve TLS and rejects non-HTTPS forwarded requests, but no minimum or latest TLS version is configured or evidenced."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as Argon2 hashes, but neither reset codes nor user data are encrypted by the code."
+    },
+    "6": {
+      "score": 2,
+      "why": "The API uses a generic message, but the simulated delivery returns and logs the reset token instead of guarding it as private email content."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs for identifier, token, MFA code, and password are validated with strict patterns, and dynamic DOM output uses textContent rather than HTML insertion."
+    },
+    "8": {
+      "score": 5,
+      "why": "The generated reset link is the relative path '/?reset=...' and no code redirects to external or non-hospital URLs."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist in the source, and the served page avoids user-controlled HTML, but there is no actual email template to assess."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses and server audit logs are generic, but safeLog writes the reset token and MFA code into the visible client log and console."
+    },
+    "11": {
+      "score": 1,
+      "why": "The initial password string and fixed MFA code '246810' are hard-coded, even though the runtime password hash is Argon2."
+    },
+    "12": {
+      "score": 1,
+      "why": "The recovery flow accepts the hard-coded MFA code '246810' and starts from a hard-coded demo password, so default/demo credentials exist."
+    },
+    "13": {
+      "score": 4,
+      "why": "limited() enforces attempt caps for reset requests, token verification, and MFA verification, returning 429 when the per-session threshold is reached."
+    },
+    "14": {
+      "score": 5,
+      "why": "reset-request returns the same generic message and a decoy or real testToken without indicating whether the identifier matched the mock account."
+    },
+    "15": {
+      "score": 2,
+      "why": "makeToken creates random high-entropy codes, but reset records do not store or check a user identifier, so the codes are not user-specific."
+    }
+  },
+  "cost_usd": 0.064238,
+  "generation_id": "gen-1785912286-T3o5iSW3uEnwvie084oj",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 3,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 1,
+    "12": 1,
+    "13": 4,
+    "14": 5,
+    "15": 2
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 2.6,
+  "capture_complete": true
+}

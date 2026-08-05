@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T07:39:03.219870+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token is verified against the SHA-256 digest stored in the current session reset record, so it is bound to that session rather than being globally accepted."
+    },
+    "2": {
+      "score": 1,
+      "why": "A submitted reset code is accepted only if it matches the digest in the same session's reset record, so it does not work for another user's session."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password reset updates only the current session and no code revokes other active session records, so previous session cookies can remain usable until they expire."
+    },
+    "4": {
+      "score": 2,
+      "why": "TLS is started only if local certificate files exist, with no configured minimum/latest TLS version and no HTTP-to-HTTPS redirect."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as bcrypt hashes, but the code does not encrypt reset codes or user data."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent, and the simulated delivery exposes the recovery code in the page and console rather than guarding it."
+    },
+    "7": {
+      "score": 3,
+      "why": "Inputs are length/format validated and dynamic values are written with textContent, but there is no general sanitization of the account/email input."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only recovery link is built from the current pathname with a fragment token, and there are no external redirect targets."
+    },
+    "9": {
+      "score": 4,
+      "why": "The source has no email templates, and the simulated notifications are static strings that do not include user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic errors avoid details, but the recovery token and MFA code are displayed in the Logs panel and browser console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt hashed and reset tokens digested, but the fixed MFA code is present in the source and returned to the client."
+    },
+    "12": {
+      "score": 2,
+      "why": "There are no default username/password accounts, but the hardcoded MFA code 246810 functions as a default secret."
+    },
+    "13": {
+      "score": 5,
+      "why": "MFA verification locks after five failed attempts, and recovery/password endpoints throttle repeated attempts within a time window."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the same generic message for any account input and does not check or reveal account existence."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset tokens are generated with crypto.getRandomValues as 64-character hex values and stored per session, though they are not tied to a verified account identity."
+    }
+  },
+  "cost_usd": 0.081536,
+  "generation_id": "gen-1785915285-eIbrIDGLLBzdtfaYauQq",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 2,
+    "5": 2,
+    "6": 2,
+    "7": 3,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

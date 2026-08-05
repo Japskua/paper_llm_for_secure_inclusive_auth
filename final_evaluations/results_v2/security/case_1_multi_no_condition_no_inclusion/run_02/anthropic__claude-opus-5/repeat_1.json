@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:45:36.555199+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The recovery token is stored inside the requester's server-side session (`state.recovery`) and reset-password additionally checks `state.recovery.accountRef === \"protected-account\"`, so a code can only be used by the session/account it was issued to."
+    },
+    "2": {
+      "score": 1,
+      "why": "False for this system: tokens live only in the issuing session's server state and are compared with `equalSecurely` against that session's token, so another session's code is rejected."
+    },
+    "3": {
+      "score": 5,
+      "why": "True: `Bun.password.hash` updates `protectedAccount.passwordHash` but nothing deletes or invalidates entries in the `sessions` map, so pre-existing sessions (including the current one) remain valid after the reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is started with a TLS-only listener and non-HTTPS requests are rejected, plus HSTS and `upgrade-insecure-requests`, though no explicit `minVersion`/cipher policy is set (relies on Bun defaults, which include TLS 1.3)."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens and the CSRF/session identifiers are held in plaintext in the in-memory maps with no hashing or encryption at rest."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all; the 'mock delivery' returns the raw recovery token in the JSON response and echoes it into the client-side log panel rather than guarding it."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated (`validAccountIdentifier` regexes, length caps, `passwordPolicy`, JSON body type checks) and all output is inserted via `textContent`, never `innerHTML`."
+    },
+    "8": {
+      "score": 5,
+      "why": "All navigation uses relative same-origin URLs through `go()` with a whitelist in `safeView()`, and CSP sets `base-uri 'none'`, `form-action 'self'`, `default-src 'self'` — no user-controlled redirect targets exist."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist in the code, and no server-rendered HTML interpolates user input (only the server-generated nonce), so no script/HTML injection path via messaging is present."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces, but the client explicitly logs secrets — `log(\"Mock recovery delivery token: \" + ...)` and `log(\"Mock MFA verification code: \" + result.mockMfaCode)` — to the console and on-page log panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but `MFA_TEST_CODE = \"246810\"` and the eligibility value `MOCK_RECOVERY_SCENARIO` are hardcoded secrets in the source with no configuration/secret store."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed, hardcoded MFA code `246810` functions as a static default credential that always satisfies `/api/mfa/verify`, so default credentials are effectively permitted."
+    },
+    "13": {
+      "score": 4,
+      "why": "`blocked()`/`registerFailure()` lock token and MFA verification for 60s after 5 failures, though the counters are per-session and can be reset by obtaining a fresh session cookie."
+    },
+    "14": {
+      "score": 4,
+      "why": "`/api/recovery/request` always returns the identical generic message, but the presence of `mockDeliveryToken`/`mockRecoveryLink` in the response for the eligible value does distinguish that one account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from `randomValue(32)` using `crypto.getRandomValues` (256 bits, URL-safe base64), are single-use, expire in 10 minutes, and are bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.1365,
+  "generation_id": "gen-1785912301-mmDkKjQ2XLpGlJk7XSWE",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

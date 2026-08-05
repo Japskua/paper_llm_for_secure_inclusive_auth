@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 2,
+  "judged_at": "2026-08-05T06:40:12.022158+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "Reset tokens store an actionable flag in a global map rather than being directly bound to a specific user account prior to verification."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are single-use and consumed immediately upon initial verification by setting used to true."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating the password clears the recovery authorization for the current session but does not clear or invalidate other active session records."
+    },
+    "4": {
+      "score": 4,
+      "why": "HTTPS and HSTS headers are enforced via Bun.serve with TLS certificates, relying on the runtime default TLS version settings."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords are encrypted using the Argon2id hashing algorithm."
+    },
+    "6": {
+      "score": 5,
+      "why": "The application simulates recovery notifications without exposing private patient details or account identifiers."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated against strict regex pattern and length limits, and dynamic UI elements use textContent for safe output."
+    },
+    "8": {
+      "score": 5,
+      "why": "All navigation and reset links use relative same-origin paths protected by Content Security Policy directives."
+    },
+    "9": {
+      "score": 5,
+      "why": "No HTML email templates exist, and simulated log outputs render safely as standard text nodes."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error responses return generic status messages, and server audit logs exclude credentials, tokens, and private identifiers."
+    },
+    "11": {
+      "score": 2,
+      "why": "While passwords are hashed securely, a static MFA verification code (246810) is hardcoded directly in the source file."
+    },
+    "12": {
+      "score": 2,
+      "why": "The application sets up a default initial password string directly in the codebase for demo account initialization."
+    },
+    "13": {
+      "score": 5,
+      "why": "Endpoints for reset requests, token verifications, and MFA checks enforce attempt throttling via sliding time windows."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset request endpoint returns identical confirmation messages and decoy payload structures regardless of whether the account exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are cryptographically generated using 32 random bytes, though they map to actionable states rather than specific user IDs before verification."
+    }
+  },
+  "cost_usd": 0.0389565,
+  "generation_id": "gen-1785911982-5JX55cftDjQTFg1FevKm",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

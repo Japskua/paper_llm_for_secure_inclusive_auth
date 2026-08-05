@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:45:46.765306+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system verifies that the provided recovery code matches the token tied specifically to the user's active session state."
+    },
+    "2": {
+      "score": 1,
+      "why": "Recovery tokens are generated per session and checked strictly against the session's recorded recovery state, so a code cannot be reused for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset handler updates the password hash but does not clear or invalidate existing sessions in the global sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application runs on Bun's TLS listener with HTTPS enforced and HSTS headers enabled."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset codes are kept in plain text in session memory, and passwords are hashed with bcrypt rather than encrypted."
+    },
+    "6": {
+      "score": 5,
+      "why": "The recovery message returns generic text and explicitly avoids disclosing sensitive patient or user details."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are formatted and validated strictly, and all dynamic UI text is set safely using textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation logic is locked to relative paths and a hardcoded whitelist of allowed local view names."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application sends static JSON response messages without reflecting unescaped dynamic HTML or scripts."
+    },
+    "10": {
+      "score": 5,
+      "why": "Server error responses return sanitized generic text and withhold stack traces, debug data, and tokens."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA verification secret code is hardcoded directly into the source code as a constant."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default accounts or default credential fallbacks exist in the implementation."
+    },
+    "13": {
+      "score": 5,
+      "why": "Both recovery token and MFA verification handlers enforce rate limits by blocking attempts for 60 seconds after 5 failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request endpoint returns a uniform success message regardless of whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using 32 bytes of cryptographically secure random data bound to the individual recovery state."
+    }
+  },
+  "cost_usd": 0.0436935,
+  "generation_id": "gen-1785912325-LqFyhkp4G53BwMjfqVVb",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

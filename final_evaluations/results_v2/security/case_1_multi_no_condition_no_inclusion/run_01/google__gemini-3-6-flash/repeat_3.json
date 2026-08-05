@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:39:55.697651+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "Reset tokens stored in the server map do not store or verify association with a specific user identifier."
+    },
+    "2": {
+      "score": 5,
+      "why": "Any session presenting a valid reset token from the global store can verify it regardless of user context."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password update endpoint does not clear or invalidate other active session records in the session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server runs using native Bun TLS configuration and enforces HSTS headers for HTTPS traffic."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed using SHA-256 digests and passwords are stored as Argon2id hashes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The simulated delivery mechanisms use generic server messages that hide private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are strictly validated against character and length constraints, and UI output is rendered via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Generated links use relative URLs on the same origin and standard security headers enforce self-contained routing."
+    },
+    "9": {
+      "score": 5,
+      "why": "No HTML email templates are rendered, and all dynamic client updates avoid HTML/script interpretation."
+    },
+    "10": {
+      "score": 5,
+      "why": "Audit logs and error responses explicitly omit user identifiers, plaintext passwords, and token values."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are hashed using Argon2id and reset tokens are stored as SHA-256 digests rather than plaintext code constants."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application does not use or accept default system or administrative credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting via time-window buckets restricts repeated request, verification, and MFA attempts with HTTP 429 responses."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset request handler returns an identical generic response and test token structure regardless of account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are created using cryptographically secure 32-byte random base64url tokens."
+    }
+  },
+  "cost_usd": 0.03978,
+  "generation_id": "gen-1785911975-iVDPW5YK2TIfvTAPGADk",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}
