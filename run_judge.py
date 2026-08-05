@@ -114,6 +114,36 @@ def record_path(track: str, case: str, run: str, judge: str, repeat: int) -> pat
     return RESULTS / track / case / run / slug(judge) / f"repeat_{repeat}.json"
 
 
+def write_record(path: pathlib.Path, record: Dict[str, Any]) -> None:
+    """
+    Write atomically. A process killed midway through a plain write leaves a
+    truncated file that still exists, which resume would treat as done and the
+    table builder would silently drop.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(path)
+
+
+def is_done(path: pathlib.Path) -> bool:
+    """
+    A judgement counts as done only if it is a readable success, or a permanent
+    and legitimate skip (an artifact with no screenshots can never be scored on
+    the inclusivity track). Transient failures and truncated files are redone,
+    so a crashed or rate-limited run does not bake its errors into the dataset.
+    """
+    if not path.is_file():
+        return False
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    if record.get("ok"):
+        return True
+    return record.get("reason") == "no_screenshots"
+
+
 def build_tables(args) -> Dict[str, int]:
     """Collect every record on disk into three analysis-ready CSVs."""
     from app.utils.judge import CONSTRUCTS, REVERSE_CODED
@@ -220,8 +250,13 @@ def main() -> int:
         f"x {args.repeats} repeats = {len(jobs)} judgements")
 
     todo = [j for j in jobs
-            if args.force or not record_path(j[1], j[0]["case"], j[0]["run"], j[2], j[3]).is_file()]
-    log(f"{len(todo)} to run, {len(jobs) - len(todo)} already on disk")
+            if args.force or not is_done(record_path(j[1], j[0]["case"], j[0]["run"], j[2], j[3]))]
+    retries = sum(
+        1 for j in todo
+        if record_path(j[1], j[0]["case"], j[0]["run"], j[2], j[3]).is_file()
+    )
+    log(f"{len(todo)} to run ({retries} of them retries of earlier failures), "
+        f"{len(jobs) - len(todo)} already complete")
 
     if args.dry_run:
         for a, track, judge, rep in todo[:10]:
@@ -244,12 +279,11 @@ def main() -> int:
         a, track, judge, rep = job
         out = record_path(track, a["case"], a["run"], judge, rep)
         if track == "inclusivity" and a["screenshot_count"] == 0:
-            out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(json.dumps({
+            write_record(out, {
                 "ok": False, "reason": "no_screenshots", "artifact_id": a["artifact_id"],
                 "case": a["case"], "run": a["run"], "track": track,
                 "judge": judge, "repeat": rep,
-            }, indent=2), encoding="utf-8")
+            })
             with _print_lock:
                 done["skipped"] += 1
             return
@@ -263,8 +297,7 @@ def main() -> int:
                    "artifact_id": a["artifact_id"], "case": a["case"], "run": a["run"],
                    "track": track, "judge": judge, "repeat": rep}
         rec["capture_complete"] = a["capture_complete"]
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(json.dumps(rec, ensure_ascii=False, indent=2), encoding="utf-8")
+        write_record(out, rec)
         with _print_lock:
             if rec.get("ok"):
                 done["ok"] += 1
