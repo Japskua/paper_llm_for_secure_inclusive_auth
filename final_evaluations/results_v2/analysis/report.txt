@@ -6,6 +6,9 @@ DATASET
   artifacts             : 30
   judges                : 7
   repeats per judge     : [np.int64(1), np.int64(2), np.int64(3)]
+  generator lab         : openai (generated the artifacts under test)
+  independent           : 6 judge(s) — claude-opus-5, gemini-3.6-flash, mistral-medium-3-5, kimi-k3, qwen3.8-max, grok-4.5
+  generator_lab         : 1 judge(s) — gpt-5.6-sol
   filters applied       : 1 degenerate judge/track combination(s) dropped
 
   NON-DISCRIMINATING JUDGES (artifact-level SD below 0.05):
@@ -15,13 +18,13 @@ DATASET
 CASE MEANS  (artifact score = median across judges, mean across repeats)
 ==============================================================================
   case                    track           n    mean     SD  median    min    max
-  1 no condition          security       10    3.50   0.21    3.52   3.07   3.88
-  2 ADHD mentioned        security       10    3.70   0.08    3.68   3.60   3.84
-  3 detailed guidance     security       10    3.64   0.14    3.64   3.38   3.83
+  1 no condition          security       10    3.59   0.24    3.64   3.09   3.98
+  2 ADHD mentioned        security       10    3.77   0.13    3.78   3.60   4.04
+  3 detailed guidance     security       10    3.69   0.15    3.69   3.44   3.87
 
-  1 no condition          inclusivity    10    3.31   0.07    3.30   3.20   3.42
-  2 ADHD mentioned        inclusivity    10    3.40   0.12    3.40   3.22   3.58
-  3 detailed guidance     inclusivity     9    3.91   0.16    3.89   3.64   4.16
+  1 no condition          inclusivity    10    3.29   0.05    3.29   3.21   3.38
+  2 ADHD mentioned        inclusivity    10    3.37   0.11    3.37   3.20   3.51
+  3 detailed guidance     inclusivity     9    3.91   0.16    3.94   3.61   4.11
 
 
 ==============================================================================
@@ -70,32 +73,76 @@ track                         inclusivity  security
   x-ai/grok-4.5                        3.43      3.76
 
 ==============================================================================
-CASE COMPARISON  (primary test, n=10 artifacts per case)
+SELF-PREFERENCE  (generator's lab vs the independent panel)
+==============================================================================
+  Positive bias = the generator's lab scores its own lab's output
+  higher than the independent panel does.
+
+  track            n  independent  generator    bias  Wilcoxon p    rho
+  security        30         3.68       3.26   -0.42      0.0000   0.68 *
+  inclusivity     29         3.51       3.57    0.06      0.0150   0.82 *
+
+  Does the bias vary by case? A bias that grows with the
+  manipulation would inflate the very comparison being tested.
+  track         case                      mean bias
+  security      1 no condition                -0.39
+  security      2 ADHD mentioned              -0.38
+  security      3 detailed guidance           -0.50
+  security      -> bias differs by case?   p=0.2893
+  inclusivity   1 no condition                 0.13
+  inclusivity   2 ADHD mentioned               0.07
+  inclusivity   3 detailed guidance           -0.02
+  inclusivity   -> bias differs by case?   p=0.1430
+
+==============================================================================
+CASE COMPARISON  (primary test — independent panel, n=10 per case)
 ==============================================================================
 
   SECURITY — Kruskal-Wallis across the three cases
-    H = 7.930, p = 0.0190, epsilon^2 = 0.273 (large effect)
+    H = 5.133, p = 0.0768, epsilon^2 = 0.177 (medium effect)
     n per case: [10, 10, 10]
     pair                                          p (Holm)   Cliff d
-    1 no condition       vs 2 ADHD mentioned        0.0273     -0.70 *
-    1 no condition       vs 3 detailed guidance     0.1513     -0.48
-    2 ADHD mentioned     vs 3 detailed guidance     0.2413      0.32
+    1 no condition       vs 2 ADHD mentioned        0.0831     -0.59
+    1 no condition       vs 3 detailed guidance     0.5079     -0.29
+    2 ADHD mentioned     vs 3 detailed guidance     0.5079      0.31
 
   INCLUSIVITY — Kruskal-Wallis across the three cases
-    H = 19.369, p = 0.0001, epsilon^2 = 0.692 (large effect)
+    H = 19.001, p = 0.0001, epsilon^2 = 0.679 (large effect)
     n per case: [10, 10, 9]
     pair                                          p (Holm)   Cliff d
-    1 no condition       vs 2 ADHD mentioned        0.1032     -0.44
+    1 no condition       vs 2 ADHD mentioned        0.1618     -0.38
     1 no condition       vs 3 detailed guidance     0.0008     -1.00 *
     2 ADHD mentioned     vs 3 detailed guidance     0.0008     -1.00 *
+
+==============================================================================
+CASE COMPARISON  (generator's lab alone — reported, not pooled)
+==============================================================================
+
+  SECURITY (generator lab) — Kruskal-Wallis across the three cases
+    H = 6.086, p = 0.0477, epsilon^2 = 0.210 (medium effect)
+    n per case: [10, 10, 10]
+    pair                                          p (Holm)   Cliff d
+    1 no condition       vs 2 ADHD mentioned        0.0927     -0.58
+    1 no condition       vs 3 detailed guidance     0.8797      0.05
+    2 ADHD mentioned     vs 3 detailed guidance     0.0927      0.54
+
+  INCLUSIVITY (generator lab) — Kruskal-Wallis across the three cases
+    H = 15.831, p = 0.0004, epsilon^2 = 0.565 (large effect)
+    n per case: [10, 10, 9]
+    pair                                          p (Holm)   Cliff d
+    1 no condition       vs 2 ADHD mentioned        0.6227     -0.14
+    1 no condition       vs 3 detailed guidance     0.0021     -0.93 *
+    2 ADHD mentioned     vs 3 detailed guidance     0.0021     -0.93 *
 
 ==============================================================================
 FILES
 ==============================================================================
   final_evaluations/results_v2/analysis/artifact_scores.csv
   final_evaluations/results_v2/analysis/case_comparisons.csv
+  final_evaluations/results_v2/analysis/case_comparisons_generator_lab.csv
   final_evaluations/results_v2/analysis/case_summary.csv
   final_evaluations/results_v2/analysis/constructs_inclusivity.csv
   final_evaluations/results_v2/analysis/constructs_security.csv
   final_evaluations/results_v2/analysis/judge_severity.csv
   final_evaluations/results_v2/analysis/reliability.csv
+  final_evaluations/results_v2/analysis/self_preference.csv

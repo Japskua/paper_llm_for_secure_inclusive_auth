@@ -33,6 +33,18 @@ REPO = pathlib.Path(__file__).resolve().parent
 RESULTS = REPO / "final_evaluations" / "results_v2"
 OUT = RESULTS / "analysis"
 
+def generator_lab() -> str:
+    """
+    The lab whose model generated the artifacts. A judge from that lab is not an
+    independent rater of its own lab's output, so it is analysed as a separate
+    stratum rather than pooled into the panel.
+    """
+    import json
+    m = json.loads((REPO / "generations" / "password_recovery_health"
+                    / "batch_manifest.json").read_text())
+    return str(m["config"]["model"]).split("/")[0]
+
+
 CASE_LABEL = {
     "case_1_multi_no_condition_no_inclusion": "1 no condition",
     "case_2_multi_condition_no_inclusion": "2 ADHD mentioned",
@@ -162,8 +174,9 @@ def compare_cases(df: pd.DataFrame, track: str, label: str) -> list:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--exclude-openai", action="store_true",
-                    help="Self-preference check: drop the judge sharing the generator's lab")
+    ap.add_argument("--pool-generator-lab", action="store_true",
+                    help="Pool the generator's own lab into the primary panel "
+                         "(default: analysed as a separate stratum)")
     ap.add_argument("--exclude-sampled", action="store_true",
                     help="Drop judgements where screenshots were capped to 8")
     ap.add_argument("--complete-capture-only", action="store_true",
@@ -177,10 +190,14 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     jdf = pd.read_csv(RESULTS / "scores_artifact.csv")
 
+    lab = generator_lab()
+    jdf["panel"] = np.where(jdf.judge.str.startswith(lab + "/"),
+                            "generator_lab", "independent")
+
     note = []
-    if args.exclude_openai:
-        jdf = jdf[~jdf.judge.str.startswith("openai/")]
-        note.append("OpenAI judge excluded")
+    if args.pool_generator_lab:
+        jdf["panel"] = "independent"
+        note.append(f"{lab} pooled into the primary panel")
     if args.exclude_sampled and "screenshots_sampled" in jdf.columns:
         jdf = jdf[~jdf.screenshots_sampled.astype(str).isin(["True", "true"])]
         note.append("screenshot-capped judgements excluded")
@@ -213,6 +230,11 @@ def main() -> int:
     print(f"  artifacts             : {jdf.artifact_id.nunique()}")
     print(f"  judges                : {jdf.judge.nunique()}")
     print(f"  repeats per judge     : {sorted(jdf.repeat.unique())}")
+    print(f"  generator lab         : {lab} (generated the artifacts under test)")
+    for cls in ("independent", "generator_lab"):
+        js = sorted(jdf[jdf.panel == cls].judge.unique())
+        if js:
+            print(f"  {cls:<22}: {len(js)} judge(s) — {', '.join(j.split('/')[-1] for j in js)}")
     if note:
         print(f"  filters applied       : {', '.join(note)}")
     if degenerate:
@@ -224,10 +246,21 @@ def main() -> int:
             print(f"    {judge} on {track}: SD={spread:.4f}  [{state}]")
 
     # judge -> artifact -> case, per the pre-registered order
-    per_judge = (jdf.groupby(["artifact_id", "case", "track", "judge"], as_index=False)
+    per_judge = (jdf.groupby(["artifact_id", "case", "track", "judge", "panel"],
+                             as_index=False)
                     .overall.mean().rename(columns={"overall": "judge_score"}))
-    artifact = (per_judge.groupby(["artifact_id", "case", "track"], as_index=False)
-                         .judge_score.median().rename(columns={"judge_score": "artifact_score"}))
+
+    def to_artifact(src: pd.DataFrame) -> pd.DataFrame:
+        return (src.groupby(["artifact_id", "case", "track"], as_index=False)
+                   .judge_score.median()
+                   .rename(columns={"judge_score": "artifact_score"}))
+
+    # Primary scores come from the independent panel only: the generator's own
+    # lab cannot be an impartial rater of its lab's output.
+    independent = per_judge[per_judge.panel == "independent"]
+    artifact = to_artifact(independent)
+    gen_only = per_judge[per_judge.panel == "generator_lab"]
+    artifact_gen = to_artifact(gen_only) if not gen_only.empty else pd.DataFrame()
 
     head("CASE MEANS  (artifact score = median across judges, mean across repeats)")
     print(f"  {'case':<24}{'track':<14}{'n':>3}{'mean':>8}{'SD':>7}{'median':>8}{'min':>7}{'max':>7}")
@@ -287,11 +320,64 @@ def main() -> int:
     print(sev.to_string().replace("\n", "\n  "))
     sev.to_csv(OUT / "judge_severity.csv")
 
-    head("CASE COMPARISON  (primary test, n=10 artifacts per case)")
+    if not artifact_gen.empty:
+        head("SELF-PREFERENCE  (generator's lab vs the independent panel)")
+        merged = artifact.merge(
+            artifact_gen, on=["artifact_id", "case", "track"],
+            suffixes=("_independent", "_generator"))
+        merged["bias"] = merged.artifact_score_generator - merged.artifact_score_independent
+        print("  Positive bias = the generator's lab scores its own lab's output")
+        print("  higher than the independent panel does.\n")
+        print(f"  {'track':<14}{'n':>4}{'independent':>13}{'generator':>11}"
+              f"{'bias':>8}{'Wilcoxon p':>12}{'rho':>7}")
+        rows = []
+        for track in ("security", "inclusivity"):
+            sub = merged[merged.track == track]
+            if len(sub) < 3:
+                continue
+            try:
+                _, pw = stats.wilcoxon(sub.artifact_score_generator,
+                                       sub.artifact_score_independent)
+            except Exception:
+                pw = float("nan")
+            rho = stats.spearmanr(sub.artifact_score_generator,
+                                  sub.artifact_score_independent).statistic
+            mark = " *" if pw < 0.05 else ""
+            print(f"  {track:<14}{len(sub):>4}{sub.artifact_score_independent.mean():>13.2f}"
+                  f"{sub.artifact_score_generator.mean():>11.2f}{sub.bias.mean():>8.2f}"
+                  f"{pw:>12.4f}{rho:>7.2f}{mark}")
+            rows.append({"track": track, "n": len(sub),
+                         "mean_independent": round(sub.artifact_score_independent.mean(), 4),
+                         "mean_generator_lab": round(sub.artifact_score_generator.mean(), 4),
+                         "mean_bias": round(sub.bias.mean(), 4),
+                         "wilcoxon_p": round(float(pw), 5),
+                         "spearman_rho": round(float(rho), 4)})
+        print("\n  Does the bias vary by case? A bias that grows with the")
+        print("  manipulation would inflate the very comparison being tested.")
+        print(f"  {'track':<14}{'case':<24}{'mean bias':>11}")
+        for track in ("security", "inclusivity"):
+            sub = merged[merged.track == track]
+            for case in sorted(sub.case.unique()):
+                b = sub[sub.case == case].bias
+                print(f"  {track:<14}{CASE_LABEL[case]:<24}{b.mean():>11.2f}")
+            groups = [sub[sub.case == c].bias.values for c in sorted(sub.case.unique())]
+            if len(groups) > 2 and all(len(g) > 1 for g in groups):
+                _, pk = stats.kruskal(*groups)
+                print(f"  {track:<14}{'-> bias differs by case?':<24}{'p=' + format(pk, '.4f'):>11}")
+        pd.DataFrame(rows).to_csv(OUT / "self_preference.csv", index=False)
+
+    head("CASE COMPARISON  (primary test — independent panel, n=10 per case)")
     pairs = []
     pairs += compare_cases(artifact, "security", "SECURITY")
     pairs += compare_cases(artifact, "inclusivity", "INCLUSIVITY")
     pd.DataFrame(pairs).to_csv(OUT / "case_comparisons.csv", index=False)
+
+    if not artifact_gen.empty:
+        head("CASE COMPARISON  (generator's lab alone — reported, not pooled)")
+        gpairs = []
+        gpairs += compare_cases(artifact_gen, "security", "SECURITY (generator lab)")
+        gpairs += compare_cases(artifact_gen, "inclusivity", "INCLUSIVITY (generator lab)")
+        pd.DataFrame(gpairs).to_csv(OUT / "case_comparisons_generator_lab.csv", index=False)
 
     artifact.to_csv(OUT / "artifact_scores.csv", index=False)
     head("FILES")
