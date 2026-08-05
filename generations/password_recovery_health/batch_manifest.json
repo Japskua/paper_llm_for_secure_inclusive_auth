@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-04T11:39:17.815730+00:00",
+  "generated_at": "2026-08-05T05:56:11.308352+00:00",
   "software": "password_recovery_health",
   "output_root": "generations",
   "config": {
@@ -10,18 +10,18 @@
     "seed": null,
     "max_iters": 12,
     "runs_per_case": 10,
-    "concurrency": 4,
+    "concurrency": 6,
     "retries": 2,
     "smoke_test": true,
     "flow_test": true
   },
-  "batch_wall_seconds": 409.53,
+  "batch_wall_seconds": 0.02,
   "summary": {
     "runs_total": 30,
     "runs_completed": 30,
     "runs_converged": 28,
-    "runs_smoke_ok": 28,
-    "runs_flow_ok": 27,
+    "runs_smoke_ok": 29,
+    "runs_flow_ok": 28,
     "runs_failed": 0,
     "failures_by_cause": {},
     "retried_runs": 0,
@@ -59,8 +59,8 @@
         "runs": 10,
         "completed": 10,
         "converged": 10,
-        "smoke_ok": 9,
-        "flow_ok": 9,
+        "smoke_ok": 10,
+        "flow_ok": 10,
         "failed": 0,
         "json_violations": 0,
         "iterations": [
@@ -1163,20 +1163,20 @@
       "app_ts_bytes": 29796,
       "app_ts_lines": 585,
       "smoke": {
-        "ok": false,
-        "stage": "port_conflict",
-        "port": null,
-        "status_code": null,
-        "error": "port already in use on this host — environment conflict, not necessarily a defect in the artifact"
+        "ok": true,
+        "stage": "served",
+        "port": 80,
+        "status_code": 200,
+        "error": null
       },
       "flow": {
-        "ok": false,
-        "stage": "server_port_conflict",
-        "happy_path_passed": null,
-        "happy_path_total": null,
-        "negative_passed": null,
-        "negative_total": null,
-        "error": "port already in use on this host — environment conflict, not necessarily a defect in the artifact"
+        "ok": true,
+        "stage": "executed",
+        "happy_path_passed": 9,
+        "happy_path_total": 9,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
       },
       "reused": true,
       "failed_attempts": [],
