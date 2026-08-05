@@ -1,0 +1,101 @@
+
+==============================================================================
+DATASET
+==============================================================================
+  judgements            : 1149
+  artifacts             : 30
+  judges                : 7
+  repeats per judge     : [np.int64(1), np.int64(2), np.int64(3)]
+  filters applied       : 1 degenerate judge/track combination(s) dropped
+
+  NON-DISCRIMINATING JUDGES (artifact-level SD below 0.05):
+    mistralai/mistral-medium-3-5 on security: SD=0.0081  [dropped]
+
+==============================================================================
+CASE MEANS  (artifact score = median across judges, mean across repeats)
+==============================================================================
+  case                    track           n    mean     SD  median    min    max
+  1 no condition          security       10    3.50   0.21    3.52   3.07   3.88
+  2 ADHD mentioned        security       10    3.70   0.08    3.68   3.60   3.84
+  3 detailed guidance     security       10    3.64   0.14    3.64   3.38   3.83
+
+  1 no condition          inclusivity    10    3.31   0.07    3.30   3.20   3.42
+  2 ADHD mentioned        inclusivity    10    3.40   0.12    3.40   3.22   3.58
+  3 detailed guidance     inclusivity     9    3.91   0.16    3.89   3.64   4.16
+
+
+==============================================================================
+CONSTRUCT BREAKDOWN  (mean across judgements)
+==============================================================================
+
+  security
+                     A01_broken_access_control  A02_cryptographic_failures  A03_injection  A05_security_misconfiguration  A07_authentication_failures
+  1 no condition                            3.23                        3.24           4.56                           1.89                         4.44
+  2 ADHD mentioned                          3.62                        3.42           4.58                           2.19                         4.66
+  3 detailed guidance                       3.54                        3.24           4.60                           1.83                         4.55
+
+  inclusivity
+                     attention  memory  comprehension  decision_making  learning
+  1 no condition            4.29    1.93           2.82             3.79      3.78
+  2 ADHD mentioned          4.39    1.93           2.88             3.88      3.78
+  3 detailed guidance       4.63    2.81           3.37             4.35      4.49
+
+==============================================================================
+JUDGE RELIABILITY
+==============================================================================
+
+  security
+    ICC(2,k) agreement of the 7-judge mean : 0.556
+    Krippendorff alpha (interval)          : 0.061
+    mean pairwise Spearman between judges  : 0.500
+    within-judge SD across 3 repeats       : 0.137
+
+  inclusivity
+    ICC(2,k) agreement of the 7-judge mean : 0.923
+    Krippendorff alpha (interval)          : 0.616
+    mean pairwise Spearman between judges  : 0.699
+    within-judge SD across 3 repeats       : 0.104
+
+==============================================================================
+JUDGE SEVERITY  (mean overall by judge)
+==============================================================================
+track                         inclusivity  security
+  judge                                              
+  anthropic/claude-opus-5              3.27      3.56
+  google/gemini-3.6-flash              3.49      4.03
+  mistralai/mistral-medium-3-5         3.68       NaN
+  moonshotai/kimi-k3                   3.59      3.75
+  openai/gpt-5.6-sol                   3.57      3.26
+  qwen/qwen3.8-max                     3.66      3.07
+  x-ai/grok-4.5                        3.43      3.76
+
+==============================================================================
+CASE COMPARISON  (primary test, n=10 artifacts per case)
+==============================================================================
+
+  SECURITY — Kruskal-Wallis across the three cases
+    H = 7.930, p = 0.0190, epsilon^2 = 0.273 (large effect)
+    n per case: [10, 10, 10]
+    pair                                          p (Holm)   Cliff d
+    1 no condition       vs 2 ADHD mentioned        0.0273     -0.70 *
+    1 no condition       vs 3 detailed guidance     0.1513     -0.48
+    2 ADHD mentioned     vs 3 detailed guidance     0.2413      0.32
+
+  INCLUSIVITY — Kruskal-Wallis across the three cases
+    H = 19.369, p = 0.0001, epsilon^2 = 0.692 (large effect)
+    n per case: [10, 10, 9]
+    pair                                          p (Holm)   Cliff d
+    1 no condition       vs 2 ADHD mentioned        0.1032     -0.44
+    1 no condition       vs 3 detailed guidance     0.0008     -1.00 *
+    2 ADHD mentioned     vs 3 detailed guidance     0.0008     -1.00 *
+
+==============================================================================
+FILES
+==============================================================================
+  final_evaluations/results_v2/analysis/artifact_scores.csv
+  final_evaluations/results_v2/analysis/case_comparisons.csv
+  final_evaluations/results_v2/analysis/case_summary.csv
+  final_evaluations/results_v2/analysis/constructs_inclusivity.csv
+  final_evaluations/results_v2/analysis/constructs_security.csv
+  final_evaluations/results_v2/analysis/judge_severity.csv
+  final_evaluations/results_v2/analysis/reliability.csv
