@@ -64,18 +64,54 @@ Playwright then executes it and captures the images.
 
 Each artifact is scored by **7 judges**, on **2 tracks**, **3 times** each.
 
-| Judge | Lab |
-|---|---|
-| `openai/gpt-5.6-sol` | OpenAI *(generator's lab — analysed separately)* |
-| `anthropic/claude-opus-5` | Anthropic |
-| `google/gemini-3.6-flash` | Google |
-| `mistralai/mistral-medium-3-5` | Mistral |
-| `x-ai/grok-4.5` | xAI |
-| `qwen/qwen3.8-max` | Alibaba |
-| `moonshotai/kimi-k3` | Moonshot AI |
+| # | Judge | Lab | Role vs the submitted panel |
+|---|---|---|---|
+| 1 | `openai/gpt-5.6-sol` | OpenAI | succeeds **GPT-5** *(generator's lab — analysed separately)* |
+| 2 | `anthropic/claude-opus-5` | Anthropic | succeeds **Claude Sonnet 4.5** |
+| 3 | `google/gemini-3.6-flash` | Google | succeeds **Gemini 2.5 Pro** |
+| 4 | `mistralai/mistral-medium-3-5` | Mistral | succeeds **Mistral Medium 3.1** |
+| 5 | `x-ai/grok-4.5` | xAI | **replaces DeepSeek 3.2** |
+| 6 | `qwen/qwen3.8-max` | Alibaba | **added** |
+| 7 | `moonshotai/kimi-k3` | Moonshot AI | **added** |
 
-DeepSeek could not be carried forward from the original panel: it is now
-text-only and cannot score the screenshot-based rubric.
+Every member was verified before use — probed with a real screenshot and
+required to return structured scores — so no judge failed partway through the
+run for a capability reason. The full roster, including rejected candidates and
+their reasons, is machine-readable in `../judge_panel.json`.
+
+#### Why the panel changed
+
+**Four slots are straight successors.** OpenAI, Anthropic, Google and Mistral
+keep their lab and move to the current generation; the submitted panel's models
+are roughly a year old.
+
+**DeepSeek could not be carried forward.** `deepseek-v4-pro` is now text-only:
+no image input at all. The inclusivity rubric is scored from screenshots, so it
+cannot participate. Retaining it would have produced an asymmetric panel — 7
+security judges and 6 inclusivity judges. It is replaced by `x-ai/grok-4.5`,
+which contributes an independent lab rather than a second model from one already
+represented.
+
+**Google's slot is a flash model, and that was forced.** There is no stable
+Gemini 3.x Pro on OpenRouter: `gemini-3.1-pro-preview` is a preview id that will
+be withdrawn (breaking reproduction of the judging stage) and
+`gemini-pro-latest` is a moving alias, which is worse. The choice was a
+current-generation flash or a previous-generation pro; the current generation
+was taken.
+
+**Two judges were added, 5 → 7,** purely to tighten the inter-rater reliability
+estimates. The extra cost was about USD 15.
+
+**Meta was selected and then dropped.** `meta/muse-spark-1.1` passed selection
+but returns `HTTP 403 — "This model is only available in the United States"`
+from Finland. Caught during pre-flight rather than mid-run. Replaced by
+`moonshotai/kimi-k3`.
+
+Net effect: of the five original labs, three remain (OpenAI, Anthropic, Google),
+Mistral remains but contributes only to inclusivity (see §3), and DeepSeek is
+gone; three new labs join. The panel is more diverse than the submitted one, but
+it is **not the same panel**, and that belongs in the methods section rather
+than a footnote.
 
 The **existing per-case rubric files are used verbatim**, each artifact judged
 with the rubric for its own case. Security judges read `app.ts`; inclusivity
@@ -207,6 +243,36 @@ Krippendorff α negative.
   the address. Verified under Bun — no ordinary email matches. Password recovery
   cannot complete for any user, yet the app boots and serves a polished page, so
   only the flow test detects it.
+
+### How they were evaluated — and whether the judges noticed
+
+Neither was dropped silently.
+
+| Artifact | Security | Inclusivity |
+|---|---|---|
+| `case_3/run_10` | scored normally, 21 judgements from source | **not scored** — 21 records marked `no_screenshots`; the app never starts, so no screenshots exist |
+| `case_1/run_09` | scored normally, 21 judgements from source | scored, but from **5 screenshots** instead of the usual 7–8: the capture stalls where recovery becomes impossible |
+
+This is why case 3 has **n = 9** on the inclusivity track against n = 10 for the
+other cases.
+
+**The judges did not penalise either artifact.** Each figure below is an
+artifact score compared against the mean of the ten artifacts in its own case,
+on the same track:
+
+| Artifact | Track | This artifact | Mean of its case | Rank (1 = worst) |
+|---|---|---|---|---|
+| `run_10` (never parses) | security | 3.60 | 3.69 | 3 of 10 |
+| `run_09` (recovery impossible) | security | 3.51 | 3.59 | 3 of 10 |
+| `run_09` | inclusivity | 3.29 | 3.29 | 5 of 10 |
+
+A file that **cannot be parsed by the runtime** was rated ordinary security work
+by seven independent models reading its source. `run_09` landed on *exactly* its
+case's inclusivity average despite a journey that cannot be completed.
+
+This speaks directly to the third research question: LLM reviewers reading
+source code detected neither a fatal parse error nor a regex that disables the
+core feature. Only the execution-based checks did.
 
 Convergence also differed sharply: case 3 needed **6.5 iterations** on average
 against 2.1 and 2.3, and was the only case to hit the 12-iteration ceiling (2 of
