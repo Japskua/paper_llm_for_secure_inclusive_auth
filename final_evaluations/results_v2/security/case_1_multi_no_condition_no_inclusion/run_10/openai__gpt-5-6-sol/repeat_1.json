@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:01:27.528008+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset-token verification requires the token record's sessionId to match the requesting session's id."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code cannot be used from another session because record.sessionId must equal session.id."
+    },
+    "3": {
+      "score": 5,
+      "why": "Completing a password reset does not invalidate or remove any existing sessions from the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "The application configures TLS and redirects HTTP to HTTPS, but it does not explicitly require a particular minimum or latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens and other session data are stored unencrypted in memory."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email message is implemented; delivery is simulated through a browser response and visible log that exposes the reset token."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers are normalized and allowlisted, passwords are strictly validated and hashed, and other inputs are type-checked, although there is no general-purpose sanitizer."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application contains no user-controlled redirect links, and its HTTP listener redirects only to the fixed HTTPS localhost origin."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are not implemented, and the static HTML page does not interpolate user-supplied content."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and fixed MFA code are deliberately displayed in the browser-visible simulation logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although the password is bcrypt-hashed, the MFA code 482913 is hard-coded and reset tokens are stored directly in memory."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed MFA code acts as a shared default secret for the training flow, despite there being no conventional default password."
+    },
+    "13": {
+      "score": 4,
+      "why": "Reset requests, reset-code verification, and MFA verification are rate-limited, though limits are only per in-memory session and can be bypassed by obtaining a new session."
+    },
+    "14": {
+      "score": 1,
+      "why": "A valid demo-account response includes testToken while an invalid identifier response does not, revealing whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated from 32 cryptographically random bytes and are bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.081925,
+  "generation_id": "gen-1785920465-74JLu24CrN57W8m3Fc2o",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 4,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 3.3333
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

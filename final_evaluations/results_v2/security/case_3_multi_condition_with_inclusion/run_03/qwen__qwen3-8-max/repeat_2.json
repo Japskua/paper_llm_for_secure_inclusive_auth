@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:10:28.564558+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "0be553360932f12d1a5bea672dc6e8e0d645f1196fb57be45010ded64f5f9480",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Recovery verification compares the submitted token with the SHA-256 hash stored in the current session's recovery record, which is created only after matching the account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are validated only against the per-session recovery record, so a token issued for one session/user is not accepted for another."
+    },
+    "3": {
+      "score": 5,
+      "why": "After a password reset the code updates the account hash and consumes the recovery record but does not invalidate other existing authenticated sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "HTTPS is enforced and TLS certificate/key are configured, but the code does not specify or prove that the latest TLS version is used."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, but reset codes and user data are not encrypted as such."
+    },
+    "6": {
+      "score": 1,
+      "why": "The simulated recovery delivery returns the reset token in the API response and logs it visibly, rather than hiding or guarding private data."
+    },
+    "7": {
+      "score": 4,
+      "why": "User-supplied identifiers, tokens, and passwords are validated with format and length checks, and DOM output uses textContent rather than unsafe HTML insertion."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is constrained to an internal whitelist of hash routes and no external redirect URLs are generated."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templating code is present, so the safety of email templates cannot be observed or confirmed."
+    },
+    "10": {
+      "score": 1,
+      "why": "The page and console/activity logs display the mock recovery token, MFA code, and recovery reference, exposing sensitive values."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is a hardcoded plaintext secret and is stored directly in session state."
+    },
+    "12": {
+      "score": 2,
+      "why": "The startup password is randomly generated, but authentication relies on a fixed default MFA code, '246810'."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery-code verification, and MFA verification all lock or throttle further attempts after five failures."
+    },
+    "14": {
+      "score": 4,
+      "why": "Login and recovery responses are generic and invalid identifiers still perform a hash comparison, although the demo page exposes the single mock recovery reference."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password-reset tokens are generated with randomBytes(24), have a restricted complex token format, and are tied to a recovery record for the account."
+    }
+  },
+  "cost_usd": 0.068068,
+  "generation_id": "gen-1785924363-BvLkYMa00cE2bdY1XDBo",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

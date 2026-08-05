@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:56:33.239684+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "382826be6a70be6d0d503a9383b0a4ec86ceeb15e56bcec319dd73312f8c12a0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "Verification only checks that the token exists in the recoveries map and is unexpired/unused; there is no user account store or email-token binding, so ownership by a specific user is never actually checked."
+    },
+    "2": {
+      "score": 4,
+      "why": "Any session presenting a valid unused token passes /api/verify (no user or requester-session binding at issuance), so the code works for whoever holds it, though it is single-use (record.used = true) after one verification."
+    },
+    "3": {
+      "score": 5,
+      "why": "A password reset only mutates the resetting session's flags; nothing in /api/reset or elsewhere invalidates other entries in the sessions map, which persist until the 8-hour lifetime expires."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server runs TLS via Bun.serve with cert/key, HTTP only 308-redirects to HTTPS, and HSTS is set, but no TLS version is pinned in code so 'latest TLS version' rests on Bun defaults."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with Argon2id and tokens are 256-bit CSPRNG values, but tokens are stored plaintext in an in-memory map and the MFA secret is hardcoded, so encryption of codes/user data is only partially appropriate."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no email message at all; the mock delivery writes the reset token and MFA code in plaintext to the visible Logs panel and browser console (log('[Mock delivery] Reset token: '+deliveredToken))."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email is validated against a conservative regex with length caps, tokens must match /^[a-f0-9]{64}$/i, bodies are size-bounded before parsing, and all client output uses textContent rather than innerHTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The HTTP listener redirects only to a fixed https://localhost:PORT origin and client routing is restricted to a hash whitelist of internal routes, with no external outgoing URLs anywhere."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist; the page renders server/client messages via textContent under a strict nonce-based CSP, so no user input can inject scripts or HTML into any rendered content."
+    },
+    "10": {
+      "score": 1,
+      "why": "Tokens are explicitly shown in logs: the reset token and the MFA code are appended to the on-page #log-output and console, directly contradicting the statement even though server error responses are generic."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are stored only as Argon2id hashes, but the secret MFA code '482916' is hardcoded in the source and returned in API responses, so not all secret codes are kept out of the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default username/password login exists, but the fixed MFA code 482916 functions as a universal default second-factor credential and the initial passwordHash is a hash of a known placeholder string."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery requests are limited to 8/IP and 3/session per window, token verification to 5/IP with 10-minute blocks, and five MFA failures clear the flow and return 429."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery returns the identical message ('If an account can be recovered, reset instructions have been prepared.') and issues a token for any syntactically valid email, revealing nothing about account existence."
+    },
+    "15": {
+      "score": 3,
+      "why": "The token is a random 64-hex (256-bit) single-use value with 15-minute expiry, satisfying random and complex, but it is not bound to any user identity at issuance, so 'user-specific' only holds per recovery request."
+    }
+  },
+  "cost_usd": 0.0879606,
+  "generation_id": "gen-1785919966-nYYA5aCtWoA80cP2X1Gh",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 2,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 2.9333,
+  "capture_complete": true
+}

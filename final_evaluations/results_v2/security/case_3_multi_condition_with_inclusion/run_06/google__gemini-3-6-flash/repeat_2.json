@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:19:02.933503+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "3769d8d72d3a6dbf94059901d58bea2f193d416f5864a40b1cd79da802df6e1a",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server verifies that the supplied token matches the reset record bound directly to the user's session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are cryptographically unique and strictly bound to the individual requesting session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password update endpoint does not revoke or clear other active sessions from the server's session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application serves content via HTTPS with Bun TLS and redirects HTTP traffic using status code 308."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens and user emails are stored as unencrypted plain text strings in server memory."
+    },
+    "6": {
+      "score": 5,
+      "why": "The system uses generic recovery notification messages that do not expose private account details."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input values like emails and passwords undergo structural normalization and validation before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "The HTTP redirect header enforces a fixed secure target without taking user-controlled URL parameters."
+    },
+    "9": {
+      "score": 5,
+      "why": "System messages are hardcoded strings that do not incorporate unescaped user input into HTML structures."
+    },
+    "10": {
+      "score": 1,
+      "why": "Simulated recovery tokens and MFA security codes are rendered directly into the DOM log container."
+    },
+    "11": {
+      "score": 1,
+      "why": "The account hash and mock security code formulas are hardcoded directly within the source code file."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application contains no unhashed default user credentials or pre-configured default passwords."
+    },
+    "13": {
+      "score": 5,
+      "why": "Failed verification and login actions trigger a 15-minute lock after reaching the limit of five attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The password recovery endpoint returns the exact same success response whether an email is registered or not."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using 32 cryptographically secure random bytes bound to the user's active session."
+    }
+  },
+  "cost_usd": 0.0475665,
+  "generation_id": "gen-1785925120-18rXA81ENMtwqDN5xRwQ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

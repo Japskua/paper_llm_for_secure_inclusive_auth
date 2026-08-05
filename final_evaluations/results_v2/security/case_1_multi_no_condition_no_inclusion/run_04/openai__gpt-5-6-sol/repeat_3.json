@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:32:24.851465+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "dd919db6c46d435a4395fbd6c5d383fdf23013f639ab84eb58ad2b157be067a6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are bound to both the recovery session ID and a mock account hash, and those bindings are checked before use."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token cannot be used from another session because verification requires token.sessionId to equal the current session ID."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset does not rotate or invalidate existing session records, and the current recovery session continues to work afterward."
+    },
+    "4": {
+      "score": 3,
+      "why": "The application configures an HTTPS listener and redirects HTTP, but it does not explicitly require a particular minimum or latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and the mock account identifier are stored as SHA-256 hashes and transport uses TLS, although no actual encrypted user-data store is implemented."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email message is implemented; the generic mock delivery contains no user data but exposes the raw recovery token in the browser log."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers, tokens, MFA codes, and passwords are subject to strict type, length, character-set, or policy validation."
+    },
+    "8": {
+      "score": 5,
+      "why": "All navigation and redirects use fixed same-origin paths or the fixed HTTPS localhost address, with no user-controlled redirect destination."
+    },
+    "9": {
+      "score": 4,
+      "why": "There is no email template, while simulated delivery output excludes user input and is rendered with textContent rather than HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Raw reset and MFA codes are deliberately written to the browser console and the visible simulated logs panel."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are bcrypt-hashed and reset tokens are stored as hashes, the MFA code is hard-coded as MOCK_MFA_CODE in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default username or password exists, but every reset uses the same hard-coded six-digit MFA code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery requests are limited to three per period and token or MFA verification is blocked after five failures per source address."
+    },
+    "14": {
+      "score": 5,
+      "why": "Validly formatted identifiers receive the same generic response without confirming whether an account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes use 32 cryptographically random bytes and are bound to a specific session and mock account hash."
+    }
+  },
+  "cost_usd": 0.050009,
+  "generation_id": "gen-1785918717-KzPZ7ozWFIwIC7vnvsbw",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

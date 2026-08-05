@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:37:17.926999+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Each reset record contains an accountId, and password updates require that accountId to match the account being reset."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is bound to one account and, after verification, to the claiming session ID, so it does not work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password updates do not invalidate or delete other authenticated sessions, so previously authenticated sessions remain usable until expiry."
+    },
+    "4": {
+      "score": 3,
+      "why": "The Bun server configures TLS and serves HTTPS, but the code does not explicitly require the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, but account data is held unencrypted in memory."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email implementation is present; simulated delivery contains no account data but exposes the reset token and link in browser logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email and password inputs receive type, length, format, and complexity validation and are never inserted into HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The reset link is constructed from location.origin, and no user-controlled redirect destination is accepted."
+    },
+    "9": {
+      "score": 5,
+      "why": "Page templates are static, and dynamic messages are rendered with textContent rather than user-controlled HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens, reset links, and the MFA code are deliberately displayed in the browser log panel and console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are bcrypt-hashed at rest, the initial password and fixed MFA code 246810 are embedded directly in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application initializes a fixed mock account with a hard-coded email address and known initial password."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset, token-verification, MFA, and login attempts are rate-limited, and repeated account login failures trigger a temporary lockout."
+    },
+    "14": {
+      "score": 5,
+      "why": "Reset requests and login failures use generic responses that do not disclose whether the supplied email exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes contain 32 cryptographically random bytes, expire after 15 minutes, and are stored in records tied to a specific account."
+    }
+  },
+  "cost_usd": 0.0418155,
+  "generation_id": "gen-1785919012-jYnMao8Xn8k5KsiCGW5h",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

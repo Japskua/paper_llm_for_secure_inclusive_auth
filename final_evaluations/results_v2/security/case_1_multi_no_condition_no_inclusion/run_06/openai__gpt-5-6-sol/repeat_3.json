@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:41:04.000915+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "410e1cc46bbbbc0cb7869109d020fb69db0a302c9f3a7d9f4feb7974c90fbca9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset records are bound to both the registered contact digest and the requesting session ID, and resetRecordFor validates that binding."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code cannot be used from another session because resetRecordFor requires record.sessionId to equal the current session ID."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password confirmation changes the password but does not invalidate or remove any previously authenticated sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is configured for TLS and sends HSTS, but the source does not explicitly enforce or demonstrate the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens and contacts are SHA-256 hashed rather than encrypted, and the unsalted contact digest does not strongly protect low-entropy contact data."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email is implemented, while the generic response hides account data but the simulated browser delivery exposes the reset token."
+    },
+    "7": {
+      "score": 4,
+      "why": "Contact, token, code, and password inputs receive normalization, type, length, format, or policy validation, although passwords are intentionally not sanitized as text."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application performs no external redirects and restricts navigation to fixed internal hash routes and same-origin requests."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user input is inserted into the HTML template, and dynamic browser output is written with textContent rather than interpreted as HTML or script."
+    },
+    "10": {
+      "score": 1,
+      "why": "The browser Logs panel explicitly displays reset tokens and the static MFA code, despite server errors being generic."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are bcrypt-hashed, but the initial plaintext password and static MFA secret are hard-coded in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application includes a fixed initial password and a fixed MFA code that function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset requests, reset-code verification, login failures, and MFA failures are all limited or temporarily locked after configured thresholds."
+    },
+    "14": {
+      "score": 1,
+      "why": "Although the message is generic, only the registered contact receives a mockToken field, allowing account existence to be inferred from the response."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes contain 32 cryptographically random bytes and are bound server-side to the registered contact digest and requesting session."
+    }
+  },
+  "cost_usd": 0.047755,
+  "generation_id": "gen-1785919235-gCxcSBzlOKRBg1ZOxUPL",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.1334,
+  "capture_complete": true
+}

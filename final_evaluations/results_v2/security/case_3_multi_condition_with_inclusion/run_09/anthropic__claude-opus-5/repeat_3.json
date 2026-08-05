@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:32:17.743913+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "e8e8aca10204c746985ba82e1922651d96e9afa3cff7f743870a5149d08e7cee",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "verify-token compares the supplied token with timingSafeEqual against the recovery object stored on that caller's own session and requires recovery.real (the email matched the known account), so a code is only usable by the session/user it was issued to."
+    },
+    "2": {
+      "score": 1,
+      "why": "Recovery state (token, expiry, consumed flag) lives inside a single server-side session record, so a code issued in one session cannot be validated from any other session/user context."
+    },
+    "3": {
+      "score": 4,
+      "why": "The /api/recovery/password-update handler only sets recovery.passwordUpdated and never iterates or clears the global `sessions` map, so all other pre-existing session cookies remain valid after the reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server runs exclusively via Bun.serve with TLS cert/key (no HTTP listener) plus HSTS and Secure cookies, and Bun's defaults negotiate TLS 1.3/1.2, though no minVersion/cipher policy is explicitly pinned."
+    },
+    "5": {
+      "score": 2,
+      "why": "Only the account password is protected (bcrypt cost 10); the reset token and the MFA code are held as plaintext strings in memory and even echoed back in the JSON response, with no encryption or hashing at rest."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all — the 'delivery simulation' returns the raw reset token (testDeliveryToken) and MFA code (testMfaCode) to the browser and prints them in the visible Logs list, so nothing is hidden or guarded."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input is strictly validated server-side (email regex + length cap, 64-hex token regex, /^\\d{6}$/ MFA, 12+ char complexity password policy, 4 KB JSON body limit, object-shape check) and all client output uses textContent."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects whatsoever (no Location headers, no location assignments) and CSP sets form-action 'self' and base-uri 'none', so no untrusted redirect target exists."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist in the code (delivery is simulated in the browser), so the claim cannot hold literally, although the client-side rendering that replaces it is script-free and uses textContent only."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and MFA safety code are returned in API responses and explicitly written to console.log and the on-page '#logs' list ('[delivery simulation] Reset token: ...'), directly exposing secrets in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "A hardcoded bcrypt password hash, the hardcoded MFA secret 'mfaCode: \"481516\"', and the account email are all embedded as literals in the source with no environment/secret store."
+    },
+    "12": {
+      "score": 2,
+      "why": "The initial credential is a hardcoded default bcrypt hash ($2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy, the well-known hash of 'password') that /api/authenticate will accept until someone resets it, and the MFA code is a fixed default."
+    },
+    "13": {
+      "score": 5,
+      "why": "allowed() enforces max 5 attempts per 15-minute window with a 15-minute block, keyed per action/context/peer IP, and is applied to initiate, verify-token, verify-mfa, password-update and authenticate with 429 responses."
+    },
+    "14": {
+      "score": 3,
+      "why": "The initiate response is deliberately generic ('If an account can use that address...') and always returns a token, but the internal `real` flag means only the genuine address can ever pass verify-token, giving an indirect enumeration oracle."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is randomBytes(32).toString('hex') — 256 bits of CSPRNG entropy — stored per-session, 15-minute lived and single-use via tokenConsumed."
+    }
+  },
+  "cost_usd": 0.13475,
+  "generation_id": "gen-1785925891-K53p9Jt8DFjCIr75LfDH",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.2667,
+  "capture_complete": true
+}

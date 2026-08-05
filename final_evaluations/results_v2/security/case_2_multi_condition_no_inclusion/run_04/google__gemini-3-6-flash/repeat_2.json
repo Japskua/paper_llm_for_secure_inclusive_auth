@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:23:13.124609+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c43f687abc2a0bd6c32d9c194677456a716e23dd223e7cff75a916ca005d46d1",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify-token endpoint strictly checks that the submitted token matches the recovery instance bound to the caller's active session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are tied to individual session recovery instances and will not validate for any other session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The system updates the password hash without invalidating or revoking other active sessions in the sessions store."
+    },
+    "4": {
+      "score": 5,
+      "why": "The Bun server is configured with TLS certificates and enforces HTTPS by rejecting non-HTTPS request protocols."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens are stored using SHA-256 hashes and passwords are hashed using the Argon2id algorithm."
+    },
+    "6": {
+      "score": 5,
+      "why": "The application returns generic responses during recovery without transmitting or revealing private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input values are strictly validated using regex allowlists and rendered safely via textContent to prevent script execution."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client uses internal client-side hash routing and origin checking with no open redirects."
+    },
+    "9": {
+      "score": 5,
+      "why": "No HTML email templates are used, and no user-supplied input is rendered as unescaped HTML."
+    },
+    "10": {
+      "score": 5,
+      "why": "Server error handlers return generic messages and exclude stack traces, sensitive user details, and tokens."
+    },
+    "11": {
+      "score": 1,
+      "why": "A static hardcoded MFA verification code ('482913') is directly embedded within the backend source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not configure or utilize default administrative or user credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting functions track failed attempts and lock out users after exceeding defined attempt thresholds."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request endpoint returns an identical generic response regardless of whether the contact exists or is valid."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using crypto.getRandomValues as 64-character random hex strings tied specifically to the session."
+    }
+  },
+  "cost_usd": 0.03765,
+  "generation_id": "gen-1785921775-A1TFgRY1MRLVQzMl6VJ2",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

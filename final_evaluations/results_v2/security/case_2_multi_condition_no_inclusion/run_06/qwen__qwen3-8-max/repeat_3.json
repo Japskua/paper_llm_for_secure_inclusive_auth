@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:36:22.644820+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify-token endpoint only accepts a token whose SHA-256 hash matches the recovery record owned by the current session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is validated only against the session-owned recovery record and is cleared after use, so it cannot be used by another session."
+    },
+    "3": {
+      "score": 4,
+      "why": "The reset handler does not invalidate or rotate sessions, so existing session cookies remain usable until expiry, although no separate authenticated user sessions are implemented."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is HTTPS-only through Bun.serve with TLS certificate and key, but the code does not explicitly confirm the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, but the code does not encrypt reset codes or user data."
+    },
+    "6": {
+      "score": 1,
+      "why": "No actual email is sent, and the simulated delivery reveals the reset token in the page and console rather than guarding it."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, token, MFA code, and password inputs are validated or constrained, and dynamic browser output uses textContent rather than inserting raw input."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses only internal hash routes whitelisted by safeHashView and does not perform external redirects."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present, and the rendered page avoids user-controlled HTML or scripts, but there is no email template to evaluate."
+    },
+    "10": {
+      "score": 1,
+      "why": "The browser console and recovery delivery display the test reset token and MFA code, so tokens are shown in logs or UI."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and not stored in plaintext, but the MFA secret code 246810 is hardcoded and displayed, so secret codes are not fully kept out of the code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The MFA step accepts the fixed code 246810 that is displayed to the user, which functions as a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Token, MFA, and password attempts are counted and blocked after repeated failures, and client/IP rate limits also restrict requests."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery initiation response is deliberately generic and does not check or disclose whether the supplied email corresponds to an account."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is generated with crypto.getRandomValues as 64 hex characters, hashed, and bound to the session-specific recovery record."
+    }
+  },
+  "cost_usd": 0.060048,
+  "generation_id": "gen-1785922368-tyD5i1f8QzeTtiaUsDyx",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

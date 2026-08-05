@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:33:23.754421+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "dd919db6c46d435a4395fbd6c5d383fdf23013f639ab84eb58ad2b157be067a6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The API checks token.sessionId !== session.id during token verification to ensure the reset code belongs to the current user session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are strictly tied to session.id, causing verification to fail if attempted from another user session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset handler updates the current session state but does not clear or invalidate other active session entries in memory."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application runs on Bun.serve with TLS certificates configured and redirects plain HTTP traffic to HTTPS."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords are hashed using Bun's native bcrypt implementation."
+    },
+    "6": {
+      "score": 5,
+      "why": "Recovery messages return generic non-enumerating text and do not reflect or expose private user details."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated against strict regex/length rules and rendered in the UI using textContent to prevent script injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "All navigation links and HTTP redirects are strictly hardcoded relative paths or HTTPS local origins."
+    },
+    "9": {
+      "score": 5,
+      "why": "Simulated notifications are plain static text and do not execute or interpolate raw user input into HTML templates."
+    },
+    "10": {
+      "score": 1,
+      "why": "The server returns mock tokens and MFA codes in JSON responses, which the frontend appends directly to the client-visible log element."
+    },
+    "11": {
+      "score": 1,
+      "why": "The secret MFA verification code '482916' is hardcoded directly into the source code constant MOCK_MFA_CODE."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not ship with or accept any default accounts or pre-set administrative credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "The backend tracks failed verification attempts per client address and enforces rate-limiting blocks after threshold limits are exceeded."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns a consistent generic response regardless of the supplied email or identifier."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using 32 cryptographically random bytes and explicitly linked to the requesting session ID."
+    }
+  },
+  "cost_usd": 0.0493155,
+  "generation_id": "gen-1785918780-EXOJc7Ex0amg7xcqQsA8",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

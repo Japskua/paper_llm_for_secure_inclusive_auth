@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:14:43.050533+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify endpoint explicitly checks that the reset code's accountKey matches session.recoveryAccountKey."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are stored with a specific account key and rejected if attempted by a different user session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Resetting the password updates the active session object but does not iterate or clear other active session tokens stored in the server session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The Bun server requires TLS certificates, rejects non-HTTPS requests, and enforces Strict-Transport-Security headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens are stored as SHA-256 hashes and user passwords are hashed using bcrypt rather than stored in plain text."
+    },
+    "6": {
+      "score": 5,
+      "why": " simulated messages and API responses use generic text and synthetic demo identifiers without exposing actual private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated via regex/length checks on the backend and safely rendered using DOM textContent on the frontend."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation and simulated links use hardcoded relative site paths such as /recovery-link, avoiding external open redirects."
+    },
+    "9": {
+      "score": 5,
+      "why": "Messages are constructed dynamically in client DOM nodes without interpolating user input into HTML or email templates."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error handling yields generic client messages and standard status codes without leaking tokens or sensitive user data in error responses."
+    },
+    "11": {
+      "score": 1,
+      "why": "A hardcoded static MFA code ('246810') and fallback password hash are embedded directly in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application includes hardcoded default demo credentials and static fallback secret codes in the code base."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate-limiting middleware tracks action frequencies per session and source/account, returning HTTP 429 when limits are exceeded."
+    },
+    "14": {
+      "score": 5,
+      "why": "Both login and recovery endpoints return identical uniform messages regardless of whether the submitted identifier exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery codes are generated using 32 cryptographically random bytes and mapped specifically to the user's account key."
+    }
+  },
+  "cost_usd": 0.049812,
+  "generation_id": "gen-1785924861-aSm2XAGnQHU6sNM7n8TJ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

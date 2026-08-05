@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:51:14.767087+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify-reset handler requires the supplied token hash to match the session-bound reset token and the account ID before allowing a password reset."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are stored with session and account bindings and are rejected unless they match the current session and account, so the same code cannot be used for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing the password updates the account hash but does not invalidate other existing session records, so unexpired previous sessions can remain valid."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server serves HTTPS using Bun TLS certificates, but no TLS protocol version is configured or shown to be the latest version."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens, email identifiers, and passwords are stored as SHA-256 or bcrypt hashes rather than being encrypted."
+    },
+    "6": {
+      "score": 4,
+      "why": "The recovery response message is generic and does not reveal the submitted email or account status, although no real email transmission is implemented."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are length- and format-validated, and the client renders user-controlled values using textContent rather than HTML injection sinks."
+    },
+    "8": {
+      "score": 5,
+      "why": "HTTP redirects use only the fixed configured HTTPS origin and page links are relative, preventing redirects to external sites."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email template renders user-supplied HTML or scripts; the only messages are plain JSON/text and client output uses textContent."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error responses are generic, but the client logs the simulated recovery token and MFA code, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are stored as bcrypt hashes, but a static MFA code is hardcoded in the source, so secret codes are not fully kept out of the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "No plaintext default password is exposed, but the source contains an initial password hash and a hardcoded MFA code, weakening the claim that default credentials are disallowed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Failed reset verification attempts, reset request bursts, and MFA attempts are counted and throttled or locked after limits."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset request returns the same generic message and a random decoy token for matching and non-matching email submissions."
+    },
+    "15": {
+      "score": 5,
+      "why": "Valid reset tokens are generated with randomBytes(32) and stored as hashes bound to the matching account and session."
+    }
+  },
+  "cost_usd": 0.06702,
+  "generation_id": "gen-1785923223-sB9kaCIFMQ8M8d2EZ3P9",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.5334,
+  "capture_complete": true
+}

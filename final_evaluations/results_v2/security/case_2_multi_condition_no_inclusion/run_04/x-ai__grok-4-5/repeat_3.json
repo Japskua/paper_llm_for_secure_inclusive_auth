@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:23:50.151811+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c43f687abc2a0bd6c32d9c194677456a716e23dd223e7cff75a916ca005d46d1",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Verify-token only accepts the SHA-256 of the token stored on the recovery bound to the caller’s session via currentRecovery(session)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to a per-session recovery record; another session cannot use that tokenHash, so the claim is false."
+    },
+    "3": {
+      "score": 5,
+      "why": "On successful reset the code only marks the recovery completed and never invalidates other sessions in the sessions map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS and non-HTTPS URLs are rejected, though the TLS version is not explicitly pinned to the latest only."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords as Argon2id; contact is not retained, though this is hashing rather than encryption."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email body with user fields; responses use generic copy and contact is never reflected into a message template."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are allowlist-validated (validContact, validToken, validMfaCode, strongPassword) and the UI writes strings via textContent, not raw HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "No user-controlled redirect targets exist; navigation is fixed client hash routes and same-origin API paths only."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML is built from user input; delivery is a simulated log line without injecting contact or other fields as markup."
+    },
+    "10": {
+      "score": 1,
+      "why": "testToken and testMfaCode are returned in API JSON and appended to the on-page logs panel, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed in memory, but the MFA secret is the hardcoded string 482913 embedded in the source."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default login username/password pair is defined; only the fixed demo MFA code acts as a built-in shared secret."
+    },
+    "13": {
+      "score": 5,
+      "why": "checkLimit/recordFailure enforce per-step attempt caps and a LOCK_WINDOW on recovery, token, password, and MFA endpoints."
+    },
+    "14": {
+      "score": 5,
+      "why": "recovery-request always returns the same generic ‘If recovery is available…’ message whether or not contact is valid."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are crypto.getRandomValues 32-byte hex values, hashed at rest, single-use, TTL-limited, and tied to one recovery/session."
+    }
+  },
+  "cost_usd": 0.016306,
+  "generation_id": "gen-1785921793-b9wFEkq9ghy4862l0gqt",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

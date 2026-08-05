@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:52:41.235808+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c2876b4ed426a65417ec33b6fbb9afae2da3d7affeb88cb28b5873f4558bbdcc",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Verification compares the submitted token's SHA-256 digest only against the digest stored in the requesting session (with used-flag and expiry checks), so the code is bound to that session's owner."
+    },
+    "2": {
+      "score": 1,
+      "why": "False: each session stores its own tokenDigest and a used flag, so a token issued to one session cannot be verified in any other session."
+    },
+    "3": {
+      "score": 4,
+      "why": "True: sessions are independent entries in the sessions Map and completing a password reset in one session performs no invalidation of any other existing sessions."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server is TLS-only with HSTS, upgrade-insecure-requests and rejection of non-https URLs, but the TLS version is not explicitly pinned to the latest."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests and passwords are hashed with bcrypt at cost 12, which are appropriate one-way protections rather than reversible encryption."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email is sent; the simulated delivery message contains only the token and generic text, and the contact value is never stored, logged, or reflected."
+    },
+    "7": {
+      "score": 4,
+      "why": "User inputs are type-checked, length-limited, and either hashed/compared (token, password, MFA code) or discarded (contact), and are never rendered into HTML, with escapeHtml and textContent used for all output."
+    },
+    "8": {
+      "score": 5,
+      "why": "There are no redirects at all: navigation is hash-based within the SPA, all links are same-origin anchors, and CSP enforces form-action 'self' and default-src 'none'."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist; the simulated delivery messages are written via textContent only and contain no user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error pages are generic with no stack traces, but reset tokens and the MFA code are deliberately returned in API responses and displayed in the on-page logs panel and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and tokens stored as digests, but the MFA secret code is hardcoded in the source as session.mfaCode = \"482913\"."
+    },
+    "12": {
+      "score": 3,
+      "why": "No account credentials or default passwords exist in the system, though the hardcoded universal MFA code functions similarly to a default code valid for every session."
+    },
+    "13": {
+      "score": 5,
+      "why": "All sensitive endpoints enforce both per-session and trusted-IP throttling (3–5 attempts per 10-minute window) returning HTTP 429, surviving session recreation."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request endpoint returns the identical generic confirmation for every contact and never stores, looks up, or echoes the contact value, so account existence is not revealed."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset code is 32 bytes of CSPRNG output (base64url), making it random and complex, and it is bound to the requesting session rather than to a persistent user account, which does not exist in this design."
+    }
+  },
+  "cost_usd": 0.0793872,
+  "generation_id": "gen-1785923522-ockqr0vZvyE47FYUtexI",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

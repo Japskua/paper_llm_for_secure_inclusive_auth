@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:46:49.288944+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-reset requires the supplied token's hash to match session.resetTokenHash, and checks token.sessionId === session.id and token.accountId === mockAccount.id, so the code must belong to the requesting user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is stored bound to a specific sessionId and accountId and rejected otherwise, so it cannot be reused by any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The /api/reset-password handler updates mockAccount.passwordHash but never rotates the session id or deletes other entries in the `sessions` map, so pre-existing sessions remain valid after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, HTTP is 308-redirected to the fixed HTTPS origin and HSTS is set, though no explicit minimum TLS version is pinned (relying on Bun/OpenSSL defaults with a local mkcert certificate)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and grants are stored only as SHA-256 hashes, the account email is stored as a hash, and passwords use bcrypt cost 12 — appropriate primitives, though hashing (not encryption) and no at-rest encryption of the in-memory store."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email; the 'simulated delivery' returns a generic privacy-neutral message with a decoy token for non-matching addresses, but the delivery channel itself is a client-side log rather than a guarded message."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email is regex/length validated and normalized, passwords are strength- and length-checked, JSON bodies are size-capped and type-checked, and all client rendering uses textContent/DOM properties only."
+    },
+    "8": {
+      "score": 5,
+      "why": "The HTTP redirect is built from the fixed CONFIGURED_HTTPS_ORIGIN (never from the Host header), Host is validated against the configured origin, and the client link is a relative /reset URL with encodeURIComponent on the token."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, but the equivalent output path (server JSON + client DOM insertion) contains no user-supplied HTML or scripts, and CSP uses a per-response nonce with default-src 'none'."
+    },
+    "10": {
+      "score": 2,
+      "why": "The client explicitly logs the recovery token ('Privacy-neutral test recovery token: ' + result.testToken) and the MFA code to the visible log list and console.log, so tokens do appear in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "The MFA code '246810' and the initial bcrypt password hash and recovery email address are hardcoded literals in the source file, so secrets are in the code rather than in configuration/secret storage."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system ships with a hardcoded default account credential hash and a fixed static default MFA code ('246810') that is never rotated, so default credentials are effectively allowed."
+    },
+    "13": {
+      "score": 4,
+      "why": "There are per-session limits: 5 verification failures triggers lockRecoveryFlow with HTTP 429, 5 MFA attempts blocks, and 3 reset requests per 10-minute window — though all counters are keyed to the session cookie and can be reset by discarding it."
+    },
+    "14": {
+      "score": 5,
+      "why": "request-reset always returns the identical generic message and a same-shaped random decoy token regardless of whether the email matches, and verification failures return a uniform opaque error."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are generated with randomBytes(32) base64url, stored only as SHA-256 hashes, expire in 15 minutes, are single-use, and are bound to both sessionId and accountId."
+    }
+  },
+  "cost_usd": 0.13111,
+  "generation_id": "gen-1785923176-84vj4NIlK9mRaiqwRiXg",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7334,
+  "capture_complete": true
+}

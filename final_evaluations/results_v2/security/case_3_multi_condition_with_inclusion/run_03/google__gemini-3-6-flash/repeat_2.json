@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:05:49.750051+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "0be553360932f12d1a5bea672dc6e8e0d645f1196fb57be45010ded64f5f9480",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system validates the reset token against the digest stored directly on the active user session's recovery record."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are cryptographically random strings stored within individual session state objects and cannot be used across different sessions."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset handler updates the account password hash but does not clear or invalidate existing session tokens stored in memory."
+    },
+    "4": {
+      "score": 4,
+      "why": "HTTPS is required and configured with TLS certificates in Bun.serve, though the TLS version relies on server defaults rather than explicitly enforcing TLS 1.3."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset codes are hashed using SHA-256 and passwords with bcrypt, but data is protected via standard hashing mechanisms rather than encryption."
+    },
+    "6": {
+      "score": 5,
+      "why": "The application only simulates recovery delivery and displays generic messages without exposing private patient data in outgoing messages."
+    },
+    "7": {
+      "score": 4,
+      "why": "User inputs are sanitized via strict regex pattern checks, and output text is safely inserted into the DOM using textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is constrained entirely within the single-page application using an explicit whitelist of allowed route strings."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates exist in the codebase, preventing user input from contaminating email output."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generated mock recovery tokens and MFA codes are explicitly output into the visible log element on the user page."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA verification code '246810' is hardcoded directly into the issueMfa source function."
+    },
+    "12": {
+      "score": 5,
+      "why": "The startup account password is randomly generated at runtime rather than relying on preset default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery verification, and MFA endpoints track failed attempts and lock out requests after 5 unsuccessful tries."
+    },
+    "14": {
+      "score": 5,
+      "why": "Authentication and recovery endpoints return generic, identical error messages regardless of whether the submitted reference exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset tokens are generated using 24 cryptographically secure random bytes in base64url format and bound to the specific user session."
+    }
+  },
+  "cost_usd": 0.0435618,
+  "generation_id": "gen-1785924322-095hdLM6W6QBlSVECFaQ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 5,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

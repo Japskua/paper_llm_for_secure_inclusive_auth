@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:41:51.749274+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "410e1cc46bbbbc0cb7869109d020fb69db0a302c9f3a7d9f4feb7974c90fbca9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating `record.sessionId === session.id` in `resetRecordFor`."
+    },
+    "2": {
+      "score": 1,
+      "why": "The system explicitly prevents reuse of reset codes by checking `record.used` and marking them as used upon confirmation."
+    },
+    "3": {
+      "score": 1,
+      "why": "The system invalidates previous sessions by requiring a new CSRF token and session ID for each request, and password resets do not preserve old sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server enforces HTTPS with TLS certificates and rejects insecure HTTP requests via `x-forwarded-proto` check."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are encrypted (hashed with SHA-256) and user data is stored securely (e.g., `passwordHash` uses bcrypt)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages (simulated) hide private user data; no user data is exposed in responses or logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., contact, password) is sanitized via `normalizeContact`, `textField`, and `passwordPolicy`."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are internal-only (e.g., `#verify?token=...`) and validated by regex in `parsedRoute`."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are hardcoded and contain no user input; dynamic content uses `textContent` to prevent XSS."
+    },
+    "10": {
+      "score": 5,
+      "why": "Private information and tokens are never shown in error pages or logs (generic messages are used)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords and secret codes are stored securely (bcrypt-hashed) and not hardcoded in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not allow default credentials; passwords must meet strict policy requirements."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system bars excessive login attempts via `accountAuthLimits.loginFailures` and lockout mechanism."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application returns identical generic messages for invalid/valid usernames to prevent enumeration."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are random (32-byte base64url), complex, and user-specific (tied to `session.id` and `contactDigest`)."
+    }
+  },
+  "cost_usd": 0.01785,
+  "generation_id": "gen-1785919292-WZQv4Hhg5hPXEWlUqRxp",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

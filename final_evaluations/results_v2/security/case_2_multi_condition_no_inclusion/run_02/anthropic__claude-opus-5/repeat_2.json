@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:14:15.752908+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "verify-token requires the token's stored sessionId to equal the current session id and an accountBinding match, so a token only works in the session/account it was issued for — though there is only one hard-coded account, making user-specific ownership weakly modelled."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to the issuing sessionId (token.sessionId !== session.id rejects), and are single-use, so the same code cannot be replayed for another user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "No session invalidation occurs on password change — the recovery session and any other sessions in the `sessions` map remain valid until their TTL expires, so previous sessions do still work after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is set, so HTTPS is used, but no minimum TLS version/cipher configuration is specified, leaving the 'latest TLS' claim to the runtime default."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are 32-byte CSPRNG values stored only as SHA-256 hashes and passwords are bcrypt-hashed (cost 10), which is appropriate, though no encryption-at-rest for other data exists (state is in-memory only)."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email sending; the plaintext token and reset link are returned in the JSON API response and echoed into the client-side Logs panel/console, so the 'delivery' message does not guard private data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated for type/length (validShortString), token input is regex-restricted to [A-Za-z0-9_-], JSON body size is capped, and password policy is enforced server-side."
+    },
+    "8": {
+      "score": 4,
+      "why": "The only redirect-ish behaviour is a relative testLink ('/?token=...') and history.replaceState to location.pathname with a whitelisted hash view, so no external destinations are possible; CSP form-action 'self' also restricts submissions."
+    },
+    "9": {
+      "score": 5,
+      "why": "The HTML page is a fixed string with no user input templated in (only server-generated nonce and CSRF token), and messages are inserted via textContent, so no user-supplied HTML/script can be injected."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors return generic messages with no stack traces, but the app deliberately returns the plaintext recovery token, reset link, and MFA code to the client and writes them into the visible Logs panel and browser console."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is stored only as a bcrypt hash, but the MFA verification code '482913' is a hard-coded secret in the source and compared literally, and the account binding string is also hard-coded."
+    },
+    "12": {
+      "score": 3,
+      "why": "There is no login with default credentials and passwordHash starts empty, but the hard-coded static MFA code '482913' functions as an effective default secret that anyone reading the code can use."
+    },
+    "13": {
+      "score": 4,
+      "why": "recordFailure/limitStatus lock a category for 5 minutes after 5 failures (3 for recovery requests), but the counters are stored per-session in memory so an attacker can simply drop the cookie and obtain a fresh session to reset limits."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery-request endpoint always returns the same generic 'If an eligible account exists...' message regardless of input validity, so account existence is not disclosed."
+    },
+    "15": {
+      "score": 4,
+      "why": "Tokens are 32 bytes from crypto.getRandomValues, hashed with SHA-256, expire in 10 minutes and are single-use and session-bound, but 'user-specific' is only nominal since a single hard-coded account binding is used."
+    }
+  },
+  "cost_usd": 0.089195,
+  "generation_id": "gen-1785921234-CROJ0lGoEKhTmn3glURw",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

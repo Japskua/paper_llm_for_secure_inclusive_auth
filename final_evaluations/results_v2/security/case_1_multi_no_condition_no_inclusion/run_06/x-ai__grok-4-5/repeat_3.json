@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:42:25.527552+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "410e1cc46bbbbc0cb7869109d020fb69db0a302c9f3a7d9f4feb7974c90fbca9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "resetRecordFor requires record.sessionId === session.id and a matching contactDigest-bound token hash before accept."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to the requesting session.id, so the same code is rejected for any other session/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password confirm only clears auth on the current session; other entries in the sessions Map are never invalidated."
+    },
+    "4": {
+      "score": 5,
+      "why": "Bun.serve is configured with tls cert/key only, HSTS is set, and http x-forwarded-proto is refused."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords via Bun.password bcrypt; contact is stored only as a digest."
+    },
+    "6": {
+      "score": 5,
+      "why": "No real email is sent; API messages are generic and do not echo private contact or account fields."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are length-limited, normalized, JSON-parsed with size caps, and rendered only via textContent/JSON.stringify."
+    },
+    "8": {
+      "score": 5,
+      "why": "No server redirects or external URLs; client routing is hash-only to fixed internal views."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates or HTML emails; user input is never embedded into message HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error JSON is generic, but training mock reset/MFA tokens are returned in API bodies and written into the on-page logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hashes use bcrypt in memory, but MFA_CODE and the initial password string are hardcoded in source."
+    },
+    "12": {
+      "score": 1,
+      "why": "Built-in default credentials (Initial-Clinical!2025 and MFA 472913) work with no forced rotation."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, reset-request, and verify paths enforce attempt windows, maxima, and temporary lockouts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Reset request always returns the same generic eligibility message whether or not the contact digest matches."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from crypto.getRandomValues (32 bytes, base64url) and are bound to session and contact digest."
+    }
+  },
+  "cost_usd": 0.0200964,
+  "generation_id": "gen-1785919301-rYQ3XFjvPKuINXeofKpT",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.0667,
+  "capture_complete": true
+}

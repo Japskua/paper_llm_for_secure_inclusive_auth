@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:19:44.599168+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The /api/verify handler accepts a reset record only when reset.accountKey matches session.recoveryAccountKey."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is rejected when the stored accountKey does not match the session's recovery account, so it does not work for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password-reset handler changes the password hash and current session state but does not invalidate other existing server-side sessions."
+    },
+    "4": {
+      "score": 2,
+      "why": "HTTPS is enforced by Bun.serve with TLS certificates, but the code does not configure or demonstrate that the latest TLS version is required."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are SHA-256 hashed and passwords are bcrypt-hashed, but reset codes and user data are not encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email is sent; the simulated recovery delivery contains only a code and link, but there is no actual email message mechanism to evaluate."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifier, token, and password inputs are validated, and the client renders user-controlled values with textContent rather than HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The generated recovery link is a relative /recovery-link URL, so redirects remain on the same hospital site."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates in the source; the simulated delivery is JSON and does not embed user input in HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The browser activity log and console messages explicitly display mock recovery codes and the MFA code."
+    },
+    "11": {
+      "score": 1,
+      "why": "The password is bcrypt-hashed, but the fixed MFA code and fallback password hash are present in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The demo account can be used with a fallback password hash and a fixed MFA code defined in the code, so default credentials are possible."
+    },
+    "13": {
+      "score": 5,
+      "why": "The rateAllowed/actionAllowed logic returns HTTP 429 after repeated recovery, login, verify, MFA, or password actions."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery and login responses use generic wording that does not reveal whether an identifier is approved or exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery tokens are generated with randomBytes(32), are long base64url strings, and are stored with an account-specific accountKey."
+    }
+  },
+  "cost_usd": 0.091022,
+  "generation_id": "gen-1785924905-LtXA3TXc9Ml2YWnUcqOt",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 2,
+    "5": 1,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

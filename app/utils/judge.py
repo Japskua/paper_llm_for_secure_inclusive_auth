@@ -64,6 +64,28 @@ CONSTRUCTS: Dict[str, Dict[str, List[int]]] = {
 # Statements where agreement indicates a WORSE system; inverted at aggregation.
 REVERSE_CODED: Dict[str, set] = {"security": {2, 3}, "inclusivity": set()}
 
+# Per-provider limits on images in a single request. Mistral rejects more than
+# eight outright ("Total number of images exceeds the maximum allowed of 8"),
+# which would otherwise lose that judge on the 9 of 30 artifacts with longer
+# journeys. Judges absent from this map receive every screenshot.
+MAX_IMAGES: Dict[str, int] = {"mistralai/mistral-medium-3-5": 8}
+
+
+def sample_evenly(items: List[Any], k: int) -> List[Any]:
+    """
+    Take k items spread across the sequence, always keeping the first and last.
+
+    Used only where a provider caps images: dropping the tail of the journey
+    would bias against artifacts with more steps, so the whole arc is preserved
+    at lower density instead.
+    """
+    if k <= 0 or len(items) <= k:
+        return items
+    if k == 1:
+        return [items[0]]
+    idx = sorted({round(i * (len(items) - 1) / (k - 1)) for i in range(k)})
+    return [items[i] for i in idx]
+
 SCORING_PROTOCOL = """\
 
 ────────────────────────────────────────────────────────────────────────
@@ -216,15 +238,23 @@ def judge_artifact(
         )
 
     shots: List[pathlib.Path] = []
+    available = 0
+    sampled = False
     if track == "inclusivity":
         shots = sorted((run_dir / "screenshots").glob("step_*.png"))
         if not shots:
             return {
                 "ok": False,
                 "reason": "no_screenshots",
+                "artifact_id": f"{case}/{run}",
                 "case": case, "run": run, "track": track,
                 "judge": judge_model, "repeat": repeat,
             }
+        available = len(shots)
+        limit = MAX_IMAGES.get(judge_model)
+        if limit and available > limit:
+            shots = sample_evenly(shots, limit)
+            sampled = True
 
     source = app_path.read_text(encoding="utf-8", errors="replace") if track == "security" else None
     messages = build_messages(track, rubric_text, source, shots)
@@ -267,6 +297,8 @@ def judge_artifact(
         "rubric_sha256": sha256_text(rubric_text),
         "app_ts_sha256": app_sha,
         "screenshot_count": len(shots),
+        "screenshots_available": available,
+        "screenshots_sampled": sampled,
         "screenshots": [s.name for s in shots],
         "scores": {str(i): scores[i] for i in range(1, 16)},
         "cost_usd": usage.get("cost"),

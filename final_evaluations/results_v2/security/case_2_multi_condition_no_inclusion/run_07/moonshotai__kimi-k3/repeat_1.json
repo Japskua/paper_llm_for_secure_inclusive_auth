@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:40:06.000691+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "/api/verify-reset looks up the code's stored record and binds the session to that record's identityScope before /api/new-password is permitted, though possession of the code alone suffices (no identity re-check at verification)."
+    },
+    "2": {
+      "score": 2,
+      "why": "Codes are bound to a single identityScope and marked used on verification (record.used = true), so a code cannot be applied to another account, though as a bearer token anyone holding it could still present it for that same account."
+    },
+    "3": {
+      "score": 2,
+      "why": "/api/new-password loops over all sessions clearing authenticated, pendingMfa, privacyAccepted and appointmentBooked, so prior sessions lose all authorized access even though the session objects/cookies themselves are not deleted."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server runs Bun TLS with cert/key, sets HSTS (max-age=31536000; includeSubDomains) and 308-redirects HTTP to HTTPS, but no TLS version is explicitly pinned, so 'latest TLS' rests on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 hashes and passwords as bcrypt (cost 10) via Bun.password.hash — appropriate protection, though this is hashing rather than encryption strictly speaking."
+    },
+    "6": {
+      "score": 3,
+      "why": "The recovery message is generic and carries only the code, but the simulated 'email' is delivered by returning the code in the API JSON and printing it in the page's log panel, so the channel itself is not guarded."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are validated (identifier type/length, strict code regex ^[A-Za-z0-9_-]{32,128}$, password policy and length caps) and the client renders every dynamic value via textContent with no innerHTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is the fixed 'https://localhost' HTTP→HTTPS handler that ignores the Host header, and all client links/navigation use hard-coded internal paths with the code encodeURIComponent'd."
+    },
+    "9": {
+      "score": 5,
+      "why": "Templates are static strings, user data is never HTML-interpolated (textContent only), and a nonce-based CSP (script-src/style-src 'nonce-...') blocks any injected or inline untrusted script."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic ('Service unavailable', genericError with no stack traces), but the simulated logs panel prints the reset code and the MFA code, so tokens are in fact shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and reset codes stored hashed, but the initial password 'Initial!DemoPassword2025' and the MFA code '246810' are hardcoded in the source, with the MFA code even returned by /api/login."
+    },
+    "12": {
+      "score": 2,
+      "why": "The account is seeded with the hardcoded credential 'Initial!DemoPassword2025', i.e., a default credential exists even though it is a strong password and bcrypt-hashed at startup."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery requests are throttled (3 per 10 min per identity), code verification is throttled (5 per 10 min per stable scope), and both login and MFA lock out for 5 minutes after 5 failures."
+    },
+    "14": {
+      "score": 2,
+      "why": "The recovery message is identical for all identities, but the response includes the code field (and the UI then shows a link and log entry) only for the valid identity, which reveals whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes are 32 bytes from crypto.getRandomValues (base64url, ~256 bits of entropy), stored only as hashes with a 10-minute TTL, single-use, and tied to the requesting identityScope."
+    }
+  },
+  "cost_usd": 0.1278882,
+  "generation_id": "gen-1785922707-RAXwNwKGo2s7ARjFpa8l",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:14:39.672855+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "/api/verify hashes the supplied token, looks up the reset record, and explicitly rejects it unless `reset.accountKey === session.recoveryAccountKey`, so the code must belong to the recovering account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset records are bound to an accountKey and marked `used` on first successful verification, so a code cannot be redeemed for a different account/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "On password change only the current session's flags are cleared (`clearAccountAuthority(session)`); the global `sessions` map is never iterated or purged, so other pre-existing authenticated sessions remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server runs only over TLS with cert/key files, rejects non-https, and sends HSTS, though no explicit minimum TLS version is configured (it relies on Bun's defaults, which negotiate TLS 1.3)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes and grants are stored only as SHA-256 hashes and passwords are hashed with bcrypt (cost 10), which are appropriate algorithms, although these are hashes rather than encryption and other session data is plaintext in memory."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email channel; the 'simulated delivery' response contains only the one-time code and no patient identifiers, and the recovery request response is deliberately generic, but the code itself travels in a link query string and is echoed to the UI."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated (`validIdentifier` charset/length regex, `validToken` regex, `passwordPolicy`, length caps) and all output is rendered via `textContent`/DOM nodes with a nonce-based CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect target is the server-generated relative path `/recovery-link?token=...`; no user-controlled URL is ever used for navigation."
+    },
+    "9": {
+      "score": 4,
+      "why": "No HTML email templates exist at all; the simulated delivery returns JSON that is inserted with textContent, so no user input can become markup or script."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic and never leak tokens, but the app deliberately writes the recovery code and the MFA code into the browser console and the on-page 'Activity logs' panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but a default bcrypt hash and the fixed MFA secret `MFA_CODE = \"246810\"` are hard-coded literals in the source rather than externalised secrets."
+    },
+    "12": {
+      "score": 2,
+      "why": "The app ships with a hard-coded fallback account password hash and a constant MFA code, i.e. usable default credentials when no environment override is supplied."
+    },
+    "13": {
+      "score": 5,
+      "why": "`actionAllowed` enforces per-session and per-source+account sliding-window limits (5–8 attempts / 15 min) on recovery, verify, password, login, and MFA endpoints with 429 responses and retry hints."
+    },
+    "14": {
+      "score": 4,
+      "why": "Recovery always returns the same 'If this account can receive recovery messages…' text and login returns one generic 401, though behaviour differences at the verify step (and the openly displayed demo identifier) could still hint at account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes are `randomBytes(32)` base64url values, stored hashed, single-use, 15-minute-lived, and tied to a specific accountKey and session."
+    }
+  },
+  "cost_usd": 0.15934,
+  "generation_id": "gen-1785924838-AI3oZUcmC1uxen71EzNd",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7334,
+  "capture_complete": true
+}

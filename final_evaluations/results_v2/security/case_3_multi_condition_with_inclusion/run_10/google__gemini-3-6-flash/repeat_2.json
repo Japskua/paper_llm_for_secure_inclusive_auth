@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:36:23.181604+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "5def0af8851cb528c3f00ff512506269aa19299d60d5780a568a1790a19eea39",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verification handler compares incoming reset codes directly against `s.manualCode` and `s.resetToken` bound to that specific user session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are cryptographically generated per session and will not validate for any session other than the one for which they were generated."
+    },
+    "3": {
+      "score": 5,
+      "why": "When a password is changed, the server updates `passwordHash` but does not clear or invalidate existing session objects in the `sessions` map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application enforces HTTPS via Bun's TLS configuration and returns HSTS headers while rejecting HTTP forwarded requests."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset codes and user identifiers are stored as unencrypted plain text within the in-memory session objects."
+    },
+    "6": {
+      "score": 5,
+      "why": "No outbound emails are sent by the system, preventing disclosure of private user data through email."
+    },
+    "7": {
+      "score": 5,
+      "why": "User input is validated against strict regex patterns on the backend and injected safely using `textContent` in the DOM."
+    },
+    "8": {
+      "score": 5,
+      "why": "Generated verification URLs are strictly constructed using internal relative paths on the local host."
+    },
+    "9": {
+      "score": 5,
+      "why": "The system does not use or render email templates, eliminating template script injection risks."
+    },
+    "10": {
+      "score": 1,
+      "why": "Simulated recovery tokens and MFA codes are explicitly logged to the on-screen UI `Logs` panel."
+    },
+    "11": {
+      "score": 1,
+      "why": "The secret MFA code `246810` and an initial password hash are hardcoded directly in the source file."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application does not include active default credentials or permit bypass via default admin pairs."
+    },
+    "13": {
+      "score": 5,
+      "why": "The backend implements rate-limiting attempt counters per identifier and action, returning 429 status codes when thresholds are exceeded."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request endpoint utilizes a dummy sink account to return identical responses regardless of whether the identifier exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using cryptographically strong random bytes via `crypto.getRandomValues()` and associated strictly with the active session."
+    }
+  },
+  "cost_usd": 0.054378,
+  "generation_id": "gen-1785926156-Xz7PdsZsSjkkoMt9sXEJ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": false
+}

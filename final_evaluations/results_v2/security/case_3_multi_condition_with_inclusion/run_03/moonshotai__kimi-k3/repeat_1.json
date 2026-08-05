@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:07:43.709814+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "0be553360932f12d1a5bea672dc6e8e0d645f1196fb57be45010ded64f5f9480",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The recovery record is bound to the issuing session and accountId, and /api/recovery/verify compares a SHA-256 digest of the supplied token against the session-bound tokenHash before /api/recovery/reset applies the change to that account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens live only in the originating session's recovery record, target a single accountId, and are atomically consumed (used=true before the first await), so a code cannot be exercised for another user or session."
+    },
+    "3": {
+      "score": 4,
+      "why": "/api/recovery/reset only updates account.passwordHash and issues MFA for the current session; nothing iterates or invalidates other entries in the sessions map, so previously authenticated sessions remain valid until the 8-hour TTL."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, the fetch handler rejects any non-HTTPS request, and HSTS (preload, includeSubDomains) is set, though no explicit TLS minimum version is pinned."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords are hashed with bcrypt (cost 10) via Bun.password.hash and reset tokens are stored only as SHA-256 digests, which is appropriate hashing even though it is not encryption in the strict sense."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email exists; the simulated delivery returns the token in the API response (mockToken) and prints it plus the MFA code into the visible on-page logs panel, so private codes are exposed rather than guarded."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers and tokens are validated with strict regexes (validReference, validToken), JSON content-type and object shape are enforced, passwords are policy-checked, and all client rendering uses textContent rather than innerHTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "Navigation is same-origin hash routing confined to a fixed allowlist enforced on both client and server (/api/session), with form-action 'self' and base-uri 'none', and no user-controlled or external redirect target exists."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates in this system at all; the only rendered output (mock log lines) is written via textContent under a nonce-based CSP, so no user HTML or scripts can execute, but the email-specific claim is not directly applicable."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the recovery token and MFA code are deliberately displayed in the page's logs panel (log('Mock recovery delivery: use this code here: '+mockToken)), directly contradicting the claim that tokens are not shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are stored only as bcrypt hashes of a random per-process startup credential, but the MFA secret is hardcoded in the source as the constant string \"246810\" in issueMfa, so a secret code is in the code."
+    },
+    "12": {
+      "score": 3,
+      "why": "There is no default account password since the startup credential is a random 32-byte token retained only as a bcrypt hash, but the fixed MFA code \"246810\" functions as a known, default second-factor code for every flow."
+    },
+    "13": {
+      "score": 5,
+      "why": "Every sensitive endpoint throttles: login locks after 5 failures for 10 minutes per identifier, recovery verification and MFA lock after 5 attempts, and recovery initiation is rate-limited to 3 requests per 10 minutes per session."
+    },
+    "14": {
+      "score": 4,
+      "why": "Login and recovery return identical generic messages whether or not the identifier matches, and a dummy bcrypt verification against the mock account's hash is performed for unknown identifiers to equalize timing, with only minor residual signals in the verify-step wording."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is a 24-byte CSPRNG value (randomBytes base64url, ~192 bits), stored only as a SHA-256 digest, scoped to the session and accountId, single-use, and expiring after 10 minutes."
+    }
+  },
+  "cost_usd": 0.1251312,
+  "generation_id": "gen-1785924402-4PQB3Oh4KBOJg2V9Vl8c",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 4,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

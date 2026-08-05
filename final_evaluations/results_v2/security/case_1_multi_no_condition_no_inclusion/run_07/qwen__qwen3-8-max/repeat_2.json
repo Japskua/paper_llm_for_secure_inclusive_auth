@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:51:18.078222+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The verify endpoint compares the submitted token hash to the hash stored in the current session, but it does not tie the token to a separate user account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is validated only against the hash stored in the requesting session, so the same token would not validate in another session."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password reset does not invalidate other stored sessions, so any previously authenticated session could remain usable until its expiry."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires TLS certificates and serves HTTPS, but the code does not configure or demonstrate use of the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are SHA-256 hashed and passwords are Argon2id hashed, but tokens/user data are not encrypted and little user data is stored."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no real email implementation, and the simulated delivery response/log exposes the recovery token and MFA code."
+    },
+    "7": {
+      "score": 3,
+      "why": "Inputs are validated with allow-list checks, but there is no general sanitization or escaping of user-supplied data before use or output."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation only changes same-document hash routes, and no external redirects or non-hospital destinations are produced."
+    },
+    "9": {
+      "score": 2,
+      "why": "No email templates are implemented, so their safety cannot be established; the simulated delivery is a JSON/log flow rather than a safe email template."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client-side simulated delivery log writes the recovery token and MFA code into the page/console log."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id hashed, but a hardcoded initial password string and hardcoded universal MFA code appear in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "No password login is exposed, but the reset flow accepts a fixed hardcoded MFA code, which functions as a default/shared secret."
+    },
+    "13": {
+      "score": 4,
+      "why": "The rate limiter blocks a session after five attempts within 60 seconds with HTTP 429, although it is per session and counts all sensitive requests."
+    },
+    "14": {
+      "score": 5,
+      "why": "The request-reset endpoint returns the same generic response regardless of the supplied email and performs no account-existence disclosure."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset token is generated from 32 random bytes and validated against the current session’s stored hash, but it is not explicitly tied to a distinct user account."
+    }
+  },
+  "cost_usd": 0.063976,
+  "generation_id": "gen-1785919637-SPoZEKv4a39ouCkbxyT8",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 3,
+    "8": 5,
+    "9": 2,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 3.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

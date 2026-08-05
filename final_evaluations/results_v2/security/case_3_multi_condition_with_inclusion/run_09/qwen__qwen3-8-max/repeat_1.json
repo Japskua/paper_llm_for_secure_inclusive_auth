@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:38:01.648559+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "e8e8aca10204c746985ba82e1922651d96e9afa3cff7f743870a5149d08e7cee",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The verify-token endpoint compares the submitted token to the session-stored token with timingSafeEqual and requires the recovery to be real, but it does not bind tokens to a persistent user account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is only valid when it matches the token stored in the same session's recovery object, so it does not work for another session/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "After password-update the code changes the global password hash and marks the current recovery complete, but it does not delete or invalidate existing sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS certificate and key, but the code does not specify or enforce that the latest TLS protocol version is used."
+    },
+    "5": {
+      "score": 1,
+      "why": "Recovery tokens are stored as plaintext strings in the in-memory sessions map, and only passwords are bcrypt-hashed rather than encrypted."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is sent, and the simulated delivery returns and logs the raw reset token in the browser rather than guarding it."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, token, MFA code, and password inputs are validated with strict format/length rules, and dynamic UI text is inserted with textContent rather than innerHTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The code contains no redirect endpoints or navigation links, and the CSP sets form-action 'self'."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates are rendered and no user-controlled HTML or script is placed into email output."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client-side log function writes the reset token and MFA code into the visible logs and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "The source code contains a hardcoded bcrypt password hash and a hardcoded six-digit MFA code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The hardcoded initial password hash and fixed MFA code function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "The allowed() rate limiter blocks further attempts for 15 minutes after more than five attempts within the window."
+    },
+    "14": {
+      "score": 2,
+      "why": "Most messages are generic, but /api/bootstrap exposes recoveryStage, which differs between real and non-real recovery requests and can act as an account-existence side channel."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset tokens are generated from 32 random bytes as 64-character hex strings and are session-bound, though there is no persistent account-specific binding."
+    }
+  },
+  "cost_usd": 0.111416,
+  "generation_id": "gen-1785925920-ozkSombL7IH65mW9JJ4g",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 2,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 2.9333,
+  "capture_complete": true
+}

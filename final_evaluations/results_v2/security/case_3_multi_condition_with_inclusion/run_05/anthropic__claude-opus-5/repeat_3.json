@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:14:39.430676+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "/api/verify compares the stored reset record's accountKey against session.recoveryAccountKey and rejects mismatches, so the code must belong to the requesting user's account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are 32-byte random values stored hashed, bound to a single accountKey, single-use (reset.used) and time-limited, so one user's code cannot work for another user."
+    },
+    "3": {
+      "score": 4,
+      "why": "The password change only clears the current session's flags (clearAccountAuthority on that session); no iteration over the global sessions map occurs, so other pre-existing sessions/cookies remain valid after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with tls cert/key, non-HTTPS requests are rejected, and HSTS is set — but no minimum TLS version is explicitly pinned and only local dev self-signed certs are used."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes and grants are stored only as SHA-256 hashes and passwords are hashed with bcrypt (cost 10), though SHA-256 hashing is used rather than authenticated encryption and there is no persistent data store."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email; the simulated delivery response contains no patient identifiers and the recovery request reply is generic, but the mock 'delivery' hands back the raw recovery code which the UI prints in a visible activity log."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated (validIdentifier charset/length regex, validToken pattern, passwordPolicy, JSON-only bodies) and all output is rendered with textContent/DOM nodes."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect target is the server-generated relative path /recovery-link?token=..., with no user-controlled URL, and CSP restricts form-action/base-uri to 'self'/'none'."
+    },
+    "9": {
+      "score": 4,
+      "why": "The simulated message content is server-defined static text with no user-supplied HTML, and the client builds all nodes via createElement/textContent, so no script injection path exists."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic and stack-trace-free, but the client deliberately logs the recovery code and the MFA code to console.log and to an on-screen activity log panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "A default bcrypt account password hash and the MFA code '246810' are hardcoded literals in the source, only optionally overridden by environment variables."
+    },
+    "12": {
+      "score": 2,
+      "why": "The app ships with a built-in default account (helena.demo@hospital.test), a default hardcoded password hash, and a fixed static MFA code that work out of the box without any forced change."
+    },
+    "13": {
+      "score": 5,
+      "why": "actionAllowed enforces per-session and per-source/account sliding-window limits (5–8 attempts per 15 minutes) on recovery, verify, password, login, and MFA endpoints with 429 responses."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint always returns the same 'If this account can receive recovery messages...' message and login/verify return identical generic failure text for unknown and known identifiers."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes come from randomBytes(32) base64url, are stored as SHA-256 hashes tied to a specific accountKey with a 15-minute expiry and single-use flag."
+    }
+  },
+  "cost_usd": 0.150065,
+  "generation_id": "gen-1785924843-NCdBaXuN7pDbd9gQfr3C",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:58:45.166987+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Each reset-token record contains an accountKey, and password replacement updates only the account associated with that record."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is bound to one accountKey and cannot be used to select or reset an arbitrary other account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password replacement does not revoke or modify other sessions already authenticated to the account."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun TLS, HSTS, and an HTTP proxy rejection are configured, but no minimum or latest TLS protocol version is explicitly enforced."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords use Argon2id and reset secrets are SHA-256 hashed server-side, but session and account data remain plaintext in memory and mock secrets are exposed client-side."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email mechanism exists, while the simulated delivery returns recovery secrets in JSON and stores and displays them in the browser."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers are allowlisted, passwords are type- and policy-validated, request bodies are bounded, and displayed messages use textContent rather than HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "Recovery links are generated as relative paths and renderLink requires the current origin, root pathname, expected query parameter, and no fragment."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email template implementation is present, although the simulated browser delivery does not insert user-controlled HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens, identity values, MFA codes, and possession values are deliberately returned to the client and written to the browser log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are Argon2id-hashed, an initial password is hardcoded and multiple secret codes are kept in plaintext session objects and sessionStorage."
+    },
+    "12": {
+      "score": 1,
+      "why": "Three provisioned accounts share the hardcoded initial credential Initial!HospitalPassword9."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, reset confirmation, identity verification, and MFA checks impose five-minute locks after repeated failures."
+    },
+    "14": {
+      "score": 4,
+      "why": "Recovery and login responses use generic messages, although account-dependent password verification may create a timing distinction."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens use cryptographically random 32-byte values, are stored by hash, expire after 15 minutes, and are associated with a specific accountKey."
+    }
+  },
+  "cost_usd": 0.114335,
+  "generation_id": "gen-1785923893-3RF5GFlqe74tLDAgZKDV",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.0667,
+  "capture_complete": true
+}

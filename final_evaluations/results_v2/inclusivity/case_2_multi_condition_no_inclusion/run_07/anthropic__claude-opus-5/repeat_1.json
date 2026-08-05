@@ -1,0 +1,117 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:39:17.916696+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "4a6eaf3cfcc73c22842c5c8c14f50a97c9b1281fdf4ac2299c6aa628f1a4e591",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 9,
+  "screenshots": [
+    "step_01_request_password_reset.png",
+    "step_02_recovery_instructions_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_set_new_password.png",
+    "step_05_sign_in.png",
+    "step_06_confirm_sign_in.png",
+    "step_07_updated_privacy_statement.png",
+    "step_08_appointment_booking_confirmation.png",
+    "step_09_appointment_request_confirmed.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All nine screens are static, single-column cards with no animations, carousels, banners, or pop-up overlays; only a plain 'Logs' panel and static reminder callouts appear."
+    },
+    "2": {
+      "score": 4,
+      "why": "Each step has a bold heading and a single filled teal primary button that contrasts with the greyed secondary buttons, though the dark 'Logs' panel competes visually for attention with the actual task."
+    },
+    "3": {
+      "score": 4,
+      "why": "Only one task with one or two fields per screen makes the next action easy to locate, but the odd large blank gaps between fields and buttons and the technical log block add avoidable scanning effort."
+    },
+    "4": {
+      "score": 3,
+      "why": "The flow is stepwise and instructions are on-screen, but Helena must carry over the recovery identifier, a 39-character reset code, a new 12+ character password and a six-digit MFA code across screens with no progress indicator of how many steps remain."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager hint, autofill affordance, 'remember me' checkbox, show-password toggle, or 'copy code' control appears on any screen (steps 01, 04, 05, 06)."
+    },
+    "6": {
+      "score": 2,
+      "why": "The recovery identifier is echoed back in step 02 and the code is pre-filled in step 03, but there is no account name, avatar, saved-device recognition or other familiar-item recognition anywhere in the sign-in flow."
+    },
+    "7": {
+      "score": 4,
+      "why": "Sentences are short, plain-language and well spaced with good contrast (e.g. 'Sign in with your updated password to accept the privacy statement'), though terms like 'recovery identifier' and 'MFA code' remain jargon."
+    },
+    "8": {
+      "score": 1,
+      "why": "No error state is shown in any of the nine screenshots — only success/neutral messages such as 'Simulated password update completed' — so there is no evidence of problem-plus-fix error messaging."
+    },
+    "9": {
+      "score": 2,
+      "why": "Step 04 states the password rules in text and step 06 says 'six-digit' code, but no input placeholders, sample formats, or worked examples of what to type are present (the identifier field in step 01 is empty with no example)."
+    },
+    "10": {
+      "score": 2,
+      "why": "Only a password + typed MFA code path exists; there is no choice of authentication method (no code-vs-face-vs-key options), so 'choices such as password, code, or face login' are not offered at all."
+    },
+    "11": {
+      "score": 5,
+      "why": "Every screen presents at most one primary and one or two secondary actions with one to two input fields, so the user is never overloaded with options."
+    },
+    "12": {
+      "score": 4,
+      "why": "Confirmations follow each action ('If an account can be recovered...', 'Your appointment request has been confirmed.') plus a running log, though the outcome text is small/bold-inline rather than a prominent status banner."
+    },
+    "13": {
+      "score": 3,
+      "why": "Each card gives a one-line instruction and a static safety reminder, but there are no contextual tips, tooltips, help links, or guidance for new steps such as where to obtain the MFA code."
+    },
+    "14": {
+      "score": 3,
+      "why": "'Start over', 'Return to sign in' and 'Forgot password?' allow retrying, and step 09 still shows the confirm button, but there is no back/undo on password or MFA screens and no visible retry-after-error handling."
+    },
+    "15": {
+      "score": 5,
+      "why": "All nine screens reuse the identical header, teal rule, white rounded card, label/field styling, button hierarchy, log panel and footer note, giving a highly consistent, learnable layout."
+    }
+  },
+  "cost_usd": 0.10004,
+  "generation_id": "gen-1785922735-acNHprlI9HgcsLl8slZF",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 4,
+    "4": 3,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 1,
+    "9": 2,
+    "10": 2,
+    "11": 5,
+    "12": 4,
+    "13": 3,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.3333,
+    "memory": 2.0,
+    "comprehension": 2.3333,
+    "decision_making": 3.6667,
+    "learning": 3.6667
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:46:52.225990+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system validates that the reset token matches the session ID and account ID associated with the requesting user."
+    },
+    "2": {
+      "score": 1,
+      "why": "The system strictly enforces session and account matching when validating reset codes, causing validation to fail for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset endpoint updates the user password hash but does not clear active sessions from the server session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server runs natively over TLS via Bun.serve with Strict-Transport-Security (HSTS) headers enabled."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens and email addresses are hashed with SHA-256 and passwords are hashed using bcrypt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Recovery messages return generic responses that avoid disclosing any private user or account details."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input values are strictly validated for structure and length, and client UI updates rely solely on safe textContent assignment."
+    },
+    "8": {
+      "score": 5,
+      "why": "HTTP redirects strictly validate the host against the configured HTTPS origin before constructing redirect URLs."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application returns structured JSON responses without rendering unescaped user input into HTML templates."
+    },
+    "10": {
+      "score": 5,
+      "why": "Server logs and HTTP error responses display only generic error messages without revealing private tokens or user data."
+    },
+    "11": {
+      "score": 5,
+      "why": "No plaintext passwords or secret codes are stored in source code; only precomputed bcrypt and SHA-256 hashes are retained."
+    },
+    "12": {
+      "score": 5,
+      "why": "The codebase does not include or permit default admin or user credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "The API enforces failure counters that lock recovery after five failed token attempts and throttle reset requests."
+    },
+    "14": {
+      "score": 5,
+      "why": "The password reset request endpoint returns identical JSON messages and token structures regardless of whether the email exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using 32 cryptographically secure random bytes and are tied to a specific session and account."
+    }
+  },
+  "cost_usd": 0.042201,
+  "generation_id": "gen-1785923193-SFZL3w4y5c6uzjVfrYet",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

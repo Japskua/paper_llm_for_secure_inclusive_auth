@@ -1,0 +1,113 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:59:01.811894+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 5,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_reset_instructions_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_set_new_password.png",
+    "step_05_new_password_entered_INCOMPLETE.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All five screenshots show a static, uncluttered layout with a fixed header, one card, and no animations, carousels, or pop-up overlays."
+    },
+    "2": {
+      "score": 4,
+      "why": "The page heading, the single dark-blue primary button, and the coloured status messages (green success, red error) are visually prominent, though the security notice at top competes with the actual task card."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each screen has only one main field and button so the immediate action is findable, but the critical reset code is buried inside a collapsed 'Logs (simulated delivery and verification events)' section that Helena would not expect to open."
+    },
+    "4": {
+      "score": 2,
+      "why": "The user must remember to expand the log section, then transcribe/retain a 40-character random code across screens, and recall that the password rules apply — several non-obvious steps."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager support, autofill hint, 'remember me' checkbox, show-password toggle, or copy-code button appears anywhere in the five screens."
+    },
+    "6": {
+      "score": 2,
+      "why": "Only the previously typed email is echoed back in step 2; there are no saved items, recognisable account details, or familiar-device indicators to recognise."
+    },
+    "7": {
+      "score": 3,
+      "why": "Sentences are short and plainly worded, but terms like 'simulated delivery log', 'https://localhost:3000 portal', and the raw monospace code text are technical and hard for a 67-year-old patient to read."
+    },
+    "8": {
+      "score": 2,
+      "why": "The error 'That reset code is invalid, expired, or has already been used.' names three possible problems at once and gives no recovery instruction beyond the ambiguous adjacent 'Request another code' button."
+    },
+    "9": {
+      "score": 2,
+      "why": "There is no placeholder example email, no sample code format, and no password-requirement example; only the prose instruction 'Paste or type the reset code from the simulated delivery log' hints at what to do."
+    },
+    "10": {
+      "score": 1,
+      "why": "Only an email-plus-code path exists; no password, passcode, face, or other login/recovery alternatives are shown or explained, so the statement that such choices are clear is false."
+    },
+    "11": {
+      "score": 5,
+      "why": "Each screen presents at most one input and two buttons, so the user is never overloaded with options."
+    },
+    "12": {
+      "score": 3,
+      "why": "Steps 2 and 4 do show explicit outcome banners ('reset instructions have been prepared', 'reset code is invalid'), but the success message is deliberately vague ('If an eligible account exists') and the flow never confirms a completed password change."
+    },
+    "13": {
+      "score": 2,
+      "why": "The only guidance is the static 'Protect your account' security warning and one instructional sentence per card; there are no contextual tips, tooltips, help links, or progress indicators for new steps."
+    },
+    "14": {
+      "score": 4,
+      "why": "'Request another code' and 'Request reset' remain available on the error screen and fields keep their values, so retrying is possible, although the single-use/expiry rule makes recovery less forgiving."
+    },
+    "15": {
+      "score": 5,
+      "why": "Header, blue underline, security notice, card styling, and primary/secondary button treatment are identical across all five screenshots."
+    }
+  },
+  "cost_usd": 0.06771,
+  "generation_id": "gen-1785920316-LhcM3cBLP3nzPIuoc1Du",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 2,
+    "5": 1,
+    "6": 2,
+    "7": 3,
+    "8": 2,
+    "9": 2,
+    "10": 1,
+    "11": 5,
+    "12": 3,
+    "13": 2,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 1.6667,
+    "comprehension": 2.3333,
+    "decision_making": 3.0,
+    "learning": 3.6667
+  },
+  "overall": 2.9333,
+  "capture_complete": false
+}

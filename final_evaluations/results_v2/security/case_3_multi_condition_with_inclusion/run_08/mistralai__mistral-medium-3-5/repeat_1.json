@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:27:38.229527+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating the tokenHash, userId, sessionId, and expiration time in resetRecord and verifiedRecord functions."
+    },
+    "2": {
+      "score": 1,
+      "why": "The reset code is unique per tokenHash and sessionId, so it cannot work for any other user."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after password reset as the verified state is cleared and new session is created."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server uses HTTPS with TLS as evidenced by the Bun.serve tls configuration and HSTS header."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed with SHA-256 and stored securely, and user data is protected by Argon2id hashing."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages do not expose private user data; the system uses generic responses for security."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (email, passwords) is validated and sanitized using functions like validEmail and passwordIssue."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are controlled by the server and only point to the hospital’s site (e.g., /api endpoints)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are hardcoded in the server and do not include user input or scripts."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose user’s private information or tokens, as seen in generic error messages."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are stored as Argon2id hashes, and secret codes are not hardcoded in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not allow default credentials; users must go through recovery or sign-in with valid credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system enforces rate limiting (MAX_ATTEMPTS) and locks accounts after too many failed attempts (failedAttempt function)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether the username/email exists, using generic messages like 'We could not sign you in.'"
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset codes are random (randomId), complex (64-character hex), and user-specific (tied to userId and sessionId)."
+    }
+  },
+  "cost_usd": 0.019482,
+  "generation_id": "gen-1785925651-ULURdRaq2fiz2KQUxqgv",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

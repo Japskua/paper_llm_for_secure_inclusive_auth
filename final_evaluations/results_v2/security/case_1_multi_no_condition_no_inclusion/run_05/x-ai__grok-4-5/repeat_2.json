@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:38:33.380193+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset records store accountId and update-password rejects mismatched accountId; tokens are also bound to the claiming session via claimedBy."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is stored with a specific accountId and cannot authorize password change for a different account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password update marks the reset used and clears recoveryTokenHash but never invalidates other sessions' authenticatedAccountId values."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is set, though the exact TLS version is not pinned in code."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords use bcrypt and reset tokens are SHA-256 hashed, but data is hashed not encrypted and account fields like email sit in plaintext memory."
+    },
+    "6": {
+      "score": 3,
+      "why": "User-facing reset messaging is generic with no private fields, but there is no real email body and the mock delivery path exposes the raw token."
+    },
+    "7": {
+      "score": 5,
+      "why": "Emails/passwords are validated with strict helpers, bodies are JSON-parsed with size limits, and DOM updates use textContent/fixed templates rather than raw HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation stays on same-origin paths; reset links are built from location.origin with encodeURIComponent and no user-controlled redirect parameter is honored."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no server email templates that interpolate user HTML/scripts; only fixed JSON messages and textContent log lines are used."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and MFA codes are written to the on-page logs panel, browser console, and mock API fields (mockToken/mockMfaCode)."
+    },
+    "11": {
+      "score": 2,
+      "why": "Live passwords are bcrypt-hashed in the account object, but the initial password string and MFA secret 246810 are hardcoded in source."
+    },
+    "12": {
+      "score": 1,
+      "why": "A built-in demo account with the known initial password Initial!Passw0rd2025 is defined and can authenticate."
+    },
+    "13": {
+      "score": 5,
+      "why": "limited() throttles reset, verify, MFA, and login attempts, and failedLogins locks the account after five failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "reset-request always returns the same eligible-or-not message (and a mock token), and login failures use one generic error."
+    },
+    "15": {
+      "score": 5,
+      "why": "reset tokens come from crypto.getRandomValues (32 bytes, base64url) and are stored hashed with the target accountId."
+    }
+  },
+  "cost_usd": 0.020872,
+  "generation_id": "gen-1785919059-bnYgjBsgYMI479MfP7iK",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

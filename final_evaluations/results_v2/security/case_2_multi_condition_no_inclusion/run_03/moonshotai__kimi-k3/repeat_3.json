@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:21:00.246783+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "verify-token enforces record.sessionId === session.id so the token is bound to the requesting session, though accountBinding is a fixed constant rather than a true per-user binding."
+    },
+    "2": {
+      "score": 1,
+      "why": "False — a token issued to one session fails verification in any other session because of the sessionId binding check."
+    },
+    "3": {
+      "score": 5,
+      "why": "True — the password endpoint performs no session invalidation or rotation, so all existing sessions in the Map (including the resetting one) remain valid until their 1-hour expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "TLS is configured in Bun.serve, non-HTTPS requests are rejected and HSTS is set, but no explicit TLS min/max version pins the 'latest' version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests and passwords are bcrypt-hashed (strong hashing rather than encryption), and contact data is never persisted."
+    },
+    "6": {
+      "score": 4,
+      "why": "The mock delivery message contains only the token and no private user data, and responses are generic, so no private data is exposed via the message."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are validated (contact control-char/length check, strict token regex, JSON size/structure limits) and output is rendered via textContent only, though contact validation itself is minimal."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application has no redirects or external URLs at all; only same-origin paths are handled and CSP enforces form-action/connect-src 'self'."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates and no user input is ever rendered as HTML or script — textContent only, nonce-based CSP, and '<' escaped in the injected JSON state."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the recovery token and MFA code are written to the browser 'Logs' panel and console via localLog, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA confirmation code is hardcoded as '482916' directly in the source, so a secret code is stored in the code."
+    },
+    "12": {
+      "score": 3,
+      "why": "No default user accounts or credentials exist and password policy is enforced, but the fixed MFA code '482916' functions as a constant, default-like code for every session."
+    },
+    "13": {
+      "score": 5,
+      "why": "Multiple layers block repeated wrong attempts: recovery limited to 3/15min, verification to 6/10min, 5 attempts per token, and MFA locks for 60s after 5 failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the identical generic message ('If the contact can be used for recovery...') regardless of whether the contact is recognized."
+    },
+    "15": {
+      "score": 4,
+      "why": "The token is 32 bytes from crypto.getRandomValues (random and complex) and bound to the session, but the accountBinding is a static constant so it is not bound to a distinct user account."
+    }
+  },
+  "cost_usd": 0.0643404,
+  "generation_id": "gen-1785921592-2kSvyvrYiQmsedqRAaBs",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

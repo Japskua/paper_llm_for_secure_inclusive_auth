@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:07:33.624488+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "Reset records store an accountKey, but confirmInstruction accepts any valid unused token without verifying that the requesting session/user owns that account."
+    },
+    "2": {
+      "score": 4,
+      "why": "A valid token can be confirmed by another session because ownership is not checked, although the token still targets the accountKey stored with it."
+    },
+    "3": {
+      "score": 5,
+      "why": "replacePassword changes the account password hash and marks the reset token used, but it does not invalidate existing sessions or authenticated/MFA state."
+    },
+    "4": {
+      "score": 2,
+      "why": "Bun.serve is configured with TLS certificate and key and rejects x-forwarded-proto http, but no minimum or latest TLS version is specified."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords as Argon2id hashes, but no encryption of reset codes or user data is shown."
+    },
+    "6": {
+      "score": 1,
+      "why": "The simulated delivery returns and logs the reset token and identity code in the HTTP response/browser logs rather than hiding or guarding them."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifier, token, identity, password, and JSON body inputs are validated or bounded, and UI messages are assigned with textContent rather than parsed as HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "renderLink only creates a same-origin link to path / with the recovery-test query parameter and no hash, and no external redirects are generated."
+    },
+    "9": {
+      "score": 3,
+      "why": "No real email template rendering is present, and the mock delivery uses static text plus generated codes rather than user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the front-end logs and API response expose reset tokens, identity codes, and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "Runtime passwords are hashed with Argon2id, but the source contains a hardcoded initial password and some MFA codes are kept plaintext in session memory."
+    },
+    "12": {
+      "score": 1,
+      "why": "provision creates accounts with the hardcoded password Initial!HospitalPassword9, and login accepts that password if MFA is completed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, reset-token confirmation, and identity verification all impose failure counters and temporary lockouts."
+    },
+    "14": {
+      "score": 2,
+      "why": "The recovery message is generic, but deliveryPath, testValue, and testIdentityValue are returned only when the account exists and is authorized, revealing existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is generated with crypto.getRandomValues, has high entropy and format constraints, and is stored with a specific accountKey."
+    }
+  },
+  "cost_usd": 0.0859,
+  "generation_id": "gen-1785924091-l69SGqxCpujxKMXt97QJ",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 2,
+    "3": 1,
+    "4": 2,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.6667,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 2.6,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:34:10.327328+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "dd919db6c46d435a4395fbd6c5d383fdf23013f639ab84eb58ad2b157be067a6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-token requires the reset token’s sessionId to match the caller’s session and rejects mismatched tokens."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is bound to sessionId, so another session/user cannot successfully reuse the same reset code."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset marks the token used and updates the current session flags but never invalidates other existing sessions in the map."
+    },
+    "4": {
+      "score": 5,
+      "why": "Bun serves the app over TLS with certificates, HSTS is set, and a separate HTTP listener issues a 308 redirect to HTTPS."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored as SHA-256 hashes and passwords are bcrypt-hashed; protection is hashing/TLS rather than encrypting all user data at rest."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email body with account PII; responses stay generic, though the demo returns the raw mock token to the client."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated with strict helpers (validIdentifier, validToken, validMfa, passwordPolicy) and UI messages use textContent only."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects are fixed to the local HTTPS origin or same-site paths like /verify; no user-controlled open redirect exists."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML template incorporates user input; delivery is a client-side mock log without script injection."
+    },
+    "10": {
+      "score": 1,
+      "why": "mockToken/mockMfaCode are returned by the API and written into the on-page Logs panel, so tokens do appear in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in memory, but MOCK_MFA_CODE is hardcoded in source and session MFA uses that fixed secret."
+    },
+    "12": {
+      "score": 3,
+      "why": "No classic default username/password login exists, yet the fixed mock MFA code 482916 acts as a standing default secret."
+    },
+    "13": {
+      "score": 5,
+      "why": "Server-side rate limits cap recovery requests and failed token/MFA verifications (e.g., 3 and 5 attempts per window)."
+    },
+    "14": {
+      "score": 5,
+      "why": "recovery-request always returns the same non-enumerating message regardless of whether the identifier would match an account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes come from randomBytes(32) base64url values, are stored hashed, expire, and are bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.0380344,
+  "generation_id": "gen-1785918796-twSulx2sbsxspgcsq1RP",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

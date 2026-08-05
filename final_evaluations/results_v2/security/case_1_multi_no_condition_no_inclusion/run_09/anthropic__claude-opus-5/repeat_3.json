@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:57:10.191206+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "/api/reset-validate and /api/password-update compare the submitted token only against `session.resetToken`, which is stored server-side for the session that requested it, so a code is bound to its requester (session-scoped rather than account-scoped)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens live only in the issuing server-side session object, so a token pasted into another browser session fails validation — the claim that one code works for any other user is false."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no invalidation of other sessions on password change; `session.passwordHash` is set but every other entry in the `sessions` map stays valid until its 30-minute TTL expires, so pre-existing sessions do keep working."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS certs, HTTP on 3001 is rejected with 426, HSTS is sent and non-HTTPS requests get 421, but no explicit minimum/latest TLS version or cipher policy is configured (relying on runtime defaults)."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with bcrypt cost 12, but reset codes and MFA codes are kept in plaintext in the in-memory session (and the MFA code is a hardcoded constant), so only part of the sensitive data is cryptographically protected."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is sent at all; instead the reset code (`mockDeliveryToken`) is returned in the JSON response and written verbatim into the client-visible log panel and browser console, so the simulated 'delivery message' does not guard the secret."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are type-checked and regex-validated (email pattern, `^[A-Za-z0-9_-]{20,100}$` for codes, `^\\d{6}$` for MFA, password policy), body size is capped at 4096 bytes, and all UI text is set via textContent rather than HTML injection."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects; navigation is limited to an allow-listed set of local screen names and CSP sets `form-action 'self'`, `base-uri 'none'`, so no untrusted outbound destination exists."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates in the code, and the only simulated delivery output is plain text inserted with textContent, so no scripts or user-supplied HTML can appear in it."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server error responses are generic with no stack traces, but the reset token and MFA code are deliberately printed to the client log pane and `console.log`, so secrets do appear in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "The MFA verification code is hardcoded as `const MFA_CODE = \"482913\"` (and the mock account email is hardcoded), so secret codes are embedded in source even though passwords themselves are bcrypt-hashed."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed, source-embedded MFA code `482913` functions as a default credential that always satisfies /api/mfa-verify for any session that reaches that step."
+    },
+    "13": {
+      "score": 4,
+      "why": "rateAllowed enforces 3 reset requests, 5 reset-code guesses and 5 MFA attempts per 15-minute window with 429 responses, though the counters are stored per session cookie and could be reset by obtaining a fresh session."
+    },
+    "14": {
+      "score": 4,
+      "why": "/api/reset-request always returns the same generic message plus an opaque random token regardless of whether the email matches MOCK_ACCOUNT_EMAIL, though a later validate attempt can act as a subtle oracle since only the known account's token is retained."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are 32 bytes from crypto.getRandomValues encoded base64url, single-use, 15-minute TTL, and tied to the requesting session/account record, though they are bound to a session rather than a persistent user identity."
+    }
+  },
+  "cost_usd": 0.133675,
+  "generation_id": "gen-1785920193-1YasWib9bLQu1Y8quDMM",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 4,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.4,
+  "capture_complete": false
+}

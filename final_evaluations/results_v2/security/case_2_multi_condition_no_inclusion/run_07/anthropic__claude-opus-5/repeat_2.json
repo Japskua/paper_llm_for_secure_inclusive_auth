@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:37:07.232234+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset records store an identityScope derived from the recovery identifier and /api/new-password requires session.resetVerified plus session.recoveryIdentity set from the record, so the code is bound to the recovering identity (though the mock has only one account)."
+    },
+    "2": {
+      "score": 2,
+      "why": "Each code is a 32-byte random value hashed and stored with its own identityScope and marked used on verification, so a given code is not reusable for another user; the only mitigating fact is that the mock has a single account, so any code inherently targets that one account."
+    },
+    "3": {
+      "score": 1,
+      "why": "After /api/new-password the server loops over all sessions clearing authenticated, pendingMfa, privacyAccepted and appointmentBooked, so previous sessions do not still work."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server runs TLS via Bun's serve with cert/key and 308-redirects all HTTP to https://localhost with HSTS, though no explicit minimum TLS version is pinned in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 hashes and passwords as bcrypt (cost 10) hashes; there is no encryption-at-rest of other user data, but no sensitive plaintext is retained."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email delivery — the reset code is returned in the JSON response and printed to the client-side 'Logs' panel and console, which is the opposite of guarding private data in a message."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type-checked, length-bounded, normalized, and reset codes are regex-allowlisted; passwords are validated against a strength policy and never interpolated into HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Only fixed internal paths are used and the HTTP listener redirects to a hardcoded https://localhost destination, ignoring any user-supplied Host or redirect parameter."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist at all (delivery is simulated), but the simulated message content is plain text inserted with textContent, so no scripts or HTML from user input are rendered."
+    },
+    "10": {
+      "score": 3,
+      "why": "Errors are generic with no stack traces and CSP/no-store headers are set, but the reset code and MFA code are returned to the client and written into the visible log panel and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "The initial password 'Initial!DemoPassword2025', the MFA code '246810', and the recovery identity are hardcoded literals in the source rather than externalized secrets, although the password is bcrypt-hashed at startup."
+    },
+    "12": {
+      "score": 2,
+      "why": "A default demo credential 'Initial!DemoPassword2025' is baked in and usable for login without any forced change, and the MFA code is a fixed constant."
+    },
+    "13": {
+      "score": 5,
+      "why": "Server-global throttles limit recovery requests (3/10min), reset code verification (5/10min), and lock login and MFA for 5 minutes after 5 failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery-request returns the identical generic message 'If an account can be recovered...' for valid and invalid identifiers, and login failures return a uniform 'Sign-in could not be completed.'"
+    },
+    "15": {
+      "score": 4,
+      "why": "Codes are 32 random bytes from crypto.getRandomValues, base64url-encoded, single-use, 10-minute TTL, and bound to an identity scope hash; the identity binding is trivial only because the mock has one account."
+    }
+  },
+  "cost_usd": 0.095055,
+  "generation_id": "gen-1785922606-a3H9Ia2wcVouuz8PG2Vc",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 5,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 3,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

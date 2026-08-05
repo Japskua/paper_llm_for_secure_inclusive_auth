@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:56:18.601934+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset token is stored in the requesting server-side session only for the known account and must match that session's token."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token cannot be used from another user's session because validation compares it with the token stored in the current session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password update does not revoke or invalidate any other existing sessions, so they remain usable until their normal expiration."
+    },
+    "4": {
+      "score": 3,
+      "why": "HTTPS is mandatory and HSTS is configured, but the TLS configuration does not explicitly require the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Transport is protected by TLS and passwords are hashed, but reset tokens and other session data are stored unencrypted in memory."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent, while the simulated delivery exposes reset and MFA codes directly in the API response and browser log."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, password, reset-token, and MFA inputs receive type, format, length, normalization, or policy validation before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application contains no user-controlled redirect destination or external redirect link."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email template is generated, and displayed values are inserted with textContent rather than untrusted HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and the fixed MFA code are deliberately displayed in browser logs and returned by API responses."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are bcrypt-hashed, but the MFA secret code is hard-coded in the source and reset tokens are retained in plaintext memory."
+    },
+    "12": {
+      "score": 2,
+      "why": "Although there is no default password, the globally fixed hard-coded MFA code functions as a default verification credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "The server blocks reset requests after three attempts and reset-token or MFA guesses after five attempts within fifteen minutes."
+    },
+    "14": {
+      "score": 2,
+      "why": "The reset-request response is generic, but testing the returned token on the validation endpoint distinguishes the known account from an unknown email."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are cryptographically random 32-byte base64url tokens stored only in the requesting account-recovery session."
+    }
+  },
+  "cost_usd": 0.09216,
+  "generation_id": "gen-1785920156-ii9Vlg7fafbtzpKEXPEv",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.2667,
+  "capture_complete": false
+}

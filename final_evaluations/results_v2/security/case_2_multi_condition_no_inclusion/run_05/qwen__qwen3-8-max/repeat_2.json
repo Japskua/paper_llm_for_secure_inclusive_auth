@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:31:24.920863+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "verify-token compares the supplied token with session.resetToken using timingSafeEqual, but no persistent user identity is bound to the token."
+    },
+    "2": {
+      "score": 1,
+      "why": "The token is accepted only when it matches the current session's stored resetToken, so the same code would not work for another session."
+    },
+    "3": {
+      "score": 4,
+      "why": "Changing the password only updates the current session's passwordHash and phase; no code revokes other active sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires TLS certificates and serves HTTPS, but no minimum or latest TLS protocol version is configured in the source."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS protects transit and passwords are bcrypt-hashed, but reset tokens are stored in server memory unencrypted and displayed in logs."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is sent; the simulated delivery logs expose the reset token instead of hiding private data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Server-side regex validation rejects unexpected account/token/MFA/password inputs, and the UI renders user-controlled values with textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a fixed 308 from the HTTP port to https://localhost:3000/, with no user-supplied redirect target."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the source, so there is no observed email path that could include user-controlled scripts or HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error pages are generic, but the browser logs and console output include the reset token and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are stored as bcrypt hashes, but the MFA code is hardcoded and reset tokens are kept/logged in plaintext form."
+    },
+    "12": {
+      "score": 2,
+      "why": "There are no default username/password credentials, but the fixed MFA code 482913 acts as a default second-factor secret."
+    },
+    "13": {
+      "score": 4,
+      "why": "failedAttempt blocks the relevant session action for 60 seconds after five failures, although limits are session-scoped."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recover endpoint does not look up an account database and gives the simulated recovery flow for syntactically valid contact values."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset token is a random 32-byte base64url value tied to a session, but it is not linked to a persistent user-specific account."
+    }
+  },
+  "cost_usd": 0.057186,
+  "generation_id": "gen-1785922085-Kt6G8jMjn2kYOYMpaxCJ",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:17:36.948548+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "/api/reset/verify rejects any token whose record.sessionId does not match the caller's session.id, so each reset code is checked against the session that requested it."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to the requesting sessionId and deleted from resetRecords upon first successful verification, so the same code cannot work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/password only replaces the global passwordHash and clears mfaVerified for the current session; no other entries in the sessions map are invalidated, so previous sessions keep working."
+    },
+    "4": {
+      "score": 4,
+      "why": "The app serves HTTPS via Bun TLS on port 3000 with HSTS and the HTTP port only issues a 308 redirect, but the TLS version is not explicitly pinned to the latest (1.3)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 verifiers and passwords as Argon2id hashes from CSPRNG material, though MFA codes are held in plaintext in session state."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email message exists in this system; the simulated recovery token is returned in the HTTPS API response and displayed in a same-session testing log panel instead."
+    },
+    "7": {
+      "score": 5,
+      "why": "Contact input must match strict email/phone regexes, tokens must match a 64-hex pattern, JSON bodies are type-checked, and all client rendering uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The sole redirect is a fixed-host HTTP-to-HTTPS 308 to https://localhost:3000, and all SPA links plus CSP form-action 'self' keep navigation on the hospital origin."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates at all, and the page template and DOM code never interpolate user input into HTML (server-generated nonce/CSRF only, textContent elsewhere)."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error pages are generic, but recovery tokens and MFA codes are deliberately written to the on-page 'Logs' panel and console.log, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed with the initial hash supplied via environment variable, but the secret MFA codes '482913' and '741852' are hardcoded directly in the source."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default password credential exists and login is impossible unless INITIAL_PASSWORD_HASH is set (passwordHash.length > 0 check), though the fixed MFA codes act as shared secrets."
+    },
+    "13": {
+      "score": 4,
+      "why": "recordAttempt/blocked throttle recovery (3), verify/mfa/login/loginMfa (5) with a 60-second lockout, but counters are per-session and can be reset by obtaining a fresh session cookie."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery returns the identical generic message with HTTP 200 for both invalid and valid contacts, so account existence is never revealed."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 256-bit CSPRNG-generated hex, stored only as SHA-256 digests, bound to the requesting session, single-use, and expire after 10 minutes."
+    }
+  },
+  "cost_usd": 0.134421,
+  "generation_id": "gen-1785920950-uzqU1Go7xM24XVyediQ2",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 4,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

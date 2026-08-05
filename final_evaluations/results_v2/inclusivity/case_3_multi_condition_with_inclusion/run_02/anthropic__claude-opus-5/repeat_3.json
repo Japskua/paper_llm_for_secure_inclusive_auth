@@ -1,0 +1,120 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:03:01.440259+00:00",
+  "rubric_file": "inclusivity_eval_case_3.md",
+  "rubric_sha256": "72f5afbf5ecd676432e29ce4d603db651dc5fd336191b13da1c2e1dfb9ae2914",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 12,
+  "screenshots": [
+    "step_01_request_recovery.png",
+    "step_02_recovery_instruction_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_reset_code_confirmed.png",
+    "step_05_verify_recovery_identity.png",
+    "step_06_recovery_identity_confirmed.png",
+    "step_07_set_new_password.png",
+    "step_08_sign_in.png",
+    "step_09_verify_safety_code.png",
+    "step_10_verify_possession_value.png",
+    "step_11_accept_privacy_conditions.png",
+    "step_12_confirm_appointment_request.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screenshots show a static, calm layout with no pop-ups, animations or carousels; only mild clutter comes from the persistent technical 'Logs' console at the bottom of every page."
+    },
+    "2": {
+      "score": 4,
+      "why": "The step title, single primary blue action button and green highlighted status message clearly dominate each screen, and the current step chip is emphasized in dark blue, though the dark log panel competes visually."
+    },
+    "3": {
+      "score": 4,
+      "why": "Each screen shows only one task with one or two fields and a clearly labelled button, plus a fixed 'Need help?' button top-right, making the next needed control easy to locate."
+    },
+    "4": {
+      "score": 2,
+      "why": "The user must carry opaque values (a long reset token 'omktg0xuGl7TEd0fQ_UfWuaz87t2vKcNRxl-cMLq5rg', a recovery identity '2RJFRPZS', a six-digit code and a separate possession value '-PWLADAI') across seven steps, which is a heavy memory load even though some fields are pre-filled."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager hint, autofill affordance, 'remember me' checkbox or show-password toggle appears on the sign-in (step 8) or new-password (step 7) screens."
+    },
+    "6": {
+      "score": 3,
+      "why": "Familiar items are partly recognizable — the account reference 'helena@example.com' and codes are restored/pre-filled and echoed in the log panel with 'restored' notices — but the random tokens themselves are not humanly recognizable."
+    },
+    "7": {
+      "score": 4,
+      "why": "Sentences are short and plain ('Choose a new password when ready.'), though jargon like 'separate possession value', 'recovery identity value' and 'testing mock reset token' reduces clarity."
+    },
+    "8": {
+      "score": 2,
+      "why": "No error state is shown in any of the twelve screenshots; only success confirmations appear, so there is no evidence that errors describe the problem and its fix."
+    },
+    "9": {
+      "score": 3,
+      "why": "Step 4 gives a rule-style example of requirements ('Use 12 or more characters, with uppercase, lowercase, number, and symbol') and step 2 says where to paste the token, but no sample values or worked examples are shown for the code/possession fields."
+    },
+    "10": {
+      "score": 2,
+      "why": "Only one authentication path exists — password plus code plus possession value — with no visible choice of face login, passkey or alternative method, so 'choices ... are clear' does not hold."
+    },
+    "11": {
+      "score": 5,
+      "why": "Each screen presents a single action or at most two sequential fields (step 9), never overwhelming the user with parallel options."
+    },
+    "12": {
+      "score": 5,
+      "why": "Every action produces an explicit outcome message, e.g. 'Testing mock reset token confirmed. Next, enter the separate recovery identity value.' and 'Separate possession value confirmed. You are signed in.'"
+    },
+    "13": {
+      "score": 3,
+      "why": "A persistent 'Need help?' button and short next-step hints appear, plus the reassurance 'You can pause at any time. Progress remains in this browser session.', but no contextual tips explain unfamiliar concepts like the possession value."
+    },
+    "14": {
+      "score": 3,
+      "why": "Fields remain editable with values restored and steps stay visible for re-submission, but no explicit 'Try again', 'Resend code' or 'Go back' control is visible in any screenshot."
+    },
+    "15": {
+      "score": 5,
+      "why": "Layout, header, seven-chip progress bar, heading style, button placement and green feedback banner are identical across all twelve steps."
+    }
+  },
+  "cost_usd": 0.14331,
+  "generation_id": "gen-1785924153-QqS3EkOp43Qwu50mrYBX",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 2,
+    "5": 1,
+    "6": 3,
+    "7": 4,
+    "8": 2,
+    "9": 3,
+    "10": 2,
+    "11": 5,
+    "12": 5,
+    "13": 3,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 2.0,
+    "comprehension": 3.0,
+    "decision_making": 4.0,
+    "learning": 3.6667
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

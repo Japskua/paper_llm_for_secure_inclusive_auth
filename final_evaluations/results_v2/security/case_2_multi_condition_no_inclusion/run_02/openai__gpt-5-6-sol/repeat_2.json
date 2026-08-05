@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:13:35.147079+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Token verification checks both the current session ID and a fixed account binding, although it does not bind the token to the submitted contact identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is bound to its originating session and marked used after verification, so it cannot work for another user's session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing the password does not revoke or delete any existing sessions, including other sessions in the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is configured with TLS certificates and HSTS, but the source does not explicitly require or demonstrate the latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Recovery tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, though other in-memory session data is not encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email message is implemented, while the generic response avoids contact disclosure but mock delivery exposes recovery credentials locally."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs receive type, length, format, and password-policy validation, and user values are not inserted into HTML, although the contact value has minimal format validation."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application uses only a relative local recovery link and contains no user-controlled redirect destination."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email template incorporates user input, and all displayed dynamic messages use textContent rather than executable HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The recovery token, recovery link, and deterministic MFA code are deliberately displayed in the browser console and Logs panel."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords and recovery tokens are hashed securely, but the MFA code 482913 is hardcoded directly in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The hardcoded and publicly returned MFA test code functions as a default verification credential."
+    },
+    "13": {
+      "score": 4,
+      "why": "Token and MFA failures trigger a five-minute lock after five attempts, although limits are session-scoped and can be bypassed by obtaining a new session."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery requests always return the same generic account-existence message and perform no observable account enumeration."
+    },
+    "15": {
+      "score": 4,
+      "why": "Recovery tokens are cryptographically random 32-byte values and session-bound, but they are tied only to a constant account binding rather than the submitted user identity."
+    }
+  },
+  "cost_usd": 0.0586215,
+  "generation_id": "gen-1785921182-lKyl4SwFKyIaJd1R3rtu",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.2666,
+  "capture_complete": true
+}

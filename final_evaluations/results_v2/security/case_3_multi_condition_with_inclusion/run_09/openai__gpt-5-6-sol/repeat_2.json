@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:31:30.824142+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "e8e8aca10204c746985ba82e1922651d96e9afa3cff7f743870a5149d08e7cee",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset token is stored in a session-specific recovery object and can only be validated through that same session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token from one session cannot validate in another session because each session has its own recovery state and CSRF secret."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password updates do not invalidate or remove any previously authenticated sessions from the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is configured for HTTPS with HSTS, but the code does not explicitly require a particular minimum or latest TLS version."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset and MFA codes are stored in plaintext in memory, and the reset token and MFA code are returned directly to the browser."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email message or email delivery mechanism is implemented, so protection of private data within email cannot be verified."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, password, token, MFA, and boolean inputs receive type, length, format, or policy validation, while dynamic browser output uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application accepts or generates no redirect URLs, and its CSP restricts forms and connections to the same origin."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email template is implemented, although the simulated delivery output does not interpolate user-supplied HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and fixed MFA code are displayed in the page Logs section and written to the browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are bcrypt-hashed, the initial password hash and fixed MFA code are embedded in source code and recovery secrets remain plaintext in memory."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application starts with a hard-coded bcrypt password hash and a hard-coded MFA code, creating default credential material."
+    },
+    "13": {
+      "score": 5,
+      "why": "The rate limiter blocks attempts for 15 minutes after more than five attempts within the configured window."
+    },
+    "14": {
+      "score": 1,
+      "why": "An attacker can distinguish the configured email because its returned token verifies successfully while tokens requested for other emails can never verify."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated from 32 cryptographically random bytes and are bound to the initiating session's recovery state for the configured account."
+    }
+  },
+  "cost_usd": 0.052125,
+  "generation_id": "gen-1785925860-PWnCWXq6nMTiSk7qqqAn",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:46:27.039580+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token hash is stored on and compared only against the requesting server-side session (`session.resetTokenHash`), so a code is bound to the session/user that requested it, though there is no real user record to bind to."
+    },
+    "2": {
+      "score": 1,
+      "why": "False for this system — because the token hash lives only in the issuing session, a code presented with any other session cookie fails the `candidateHash !== session.resetTokenHash` check."
+    },
+    "3": {
+      "score": 4,
+      "why": "True — `/api/set-password` only clears the recovery grant and sets `authenticated = true`; no other sessions in the `sessions` map are invalidated or rotated on password change."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server refuses to start without cert/key and serves only over TLS with `Strict-Transport-Security`, relying on Bun's default (TLS 1.3-capable) stack, but no explicit minimum TLS version or cipher policy is configured."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are 32 random bytes stored only as SHA-256 digests and passwords are hashed with Argon2id, which is appropriate, though SHA-256 is unsalted and no data-at-rest encryption exists."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email at all; instead the API response returns `testToken` and `testMfaCode`, which the client prints verbatim into the visible log pane, so the 'delivery message' does not guard the secret."
+    },
+    "7": {
+      "score": 5,
+      "why": "Strict JSON-only parsing, size limits, allow-list regexes for email/token/password, and DOM writes via `textContent` with a nonce-based CSP together sanitize and constrain all user input."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is purely local hash routing, the code prefill is regex-validated, and CSP sets `form-action 'self'` and `base-uri 'none'`, so no external redirect target is possible."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email template exists, and the simulated delivery output is inserted with `textContent`, so no user-supplied HTML or script can appear in any message."
+    },
+    "10": {
+      "score": 1,
+      "why": "False — the recovery token and MFA code are returned in the JSON response and explicitly written to `console.log` and the on-page `#log-output` element."
+    },
+    "11": {
+      "score": 2,
+      "why": "The account password is Argon2id-hashed in memory, but the initial password string and the MFA code `\"246810\"` are hardcoded literals in the source with no secret store or env config."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system seeds a hardcoded initial account password and accepts a single static, in-code MFA value `246810` for every verification, which constitutes default credentials."
+    },
+    "13": {
+      "score": 4,
+      "why": "`rateAllowed` blocks after 5 attempts per 60-second window with a 429 response, though the counter is per in-memory session so an attacker can reset it by discarding the cookie."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/request-reset` always returns the same 'If an eligible account exists...' message and never validates against an account list, so existence is not disclosed."
+    },
+    "15": {
+      "score": 4,
+      "why": "Tokens come from `crypto.getRandomValues` (32 bytes, base64url), are single-use, expire in 10 minutes, and are bound to the issuing session, though the paired MFA factor is static rather than random."
+    }
+  },
+  "cost_usd": 0.112555,
+  "generation_id": "gen-1785919547-JfTOYXghkBmrBtE0QVGv",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

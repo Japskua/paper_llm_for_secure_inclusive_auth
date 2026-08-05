@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:37:34.401335+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "The reset verification endpoint accepts any valid code without checking if it belongs to the session or user requesting the reset."
+    },
+    "2": {
+      "score": 5,
+      "why": "Any user or session can submit a valid reset code generated for another account and successfully claim that recovery identity."
+    },
+    "3": {
+      "score": 1,
+      "why": "The application explicitly revokes authentication across all active sessions when a password reset is completed."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application enforces HTTPS with TLS certificate configuration and redirects HTTP requests to HTTPS."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords are stored using bcrypt and reset codes are hashed with SHA-256 before storage."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated messages and event logs contain no private user information."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are normalized on the server and rendered safely in the DOM using textContent to prevent script execution."
+    },
+    "8": {
+      "score": 5,
+      "why": "HTTP redirects and application navigation links are hardcoded to the local origin without accepting external target URLs."
+    },
+    "9": {
+      "score": 5,
+      "why": "Communication outputs are plain text and contain no scripts or user-supplied HTML templates."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error responses present generic user messages and suppress stack traces, system details, and tokens."
+    },
+    "11": {
+      "score": 1,
+      "why": "The initial account password and MFA verification code are directly hardcoded in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system initializes with and permits authentication using a hardcoded default password."
+    },
+    "13": {
+      "score": 5,
+      "why": "Server-side rate limiters block users and lock out accounts after repeated failed authentication or recovery attempts."
+    },
+    "14": {
+      "score": 1,
+      "why": "The recovery request endpoint returns a code property in the JSON payload only for valid user identities, exposing account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using 32 cryptographically secure random bytes bound to the specific user recovery scope."
+    }
+  },
+  "cost_usd": 0.0568005,
+  "generation_id": "gen-1785922625-t2vywTS0VkLUJptj500x",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 1,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

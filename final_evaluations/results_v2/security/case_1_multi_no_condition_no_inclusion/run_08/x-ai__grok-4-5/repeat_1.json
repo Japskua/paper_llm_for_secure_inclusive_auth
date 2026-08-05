@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:52:47.489172+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "382826be6a70be6d0d503a9383b0a4ec86ceeb15e56bcec319dd73312f8c12a0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "Recovery records store only token/flowId/expiry and never bind the reset code to an email or user identity, so no ownership check occurs."
+    },
+    "2": {
+      "score": 5,
+      "why": "Because tokens are not user-bound, any client that presents the token can verify it and proceed through reset."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only sets flags on the current session and never invalidates or removes other existing sessions in the sessions map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun serves the app over TLS with cert/key and HTTP redirects to HTTPS with HSTS, though the TLS protocol version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed, but reset tokens and flow data are stored in memory as plaintext and are not encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email body; the mock delivery returns mockToken in the API JSON and writes the token to the on-page logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are length-limited, email-format checked, JSON body size-capped, and passwords validated before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect targets fixed https://localhost with the request path; no user-controlled redirect URL is accepted."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML templates incorporate user input; delivery is a mock token string without script/HTML composition."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and the MFA code are intentionally written to the visible Logs panel and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA secret is hardcoded as \"482916\" in source, even though passwords use Argon2id."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default login username/password path exists; access is only via the generated recovery flow."
+    },
+    "13": {
+      "score": 5,
+      "why": "IP/session rate limits, verify throttling, and MFA lockout after 5 failures block repeated wrong attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": " /api/recovery always returns the same generic message regardless of whether the email is registered."
+    },
+    "15": {
+      "score": 2,
+      "why": "Tokens are cryptographically random 64-hex values, but they are not tied to any specific user."
+    }
+  },
+  "cost_usd": 0.0337444,
+  "generation_id": "gen-1785919930-HMO38HddQkkjXU9VCcmn",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 1,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 2
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.0,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

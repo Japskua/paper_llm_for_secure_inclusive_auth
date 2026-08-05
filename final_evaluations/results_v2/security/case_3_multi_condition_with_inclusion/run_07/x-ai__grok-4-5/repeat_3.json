@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:24:30.855804+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Recovery verify requires the record’s sessionId to match the caller’s session and validates the token hash before advancing, so the code is bound to the requesting user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code is stored only on one RecoveryRecord tied to sessionId; another user/session fails the sessionId and stage checks, so the same code does not work for others."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only updates accountPasswordHash and the current session; other entries in the sessions Map are never invalidated."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is set, but the code does not explicitly pin the latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and passwords are protected with bcrypt via Bun.password.hash; other in-memory user/session fields are not encrypted at rest."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email sender; the recovery API uses a generic anti-enumeration message, though testToken is returned for demo delivery simulation."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs pass through cleanText, validIdentifier, and validPassword, which bound length and reject control characters and angle brackets."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses a fixed validRoutes allowlist and API next paths are internal (e.g. /password); no user-controlled external redirects exist."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML templates consume user input; client rendering escapes dynamic text with esc() and CSP nonces block inline script injection."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error JSON is generic and stack traces are swallowed, but testToken/testMfaCode are returned and written into the on-page logs area."
+    },
+    "11": {
+      "score": 2,
+      "why": "Runtime password storage uses bcrypt, yet MFA_TEST_CODE and the initial password string are hardcoded in source."
+    },
+    "12": {
+      "score": 1,
+      "why": "DEMO_ACCOUNT_IDENTIFIER helena@hospital.test with password Welcome!2025Heart is accepted as working default demo credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery-request, recovery-verify, and MFA paths apply attempt counters and temporary lockouts (e.g. 5 failures → LOCK_TIME_MS)."
+    },
+    "14": {
+      "score": 5,
+      "why": "recovery-request always returns the same ‘if the details match’ success message, and login failures use a single non-enumerating error string."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes are randomBytes(32) base64url tokens, bcrypt-hashed, single-use, short-lived, and bound to the requester’s recovery record/session."
+    }
+  },
+  "cost_usd": 0.0213588,
+  "generation_id": "gen-1785925419-TlpBhvRZ1z1To0ELd3MH",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

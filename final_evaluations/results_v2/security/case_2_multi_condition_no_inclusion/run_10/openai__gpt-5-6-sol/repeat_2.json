@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:50:09.678513+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c2876b4ed426a65417ec33b6fbb9afae2da3d7affeb88cb28b5873f4558bbdcc",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "The reset token is bound to a recovery session, but no user identity or submitted contact is stored or checked."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is verified only against the digest stored in the issuing session, so it cannot be used in another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password-reset handler neither invalidates the current recovery session nor revokes any other existing sessions."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server is TLS-only and rejects non-HTTPS requests, although no minimum or latest TLS version is explicitly configured."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests, passwords use bcrypt, contact data is not retained, and transport uses TLS, though this is not literal encryption of every value."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email message is implemented, while the simulated recovery response contains no submitted contact or other private user data."
+    },
+    "7": {
+      "score": 4,
+      "why": "The contact value is ignored rather than reflected, passwords are type-checked and policy-validated, and dynamic HTML values are escaped."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application uses only same-page fragment links and same-origin API paths, with CSP restricting forms and connections to self."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email template exists, and no user input is inserted into any simulated recovery message."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and deterministic MFA code are deliberately returned to the browser and displayed in both the console and visible test log."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and reset tokens are stored as digests, but the MFA code is hard-coded as 482913 and stored in plaintext in the session."
+    },
+    "12": {
+      "score": 5,
+      "why": "The source defines no default username, password, or other default login credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery issuance, token verification, password submission, and MFA verification are limited by both session and trusted-IP attempt buckets."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery requests always return the same generic confirmation and the submitted contact is not used to disclose account existence."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset token is a cryptographically random 32-byte value bound to one session, but it is not bound to an identified user or contact."
+    }
+  },
+  "cost_usd": 0.0392065,
+  "generation_id": "gen-1785923393-IqOr6j7hN1eS2F195DOD",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:31:31.752741+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "e8e8aca10204c746985ba82e1922651d96e9afa3cff7f743870a5149d08e7cee",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Token verification requires the token stored in the initiating session's recovery object, although no explicit user identifier is retained."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is bound to one session's recovery object and cannot be verified from another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates the password hash but does not invalidate any existing authenticated sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is configured for HTTPS, but the code does not explicitly require a particular minimum or latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset and MFA codes are stored as plaintext strings in server memory."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is generated, and the simulated delivery exposes the reset token directly in the API response and browser log."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email, password, token, and MFA inputs receive type, length, format, or policy validation before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application implements no user-controlled redirects or redirect-link parameters."
+    },
+    "9": {
+      "score": 4,
+      "why": "There is no email template, while browser output uses textContent and does not insert user input as HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and MFA code are deliberately returned by APIs and displayed in the browser's visible Logs section."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are bcrypt-hashed, the MFA code is hard-coded as \"481516\" and secret recovery values remain plaintext in memory."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application starts with a fixed password hash embedded in source code, effectively provisioning a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "The rate limiter blocks each protected action after more than five attempts within the configured window."
+    },
+    "14": {
+      "score": 1,
+      "why": "Because the API returns the generated token, an observer can test it and distinguish the configured real email from nonexistent addresses."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated from 32 cryptographically random bytes and are bound to the initiating session's real-account recovery state."
+    }
+  },
+  "cost_usd": 0.048885,
+  "generation_id": "gen-1785925862-o1COi3OYh9bpwnANdCtB",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 2.8667,
+  "capture_complete": true
+}

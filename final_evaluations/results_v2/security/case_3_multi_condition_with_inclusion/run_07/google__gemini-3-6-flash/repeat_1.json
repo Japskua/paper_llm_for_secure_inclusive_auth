@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:23:32.160172+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The recovery verification handler checks that the recovery record's session ID matches the active session ID."
+    },
+    "2": {
+      "score": 1,
+      "why": "Recovery tokens are strictly tied to the session that generated them and cannot be used by other sessions."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating the password hash in the password endpoint does not invalidate existing active sessions stored in memory."
+    },
+    "4": {
+      "score": 5,
+      "why": "HTTPS is explicitly configured using Bun's server TLS options with certificate and key files."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords, MFA verification codes, and password reset tokens are hashed using bcrypt before storage."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated recovery messages use uniform response text that conceals whether an account exists and avoids exposing private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated against character constraints, stripped of control characters, and escaped before rendering."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side navigation restricts all route redirects to a strict whitelist of internal relative paths."
+    },
+    "9": {
+      "score": 5,
+      "why": "Notification and event messages consist of fixed static text without embedding unescaped user input."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generated recovery tokens and MFA codes are explicitly output into the browser log display element in the UI."
+    },
+    "11": {
+      "score": 1,
+      "why": "The initial account password seed and test MFA verification code are hardcoded directly in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application comes pre-configured with active default credentials for a demo account."
+    },
+    "13": {
+      "score": 5,
+      "why": "Throttling mechanisms temporarily lock out requests after 3 to 5 consecutive failed login, MFA, or recovery attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Login and password recovery responses return generic success or failure messages regardless of whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are created using 32 cryptographically secure random bytes and are tied to the user's specific session."
+    }
+  },
+  "cost_usd": 0.0572775,
+  "generation_id": "gen-1785925387-cZtsfrgnsr5U0qUAOjSl",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

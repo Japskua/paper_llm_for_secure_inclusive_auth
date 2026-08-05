@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:19:09.865487+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "/api/verify-token requires record.sessionId === session.id (and an accountBinding match) before accepting a token, so a code only works for the session/user that requested it, though the 'accountBinding' is a hardcoded constant rather than a real account id."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token digest is stored with its originating sessionId and rejected if record.sessionId !== session.id, so the same reset code cannot be reused by another user/session."
+    },
+    "3": {
+      "score": 4,
+      "why": "After /api/password succeeds the code only sets passwordHash/passwordChanged and never deletes or rotates the session id or clears the sessions map, so pre-reset sessions (and cookies) remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, non-https URLs are rejected, and HSTS plus upgrade-insecure-requests are sent, but no explicit minimum/latest TLS version is configured (it relies on Bun defaults)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests and passwords via Bun.password.hash bcrypt cost 10, which is appropriate, though data lives unencrypted in in-memory Maps and SHA-256 is hashing rather than encryption."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email at all — 'mock delivery' returns the raw recovery token and MFA code in the JSON response and prints them verbatim in the browser console and Logs panel, so the delivery channel does not guard the secret."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated (contact length/control-char check, token regex ^[A-Za-z0-9_-]+$, six-digit code regex, password policy, 2048-byte body cap) and all client output uses textContent, never innerHTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The server performs no redirects at all, only handles '/' and '/api/*' on the same origin, and CSP sets form-action 'self', base-uri 'none', default-src 'none'."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist; the single HTML page embeds only a server-generated nonce and CSRF token (with '<' escaped in the JSON state), and user input is never interpolated into markup."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors return only a generic message with no stack traces, but the application deliberately logs the raw recovery token and MFA code to console.log and the on-page Logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never persisted in plaintext, but the MFA confirmation code is hardcoded in the source as '482916' for every session."
+    },
+    "12": {
+      "score": 3,
+      "why": "There are no account credentials or default admin logins in the system, yet the static, source-embedded MFA code '482916' functions as a default shared secret."
+    },
+    "13": {
+      "score": 4,
+      "why": "Rate limiting exists (3 recovery requests/15 min, 6 verifications/10 min, 5 token attempts then invalidation, 5 MFA attempts then a 60-second lock), but all counters are stored per-session so they can be reset by obtaining a new session cookie."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint always answers 'If the contact can be used for recovery, instructions have been prepared.' regardless of the value, and other failures return generic messages."
+    },
+    "15": {
+      "score": 5,
+      "why": "randomUrlToken(32) uses crypto.getRandomValues for 256 bits of entropy, the token is base64url-encoded, single-use, 10-minute lifetime, and bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.12049,
+  "generation_id": "gen-1785921517-uBaYOxZ1Rx6xH692sPTZ",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

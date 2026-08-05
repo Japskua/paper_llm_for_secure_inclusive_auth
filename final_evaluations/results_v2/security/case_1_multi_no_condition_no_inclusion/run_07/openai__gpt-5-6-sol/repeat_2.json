@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:45:42.908010+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "The reset token is checked against the current session's stored hash, but it is never associated with the submitted email or a specific user account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is bound to the session that requested it, so another session cannot use the same token."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates the global password hash but does not invalidate any other existing sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun is configured to serve HTTPS, but the code does not specify or verify a minimum or latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords use Argon2id and reset tokens are hashed with SHA-256, but no general encryption of reset codes or user data is implemented."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email message is generated, and the simulated delivery exposes both the reset token and MFA code to the browser."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, token, MFA, and password inputs are type-, length-, format-, or complexity-validated before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application uses only local paths and hash navigation and does not follow any user-supplied external redirect URL."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email HTML template incorporates user input, and the simulated delivery messages contain only server-generated values."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and fixed MFA code are deliberately displayed in the page log and written through console.log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are stored as Argon2id hashes, the initial password and fixed MFA code are embedded directly in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The source contains a fixed initial password and a universally fixed MFA verification code of 246810."
+    },
+    "13": {
+      "score": 5,
+      "why": "The server rejects further API attempts for one minute after five attempts in the same session."
+    },
+    "14": {
+      "score": 5,
+      "why": "Valid email submissions receive the same generic response without performing or disclosing an account-existence lookup."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset code is a complex cryptographically random 32-byte value and is session-bound, but it is not associated with a specific user or email."
+    }
+  },
+  "cost_usd": 0.043669,
+  "generation_id": "gen-1785919519-4o6B5I4yq415aduH98bp",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

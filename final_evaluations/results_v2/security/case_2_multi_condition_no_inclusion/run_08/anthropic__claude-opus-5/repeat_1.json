@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:41:57.892498+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c4fd046aaec21d61dbcea92c3e7d1830bd59eb3cc9562fc7c9e6a0dc0ee90617",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token hash is stored in and validated against the requester's own session (`active.resetTokenHash` compared with `safeEqual`), so a code only works for the session/user it was issued to."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to the issuing session's state, so a code presented from a different session has no matching `resetTokenHash` and is rejected — the statement is false of this system."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no invalidation of other/previous sessions on password change — the resetting session itself continues (only `verifiedResetAuthorization` is cleared), and no global session-revocation logic exists, so pre-reset sessions would remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured TLS-only with cert/key, HSTS and `upgrade-insecure-requests` are set, and non-HTTPS `x-forwarded-proto` is rejected; TLS version is not pinned but Bun negotiates modern TLS 1.3 by default."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and the MFA code are stored only as SHA-256 hashes and the password uses `Bun.password.hash` with bcrypt (cost 10), all generated from `crypto.getRandomValues`."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is ever composed or sent; the 'simulated delivery' returns the raw recovery token and MFA code in the JSON response and prints them into the page log/console, so there is no email-side protection of private data."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs pass strict allowlist regexes (`validAccountInput`, `validToken`, `validPassword`, `/^\\d{6}$/`), JSON bodies are size/type checked, and no user data is ever interpolated into HTML — client output uses `textContent`."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link is the relative internal path `/reset?stage=verify&token=...` with the token URL-encoded; no user-controlled outgoing URLs or redirects exist."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates at all in this application, so the claim cannot be verified as true; the analogous simulated delivery output is at least script-safe via `textContent`."
+    },
+    "10": {
+      "score": 2,
+      "why": "The recovery token and the MFA security code are deliberately written to the visible 'Secure activity log' and browser console (`log(\"SIMULATED RESET DELIVERY — recovery token: \" ...)`, `mockCode`), so tokens are exposed in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the security code is hardcoded in source as `const MFA_CODE = \"482915\"`, so secret codes are stored in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed, hardcoded `MFA_CODE = \"482915\"` functions as a default/static credential for the second factor for every session, even though the password policy itself is strong."
+    },
+    "13": {
+      "score": 4,
+      "why": "Both `/api/verify-token` and `/api/mfa` count failures and impose a 60-second block after 5 wrong attempts (`resetBlockedUntil`, `mfaBlockedUntil`) returning HTTP 429."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/recovery` always returns the same neutral message ('If the entered account information is eligible...') regardless of input, and there is no account lookup that could leak existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from `randomValue(32)` using `crypto.getRandomValues` (32 bytes, base64url), are hashed, single-use, 10-minute-lived, and bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.132885,
+  "generation_id": "gen-1785922884-x4yPcbq5h3flBGaTY8kw",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

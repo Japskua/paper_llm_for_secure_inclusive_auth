@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:12:56.194689+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset record is stored with a sessionId and /api/reset/verify rejects a token unless record.sessionId matches the requesting session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset record is deleted after successful verification and cannot be verified from another session because of the sessionId check."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing the password only clears mfaVerified on the current session and does not delete or invalidate other entries in the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is started with TLS certificate and key and HTTP redirects to HTTPS, but no minimum or latest TLS version is specified in the code."
+    },
+    "5": {
+      "score": 2,
+      "why": "The reset token is stored only as a SHA-256 verifier and the password as Argon2id, but the code does not encrypt reset codes or user data."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email-sending code is present, and the recovery endpoint returns a generic message plus a testing token rather than demonstrating an email that guards private data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Contact and token inputs are regex-validated, password policy is enforced server-side, and the UI inserts user-derived text using textContent under a nonce CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses same-origin relative paths and the only redirect is from HTTP to the same HTTPS host, so no external or unsafe redirect is observed."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates in the supplied source, so no scripts or user-controlled HTML in email templates were observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "The API returns testingToken and testingMfaCode values, and the client script writes those codes to the visible Logs panel, although error pages are generic."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id hashed, but the recovery MFA code 482913 and login MFA code 741852 are hardcoded secrets in the source."
+    },
+    "12": {
+      "score": 3,
+      "why": "No default password is embedded and login fails without an externally supplied hash, but fixed MFA codes are hardcoded and disclosed."
+    },
+    "13": {
+      "score": 5,
+      "why": "recordAttempt and blocked impose temporary locks after repeated failures for recovery, token verification, MFA, login, and login MFA."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery and login endpoints return the same generic failure-style messages and do not expose whether a contact exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "The recovery token is generated with randomHex(32), validated as 64 hexadecimal characters, hashed for storage, bound to the session, and expires after 10 minutes."
+    }
+  },
+  "cost_usd": 0.06452,
+  "generation_id": "gen-1785920934-M9qGxcWHQjlwxk4Hvati",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

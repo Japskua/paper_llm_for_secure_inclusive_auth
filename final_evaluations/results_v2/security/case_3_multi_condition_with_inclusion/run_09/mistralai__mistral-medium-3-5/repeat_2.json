@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:32:00.286291+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "e8e8aca10204c746985ba82e1922651d96e9afa3cff7f743870a5149d08e7cee",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating the token against the session's recovery token."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for any other user because it is tied to a specific session and user context."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after a password reset because the session is tied to the recovery process, which is consumed upon completion."
+    },
+    "4": {
+      "score": 5,
+      "why": "The website uses HTTPS with TLS as evidenced by the Bun server configuration and HSTS header."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are generated using cryptographically secure random bytes, and user data is not stored in plaintext."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages do not expose private user data; tokens are only logged in the browser console for simulation purposes."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., email, passwords) is validated and sanitized before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are not present; the system only allows navigation within the hospital’s site via controlled client-side routing."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are not dynamically generated from user input; messages are hardcoded or safely constructed."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose user’s private information or tokens, as seen in the response handling."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are stored as bcrypt hashes, and no secrets are hardcoded in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not allow default credentials; authentication requires a valid password hash."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system enforces rate limiting (MAX attempts per WINDOW) to bar users after several wrong attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether a username/email exists, as seen in the generic error messages."
+    },
+    "15": {
+      "score": 5,
+      "why": "The password reset code is random, complex (64-character hex), and user-specific, generated via `randomBytes`."
+    }
+  },
+  "cost_usd": 0.0161475,
+  "generation_id": "gen-1785925916-FEmarhxNubeJNVah7rCi",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

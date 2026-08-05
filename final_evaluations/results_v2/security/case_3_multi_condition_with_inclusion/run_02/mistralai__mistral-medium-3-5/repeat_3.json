@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:00:49.882571+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating the token hash against the session's recovery token hash."
+    },
+    "2": {
+      "score": 1,
+      "why": "The system does not allow the same reset code to work for any other user; each token is tied to a specific accountKey."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after a password reset (session.recovery.stage is updated, and old sessions are cleaned up)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server enforces HTTPS with TLS (cert and key are loaded, and x-forwarded-proto check rejects HTTP)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed with SHA-256, and user data is stored securely (e.g., passwords hashed with Argon2id)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages (simulated) do not expose private user data; mock values are used for testing."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., email, passwords) is sanitized (e.g., identifier() trims and validates input)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are validated (e.g., recoveryTest regex check) and only allow same-origin or safe paths."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates (simulated) contain no scripts or HTML from user input; values are hardcoded or sanitized."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose user private information or tokens (e.g., generic error messages)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords and secret codes are stored securely (Argon2id hashing) and not hardcoded in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not allow default credentials; accounts are provisioned with strong passwords."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system bars users after 5 failed login attempts (loginFailures tracking and lockout)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether a username/email exists (generic error messages for failed logins)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset codes are random, complex (randomToken), and user-specific (tied to accountKey)."
+    }
+  },
+  "cost_usd": 0.022122,
+  "generation_id": "gen-1785924045-NUsDfgHpDmVX9tIuH46G",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

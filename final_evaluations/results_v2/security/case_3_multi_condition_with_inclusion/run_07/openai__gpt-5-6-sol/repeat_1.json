@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:22:26.695014+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Recovery records are bound to the requesting session through sessionId and can only be retrieved through that session's recordId."
+    },
+    "2": {
+      "score": 1,
+      "why": "A recovery code cannot be used from another session because verification requires record.sessionId to equal session.id."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing the password does not revoke, expire, or modify any other existing authenticated sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The Bun server is configured for TLS and sends HSTS, but the code does not explicitly require a particular latest TLS version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Recovery codes are stored as bcrypt hashes, but user-related session data is held in memory without application-level encryption."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email message implementation is present, although the simulated recovery response does not include account details."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers are length-bounded and allowlisted, codes reject control and angle-bracket characters, and passwords are type- and length-validated."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation destinations are restricted to a fixed list of same-application paths and no user-controlled external redirect is implemented."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates to inspect, while the simulated delivery mechanism does not construct HTML from user input."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery and MFA codes are returned by API responses and deliberately written into browser-visible testing logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are bcrypt-hashed in storage, but the initial account password and MFA test code are hardcoded in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application accepts a hardcoded demo identifier and hardcoded initial password as credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, recovery requests, and recovery verification impose attempt limits and temporary lockouts."
+    },
+    "14": {
+      "score": 2,
+      "why": "The initial recovery response is generic, but after using the exposed recovery token the password step reveals nonexistence by refusing completion only when accountExists is false."
+    },
+    "15": {
+      "score": 4,
+      "why": "Recovery codes contain 32 random bytes, expire after 15 minutes, are bcrypt-hashed, and are bound to a specific recovery record and session, though not directly to a stored user identifier."
+    }
+  },
+  "cost_usd": 0.1025775,
+  "generation_id": "gen-1785925324-ZBzdhuLsZ2CNCcvRaqIU",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 3,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 2,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

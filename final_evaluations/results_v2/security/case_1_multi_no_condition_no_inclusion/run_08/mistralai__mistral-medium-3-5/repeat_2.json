@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:52:10.272268+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "382826be6a70be6d0d503a9383b0a4ec86ceeb15e56bcec319dd73312f8c12a0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by associating tokens with flow IDs and sessions."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for any other user because tokens are tied to specific flow IDs and sessions."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after a password reset (session.resetComplete is set to true, and old sessions are cleared)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The website uses HTTPS with TLS (certs/cert.pem and certs/key.pem are required)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are encrypted (randomValue() uses crypto.getRandomValues) and user data is not exposed in plaintext."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages hide private user data (mockToken is only logged, not sent in actual emails)."
+    },
+    "7": {
+      "score": 5,
+      "why": "The code sanitizes user-supplied data (e.g., email, passwords) with length checks and regex validation."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are safe and only go to the hospital’s site (no external URLs are allowed)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are safe and contain no scripts or HTML from user input (static templates are used)."
+    },
+    "10": {
+      "score": 5,
+      "why": "User’s private information or tokens are not shown in error pages or logs (errors are generic)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords and secret codes are stored securely (Argon2id hashing is used) and not in the code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not allow default credentials (sessions and tokens are randomly generated)."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system bars the user from making several wrong attempts (rate limiting and MFA failure tracking)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether the username/email exists (generic error messages)."
+    },
+    "15": {
+      "score": 5,
+      "why": "The password reset code is random, complex (32-byte hex), and user-specific (tied to flowId)."
+    }
+  },
+  "cost_usd": 0.018657,
+  "generation_id": "gen-1785919926-ZNBPDCpVf2TvGVpdLB8j",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

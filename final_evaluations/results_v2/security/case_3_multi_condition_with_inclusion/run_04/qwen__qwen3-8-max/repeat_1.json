@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:14:56.473030+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "24a6e1467197c0ef6a9566560dbce218c9ba1da70fee6592759ec6e6f7e54b02",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token is checked with a timing-safe comparison against the session-specific SHA-256 resetHash, although the check does not separately compare a user identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is validated only against the resetHash stored in the issuing session, so the same code would not validate for another session or user."
+    },
+    "3": {
+      "score": 4,
+      "why": "The password-reset handler changes the current session state and password hash but does not revoke other existing sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires HTTPS certificates and sets HSTS, but the code does not specify or demonstrate the latest TLS protocol version."
+    },
+    "5": {
+      "score": 3,
+      "why": "TLS protects transport and reset tokens/passwords are stored as SHA-256/Argon2id digests, but reset secrets are exposed in logs and no general at-rest encryption is shown."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no actual email mechanism, and the simulated delivery places the authorization secret and reset token in browser logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email, token, and password inputs are validated and the client builds DOM text nodes rather than inserting untrusted HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application only uses same-origin relative navigation and sets CSP form-action to 'self'."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are implemented in the source, so email-template safety cannot be observed or confirmed."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the client logs authorization secrets and reset tokens to the console and visible Logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed, but a static MFA code and the account password hash are embedded in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The login flow uses a hardcoded constant MFA code, which is a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Channel entry, reset-code verification, login, and MFA all lock or exhaust after repeated failed attempts."
+    },
+    "14": {
+      "score": 4,
+      "why": "Recovery and login responses use generic messages that do not disclose whether the supplied email matches an account."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are 32-byte random base64url tokens stored as per-session SHA-256 digests, though they are not explicitly bound to a user identifier."
+    }
+  },
+  "cost_usd": 0.084754,
+  "generation_id": "gen-1785924637-hrMKmJiJ0PQTx64DffWQ",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 3,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 4,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

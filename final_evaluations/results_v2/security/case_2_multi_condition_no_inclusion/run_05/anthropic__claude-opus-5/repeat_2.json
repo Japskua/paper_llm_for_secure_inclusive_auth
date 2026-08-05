@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:27:48.367719+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token is stored on the server-side recovery session and compared (timingSafeEqual) only against that same session's token, so it is bound to the requesting session/user, though there is no real user account store."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each session gets its own `randomValue(32)` token and verification only compares against `session.resetToken`, so a token from one session cannot be used in another."
+    },
+    "3": {
+      "score": 4,
+      "why": "After `reset-password` and `sign-in` the session id/cookie is never rotated or invalidated — the pre-reset session record continues to be used and is simply advanced to the next phase."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server refuses to start without certs, serves only TLS on 3000, 308-redirects plaintext 8080 traffic and sets HSTS, but no explicit minimum TLS version is configured (relies on Bun defaults)."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with bcrypt (cost 10), but reset tokens and the MFA code are held in plaintext in the in-memory session and echoed back to the client rather than being hashed/encrypted at rest."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email message exists at all — delivery is 'simulated' and the reset token is instead printed into the visible Logs panel and browser console, so nothing is guarded in a message."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs pass strict allow-list validators (`validAccountInput`, `validToken`, `validMfa`, `passwordProblem`) and output is inserted only via `textContent`/`createElement`, never as HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a hardcoded 308 to `https://localhost:3000/`; no user-controlled URL is ever used for redirection, and CSP sets `form-action 'self'`."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates in the code, so the claim is vacuous; the HTML page itself contains no user-supplied input, only a nonce-bound inline style/script."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client explicitly logs `\"Test reset token: \" + r.testToken` and the MFA code to the on-page Logs panel and `console.log`, and the API returns `testToken`/`testMfaCode` in JSON."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never logged, but the MFA secret is hardcoded in source as `session.mfaCode = \"482913\"`."
+    },
+    "12": {
+      "score": 3,
+      "why": "There are no default accounts or default passwords and password policy is strong, but the fixed hardcoded MFA code `482913` functions as a default/static credential for the second factor."
+    },
+    "13": {
+      "score": 4,
+      "why": "`isBlocked`/`failedAttempt` throttle each action after `MAX_FAILURES = 5` with a 60s block and return a generic 429, though the counters live in the cookie-bound session so clearing the cookie resets them."
+    },
+    "14": {
+      "score": 5,
+      "why": "The `recover` action always returns the same message ('If the account can be recovered, instructions...') for valid and invalid input, with no existence-dependent branch."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is 32 bytes from `crypto.getRandomValues` encoded base64url, unique per session, single-use (`resetUsed`) and expires after 10 minutes."
+    }
+  },
+  "cost_usd": 0.120095,
+  "generation_id": "gen-1785922035-Q1Avrvo7qKolz1DkY5NM",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

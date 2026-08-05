@@ -1,0 +1,117 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:11:12.662428+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "4a6eaf3cfcc73c22842c5c8c14f50a97c9b1281fdf4ac2299c6aa628f1a4e591",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 9,
+  "screenshots": [
+    "step_01_recovery_page.png",
+    "step_02_recovery_instructions_sent.png",
+    "step_03_verify_recovery_token.png",
+    "step_04_confirm_recovery_security_code.png",
+    "step_05_set_new_password.png",
+    "step_06_sign_in.png",
+    "step_07_confirm_sign_in_security_code.png",
+    "step_08_updated_privacy_statement.png",
+    "step_09_privacy_statement_accepted.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All nine screens use a static single-card layout with no animations, carousels, or pop-ups; only a fixed Logs panel is added below the card."
+    },
+    "2": {
+      "score": 4,
+      "why": "Each screen has one large bold heading and a single high-contrast primary button, though the dark Logs panel competes visually for attention."
+    },
+    "3": {
+      "score": 4,
+      "why": "One task per screen with a single primary action makes the next step easy to locate, but critical values (tokens, MFA codes) must be hunted for in the Logs panel."
+    },
+    "4": {
+      "score": 2,
+      "why": "The flow requires remembering/carrying a long token, two different six-digit codes, and a newly created 14+ character password across seven separate steps with no progress indicator."
+    },
+    "5": {
+      "score": 1,
+      "why": "No 'remember me' checkbox, autofill hint, password-manager guidance, or show-password toggle appears on any screen, including the sign-in and new-password steps."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing is saved or shown back to the user — no masked email/username, no saved-device recognition; the only pre-filled values come from the academic Logs simulation."
+    },
+    "7": {
+      "score": 4,
+      "why": "Instructions are one or two short plain-language sentences per screen, though jargon like 'recovery token', 'MFA code', and 'multi-factor confirmation' is used without explanation."
+    },
+    "8": {
+      "score": 2,
+      "why": "No actual error state is shown in any screenshot; only generic hints exist, so the claim that error messages describe problem and fix cannot be observed as true."
+    },
+    "9": {
+      "score": 4,
+      "why": "Step 1 gives a concrete format example ('name@example.org or +15551234567'), step 5 states the password rules, and steps 4/7 point to where the test code is."
+    },
+    "10": {
+      "score": 2,
+      "why": "Only password plus emailed token/code is offered — there is no face, biometric, or passkey option, so the statement about clear alternative login choices does not hold."
+    },
+    "11": {
+      "score": 5,
+      "why": "Each screen presents just one input and one primary button, with at most one secondary link, so the user is never overloaded with options."
+    },
+    "12": {
+      "score": 4,
+      "why": "Confirmation screens such as 'recovery instructions have been prepared' and 'Privacy statement accepted' state outcomes clearly, though intermediate steps (token verified, password saved) transition without explicit success messages."
+    },
+    "13": {
+      "score": 3,
+      "why": "Persistent security tips and short field hints are present, but there is no contextual help, tooltip, or 'what is this?' explanation for new concepts like tokens or MFA."
+    },
+    "14": {
+      "score": 2,
+      "why": "No visible back links, 'resend code', 'start over', or retry affordances appear on any step, so recovering from a mistake is not supported in the screenshots."
+    },
+    "15": {
+      "score": 5,
+      "why": "Header, card layout, typography, button styling, hint text placement, and the green safety banner are identical across all nine steps."
+    }
+  },
+  "cost_usd": 0.096855,
+  "generation_id": "gen-1785921042-4Z4EzIVe4mylyLwsv7Hs",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 4,
+    "4": 2,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 2,
+    "9": 4,
+    "10": 2,
+    "11": 5,
+    "12": 4,
+    "13": 3,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.3333,
+    "memory": 1.6667,
+    "comprehension": 3.3333,
+    "decision_making": 3.6667,
+    "learning": 3.3333
+  },
+  "overall": 3.2667,
+  "capture_complete": true
+}

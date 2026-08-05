@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:32:17.034725+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server verifies that the reset token hash matches the token hash stored in the recovery object owned by the active session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are validated only against the token hash associated with the current session's recovery record, so a code generated for one session will not work for another."
+    },
+    "3": {
+      "score": 5,
+      "why": "The application updates the password hash upon reset but does not clear or invalidate other existing session records in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server is configured with TLS certificates to enforce HTTPS standard encryption for incoming connections."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens are stored as SHA-256 digests and user passwords are hashed using bcrypt."
+    },
+    "6": {
+      "score": 5,
+      "why": "The recovery flow and client guidance rely on generic messages and do not include sensitive private user details in messages."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated and trimmed on the server, and rendered safely on the client using textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation links rely exclusively on relative URL hash fragments on the host site and are protected by frame and base-uri CSP rules."
+    },
+    "9": {
+      "score": 5,
+      "why": "The system does not render dynamic HTML templates or insert unescaped user input into response markup."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error handling yields standard generic error objects without revealing session tokens, user data, or system stack traces."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are saved as bcrypt hashes, a secret MFA verification code is hardcoded directly in the server source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application enforces strong password rules and unique tokens instead of maintaining default administrative credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system tracks failed attempts per stage and temporarily blocks further requests after multiple invalid submissions."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the exact same success response regardless of whether the email address exists in the system."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using 32 bytes of cryptographically random data and are assigned to a specific recovery instance."
+    }
+  },
+  "cost_usd": 0.0502605,
+  "generation_id": "gen-1785922311-nbFOOoBXI144gGX9Hr56",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

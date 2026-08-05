@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:00:24.755129+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Each reset record stores an `accountKey` derived from the requested identifier and `replacePassword` only mutates `accounts.get(record.accountKey)`, so the code is bound to one account, though any session may attach a leaked token (mitigated by the separate identity code)."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token hash maps to exactly one `accountKey` and its paired identity verifier, so it cannot be used to reset any other user's password."
+    },
+    "3": {
+      "score": 4,
+      "why": "Nothing in `replacePassword` iterates or deletes other entries in the `sessions` map, so any pre-existing (even authenticated) session remains valid after a password reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured with TLS cert/key, HSTS is sent and `x-forwarded-proto: http` is rejected with 426, but no explicit minimum TLS version is set (relies on Bun defaults)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and identity codes are stored only as SHA-256 digests, identifiers are hashed, and passwords use Argon2id — appropriate one-way algorithms, though no encryption-at-rest for other data exists (in-memory only)."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email; the simulated delivery returns the raw reset token and identity code in the JSON response (`testValue`, `testIdentityValue`) and embeds the token in a URL query string, so the 'message' does not guard the secret."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated: identifier regex `^[a-z0-9@._+\\- ]{3,120}$`, token regex `^[A-Za-z0-9_-]{20,200}$`, code regexes, password complexity checks, and an 8 KB bounded JSON body parser."
+    },
+    "8": {
+      "score": 5,
+      "why": "`renderLink` rebuilds the URL against `location.origin`, rejects protocol-relative paths, and requires `u.origin === location.origin`, `pathname === '/'` and the `recovery-test` param, so only same-site links are rendered."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist; the only HTML is server-generated with no user input interpolated (only nonce and CSRF via `JSON.stringify`), and client-side messages/logs use `textContent`, so no script injection path is present."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the reset token, identity value, MFA demo code and possession value are returned in API responses and written to `console.log`/the on-page log panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are stored as Argon2id hashes, but `provision()` hardcodes the literal credential `\"Initial!HospitalPassword9\"` in the source code."
+    },
+    "12": {
+      "score": 2,
+      "why": "`provision()` seeds three accounts all sharing the same hardcoded initial password, which is fully usable at `/api/login` with no forced change, i.e. default credentials are allowed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA code, MFA possession, recovery identity and reset-token confirmation each count failures and impose a 5-minute lock after 5 attempts, plus a 3-per-window cap on recovery issuance."
+    },
+    "14": {
+      "score": 2,
+      "why": "Although the recovery message text is identical, the response only includes `deliveryPath`/`testValue`/`testIdentityValue` when the account exists, which directly discloses account existence to the caller."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is 32 bytes from `crypto.getRandomValues` encoded base64url, the identity code is derived from fresh random bytes, and both are tied to a specific `accountKey` with a 15-minute expiry and single use."
+    }
+  },
+  "cost_usd": 0.15866,
+  "generation_id": "gen-1785923988-B3brZ7HWQFJX4Sb9UxYV",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

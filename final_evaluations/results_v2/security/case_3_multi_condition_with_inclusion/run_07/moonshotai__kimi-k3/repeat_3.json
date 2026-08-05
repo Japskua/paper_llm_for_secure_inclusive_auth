@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:25:36.740093+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Recovery records store sessionId at creation and /api/recovery-verify rejects use when record.sessionId !== session.id, so the code is checked against the requesting user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to the session that requested them (record lookup via session.recovery and sessionId comparison), so the same code cannot be used by any other user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing in /api/password invalidates other sessions; existing authenticated sessions remain valid until their 8-hour expiry after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and an HSTS header, but the TLS protocol version is not explicitly pinned to the latest version."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes and passwords are stored only as bcrypt hashes via Bun.password.hash (cost 10), which is the appropriate protection algorithm."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery message contains only the recovery code and generic text ('If the details match an account...'), exposing no other private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "cleanText rejects control characters and angle brackets, validIdentifier enforces a strict character whitelist, and client rendering escapes via esc()/textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client navigation is restricted to a validRoutes whitelist and server 'next' values are fixed internal paths, so no user-controlled or external redirects exist."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates exist; simulated messages render through textContent and all dynamic HTML is escaped and served under a nonce-based CSP."
+    },
+    "10": {
+      "score": 2,
+      "why": "The visible log panel and API responses deliberately expose secrets, e.g. log('[SIMULATED DELIVERY] Current browser recovery code: '+out.testToken) and testMfaCode in the login response."
+    },
+    "11": {
+      "score": 2,
+      "why": "Runtime storage uses bcrypt, but the initial password 'Welcome!2025Heart' and MFA code '246810' are hardcoded directly in the source code."
+    },
+    "12": {
+      "score": 2,
+      "why": "The account is initialized with the hardcoded, known password 'Welcome!2025Heart', which functions as a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Failed logins (5), recovery requests (3), code verifications (5), and MFA attempts (5) all trigger timed lockouts via the throttle maps and lockUntil."
+    },
+    "14": {
+      "score": 4,
+      "why": "Login and recovery responses are generic and identical, but the password step's distinct error for non-existent accounts and the short-circuited bcrypt timing slightly reveal account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 32-byte crypto.randomBytes tokens, stored only hashed, single-use, 15-minute expiry, and bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.1135395,
+  "generation_id": "gen-1785925464-QfbxXjGSKqO6GbxntTFA",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

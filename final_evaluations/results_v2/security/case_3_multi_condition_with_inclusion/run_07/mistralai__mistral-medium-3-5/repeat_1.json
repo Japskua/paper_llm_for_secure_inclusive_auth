@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:23:30.633839+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating `record.sessionId === session.id` in `/api/recovery-verify`."
+    },
+    "2": {
+      "score": 1,
+      "why": "The reset code is tied to a specific session (`sessionId`), so it cannot work for another user."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated by the server-side session management (new session created on login/password reset)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server enforces HTTPS with TLS (certificates configured in `Bun.serve`)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed with bcrypt (`hashToken`), and user data is not stored in plaintext."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages (simulated logs) do not expose private data; tokens are only shown in test logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (email, passwords) is sanitized via `cleanText` and `validIdentifier`/`validPassword`."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are client-side only (hash-based) and do not allow arbitrary external URLs."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are hardcoded in the client; no user input is rendered as HTML/scripts."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose private information or tokens (generic messages only)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are hashed with bcrypt, and no secrets are hardcoded in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials are present; the demo account requires explicit input (`DEMO_ACCOUNT_IDENTIFIER`)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Throttling is implemented for login (`MAX_THROTTLE_ENTRIES=5`) and recovery attempts (`LOCK_TIME_MS`)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The system does not reveal whether a username/email exists (generic message: 'If the details match an account...')."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are random (`randomToken(32)`), complex (base64url), and user-specific (tied to `sessionId`)."
+    }
+  },
+  "cost_usd": 0.021543,
+  "generation_id": "gen-1785925403-MyqwSk0ISJYDu0RgnZpQ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

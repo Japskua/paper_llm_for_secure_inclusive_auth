@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:28:40.723180+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "The reset token is verified only against the calling browser session’s stored resetToken, with no real user/account binding or lookup."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are per-session; another session cannot use a different session’s reset token, so the claim is false."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only updates the current RecoverySession; no other sessions are invalidated or checked."
+    },
+    "4": {
+      "score": 4,
+      "why": "Server refuses to start without TLS certs and serves HTTPS with HSTS, but TLS version is not explicitly pinned to latest."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords use bcrypt, but reset tokens and MFA codes are plain in-memory strings with no encryption at rest."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email body; API messages are generic, yet testToken/testMfaCode are returned and shown in the UI logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated (account pattern, token/MFA formats, strong password rules) and UI uses textContent rather than raw HTML insertion."
+    },
+    "8": {
+      "score": 5,
+      "why": "Only a fixed HTTP→HTTPS localhost redirect exists; no user-controlled redirect targets."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates incorporate user input; delivery is simulated without rendering account data as HTML/script."
+    },
+    "10": {
+      "score": 1,
+      "why": "testToken and testMfaCode are returned in JSON and written into the on-page Logs panel, so tokens are shown."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is the hardcoded string \"482913\" in source."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials exist; access depends on per-session recovery and a newly set strong password."
+    },
+    "13": {
+      "score": 5,
+      "why": "Per-action failure counters block after MAX_FAILURES (5) for BLOCK_MS on recover/token/mfa/password/signin."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recover always returns the same generic “If the account can be recovered…” style messages regardless of account."
+    },
+    "15": {
+      "score": 4,
+      "why": "resetToken is crypto.getRandomValues base64url (32 bytes) and session-bound, though not tied to a persisted user identity."
+    }
+  },
+  "cost_usd": 0.016818,
+  "generation_id": "gen-1785922077-SuHN9pm1Vk86uRAH0Z06",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

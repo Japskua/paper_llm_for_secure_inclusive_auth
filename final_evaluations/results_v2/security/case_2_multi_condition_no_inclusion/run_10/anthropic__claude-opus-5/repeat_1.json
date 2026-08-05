@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:50:44.520136+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c2876b4ed426a65417ec33b6fbb9afae2da3d7affeb88cb28b5873f4558bbdcc",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The token digest is stored inside the requester's own session record and verification only compares against `session.recovery.tokenDigest`, so a code is bound to the session that requested it (though there is no real user account model)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens exist only in the issuing session's in-memory record, so a token presented under a different session cookie fails `safeEqual(digest(token), record.tokenDigest)` — cross-user reuse is not possible."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no session invalidation or session-ID rotation after `session.passwordHash` is set; the same `recovery_session` cookie remains valid and simply advances stage, so pre-reset sessions keep working."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured TLS-only with cert/key plus HSTS and `upgrade-insecure-requests`, and Bun's defaults negotiate TLS 1.3, though no explicit minimum-version pinning is present."
+    },
+    "5": {
+      "score": 3,
+      "why": "The reset token is stored only as a SHA-256 digest and the password via bcrypt cost 12, but the MFA code is stored in plaintext in the session and the raw token is returned in the API response, so protection is partial."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email delivery exists at all — the reset token is returned directly in the JSON response and rendered in a visible on-page log, so there is no email message guarding private data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type-checked (`typeof body.token === 'string'`), the contact value is never stored or reflected, `escapeHtml` guards server-rendered values, and the client builds DOM only via `textContent`."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only navigation is same-page hash routing, with CSP `form-action 'self'`, `base-uri 'none'`, `default-src 'none'` and no user-controlled redirect targets anywhere."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates in the codebase at all, so while no user-supplied HTML or script is ever injected into any message, the statement cannot be affirmed for this system."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic and stack traces suppressed, but the raw reset token (`testResetToken`) and MFA code are deliberately printed to the browser console and the visible `#logs` panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA secret is hardcoded in source as `session.mfaCode = \"482913\"`, so a secret code is stored in the code."
+    },
+    "12": {
+      "score": 3,
+      "why": "There are no user accounts or default login credentials, yet the fixed hardcoded MFA code `482913` functions as a default secret for every session."
+    },
+    "13": {
+      "score": 5,
+      "why": "Both per-session (`throttled`) and per-trusted-IP (`ipThrottled`) buckets cap token issuance at 3 and verification/password/MFA attempts at 5 within a 10-minute window, returning HTTP 429."
+    },
+    "14": {
+      "score": 5,
+      "why": "The request endpoint always returns the same neutral message (\"If the contact can be used for recovery…\") regardless of input, and the contact value is never validated against any store."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are generated with `randomBytes(32).toString('base64url')` and bound to a single session record with a 10-minute TTL and single-use `used` flag."
+    }
+  },
+  "cost_usd": 0.1333,
+  "generation_id": "gen-1785923409-T6i637cdiksBAwRDvcqg",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

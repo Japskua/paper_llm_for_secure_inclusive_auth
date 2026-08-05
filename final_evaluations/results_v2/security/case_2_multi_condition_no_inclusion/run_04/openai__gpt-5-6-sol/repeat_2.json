@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:22:42.587121+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c43f687abc2a0bd6c32d9c194677456a716e23dd223e7cff75a916ca005d46d1",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "The token is checked against a recovery record bound to the current session, but no authenticated user or contact-to-account ownership is verified."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is hashed and stored in a recovery record tied to one session ID, so another session cannot use it."
+    },
+    "3": {
+      "score": 4,
+      "why": "The reset completion does not revoke or rotate any existing sessions, and the recovery session itself remains valid until expiration."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is TLS-only and sends HSTS, but the code does not explicitly require a minimum or latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 hashes, passwords use Argon2id, and the submitted contact is not retained, although no general at-rest encryption is configured."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email implementation is present, while the simulated delivery uses generic text but exposes the reset token in the browser log."
+    },
+    "7": {
+      "score": 5,
+      "why": "Contact, token, MFA code, and password inputs are constrained by allowlists, formats, lengths, and a strong password policy."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application uses only same-origin relative API paths and local fragment navigation, with no user-controlled redirect URL."
+    },
+    "9": {
+      "score": 5,
+      "why": "All simulated delivery text is static and user-controlled values are inserted with textContent rather than interpreted as HTML or script."
+    },
+    "10": {
+      "score": 1,
+      "why": "The raw reset token and fixed MFA code are deliberately displayed in the browser's simulated delivery log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are securely hashed and reset tokens are stored as hashes, but the MFA secret code 482913 is hard-coded in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "The code defines no default user accounts or default login credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery-token, password-policy, and MFA failures are limited and locked for 15 minutes after five failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery requests return the same generic response regardless of contact validity and do not consult or disclose an account registry."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset code is a cryptographically random 256-bit value bound to a specific recovery session, but it is not bound to a verified user account."
+    }
+  },
+  "cost_usd": 0.0596505,
+  "generation_id": "gen-1785921724-0u4gRDhcQxunGfxNHPd9",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

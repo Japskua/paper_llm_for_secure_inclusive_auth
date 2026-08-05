@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:36:35.510895+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "5def0af8851cb528c3f00ff512506269aa19299d60d5780a568a1790a19eea39",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset token and manual code are generated into and validated only against the requesting session's own state (s.resetToken/s.manualCode with s.accountId), so a code can only be used by the user it was issued to."
+    },
+    "2": {
+      "score": 1,
+      "why": "Codes are per-session secrets compared with safeEqual against that session's stored values, so another user's session could never verify with someone else's code."
+    },
+    "3": {
+      "score": 4,
+      "why": "After /api/password-change the code only mutates the current session's stage; no other sessions for the account are invalidated or removed from the `sessions` map, so pre-existing sessions remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key plus HSTS and an HTTPS-required check, but no explicit minVersion/cipher policy is set, so 'latest TLS' relies on Bun defaults."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens, manual codes and the MFA code are held (and compared) in plaintext in the in-memory session, with no hashing or encryption of reset codes or stored user data."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all — the 'delivery simulation' returns the manual recovery code and verification URL in the JSON response and prints them to the browser console/Logs panel, so nothing is hidden or guarded."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated (validId, validCode, validPass, strong, 4 KB body cap, JSON-object check) and all client rendering uses textContent, so user data is sanitized and never interpolated as markup."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only link href comes from the server's fixed internal `/verify?token=...` path (or a regex-validated query token), the simulated URL is hardcoded to https://localhost:3000, and CSP sets form-action 'self' with base-uri 'none' — no open redirect exists."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist in the code; the equivalent notice/log rendering is built with createElement plus textContent under a nonce-based CSP, so no scripts or user HTML can be embedded."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery codes, the full verification URL containing the reset token, and the MFA code are explicitly returned to the client, console.log'd and appended to the visible Logs list, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "The MFA confirmation code is hardcoded as MFA_CODE = \"246810\" and a fixed bcrypt hash literal is embedded in the source, so secret values do live in the code even though passwords themselves are bcrypt-hashed."
+    },
+    "12": {
+      "score": 3,
+      "why": "A seeded account carries a well-known static bcrypt hash (a default credential in effect), though the login route only accepts sign-in after a completed reset in the same session, limiting its exploitability."
+    },
+    "13": {
+      "score": 4,
+      "why": "Progressive throttling per action/identifier/IP escalates delays up to 300 s and returns 429s, which slows repeated wrong attempts but never permanently blocks or locks the account."
+    },
+    "14": {
+      "score": 5,
+      "why": "Unknown identifiers are silently bound to a `sinkId` account and receive an identical success response with a code, and login/verify errors are generic, so existence is not disclosed."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are crypto.getRandomValues-based base64url values (32 and 18 bytes), stored per-session with a 10-minute expiry and marked single-use (resetUsed) after verification."
+    }
+  },
+  "cost_usd": 0.14322,
+  "generation_id": "gen-1785926151-bOJV9J17tOtHDXyk6KLJ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6,
+  "capture_complete": false
+}

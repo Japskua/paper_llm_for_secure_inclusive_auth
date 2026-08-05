@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:41:30.072411+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset records are tied to a hashed identity scope and the verified session adopts that scope, but verification does not compare the code against a separately supplied user identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are stored as hashed records bound to an identity scope and marked used after verification, so there is no universal code that works for arbitrary other users."
+    },
+    "3": {
+      "score": 2,
+      "why": "After a password reset the code clears authenticated, pendingMfa, privacyAccepted, and appointmentBooked flags for all sessions, although session objects and resetVerified flags are not fully deleted."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is configured with TLS certificates and redirects HTTP to HTTPS, but the code does not specify or enforce the latest TLS protocol version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords use bcrypt and reset tokens are SHA-256 hashed, but the reset codes and user data are not generally encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent, and the simulated delivery response and log expose the reset code rather than hiding private data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Server-side handlers validate input types, lengths, and code format, while the client renders variable values with textContent under a nonce-based CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects are only to fixed internal paths or a constructed https://localhost destination, with no user-controlled external host."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates in the code, and the simulated messages are generic text without user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error pages are generic, but the simulated logs and API responses display sensitive reset and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "The account password is bcrypt-hashed and reset codes are hashed, but the source contains an initial plaintext password and a hardcoded MFA code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application begins with a hardcoded initial password and fixed MFA code, so default credentials are present."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery requests, reset-code verification, login, and MFA attempts are limited by server-side throttling and lockout maps returning 429."
+    },
+    "14": {
+      "score": 2,
+      "why": "The recovery message is generic, but the response includes a code only for the valid identity, allowing account existence to be inferred."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated from 32 random bytes, hashed, bound to an identity scope, single-use, and expire after ten minutes."
+    }
+  },
+  "cost_usd": 0.07948,
+  "generation_id": "gen-1785922654-h6YLx6A5k5veeiaULfFF",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 4,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.3333,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

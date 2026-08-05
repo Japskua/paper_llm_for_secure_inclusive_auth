@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:56:58.167993+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token is stored on the server-side session that requested it and `/api/reset-validate` compares the submitted token only against `session.resetToken`, so it is bound to the requesting party (though there is no real user table)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are only ever retained inside the issuing session, so a code from one session/user cannot validate in another session — the statement is false of this system."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no session-invalidation on password change: `/api/password-update` only clears the reset token and keeps the session (and any other sessions in the `sessions` map) fully usable."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured with TLS certs, HTTP on 3001 is rejected with 426, HSTS is set and all non-HTTPS requests get 421, though no explicit minimum TLS version is pinned (relying on Bun defaults which include TLS 1.3)."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with bcrypt cost 12 and transport is TLS, but reset codes are held in plaintext in the in-memory session and are never hashed/encrypted at rest."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is sent at all; the 'simulated delivery' returns the reset code directly in the JSON response and prints it into the page log and console, which does not guard the secret."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type-checked and validated (email regex, strict password policy, `^[A-Za-z0-9_-]{20,100}$` token format, 6-digit MFA regex, 4096-byte body cap) and all UI output uses `textContent`/DOM APIs."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects and no user-controlled URL is ever navigated to or fetched, so no unsafe redirect targets exist."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates, and the equivalent rendered content is built exclusively with `document.createElement`/`textContent` under a nonce-based CSP with `default-src 'none'`, so no user HTML or script can be injected."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors return only generic messages, but the reset code and MFA code are deliberately written into the visible 'Logs' panel and `console.log`, exposing secrets in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA secret is hardcoded as `const MFA_CODE = \"482913\"` and the mock account email is also embedded in source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The static, source-embedded MFA code `482913` functions as a default credential that always satisfies `/api/mfa-verify`, so default credentials are effectively accepted."
+    },
+    "13": {
+      "score": 4,
+      "why": "`rateAllowed` enforces 3 reset requests, 5 reset-code guesses and 5 MFA attempts per 15-minute window with HTTP 429 responses, although limits are per-session and resettable by obtaining a new cookie."
+    },
+    "14": {
+      "score": 3,
+      "why": "The reset-request response message and returned opaque token are identical for known and unknown emails, but only the mock account's token is retained server-side, so a follow-up `/api/reset-validate` call acts as an account-existence oracle."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 32 bytes from `crypto.getRandomValues` encoded base64url, single-use, 15-minute TTL, and tied to the specific session that requested them."
+    }
+  },
+  "cost_usd": 0.137025,
+  "generation_id": "gen-1785920178-zsddLGLLYQ990f3LkdvS",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 4,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.3333,
+  "capture_complete": false
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:02:21.190431+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Each reset token record is bound to a specific accountKey, replacePassword only ever modifies that bound account, and a separate per-token identity verifier must be confirmed before the password change."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is tied to one accountKey and is single-use with atomic reservation, so it cannot be used to change any other user's password."
+    },
+    "3": {
+      "score": 5,
+      "why": "replacePassword updates only the account's passwordHash and token record; it never iterates or invalidates the sessions map, so other previously authenticated sessions remain valid until expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, HSTS is set and plaintext HTTP is rejected with 426, but no TLS protocol version is explicitly pinned to the latest."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords use Argon2id and reset tokens/identity verifiers are stored as SHA-256 digests (appropriate hashing), but nothing is literally encrypted and account data lives in plaintext in-memory structures."
+    },
+    "6": {
+      "score": 2,
+      "why": "The simulated delivery message exposes the raw reset token in the URL query string (?recovery-test=), in the JSON response (testValue/testIdentityValue), and in the on-page log, rather than guarding it."
+    },
+    "7": {
+      "score": 4,
+      "why": "All user inputs (identifier, token, identity value, MFA codes) are validated against strict allowlist regexes, bodies are size-bounded and JSON-parsed safely, and output is inserted via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "renderLink rejects anything not same-origin, requires pathname '/', forbids hashes and protocol-relative URLs, and the server generates only same-origin paths, so links cannot point off-site."
+    },
+    "9": {
+      "score": 4,
+      "why": "No real email templates exist and all messages are fixed server/client strings rendered with textContent (never innerHTML), so no user input is rendered as HTML or script."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the page's 'Logs' panel deliberately prints the mock reset token, identity value, and MFA codes, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are hashed with Argon2id and tokens stored as digests, but provision() hardcodes the initial password 'Initial!HospitalPassword9' directly in the source code."
+    },
+    "12": {
+      "score": 2,
+      "why": "provision() seeds all three accounts with the same hardcoded default password 'Initial!HospitalPassword9' with no forced change, so default credentials exist."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, token confirmation, identity verification, and both MFA steps each lock for five minutes after 5 failures, and recovery issuance is limited to 3 per window."
+    },
+    "14": {
+      "score": 2,
+      "why": "Although the recovery message text is identical, the response for existing accounts additionally contains deliveryPath/testValue/testIdentityValue, so the response shape reveals whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are 256-bit values from crypto.getRandomValues, stored only as hashes, single-use, 15-minute expiry, and bound to one accountKey."
+    }
+  },
+  "cost_usd": 0.0943752,
+  "generation_id": "gen-1785924102-9KPsJ0Kx4Z6Xk8Cu0UNB",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

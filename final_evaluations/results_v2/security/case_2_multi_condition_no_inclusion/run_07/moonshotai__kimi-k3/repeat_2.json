@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:40:41.288089+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset records store an identityScope derived from the requested identity and verification binds session.recoveryIdentity from that record (required again at /api/new-password), so codes are tied to a specific user, though verification itself relies on token possession rather than re-checking identity."
+    },
+    "2": {
+      "score": 2,
+      "why": "Each code is bound to one identityScope, single-use, 10-minute expiry, and prior codes are invalidated on re-issue, so it cannot reset a different account; however the code is not bound to the requesting session, so it is not a complete 1."
+    },
+    "3": {
+      "score": 1,
+      "why": "On /api/new-password the code iterates all sessions and sets authenticated, pendingMfa, privacyAccepted and appointmentBooked to false, so previous sessions no longer work for any authenticated action."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server runs TLS with HSTS (max-age=31536000; includeSubDomains) and a fixed 308 HTTP→HTTPS redirect, but no TLS version constraint (e.g., minVersion for TLS 1.3) is explicitly configured."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 hashes and passwords as bcrypt (cost 10) via Bun.password.hash, which are appropriate algorithms, though strictly these are hashes rather than encryption."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery message contains only the system-generated code with the same generic account-neutral message, and the recovery identity is never rendered or returned, so no private user data is exposed in the message."
+    },
+    "7": {
+      "score": 4,
+      "why": "The identifier is normalized (trim/lowercase, 1–160 chars), codes must match a strict allowlist regex, passwords are type/length/policy checked, and all user-derived text is inserted via textContent — this is strict validation/normalization rather than broad sanitization of all inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a fixed 308 to 'https://localhost' + port built without using the Host header, and all client navigation uses fixed same-origin paths with encodeURIComponent on the code parameter."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user input ever enters any message or markup — simulated delivery text is fixed, rendered with textContent under a nonce-based script-src/style-src CSP, so no scripts or HTML from user input can appear."
+    },
+    "10": {
+      "score": 3,
+      "why": "Error paths return only generic messages ('Service unavailable', fixed JSON) with no stack traces or data, but the reset code and MFA code are intentionally displayed in the page's 'Simulated delivery logs' panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "While passwords are bcrypt-hashed and reset codes SHA-256-hashed at rest, the initial password 'Initial!DemoPassword2025' and the static MFA code '246810' are hardcoded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system is seeded with a hardcoded known password and a static MFA code that together permit full sign-in, so functioning default credentials effectively exist."
+    },
+    "13": {
+      "score": 5,
+      "why": "Server-global protection bars repeated wrong attempts: recovery requests throttled to 3/10min, code verification to 5/10min, and login/MFA lock out for 5 minutes after 5 failures."
+    },
+    "14": {
+      "score": 4,
+      "why": "Known and unknown identities receive identical ok:true responses with the same generic message; only the simulated out-of-band delivery artifact (the code field) differs, which stands in for the email channel."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes are 32 bytes from crypto.getRandomValues (base64url), bound to the identity's scope, single-use, superseded codes are invalidated, and they expire after RESET_TTL of 10 minutes."
+    }
+  },
+  "cost_usd": 0.1475436,
+  "generation_id": "gen-1785922713-5AeKlbgLeJQn4nvwbhyd",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 5,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 3,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.3333,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

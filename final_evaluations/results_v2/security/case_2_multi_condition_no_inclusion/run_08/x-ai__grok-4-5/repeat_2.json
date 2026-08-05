@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:43:09.476458+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c4fd046aaec21d61dbcea92c3e7d1830bd59eb3cc9562fc7c9e6a0dc0ee90617",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Verify-token compares the submitted code only to the current session’s resetTokenHash and rejects mismatches, so the code must belong to that session’s recovery flow."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset hashes live per session; another session does not hold the same resetTokenHash, so the same code does not work for a different user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only updates the current session object and never invalidates or enumerates other sessions, so any prior sessions would keep working."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS certificates and HSTS, and non-HTTPS X-Forwarded-Proto is rejected, though the exact TLS version is not pinned in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords via bcrypt; in-memory session fields are not further encrypted at rest."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email sender; the simulated delivery returns the raw token in the API/UI log, while account-existence messaging stays generic."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are allowlisted (validAccountInput/validToken/validPassword) and client output uses textContent, not raw HTML interpolation."
+    },
+    "8": {
+      "score": 5,
+      "why": "resetPath is a same-origin relative /reset URL built only from a server-generated token; no user-controlled external redirects exist."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML templates render user input; simulated delivery is plain text via textContent/logging only."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error JSON is generic, but the on-page activity log and recovery API response deliberately expose recovery tokens and the MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in session state, but the MFA secret is the hardcoded constant MFA_CODE = \"482915\" in source."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default username/password login exists; only the simulated fixed MFA code is constant, not general default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Both reset-token and MFA verification increment failure counters and set resetBlockedUntil/mfaBlockedUntil after five bad attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": " /api/recovery returns the same eligible-wording success path for any well-formed account string and does not disclose whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery tokens come from crypto.getRandomValues (32 bytes, base64url), are hashed and bound to the issuing session, and expire/single-use flags apply."
+    }
+  },
+  "cost_usd": 0.0216328,
+  "generation_id": "gen-1785922937-tRHRBMmCnww9mJT0eq6S",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

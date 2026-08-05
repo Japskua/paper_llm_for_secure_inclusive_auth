@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:01:05.034850+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset validation compares the submitted code to the token stored in the current server-side session, but it does not bind the token to a separate user identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code is accepted only when it matches the current session's stored token, so the same code is not valid for another session/user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password update mutates only the current session and does not revoke other stored sessions, so previous sessions can remain usable until TTL expiry."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires HTTPS with TLS certificate files, but the code does not specify or prove that the latest TLS version is enforced."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS protects data in transit, but reset tokens and session data are held in plaintext memory and passwords are hashed rather than encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "The reset-request message is generic, but the simulated delivery exposes the reset code in the response and client-side log."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are format-validated, and the UI is constructed with textContent/DOM APIs rather than inserting user-controlled HTML."
+    },
+    "8": {
+      "score": 3,
+      "why": "No redirect endpoints or external navigation links are present; the client only makes same-origin API requests."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present, and the simulated delivery messages are plain text without user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error responses are generic, but the client logs explicitly display the reset code and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is hardcoded and reset tokens are stored in plaintext session memory."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no default password, but the fixed MFA code in the source acts as a default secret for completing recovery."
+    },
+    "13": {
+      "score": 4,
+      "why": "The code enforces session-scoped attempt limits and returns 429 after too many reset-request, reset-code, or MFA attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset-request endpoint returns the same generic message and opaque token regardless of whether the email matches the mock account."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset token is a 32-byte random base64url value stored only in the requesting session for the known mock account."
+    }
+  },
+  "cost_usd": 0.080608,
+  "generation_id": "gen-1785920236-C6tRhFHYzmwoOo3bhE9F",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 3,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.1333,
+  "capture_complete": false
+}

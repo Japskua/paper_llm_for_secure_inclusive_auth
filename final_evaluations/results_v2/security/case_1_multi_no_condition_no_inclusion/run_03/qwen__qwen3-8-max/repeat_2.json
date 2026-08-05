@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:33:16.483601+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token is checked against the SHA-256 digest stored in the requesting session, but it is not bound to a persistent account identifier because the account input is not retained."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is accepted only when it matches the digest stored in the current session, so the same code does not work for another session/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "After password update the code only sets flags in the current session and provides no revocation of other existing session IDs, so previous sessions remain valid until TTL expiry."
+    },
+    "4": {
+      "score": 2,
+      "why": "TLS is started only if local certificate files exist, and the code does not enforce HTTPS or configure/demonstrate the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as bcrypt hashes, but hashing is not encryption and the MFA code is stored in plaintext."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email implementation, and the simulated delivery exposes the recovery token in the response/logs rather than guarding it as an email message would."
+    },
+    "7": {
+      "score": 5,
+      "why": "User input is type/length validated and dynamic values are inserted via textContent/createTextNode under a nonce-based CSP rather than being rendered as HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated recovery link is a same-document fragment based on location.pathname, and CSP form-action restricts forms to self, with no external redirects observed."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the source, so I cannot observe email templates containing or excluding user-controlled scripts or HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Although error responses are generic, the recovery token and MFA code are explicitly written to the browser console and the Logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is hardcoded as 246810 and stored in plaintext, so secret codes are not fully stored securely or absent from code."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default account password is present, but the fixed MFA code 246810 functions as a default credential accepted by the system."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery requests, MFA attempts, and password attempts are throttled or locked after repeated failures within a time window."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the same generic response and token flow for any syntactically valid account value without checking or revealing account existence."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset code is a cryptographically random 64-character hex token bound to the requesting session, but it is not tied to a persistent user/account identifier."
+    }
+  },
+  "cost_usd": 0.078344,
+  "generation_id": "gen-1785918553-fgGphSqmlpFWj2KhC7Ii",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 2,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

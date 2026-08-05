@@ -1,0 +1,116 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:34:49.297952+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "dd919db6c46d435a4395fbd6c5d383fdf23013f639ab84eb58ad2b157be067a6",
+  "screenshot_count": 8,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_recovery_instructions_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_set_new_password.png",
+    "step_05_security_confirmation.png",
+    "step_06_privacy_conditions.png",
+    "step_07_request_medication_review.png",
+    "step_08_appointment_request_received.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All eight screens use a static, card-based layout with no animations, carousels, or pop-up dialogs anywhere in the flow."
+    },
+    "2": {
+      "score": 4,
+      "why": "Each screen has a single large bold heading and one clearly coloured primary action button, though the always-present dark 'Logs' panel competes for visual attention."
+    },
+    "3": {
+      "score": 4,
+      "why": "Only one task and one main button appear per step, making the next action easy to locate, but the technical log block adds irrelevant content the user must scroll past."
+    },
+    "4": {
+      "score": 3,
+      "why": "The flow is stepwise with on-screen guidance, but the user must carry over a long recovery code and a six-digit MFA code between screens and remember the 12-character password rules."
+    },
+    "5": {
+      "score": 1,
+      "why": "No 'remember me', autofill hint, password manager suggestion, or show-password toggle appears on any screen, including the login/reset and new-password pages."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing is saved or recognisable for the user — no stored email, no masked account hint, and the recovery code is an opaque random string with no familiar reference."
+    },
+    "7": {
+      "score": 5,
+      "why": "Text is concise, plain-language, high-contrast, and in short sentences (e.g. 'Choose at least 12 characters with uppercase, lowercase, a number, and a symbol')."
+    },
+    "8": {
+      "score": 1,
+      "why": "No error state is shown in any of the eight screenshots, so there is no evidence of error messages that explain a problem and its fix."
+    },
+    "9": {
+      "score": 2,
+      "why": "The password page states rules but gives no sample password, and no field shows placeholder examples of the expected format (the visible email/code values are typed input, not examples)."
+    },
+    "10": {
+      "score": 3,
+      "why": "The single path presented (email/patient reference → code → password → MFA code) is clearly labelled, but alternatives like face or biometric login are never offered or explained."
+    },
+    "11": {
+      "score": 5,
+      "why": "Each screen presents at most one input decision and one primary button, so the user is never faced with many simultaneous choices."
+    },
+    "12": {
+      "score": 4,
+      "why": "Confirmation banners and step titles state outcomes ('a recovery message has been prepared', 'Appointment request received'), though the password update outcome is only implied by moving to the next screen."
+    },
+    "13": {
+      "score": 3,
+      "why": "There are brief helper sentences and a 'Stay safe' security tip, but no contextual tips, tooltips, or help link for new steps such as where to find the six-digit code."
+    },
+    "14": {
+      "score": 3,
+      "why": "'Start over' and 'Return to recovery start' allow restarting, but there is no visible back button, inline retry, or 'resend code' option on the verification and MFA screens."
+    },
+    "15": {
+      "score": 5,
+      "why": "Every step reuses the same header, card layout, typography, and button styling and placement, giving a highly consistent, learnable design."
+    }
+  },
+  "cost_usd": 0.086735,
+  "generation_id": "gen-1785918869-o9HEGAsjOLYOlgkUOKHs",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 4,
+    "4": 3,
+    "5": 1,
+    "6": 2,
+    "7": 5,
+    "8": 1,
+    "9": 2,
+    "10": 3,
+    "11": 5,
+    "12": 4,
+    "13": 3,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.3333,
+    "memory": 2.0,
+    "comprehension": 2.6667,
+    "decision_making": 4.0,
+    "learning": 3.6667
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

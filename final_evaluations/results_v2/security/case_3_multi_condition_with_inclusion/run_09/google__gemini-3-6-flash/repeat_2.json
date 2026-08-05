@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:31:58.249782+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "e8e8aca10204c746985ba82e1922651d96e9afa3cff7f743870a5149d08e7cee",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system verifies that the supplied reset token matches the token stored in the current session's recovery state."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are stored inside individual session objects, preventing a token generated for one session from working for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating the password via the API does not clear or invalidate existing session tokens stored in the active sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application server is configured with TLS certificates using Bun.serve and enforces HSTS headers."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are stored in unencrypted plain text within the in-memory session recovery objects."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email delivery is simulated without exposing personal user data or revealing account details in outgoing messages."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are strictly validated with regular expressions and rendered safely on the client side using DOM textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "All endpoint interactions remain restricted to self-origin paths, and CSP headers set form-action to self without external redirects."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email sending is simulated on the client side without rendering HTML templates or user-supplied script inputs."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and MFA codes are explicitly returned in API response bodies and rendered in the client-side logs interface."
+    },
+    "11": {
+      "score": 1,
+      "why": "Secret values such as the MFA code '481516' and an initial bcrypt password hash are hardcoded directly in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system initializes with a hardcoded default password hash embedded in the source file."
+    },
+    "13": {
+      "score": 5,
+      "why": "A rate-limiting function enforces a maximum of five attempts per window across all sensitive authentication and recovery actions."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery initiation endpoint returns identical response messages regardless of whether the requested email address exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are created using cryptographically secure randomBytes as 64-character hex strings assigned to the specific session."
+    }
+  },
+  "cost_usd": 0.045891,
+  "generation_id": "gen-1785925896-eldq33H9ffXv0QeIpXrs",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

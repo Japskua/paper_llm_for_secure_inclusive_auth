@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:47:34.062147+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-reset requires the token hash to match session.resetTokenHash and token.sessionId/accountId, so the reset code must belong to that user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to sessionId and accountId with equality checks; the same reset code does not work for another user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "reset-password updates the password hash and consumes the grant but never invalidates other existing sessions in the sessions map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, HSTS, and HTTP→HTTPS redirect, though the TLS protocol version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and emails are stored as SHA-256 hashes and passwords via bcrypt; appropriate crypto is used though this is hashing rather than encryption."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email body is built with private fields; responses use a generic message, though the simulation returns a testToken in JSON rather than a guarded mailbox message."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email/password inputs are validated (validEmail, strongPassword, length limits), client uses textContent, and API bodies are parsed with size limits."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects use the fixed CONFIGURED_HTTPS_ORIGIN only; Host is not trusted to build destinations and user input does not control open redirects."
+    },
+    "9": {
+      "score": 5,
+      "why": "There is no email HTML template that interpolates user input; recovery is simulated without embedding user-supplied scripts or HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "testToken and testMfaCode are returned to the client and appended to the on-page log list, so tokens are shown in logs/UI."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hashing is bcrypt, but INITIAL_PASSWORD_BCRYPT_HASH lives in source and MFA is hardcoded as session.mfaCode = \"246810\"."
+    },
+    "12": {
+      "score": 2,
+      "why": "The flow ships a fixed demo MFA code 246810 and a precomputed initial password hash, i.e. default/known credentials for the mock account."
+    },
+    "13": {
+      "score": 5,
+      "why": "VERIFY_FAILURE_LIMIT (5), mfaAttempts >= 5, and reset-request rate limiting return 429 and lock the recovery flow."
+    },
+    "14": {
+      "score": 5,
+      "why": "request-reset always returns the same generic message and response shape whether or not the email matches the account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are secureToken(32) (cryptographically random base64url), hashed at rest, and bound to a specific session and account."
+    }
+  },
+  "cost_usd": 0.0333844,
+  "generation_id": "gen-1785923213-pA8bviKm1mj1kKmiEKYj",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

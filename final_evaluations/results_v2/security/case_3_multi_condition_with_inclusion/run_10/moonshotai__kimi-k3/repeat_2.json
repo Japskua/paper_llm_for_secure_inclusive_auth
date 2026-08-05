@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:38:38.926653+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "5def0af8851cb528c3f00ff512506269aa19299d60d5780a568a1790a19eea39",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "/api/verify compares the submitted code/token via safeEqual against the manualCode/resetToken stored in the same session that is bound to s.accountId, so the code is verified as belonging to that user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Codes are randomly generated per request and stored per-session, and after use resetUsed=true and the token/code are cleared, so one user's code cannot be used by another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/password-change never invalidates or deletes any entries in the sessions map, so any other existing (even authenticated) sessions remain valid until their 24h expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server is TLS-only via Bun.serve tls with HSTS and rejects x-forwarded-proto:http, but no TLS version is explicitly configured so 'latest TLS version' cannot be confirmed."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens and manual codes are stored in cleartext in the in-memory session object, not encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email; the simulated delivery (Logs panel) shows only the code/URL and no password or patient data, but it does display the secret codes visibly."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifier, codes, and passwords are validated server-side with strict regex/length checks (validId, validCode, validPass, strong), and the client renders all dynamic text with textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only links are the fixed internal /verify route built server-side (https://localhost:3000/verify?token=...) plus a regex-validated query token; no user-controlled or external redirect exists and CSP sets form-action 'self'."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates or user-supplied HTML exist anywhere; all output is plain text via textContent and a strict nonce-based CSP blocks injected or inline scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error messages are generic and passwords are never logged, but the reset token (in the verification URL), manual recovery code, and MFA code are deliberately written to the visible Logs panel and console."
+    },
+    "11": {
+      "score": 3,
+      "why": "Passwords are stored only as bcrypt hashes, but the MFA secret \"246810\" is hardcoded in the source and the initial account hash is embedded in the file."
+    },
+    "12": {
+      "score": 2,
+      "why": "A pre-seeded account ships with a well-known pre-generated bcrypt hash (the common example hash of 'password') embedded in the code, effectively a default credential."
+    },
+    "13": {
+      "score": 4,
+      "why": "Progressive per-action/identifier/source throttling (1s up to 5min delays, HTTP 429) blocks rapid repeated wrong attempts, though there is no hard lockout or CAPTCHA."
+    },
+    "14": {
+      "score": 5,
+      "why": "Unknown identifiers are silently mapped to a sink account with identical flow and responses, and login errors are generic, so account existence is not revealed."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token (32 bytes) and manual code (18 bytes) are generated with crypto.getRandomValues, are unique per request and bound to the session/account, single-use, and expire after 10 minutes."
+    }
+  },
+  "cost_usd": 0.1220994,
+  "generation_id": "gen-1785926247-FnkIN7uwC1mWTz2xGoLY",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 3,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7333,
+  "capture_complete": false
+}

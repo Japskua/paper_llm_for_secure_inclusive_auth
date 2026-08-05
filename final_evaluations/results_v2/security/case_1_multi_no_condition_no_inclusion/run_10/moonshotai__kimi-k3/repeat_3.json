@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 2,
+  "judged_at": "2026-08-05T09:10:47.704453+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset tokens are bound to the requesting session via sessionId checks in /api/reset-verify and validOwnedToken, though binding is to the session rather than a distinct user account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens fail verification when record.sessionId !== session.id, so a code issued to one session demonstrably does not work for another."
+    },
+    "3": {
+      "score": 5,
+      "why": "No session invalidation occurs after a reset — the sessions map and the recovery_session cookie remain valid, and the same session simply proceeds to MFA."
+    },
+    "4": {
+      "score": 4,
+      "why": "The primary server runs TLS with cert/key, sends HSTS, and a second listener 308-redirects all HTTP to HTTPS, but the TLS version is not explicitly pinned to the latest."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are bcrypt-hashed and tokens are 256-bit crypto-random values, but tokens are stored in cleartext in a map and nothing is technically encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email message exists; delivery is simulated by returning the token in the API response (testToken) and printing it in the visible logs panel."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers are validated against a strict whitelist regex, bodies are shape-checked via safeBody, passwords are policy-validated, and client output uses textContent only."
+    },
+    "8": {
+      "score": 4,
+      "why": "The only redirect in the app is the hardcoded HTTP-to-HTTPS upgrade to localhost; there are no user-controlled redirect targets."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates at all, and the page HTML is fully static with no user input interpolated, with scripts constrained by a CSP nonce."
+    },
+    "10": {
+      "score": 1,
+      "why": "The logs panel explicitly displays the reset token ('Test reset code: ...') and the MFA code, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never stored in plaintext, but the MFA secret '482913' is hardcoded directly in the source."
+    },
+    "12": {
+      "score": 3,
+      "why": "There are no default passwords, but the deterministic hardcoded MFA code '482913' functions as a fixed, known verification credential."
+    },
+    "13": {
+      "score": 4,
+      "why": "Per-session rate limits (3 reset requests, 5 verify, 5 MFA per 15 minutes) plus a per-token 5-attempt cap throttle wrong attempts, though limits reset with a new session."
+    },
+    "14": {
+      "score": 2,
+      "why": "Although the message text is generic, the API response includes the testToken field only when the identifier matches 'demo-account', leaking account existence."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are 32-byte cryptographically random base64url values with 10-minute expiry, bound to the requesting session (user-specific only via session)."
+    }
+  },
+  "cost_usd": 0.081861,
+  "generation_id": "gen-1785920943-7ZXUeIZ9UJQwpngaRHSB",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 4,
+    "8": 4,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 3,
+    "13": 4,
+    "14": 2,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 3.3333
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

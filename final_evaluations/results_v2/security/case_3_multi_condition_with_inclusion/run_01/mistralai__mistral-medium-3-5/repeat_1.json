@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:55:23.340808+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating the token against resetTokens and associating it with the accountId."
+    },
+    "2": {
+      "score": 1,
+      "why": "The reset code is unique per request and tied to a specific accountId, so it cannot work for any other user."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after password reset because the resetGrant is deleted and a new session context is required for login."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server enforces HTTPS with TLS (cert and key are provided in the Bun.serve configuration)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are randomly generated (randomHex(32)) and user data is not exposed in plaintext."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages (simulated logs) do not expose private user data; only the code and a generic message are shown."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (email, passwords) is sanitized via text(), normalizeEmail(), and rawString() functions."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are only to the hospital’s site (recoveryLinkFor constructs URLs with location.origin)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates (simulated logs) contain no scripts or HTML from user input; they are plaintext."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose user’s private information or tokens (e.g., generic messages like 'Not found' or 'Invalid request')."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are hashed with Argon2id (Bun.password.hash), and no plaintext credentials are stored in the code."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials are present; the only account (helenaAccount) has a precomputed Argon2id hash with no plaintext."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system throttles login attempts (rateLimit for loginLimits with 5 attempts per 5 minutes)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether the username/email exists (generic message: 'If that email matches an account...')."
+    },
+    "15": {
+      "score": 5,
+      "why": "The password reset code is random (randomHex(32)), complex, and user-specific (tied to accountId in resetTokens)."
+    }
+  },
+  "cost_usd": 0.018255,
+  "generation_id": "gen-1785923718-xA6mAMlu3JKV2jqrlZhE",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

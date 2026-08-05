@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:45:25.625886+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "The reset code is checked against a session-bound hash, but it is never associated with or checked against a specific user account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code is bound to the session that requested it and will not validate in another user's session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Resetting the password does not invalidate any other existing sessions, which remain valid until their normal expiration."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires HTTPS, but the TLS configuration does not explicitly require the latest TLS version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords use Argon2id and reset tokens are stored as SHA-256 hashes, but reset codes and other user data are not actually encrypted."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is implemented, and the simulated delivery exposes both the reset token and fixed MFA code through the API response and browser log."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, reset-token, MFA, and password inputs undergo strict type, length, format, or complexity validation and are not inserted into executable output."
+    },
+    "8": {
+      "score": 5,
+      "why": "The flow uses only same-origin API paths and a validated local URL fragment, with no user-controlled external redirect."
+    },
+    "9": {
+      "score": 3,
+      "why": "There is no email-template implementation to inspect, although the displayed simulated messages do not incorporate user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and MFA code are deliberately returned to the client and displayed in the simulated delivery log."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords and reset tokens are securely hashed, but the MFA code \"246810\" and initial password value are hard-coded in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The universally accepted hard-coded MFA code functions as a default recovery credential despite the absence of a conventional login endpoint."
+    },
+    "13": {
+      "score": 4,
+      "why": "Each session is blocked after five API attempts within one minute, although the restriction can be bypassed by creating another session."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset-request response does not disclose account existence, and the application does not perform an observable account lookup."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset token is cryptographically random and complex but is bound only to a session rather than to a specific user account."
+    }
+  },
+  "cost_usd": 0.085055,
+  "generation_id": "gen-1785919500-8EYG8eWgnVlwq6OPJnwJ",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 3,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

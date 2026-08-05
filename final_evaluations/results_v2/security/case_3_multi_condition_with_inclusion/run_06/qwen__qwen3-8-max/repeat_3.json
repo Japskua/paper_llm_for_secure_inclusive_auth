@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:23:04.616483+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "3769d8d72d3a6dbf94059901d58bea2f193d416f5864a40b1cd79da802df6e1a",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The verify endpoint accepts only a token matching the server-side reset record that was issued for the account found during that session's request."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are stored per session and compared only against that session's reset record, so the same code is not usable by another user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing the password marks the current reset record used but does not invalidate other existing sessions or clear their authenticated account identifiers."
+    },
+    "4": {
+      "score": 3,
+      "why": "HTTPS and HTTP-to-HTTPS redirection are configured, but the source does not specify or demonstrate the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS protects transit and passwords are bcrypt-hashed, but reset tokens, MFA codes, and account data are retained unencrypted in server memory."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is sent, and the simulated recovery token and MFA codes are exposed through API responses and displayed in the client Logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email input is normalized with a strict regex, passwords are validated, and client-side messages are rendered with textContent rather than raw HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only server redirect upgrades the same request path to https://localhost, and client navigation is limited to internal routes."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates or user-controlled email rendering are present in the source, so no unsafe email template behavior can be observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens and MFA codes are returned by status endpoints and intentionally shown in the browser Logs area."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but secret reset/MFA codes are kept in plaintext server state, MFA codes are deterministic, and a password hash is embedded in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "A fixed demo account with a hardcoded bcrypt hash is present, so default or preconfigured credential material is not fully eliminated."
+    },
+    "13": {
+      "score": 4,
+      "why": "Login, reset verification, and MFA verification use session and global attempt counters that lock the action after repeated failures."
+    },
+    "14": {
+      "score": 1,
+      "why": "Although the recovery request response is generic, a later recovery status call reveals a recovery state and token only when the email matches an account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated with crypto.randomBytes(32), encoded as 43-character base64url values, and bound to the issuing session/account."
+    }
+  },
+  "cost_usd": 0.057914,
+  "generation_id": "gen-1785925184-OvUPz3y1jz13RVIZgw7F",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 3.3333
+  },
+  "overall": 2.8667,
+  "capture_complete": true
+}

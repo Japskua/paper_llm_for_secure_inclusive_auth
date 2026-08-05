@@ -1,0 +1,114 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:16:23.306465+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "4a6eaf3cfcc73c22842c5c8c14f50a97c9b1281fdf4ac2299c6aa628f1a4e591",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 6,
+  "screenshots": [
+    "step_01_request_password_reset.png",
+    "step_02_verify_reset_code.png",
+    "step_03_additional_verification.png",
+    "step_04_set_new_password.png",
+    "step_05_accept_privacy_conditions.png",
+    "step_06_recovery_complete.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All six screens are static, flat cards with no carousels, animations, or pop-up overlays — only a fixed header, form card, 'Stay safe' notice, and Logs panel."
+    },
+    "2": {
+      "score": 4,
+      "why": "Each page has one large bold heading and a single high-contrast blue primary button, so the main action stands out, though the dark Logs panel competes visually and the privacy checkbox on step 5 is tiny and unlabeled next to its text."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is only one field/action per step with clear titles like 'Enter recovery token' and 'Choose a new password', making the needed element easy to locate, though the technical Logs block adds irrelevant scanning noise."
+    },
+    "4": {
+      "score": 3,
+      "why": "The flow is broken into single-task steps, but the user must carry a long random token (l1pidUnQZsyQrIME8DbejLVJ4kKKn6GHhfPiutbrlSA) and a 6-digit code from the Logs panel into input fields, and remember new password composition rules."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager hint, autofill affordance, 'remember me' checkbox, show-password toggle, or paste helper appears on any screen, including the new-password screen."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing familiar or saved is surfaced — no masked email/phone hint, no saved account name, no stored device recognition; every screen presents empty fields only."
+    },
+    "7": {
+      "score": 4,
+      "why": "Instructions are one or two short plain-language sentences (e.g. 'Use 12 or more characters with upper- and lower-case letters, a number, and a symbol'), though the Logs text is raw technical output."
+    },
+    "8": {
+      "score": 1,
+      "why": "No error message is visible in any of the six screenshots — there is no inline validation text, error state, or recovery guidance shown anywhere."
+    },
+    "9": {
+      "score": 2,
+      "why": "The password screen states rules but gives no example string, and the token/code fields have no placeholder or sample format; only the Logs panel incidentally shows what a token/code looks like."
+    },
+    "10": {
+      "score": 2,
+      "why": "Only a single password-plus-token-plus-code path is offered; there is no visible choice of face login, passkey, SMS vs email, or alternative methods, so 'choices are clear' does not hold because choices are essentially absent (only step 1's 'Enter it manually' alternative)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Each screen presents exactly one input task and one primary button, so the user is never confronted with many simultaneous options."
+    },
+    "12": {
+      "score": 3,
+      "why": "The final screen clearly states 'Recovery complete… password has been updated and the privacy conditions have been accepted', but intermediate steps give no visible success confirmation other than silently advancing, with feedback buried in the Logs panel."
+    },
+    "13": {
+      "score": 3,
+      "why": "Each step has a brief explanatory sentence and a persistent 'Stay safe' security tip, but there is no contextual help link, tooltip, or 'what is a recovery token?' guidance."
+    },
+    "14": {
+      "score": 2,
+      "why": "There are no visible 'Back', 'Resend code', or 'Start over' controls on steps 2–5; only the final screen offers 'Return to recovery start', so recovering from a mistake mid-flow is not supported."
+    },
+    "15": {
+      "score": 5,
+      "why": "All six screens reuse an identical layout — same header, same 1/2/3 step chips, same card position, same button styling, same 'Stay safe' and Logs sections."
+    }
+  },
+  "cost_usd": 0.09271,
+  "generation_id": "gen-1785921360-k4kA20pflib6VylVjjR8",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 4,
+    "4": 3,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 1,
+    "9": 2,
+    "10": 2,
+    "11": 5,
+    "12": 3,
+    "13": 3,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.3333,
+    "memory": 2.0,
+    "comprehension": 2.3333,
+    "decision_making": 3.3333,
+    "learning": 3.3333
+  },
+  "overall": 3.0666,
+  "capture_complete": true
+}

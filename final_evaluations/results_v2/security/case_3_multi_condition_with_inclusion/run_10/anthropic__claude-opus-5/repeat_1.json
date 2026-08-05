@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:36:33.692420+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "5def0af8851cb528c3f00ff512506269aa19299d60d5780a568a1790a19eea39",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The manual code and reset token are stored only inside the requesting session and validated with safeEqual against `s.manualCode`/`s.resetToken`, and the session is bound to `s.accountId`, so a code can only be redeemed by the session/user it was issued to."
+    },
+    "2": {
+      "score": 1,
+      "why": "Codes exist solely in per-session state (never in a global store keyed only by code), so a code issued to one session cannot be presented by another session — the statement is false for this system."
+    },
+    "3": {
+      "score": 4,
+      "why": "`/api/password-change` only mutates the current session's stage and the account hash; it never iterates `sessions` to delete other sessions bound to the same accountId, so previously created sessions remain valid after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured with `tls: {cert, key}` plus HSTS and rejects `x-forwarded-proto: http`, so HTTPS is used and Bun negotiates TLS 1.3 by default, though no explicit minimum TLS version/cipher policy is set and the cert is a local self-signed one."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are properly bcrypt-hashed via `Bun.password.hash`, but reset tokens, manual codes and the MFA code are held and compared in cleartext in memory with no hashing or encryption of the token/user data at rest."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all — the 'delivery simulation' returns `manualRecoveryCode` and the full `verificationUrl` in the JSON response, which the client prints to the console and the visible Logs panel, so no message-level protection of private data is demonstrated."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs pass strict allow-list validation (`validId`, `validCode`, `validPass`, `strong`), request bodies are size-capped at 4096 bytes and must be JSON objects, and output is written only via `textContent`."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only link href comes from the server-generated relative path `/verify?token=...` or the hardcoded `https://localhost:3000` origin, non-API GETs are limited to `/`, `/verify`, `/recovery`, and CSP sets `form-action 'self'`/`base-uri 'none'`, so no user-controlled redirect target exists."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist in the codebase to evaluate; the analogous in-page rendering is safe (textContent only, nonce-based CSP, no innerHTML), so the claim is only vacuously/partially supported."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors are generic and passwords are never logged, but the reset manual code, the full verification URL containing the reset token, and the MFA code are deliberately `console.log`'d and appended to the visible Logs list, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "The MFA code is hardcoded as `MFA_CODE = \"246810\"` and a fixed `INITIAL_PASSWORD_HASH` is embedded in the source; only the TLS key/cert are externalized, and there is no secret manager or environment configuration."
+    },
+    "12": {
+      "score": 2,
+      "why": "Accounts are seeded with a hardcoded, publicly-known bcrypt hash (`$2b$10$N9qo8uLOickgx2ZMRZoMye...`, the well-known hash of 'password') and a static universal MFA code, which are effectively default credentials shipped with the app."
+    },
+    "13": {
+      "score": 5,
+      "why": "`allowed`/`fail` apply progressive backoff per action+identifier+source IP (0s→1s→5s→30s→60s→300s) with 429 responses on recovery, verify, MFA, password-change and login endpoints."
+    },
+    "14": {
+      "score": 5,
+      "why": "Unknown identifiers are silently bound to the `recovery-sink` account and receive an identical successful response with a code and verification URL, and login/verify errors are uniform generic messages, so existence is not disclosed."
+    },
+    "15": {
+      "score": 5,
+      "why": "`random()` uses `crypto.getRandomValues` for a 32-byte token and 18-byte manual code, base64url-encoded, stored per-session with a 10-minute expiry and cleared/marked single-use on successful verification."
+    }
+  },
+  "cost_usd": 0.14527,
+  "generation_id": "gen-1785926147-txZjZTfjFRKtYUH1Sg4R",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6,
+  "capture_complete": false
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:26:28.917867+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "Recovery verification checks that the record's sessionId matches the current session, but it does not bind the code to a verified account owner."
+    },
+    "2": {
+      "score": 1,
+      "why": "A recovery code is stored with a session-specific record ID and sessionId, so another user's session cannot use the same code."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password reset changes the global password hash but does not invalidate existing session objects, so prior valid sessions would remain usable."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS certificate and key, but the code does not specify or enforce the latest TLS protocol version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Recovery tokens are bcrypt-hashed and transport uses TLS, but the codes and stored session data are not encrypted at rest and hashing is not encryption."
+    },
+    "6": {
+      "score": 1,
+      "why": "The simulated delivery response and browser log expose the raw recovery token rather than guarding it."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs pass through cleanText, validIdentifier, and validPassword validation that reject disallowed characters and bound lengths."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses only a fixed whitelist of internal hash routes and no external redirect targets."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the code, so there is no observed mechanism where user input is placed into email HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic error responses avoid details, but simulated logs and API responses reveal MFA and recovery tokens."
+    },
+    "11": {
+      "score": 1,
+      "why": "The initial password and MFA test code are hardcoded in the source, even though the runtime password hash uses bcrypt."
+    },
+    "12": {
+      "score": 1,
+      "why": "The demo account identifier, password, and MFA code are fixed in the source, so default credentials are accepted."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, recovery request, and recovery verification all use attempt counting and temporary locks."
+    },
+    "14": {
+      "score": 1,
+      "why": "Although initial responses are generic, the password step returns a distinct failure for nonexistent accounts after code verification, revealing account existence."
+    },
+    "15": {
+      "score": 3,
+      "why": "Reset codes are generated with randomBytes(32) and are long, but they are tied to a session record rather than a verified user account."
+    }
+  },
+  "cost_usd": 0.067506,
+  "generation_id": "gen-1785925419-4qlKwMg2OjM0e3Pc8ek1",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.0
+  },
+  "overall": 2.7333,
+  "capture_complete": true
+}

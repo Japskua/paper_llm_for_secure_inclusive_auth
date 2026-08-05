@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:01:31.261666+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "The code only verifies that a reset token exists and is unexpired; it does not tie the token to the requesting user's identity."
+    },
+    "2": {
+      "score": 4,
+      "why": "An unused reset token can be submitted from another session because verification accepts the bearer token without checking the original requester, though it is single-use."
+    },
+    "3": {
+      "score": 4,
+      "why": "The password reset changes the account hash but does not invalidate other session records, so an already authenticated session would remain valid."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS certificate and key, but the source does not specify or demonstrate the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS may protect data in transit and passwords are hashed, but reset codes and email addresses are kept in server memory without encryption."
+    },
+    "6": {
+      "score": 2,
+      "why": "The simulated delivery reveals the one-time recovery code in the client-visible logs and response, so private token data is not hidden or guarded."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are length-limited and validated, and displayed user-derived values are assigned via textContent rather than HTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "The only generated link is a same-origin URL built from location.origin, and there is no external redirect mechanism."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email template is present; the simulated message is plain text with a server-generated code and no user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error messages are generic, but the demo Logs panel and console output display recovery and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id hashed, but the fixed MFA code is present in the source as a secret value."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default password is disclosed, but the hardcoded MFA code 246810 functions as a default second-factor credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "The rateLimit function returns 429 and blocks further attempts after repeated failures for verification, login, and MFA."
+    },
+    "14": {
+      "score": 5,
+      "why": "The request-reset endpoint returns a generic message and creates a simulated delivery regardless of whether the email matches an account."
+    },
+    "15": {
+      "score": 3,
+      "why": "Reset codes are 32-byte cryptographic hex values with expiry and an account identifier, but they are not bound to the original session during verification."
+    }
+  },
+  "cost_usd": 0.089824,
+  "generation_id": "gen-1785923737-sa1LCNZVnJLmTbCTxH6A",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 2,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 4,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 2.8,
+  "capture_complete": true
+}

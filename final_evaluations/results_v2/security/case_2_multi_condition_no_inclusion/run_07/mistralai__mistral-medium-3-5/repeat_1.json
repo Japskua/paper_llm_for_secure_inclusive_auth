@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:37:32.224811+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating the codeHash against resetRecords and associating it with the recoveryIdentity scope."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for any other user because each code is tied to a specific identityScope and marked as used after validation."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after a password reset (all sessions have authenticated, pendingMfa, etc., set to false)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server enforces HTTPS with TLS (certs/cert.pem and key.pem are used)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are encrypted (hashed with SHA-256) and user data is stored securely (e.g., passwordHash uses bcrypt)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages (simulated) do not expose private user data; only generic messages are returned."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., email, passwords) is validated and sanitized (e.g., normalizeIdentity, isStrongPassword)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are fixed to localhost HTTPS and external URLs are never used (Requirement 5)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are not present, but UI text is inserted via textContent, preventing script injection."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose private information or tokens (genericError returns sanitized messages)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords and secret codes are stored securely (bcrypt hashing) and not hardcoded in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials are present; the account password is initialized with a strong hashed value."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system bars users after 5 failed login attempts (LOCKOUT_WINDOW and loginProtection)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether a username/email exists (genericMessage for recovery requests)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset codes are random, complex (randomValue(32)), and user-specific (tied to identityScope)."
+    }
+  },
+  "cost_usd": 0.017265,
+  "generation_id": "gen-1785922645-EPmVLp88Z72Zkoxh6q4c",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

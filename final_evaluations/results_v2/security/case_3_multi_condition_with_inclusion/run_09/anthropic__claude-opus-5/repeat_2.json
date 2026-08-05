@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:31:56.350258+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "e8e8aca10204c746985ba82e1922651d96e9afa3cff7f743870a5149d08e7cee",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The recovery object (token, expiry, mfaCode) is stored on the requesting session and verified with equal(supplied, recovery.token) plus a `real` flag matching the registered EMAIL, so a code can only be redeemed in the session/account it was issued for."
+    },
+    "2": {
+      "score": 1,
+      "why": "Codes are held per-session in `sessions`, and verify-token only compares against `c.session.recovery.token`, so another session's code cannot be reused; the statement is false of this system."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing in /api/recovery/password-update clears the `sessions` map or the session cookie, so pre-existing sessions (including authenticated ones) remain valid after a password change — the statement is literally true."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is started with TLS cert/key only (no plain HTTP listener) and HSTS is set, but no minVersion/cipher configuration is given, so 'latest TLS version' relies on Bun defaults rather than explicit enforcement."
+    },
+    "5": {
+      "score": 2,
+      "why": "The login password is bcrypt-hashed, but the reset token and the MFA code are kept in cleartext in server memory and returned to the client (testDeliveryToken/testMfaCode), so reset codes are not protected by any cryptographic algorithm."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email; 'delivery' simply returns the full 64-hex reset token (and later the MFA code) in the JSON response, which the client prints into the visible Logs list and console — private secrets are exposed rather than guarded."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input is strictly validated (JSON-only, 4KB cap, email regex ≤254 chars, 12–128 char complexity policy, /^[a-f0-9]{64}$/ token and /^\\d{6}$/ code checks) and all dynamic output is inserted via textContent under a nonce-based CSP."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects at all and CSP sets form-action 'self' and base-uri 'none', so no user-controlled off-site navigation is possible."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist; delivery is simulated with plain JSON strings and rendered as text nodes, so no user-supplied HTML or script ever reaches a message body."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the reset token and six-digit MFA code are deliberately written to the browser console and the on-page Logs list ('[delivery simulation] Reset token: ...'), exposing secrets in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "The bcrypt hash is hard-coded in the source (`let passwordHash = \"$2b$10$N9qo8uLO...\"`), the MFA code is the literal \"481516\", and the account email is a source constant — secrets live in the code with no external config/secret store."
+    },
+    "12": {
+      "score": 2,
+      "why": "The application ships with a built-in default credential — the well-known bcrypt hash of 'password' — which /api/authenticate will accept until a reset is performed, so default credentials are allowed."
+    },
+    "13": {
+      "score": 5,
+      "why": "`allowed()` enforces MAX 5 attempts per 15-minute window with a 15-minute block, applied per-IP and per-context to initiate, token, mfa, password-update and login endpoints, returning HTTP 429."
+    },
+    "14": {
+      "score": 3,
+      "why": "The initiate endpoint returns a neutral 'If an account can use that address...' message, but because a token is issued for any address and only the address equal to EMAIL sets `real: true`, subsequent verification failure still acts as an existence oracle."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is randomBytes(32) hex (256-bit), stored on and validated only against the issuing session, single-use via `tokenConsumed`, and expires after 15 minutes."
+    }
+  },
+  "cost_usd": 0.132325,
+  "generation_id": "gen-1785925875-Wqla5CHuzKlL8k8sXhhY",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

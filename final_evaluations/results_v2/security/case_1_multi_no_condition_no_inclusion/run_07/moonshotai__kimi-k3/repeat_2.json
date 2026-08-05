@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:52:06.117648+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset token is stored as a SHA-256 hash bound to the requesting session, and /api/verify-reset only succeeds when the candidate hash matches that session's stored hash."
+    },
+    "2": {
+      "score": 1,
+      "why": "The statement is false: a code is validated only against the hash stored in the session that requested it, so it fails for any other session/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "True: /api/set-password updates the password hash but never invalidates other existing sessions, so prior sessions remain valid until their own expiry."
+    },
+    "4": {
+      "score": 3,
+      "why": "HTTPS is mandatory (server refuses to start without TLS certs), but no TLS version is pinned in code and the certs are local mkcert dev certs, so 'latest TLS version' cannot be confirmed."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored as SHA-256 hashes and passwords as Argon2id hashes—appropriate protection, though technically hashing rather than encryption."
+    },
+    "6": {
+      "score": 4,
+      "why": "The (simulated) delivery message contains only the recovery/MFA codes and the generic response hides account existence, so no other private user data is exposed."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are validated against strict allow-list patterns (safeEmail, safeToken, strongPassword) behind strict JSON parsing with content-type and length checks."
+    },
+    "8": {
+      "score": 5,
+      "why": "There are no external redirects at all; navigation uses only local location.hash routes and the prefilled code is regex-validated with no outgoing URL followed."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates with user input exist; the simulated delivery log and all dynamic messages are written via textContent, and the CSRF value is injected via JSON.stringify under a nonce-based CSP."
+    },
+    "10": {
+      "score": 2,
+      "why": "The statement is contradicted: the recovery token and MFA code are returned in the API response and explicitly written to the on-page log panel, though error messages themselves stay generic."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords/tokens are hashed (Argon2id, SHA-256), but the MFA code '246810' and the initial password are hardcoded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The statement is false in effect: the hardcoded static MFA code '246810' works as a default credential for every reset, and an initial password is hardcoded (though no login endpoint uses it)."
+    },
+    "13": {
+      "score": 4,
+      "why": "Rate limiting blocks more than 5 attempts per minute per session with HTTP 429, though it is per-session and could be reset by starting a new session."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset response is the constant generic message 'If an eligible account exists...' regardless of input, revealing nothing about account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is 32 cryptographically random bytes (base64url, ~43 chars), single-use, short-lived (10 min), and bound to the requesting session/user."
+    }
+  },
+  "cost_usd": 0.0960132,
+  "generation_id": "gen-1785919660-i98TbzsRZtDjOQ7eyaF9",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

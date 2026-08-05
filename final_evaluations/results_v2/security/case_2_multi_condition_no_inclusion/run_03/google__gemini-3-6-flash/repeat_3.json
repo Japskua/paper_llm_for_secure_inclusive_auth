@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:19:15.597244+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system explicitly validates that record.sessionId matches session.id during token verification."
+    },
+    "2": {
+      "score": 1,
+      "why": "The token verification handler rejects attempts where record.sessionId does not match the current session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating a password only updates the active session without revoking or invalidating other existing active sessions in memory."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server is configured with TLS certificates via Bun.serve and enforces HSTS headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords are hashed using bcrypt and reset tokens are stored as SHA-256 cryptographic digests."
+    },
+    "6": {
+      "score": 5,
+      "why": "Recovery messages use neutral, non-revealing text and do not transmit or expose private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input values are strictly validated for format and length, and DOM updates rely on safe textContent assignment."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application only handles explicit internal paths and contains no redirect mechanisms."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application uses no email HTML templates and renders all output dynamically without executing user-supplied script."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error responses and caught exceptions return generic failure messages without leaking user details or tokens."
+    },
+    "11": {
+      "score": 1,
+      "why": "A static MFA confirmation code (\"482916\") is hardcoded directly in the backend source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The codebase does not contain or permit any default accounts or credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting blocks excessive recovery requests, token verification attempts, and MFA entries."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the exact same generic message regardless of the contact input provided."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated with 32 cryptographically secure random bytes and associated directly with the user's session."
+    }
+  },
+  "cost_usd": 0.0411105,
+  "generation_id": "gen-1785921536-xSP1nuRTrMG4Ol1V1xVX",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

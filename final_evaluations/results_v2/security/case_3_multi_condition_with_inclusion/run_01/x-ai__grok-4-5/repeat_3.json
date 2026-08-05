@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:56:16.323065+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset tokens are stored with an accountId and password change applies only to that account via a sid-bound grant after consume."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code maps to one ResetRecord/accountId and is deleted on use, so it does not authorize reset for arbitrary other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates the hash and current session fields only; no code invalidates other existing sessions in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is set, though the exact TLS version is not pinned in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords use Argon2id, but reset codes and session/user records are plain in-memory Map values without encryption."
+    },
+    "6": {
+      "score": 4,
+      "why": "Simulated delivery log only includes the recovery code message and does not add extra account profile fields."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are normalized/length-limited via normalizeEmail, text, rawString checks, and client display uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Recovery links are built only as same-origin /?token=... from location.origin with encodeURIComponent."
+    },
+    "9": {
+      "score": 5,
+      "why": "Simulated email/log content is server-fixed text plus random code, not user-supplied HTML/scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "API responses and the demo Logs panel intentionally expose deliveryCode, logMessage, and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "Argon2id hashes are used at runtime, but the fixture password hash and fixed MFA value 246810 are embedded in source/logic."
+    },
+    "12": {
+      "score": 5,
+      "why": "Login is refused unless this session completed a verified reset for the demo account; no default password login path is enabled."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateLimit is applied to reset requests, verification, login, and MFA with lockouts after repeated attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "request-reset always returns the same generic success style message whether or not the email matches an account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes are randomHex(32), single-use with expiry, and stored with the target accountId when an account exists."
+    }
+  },
+  "cost_usd": 0.0193176,
+  "generation_id": "gen-1785923732-zZLdvdsAjfEobsrax1A1",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

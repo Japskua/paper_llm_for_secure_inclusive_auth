@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:27:15.570501+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "The reset token is bound only to a browser recovery session, and the submitted account value is neither stored nor associated with the token."
+    },
+    "2": {
+      "score": 2,
+      "why": "A token cannot be used from another browser session, although the lack of any account-to-token binding means user ownership is not actually enforced."
+    },
+    "3": {
+      "score": 5,
+      "why": "The code contains no account-wide session registry or mechanism to revoke previously authenticated sessions after a password reset."
+    },
+    "4": {
+      "score": 3,
+      "why": "TLS is mandatory and HTTP redirects to HTTPS, but no minimum or latest TLS protocol version is explicitly configured."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are cryptographically random but are stored unencrypted in memory, while no substantive user data encryption is implemented."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is generated, and the simulated delivery response and browser log explicitly expose the reset token and MFA code."
+    },
+    "7": {
+      "score": 4,
+      "why": "Account, token, MFA, and password inputs undergo strict type, length, format, and policy validation, although passwords are validated rather than sanitized."
+    },
+    "8": {
+      "score": 5,
+      "why": "There are no user-controlled redirect targets, and the only redirect is a fixed HTTPS URL for localhost."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates are present, and simulated messages are rendered with textContent rather than injected as HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and fixed MFA code are returned by API responses and deliberately displayed in the browser's simulated Logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and not retained in plaintext, but the MFA secret is hardcoded as \"482913\" and sensitive codes are exposed to the client."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application defines no default username, password, or reusable default account credentials."
+    },
+    "13": {
+      "score": 4,
+      "why": "Each recovery stage blocks its session for 60 seconds after five failures, though a client can obtain a new session to bypass the per-session limit."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery requests return the same account-agnostic message and the application performs no observable account-existence lookup."
+    },
+    "15": {
+      "score": 3,
+      "why": "Reset tokens are random, high-entropy, short-lived, and session-specific, but they are not associated with or validated against a particular user account."
+    }
+  },
+  "cost_usd": 0.036971,
+  "generation_id": "gen-1785922015-vM60E2JFAsGADlShGabr",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 4,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 4,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

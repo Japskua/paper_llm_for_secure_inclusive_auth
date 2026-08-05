@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:19:50.671130+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Verify-token requires the reset record’s sessionId to match the caller’s session and checks accountBinding, so the code is bound to the requesting session rather than accepted unbound."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token from another session fails the record.sessionId !== session.id check, so the same reset code does not work for any other user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only updates the current session’s passwordHash/flags and never invalidates or deletes other entries in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, HSTS and upgrade-insecure-requests are set, and non-HTTPS requests are rejected, though the exact TLS version is not pinned in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords via Bun.password.hash bcrypt; that is appropriate protection though it is hashing rather than encryption of all user data."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email body; API messages are generic, but the mock delivery path exposes the raw recovery token in the response and UI logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are length/type/format-checked (contact, token, password, MFA), JSON body size is capped, and client status uses textContent rather than HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "The server performs no redirects and does not accept external redirect targets; only same-origin paths are handled."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates that interpolate user-controlled HTML/scripts; recovery is mocked locally without rendering user input as HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "recoveryToken and mfaCode are returned in JSON and written to the on-page Logs panel and console, so tokens are shown in logs/responses."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in session state, but the MFA secret is the hardcoded literal \"482916\" in source and returned to the client."
+    },
+    "12": {
+      "score": 2,
+      "why": "There are no default username/password logins, yet every password reset sets the same fixed MFA code \"482916\", which acts as a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery and verify endpoints are rate-limited per session, reset records cap attempts (TOKEN_ATTEMPT_LIMIT), and MFA lockout triggers after repeated failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "Successful recovery always returns the same generic message that instructions were prepared without indicating whether the contact exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "Tokens come from crypto.getRandomValues (32 bytes, URL-safe) and are session-bound and single-use, though accountBinding is a constant rather than a distinct per-user id."
+    }
+  },
+  "cost_usd": 0.0178384,
+  "generation_id": "gen-1785921548-unWwM7Fx8DBpufXNP1gy",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

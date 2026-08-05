@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:01:36.122798+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are bound to the requesting session through record.sessionId and rejected when the session ID does not match."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token cannot be verified from another session because record.sessionId must equal session.id."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset completion does not invalidate or remove any existing sessions from the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "The application uses Bun TLS and redirects HTTP to HTTPS, but it does not explicitly configure a minimum or latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens are stored as plaintext map keys and no user-data encryption is implemented."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email message is implemented, as delivery is simulated through browser-visible logs instead."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers are normalized and allowlisted and passwords are strictly validated, although there is no general-purpose sanitization layer."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a server-controlled HTTP-to-HTTPS redirect to localhost, and no user-supplied redirect destination is accepted."
+    },
+    "9": {
+      "score": 3,
+      "why": "The application contains no email templates to assess for injected scripts or user-supplied HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and fixed MFA code are deliberately displayed in the browser-visible simulation logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are bcrypt-hashed, the reset tokens are stored in plaintext and the MFA code is hardcoded as 482913."
+    },
+    "12": {
+      "score": 2,
+      "why": "The application has no conventional default password, but it exposes a known demo account identifier and uses a fixed MFA code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset requests are limited to three and reset-token and MFA verification attempts are limited to five per session window."
+    },
+    "14": {
+      "score": 1,
+      "why": "A valid demo-account request returns testToken while an invalid identifier does not, allowing account existence to be distinguished despite the generic message."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are cryptographically random 32-byte values and session-bound, but they are not explicitly associated with a stored user identifier."
+    }
+  },
+  "cost_usd": 0.039005,
+  "generation_id": "gen-1785920467-FIUeGNMEXBBNI2W7kAMH",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 1,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 3.3333
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

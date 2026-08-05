@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:46:29.657401+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token hash is stored on the requester's server-side session and verify-reset compares only against that session's hash, so the code is bound to the requester — though there is no real user record tying it to an email/account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Because the token hash lives in the per-session object (session.resetTokenHash), a token issued in one session fails verification in any other session, so a shared/reused code across users does not work."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing in /api/set-password iterates the sessions map or invalidates other sessions; existing session entries remain valid until their 30-minute expiry, so previous sessions do keep working after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server refuses to start without certs and serves via Bun.serve tls with HSTS set, so HTTPS is enforced, but no explicit minVersion/cipher configuration pins the latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 hashes and the password uses Argon2id, which are appropriate primitives, although hashing (not encryption) is used and no other user data is persisted."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all — the 'simulated delivery' returns testToken and testMfaCode directly in the JSON response and prints them into a visible log pane, so no email-side data guarding exists."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input is strictly validated: JSON-only parsing with a size cap, safeEmail/safeToken regex allow-lists, strongPassword rules, and all dynamic client text written via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is limited to local location.hash routes with the prefilled code checked against /^[A-Za-z0-9_-]{30,100}$/; no external or user-controlled redirect targets exist."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email template is implemented in the code, so the claim cannot be observed as true; the in-page rendering it replaces does avoid injecting user input into HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "The recovery token and MFA code are returned in the API response and written to console.log and the on-page #log-output pane, directly exposing secret codes in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password itself is Argon2id-hashed, but the initial account password string and the static MFA code '246810' are hardcoded literals in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "A hardcoded initial password hash and a fixed, always-accepted verification code '246810' function as built-in default credentials for the MFA step."
+    },
+    "13": {
+      "score": 4,
+      "why": "rateAllowed enforces MAX_ATTEMPTS=5 per 60s window and returns HTTP 429, though the counter is stored per session cookie so it can be reset by discarding the cookie."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/request-reset always returns the same message, 'If an eligible account exists, verification instructions have been sent.', regardless of the submitted email."
+    },
+    "15": {
+      "score": 3,
+      "why": "The code is 32 bytes from crypto.getRandomValues (random and complex) and session-bound, but it is not tied to any user/email identity since no user record exists."
+    }
+  },
+  "cost_usd": 0.118455,
+  "generation_id": "gen-1785919544-XCPc1TTreWa185jPdl4D",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

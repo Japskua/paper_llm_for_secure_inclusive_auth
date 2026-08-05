@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:00:39.894841+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "The reset token is stored with the matching accountId and later used to update that account, but verification relies only on possession of the token rather than proving the requester owns the account."
+    },
+    "2": {
+      "score": 1,
+      "why": "The token record is server-side bound to the account selected when the code was requested, so a code cannot be used to reset an arbitrary other account."
+    },
+    "3": {
+      "score": 4,
+      "why": "The password-reset handler changes the password hash but does not invalidate existing sessions or clear authenticated flags in other session records."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS certificate and key, but the code does not specify or demonstrate the latest TLS protocol version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are hashed with Argon2id and TLS protects transport, but reset codes and email/session data are stored in plaintext in-memory maps rather than encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "The simulated delivery message omits personal fields but exposes the sensitive reset code in plaintext in the response and logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "The code applies length limits, email format validation, password rules, token truncation, and uses textContent/URL encoding instead of inserting raw user input into HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated redirect link is a same-origin URL built from location.origin, and no external redirect target is accepted."
+    },
+    "9": {
+      "score": 4,
+      "why": "The simulated delivery message is a plain text string containing only the generated code and does not embed user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error responses are generic, but the reset code is explicitly written to the demo log and console, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is stored as an Argon2id hash and no plaintext password is in the source, but the MFA code is a hardcoded literal and reset tokens are kept unencrypted in memory."
+    },
+    "12": {
+      "score": 3,
+      "why": "No default plaintext password is usable because login requires a completed reset and Argon2 verification, but the fixed MFA value is a known shared secret."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateLimit is applied to reset requests, code verification, login, and MFA, blocking further attempts for a period after repeated failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The request-reset endpoint returns the same generic message and simulated delivery whether or not the email matches an account."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset code is a 256-bit random hex value with expiry and is associated with the requested account, although it is delivered in plaintext and accepted as a bearer token."
+    }
+  },
+  "cost_usd": 0.076738,
+  "generation_id": "gen-1785923741-vDU8X0waL0HGFAsgeKDZ",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

@@ -1,0 +1,118 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:40:05.463537+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 10,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_request_password_reset.png",
+    "step_03_verify_reset_code.png",
+    "step_04_confirm_identity.png",
+    "step_05_set_new_password.png",
+    "step_06_password_updated.png",
+    "step_07_sign_in.png",
+    "step_08_updated_privacy_conditions.png",
+    "step_09_privacy_conditions_accepted.png",
+    "step_10_signed_out.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All ten screens are static single-column cards with no animations, carousels, banners, or modal pop-ups anywhere in the flow."
+    },
+    "2": {
+      "score": 4,
+      "why": "Bold blue headings and a single filled primary button dominate each card, though the persistent 'Logs' panel and the misaligned checkbox/label in step 08 dilute the visual hierarchy."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each screen has one clear task, but the user must hunt inside the raw 'Logs' console output to find the reset token/MFA code (steps 02–04), which is not an obvious place to look."
+    },
+    "4": {
+      "score": 2,
+      "why": "The flow spans reset request → token → second MFA code → password creation → sign-in → consent, and requires holding a long token, a 6-digit code, and a 12-character complexity rule in mind."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password-manager hint, autofill affordance, 'remember me' checkbox, or show-password toggle appears on the sign-in (step 07) or new-password (step 05) screens."
+    },
+    "6": {
+      "score": 2,
+      "why": "Only the recovery code is pre-filled in step 02/03; the account email must be typed again at sign-in with no saved-account chip, avatar, or recognition cue."
+    },
+    "7": {
+      "score": 4,
+      "why": "Sentences are short, high-contrast, generously spaced and plain, apart from mildly technical phrasing like 'simulated trusted channel' and the token strings."
+    },
+    "8": {
+      "score": 1,
+      "why": "No error or validation message is visible in any of the ten screenshots — no inline field errors, no wrong-code or mismatched-password feedback."
+    },
+    "9": {
+      "score": 1,
+      "why": "All input fields are empty with no placeholder text, format hints, or worked examples; step 05 states the password rules but shows no sample password."
+    },
+    "10": {
+      "score": 3,
+      "why": "The password and code fields are plainly labelled, but no alternative login choices (face, passkey, magic link) exist, so there is little in the way of clear options to compare."
+    },
+    "11": {
+      "score": 5,
+      "why": "Every screen presents essentially one action plus one secondary link, never overloading the user with parallel options."
+    },
+    "12": {
+      "score": 4,
+      "why": "Dedicated confirmation screens ('Password updated', 'Privacy conditions accepted') state what happened and what comes next, though intermediate submissions give no visible success toast."
+    },
+    "13": {
+      "score": 3,
+      "why": "Each card has a one- or two-line explanatory sentence plus a standing 'Keep your account safe' tip, but there are no tooltips, progress indicator, or step-specific help links."
+    },
+    "14": {
+      "score": 3,
+      "why": "'Request another code' (step 03) and 'Forgot password?' / 'Return to sign in' links allow restarting, but there is no back button, edit-email option, or undo within a step."
+    },
+    "15": {
+      "score": 5,
+      "why": "Identical dark header, centred white card, blue primary button, warning strip and Logs panel recur on all ten screens with consistent typography and placement."
+    }
+  },
+  "cost_usd": 0.12383,
+  "generation_id": "gen-1785919174-HRoYCIWh9Q7ZLm9OerTX",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 2,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 1,
+    "9": 1,
+    "10": 3,
+    "11": 5,
+    "12": 4,
+    "13": 3,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 1.6667,
+    "comprehension": 2.0,
+    "decision_making": 4.0,
+    "learning": 3.6667
+  },
+  "overall": 3.0667,
+  "capture_complete": true
+}

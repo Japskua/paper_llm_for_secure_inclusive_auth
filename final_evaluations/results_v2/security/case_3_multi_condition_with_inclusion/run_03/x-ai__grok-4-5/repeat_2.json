@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:06:41.389205+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "0be553360932f12d1a5bea672dc6e8e0d645f1196fb57be45010ded64f5f9480",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Recovery tokens are bound to session.recovery.accountId (MOCK_ACCOUNT_ID) and verified only against that session’s tokenHash."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset state lives on the initiating session only; another session has no matching recovery.tokenHash, so the same code does not work cross-user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset marks recovery used and updates the hash but never clears or invalidates other entries in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and non-HTTPS requests are rejected, though the exact TLS version is not pinned in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords are bcrypt-hashed and reset tokens stored as SHA-256 digests; appropriate protection though tokens are hashed not encrypted."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email body is built with user PII; initiate returns a generic message and only the mock token for demo delivery."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated (validReference/validToken/passwordError), JSON-parsed safely, and UI uses textContent rather than injecting raw HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is in-app hash/allowlisted routes only; no user-controlled external redirect targets exist."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates that embed user input; mock delivery is plain text logging of a server-generated token."
+    },
+    "10": {
+      "score": 1,
+      "why": "Mock recovery/MFA tokens are returned in API JSON and deliberately written to the on-page logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords use bcrypt and are not hardcoded, but issueMfa sets a fixed MFA code literal \"246810\" in source."
+    },
+    "12": {
+      "score": 5,
+      "why": "startupCredential is randomToken(32) at boot and only its bcrypt hash is retained—no default password."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery verify, and MFA each increment attempts and lock for LOCK_TTL after MAX_ATTEMPTS (5)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Login and recovery failures use the same generic messages whether or not the identifier matched the mock account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are randomBytes-based base64url values (24+ bytes), hashed at rest, and tied to the session’s accountId."
+    }
+  },
+  "cost_usd": 0.0165644,
+  "generation_id": "gen-1785924356-zbiIPbPiztYGquTnTYoB",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.0667,
+  "capture_complete": true
+}

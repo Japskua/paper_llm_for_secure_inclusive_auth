@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:52:07.100198+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c2876b4ed426a65417ec33b6fbb9afae2da3d7affeb88cb28b5873f4558bbdcc",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Verify-token only accepts the reset token whose SHA-256 digest matches the recovery record on the caller’s own session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are stored only on the issuing session; another session cannot use the same code because digests are not shared globally."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password change only updates session.passwordHash and stage; no code invalidates other or prior sessions."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and non-HTTPS is rejected, but no minimum TLS version is explicitly pinned."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens are SHA-256-digested and passwords bcrypt-hashed, but that is hashing not encryption, and the MFA code is stored in plaintext."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email is sent and the contact value is never reflected; only a generic message and eval-only test token are returned."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type-checked, not reflected into HTML, passwords go to bcrypt, and client DOM uses textContent/escapeHtml rather than raw HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "There are no server-side redirect parameters; navigation is in-app hash routes only to this origin."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates that embed user input; delivery is simulated via API fields and client logs."
+    },
+    "10": {
+      "score": 1,
+      "why": "testResetToken and testMfaCode are returned in API JSON and written into the visible recovery test logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in session memory, but the MFA secret is the hardcoded string \"482913\" in source."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default login credentials exist; new passwords must satisfy the strong server-side policy."
+    },
+    "13": {
+      "score": 5,
+      "why": "Session and trusted-IP throttles return 429 after repeated recovery, token, password, and MFA attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery request always returns the same generic “if the contact can be used…” message regardless of the contact value."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are 32-byte randomBytes base64url values, digested and bound to the issuing session with short TTL and single use."
+    }
+  },
+  "cost_usd": 0.0365864,
+  "generation_id": "gen-1785923477-GQQqjOQZmicVD31hnoI4",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9334,
+  "capture_complete": true
+}

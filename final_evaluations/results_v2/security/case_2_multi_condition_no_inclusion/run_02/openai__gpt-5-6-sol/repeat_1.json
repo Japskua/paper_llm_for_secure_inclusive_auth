@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:13:23.325427+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Recovery tokens are bound to both the originating session ID and the fixed account binding before verification succeeds."
+    },
+    "2": {
+      "score": 1,
+      "why": "A recovery token cannot be used from another session because token.sessionId must equal the current session ID."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing the password does not invalidate or delete any existing sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server configures TLS and HSTS, but it does not explicitly require or demonstrate the latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Recovery tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, although the raw demonstration token is returned to the browser."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email mechanism is implemented, and the mock delivery exposes recovery tokens and links in the browser Logs panel."
+    },
+    "7": {
+      "score": 3,
+      "why": "Inputs receive type, length, format, and password-policy validation, but the contact value is not explicitly sanitized."
+    },
+    "8": {
+      "score": 5,
+      "why": "The generated recovery link is a relative same-site URL, and no user-controlled redirect destination is accepted."
+    },
+    "9": {
+      "score": 5,
+      "why": "All markup and recovery messages are fixed, with no user-supplied content inserted into an email or HTML template."
+    },
+    "10": {
+      "score": 1,
+      "why": "The raw recovery token and deterministic MFA code are deliberately displayed in the browser console and Logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code 482913 is hard-coded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "Although there are no conventional default login credentials, the application accepts a fixed hard-coded MFA code for every recovery."
+    },
+    "13": {
+      "score": 5,
+      "why": "Repeated invalid recovery, token, MFA, and protected password attempts trigger session-based temporary lockouts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery requests return the same generic response without checking or revealing whether the submitted contact exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery tokens contain 256 bits of cryptographic randomness and are bound to a specific session and account before use."
+    }
+  },
+  "cost_usd": 0.09029625,
+  "generation_id": "gen-1785921176-uEORAPut60qAlyscLmuW",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 2,
+    "7": 3,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

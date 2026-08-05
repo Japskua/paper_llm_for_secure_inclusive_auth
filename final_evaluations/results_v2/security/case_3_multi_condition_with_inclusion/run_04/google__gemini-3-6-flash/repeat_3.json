@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:10:32.542663+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "24a6e1467197c0ef6a9566560dbce218c9ba1da70fee6592759ec6e6f7e54b02",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are hashed and bound directly to the user's server-side session object during the recovery flow."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are unique cryptographically generated tokens validated only against the specific session's reset hash."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset flow updates the account password hash but does not clear or invalidate other active session entries in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application is served over TLS using Bun.serve configured with TLS certificate and key files."
+    },
+    "5": {
+      "score": 5,
+      "why": "User passwords are stored using Argon2id hashes and reset tokens are hashed with SHA-256 before session storage."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated recovery messages use generic phrasing and avoid disclosing personal identifiers or account status."
+    },
+    "7": {
+      "score": 5,
+      "why": "User input is validated against strict regular expressions and safely inserted into the UI via DOM text nodes."
+    },
+    "8": {
+      "score": 5,
+      "why": "Recovery links use relative URLs and strict same-origin matching without external redirect capabilities."
+    },
+    "9": {
+      "score": 5,
+      "why": "All dynamic UI elements and message outputs are constructed using DOM text node creation without evaluating unsanitized HTML or scripts."
+    },
+    "10": {
+      "score": 5,
+      "why": "System error handlers return generic user messages without exposing stack traces, private data, or internal tokens."
+    },
+    "11": {
+      "score": 1,
+      "why": "Secret codes such as the default MFA code (\"246810\") and initial password hash are hardcoded directly in the source file."
+    },
+    "12": {
+      "score": 1,
+      "why": "The codebase defines a hardcoded default account (INTERNAL_ACCOUNT) with a pre-configured login and password hash."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting enforces a 10-minute lockout period after 5 consecutive failed verification, login, or recovery attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The API uses uniform artificial timing delays and generic responses for both existing and non-existing account recovery requests."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using 32 cryptographically secure random bytes base64url-encoded and tied to the individual session."
+    }
+  },
+  "cost_usd": 0.052311,
+  "generation_id": "gen-1785924607-boGDjV7egNiKohaGT9n9",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

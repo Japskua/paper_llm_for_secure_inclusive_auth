@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:23:28.266257+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c43f687abc2a0bd6c32d9c194677456a716e23dd223e7cff75a916ca005d46d1",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "`currentRecovery()` requires `session.recoveryId` to exist and `recovery.sessionId === session.id`, so a reset code can only be verified by the session that owns it (though there is no real user account concept)."
+    },
+    "2": {
+      "score": 1,
+      "why": "False for this system: tokens are hashed and bound to the issuing session's recovery record, and `/api/verify-token` only ever compares against `currentRecovery(session).tokenHash`, so another session cannot use someone else's code."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no session-invalidation logic anywhere after completion — the `recovery_session` cookie/session remains valid (and is even TTL-refreshed) after `recovery.completed = true`, and no authenticated user sessions are revoked."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured TLS-only with cert/key, non-https URLs are rejected, and HSTS plus `upgrade-insecure-requests` are set, but no explicit minimum TLS version is pinned (it relies on Bun/OpenSSL defaults)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes and passwords as Argon2id hashes with constant-time comparison, though the raw token is returned in the JSON response and no data-at-rest encryption exists (in-memory Maps)."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email delivery exists at all; the 'delivery' is a simulated in-page log that actually prints the raw reset token and MFA code, so no email-side data guarding is implemented."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly allowlist-validated (`validContact`, `validToken` /^[a-f0-9]{64}$/, `validMfaCode`, `strongPassword`), JSON body size/content-type is limited, contact is never persisted or reflected, and all DOM output uses `textContent` under a nonce-based CSP."
+    },
+    "8": {
+      "score": 4,
+      "why": "There are no server-issued redirects or external links at all — navigation is only in-page `location.hash` — and CSP sets `form-action 'self'`, `base-uri 'none'`, so no unsafe off-site redirect is possible."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist in the codebase; the substitute simulated delivery log is built with `document.createElement`/`textContent` (no HTML/script injection), so the statement is only vacuously satisfiable."
+    },
+    "10": {
+      "score": 2,
+      "why": "The raw reset token and the MFA code are explicitly written to the visible log panel and `console.log` (`'Test reset token: ' + data.testToken`, `'Test MFA code: '`), so secrets do appear in logs even though error responses are generic."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed and never logged, but the MFA secret is hardcoded in source as `\"482913\"` and compared literally, i.e. a secret code stored in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no login/credential store, yet the fixed, hardcoded MFA code `482913` functions as a static default credential for every recovery flow."
+    },
+    "13": {
+      "score": 4,
+      "why": "`checkLimit`/`recordFailure` lock out after 3 recovery requests or 5 failed token/password/MFA attempts for a 15-minute window with a 10-minute rolling window, though counters are keyed only to the session cookie."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/recovery-request` returns the identical generic message regardless of whether the contact is valid, and even rate-limited responses return 200 with the same wording; all errors use one generic string."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are 32 bytes from `crypto.getRandomValues` (64 hex chars), single-use (`tokenUsed`), 10-minute TTL, stored hashed, and bound to the specific recovery/session."
+    }
+  },
+  "cost_usd": 0.132825,
+  "generation_id": "gen-1785921773-VnuVrzoeMJtt52Y2i6cL",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

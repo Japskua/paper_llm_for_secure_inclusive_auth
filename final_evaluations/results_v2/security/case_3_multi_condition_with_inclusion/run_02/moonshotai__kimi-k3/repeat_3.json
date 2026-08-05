@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:03:03.187329+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Each reset record carries an accountKey and replacePassword resets only accounts.get(record.accountKey), so codes are bound to the issuing account, though confirmInstruction does not bind token confirmation to the requesting session."
+    },
+    "2": {
+      "score": 2,
+      "why": "False in the IDOR sense: a token only ever resets the account it was issued for (record.accountKey is used, never user input), though any session possessing the token may confirm it."
+    },
+    "3": {
+      "score": 5,
+      "why": "True: replacePassword updates account.passwordHash but never invalidates other entries in the sessions map, so previously authenticated sessions remain valid until their 8-hour expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, HSTS (includeSubDomains) is set and x-forwarded-proto=http is rejected with 426, but no TLS minimum version is pinned so 'latest TLS version' cannot be confirmed from the code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords are hashed with Argon2id and reset tokens/identity codes are stored only as SHA-256 digests, which are appropriate algorithms (hashing rather than encryption), though MFA codes sit unhashed in the session."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email; the mock delivery returns the token in the JSON response and a URL query parameter and prints it in the page logs, though no other PII is included and Referrer-Policy is no-referrer."
+    },
+    "7": {
+      "score": 5,
+      "why": "All user inputs (identifier, token, identity value, passwords, MFA codes) pass strict allowlist regex validation, request bodies are size-bounded at 8KB, and the client renders all data via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "renderLink only constructs same-origin links with pathname '/', a recovery-test parameter and no hash, rejecting protocol-relative URLs, and the server itself issues no redirects."
+    },
+    "9": {
+      "score": 5,
+      "why": "Mock delivery and log messages are inserted exclusively via textContent and a strict nonce-based CSP forbids inline scripts, so no user-supplied HTML or script can be rendered."
+    },
+    "10": {
+      "score": 2,
+      "why": "False: the on-page Logs panel explicitly prints the reset token, recovery identity value and MFA codes (log('[mock delivery] ...')), although server error messages themselves remain generic."
+    },
+    "11": {
+      "score": 3,
+      "why": "Runtime storage is strong (Argon2id password hashes, SHA-256 token digests, no hardcoded API secrets), but the seed password 'Initial!HospitalPassword9' is hardcoded in provision() and MFA/possession codes are stored in plaintext in session and sessionStorage."
+    },
+    "12": {
+      "score": 2,
+      "why": "False: provision() creates three accounts (helena@example.com, etc.) all sharing the same hardcoded initial password, which function as usable default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, token confirmation, identity verification, MFA code and possession checks each impose a 5-minute lockout after 5 failures, and recovery issuance is rate-limited to 3 per 15 minutes per session/account."
+    },
+    "14": {
+      "score": 2,
+      "why": "False: recovery responses are distinguishable because existing accounts receive deliveryPath/testValue/testIdentityValue fields while unknown accounts receive only the generic message, and the issue rate limiter is only consumed for existing accounts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are 32-byte values from crypto.getRandomValues, stored only as SHA-256 hashes, bound to a specific accountKey, single-use and expired after 15 minutes."
+    }
+  },
+  "cost_usd": 0.131934,
+  "generation_id": "gen-1785924111-ye4Uxna4OhTwqm4xFIab",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 3,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

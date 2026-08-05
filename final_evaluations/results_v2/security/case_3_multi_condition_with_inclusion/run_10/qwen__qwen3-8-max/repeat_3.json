@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:41:58.976000+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "5def0af8851cb528c3f00ff512506269aa19299d60d5780a568a1790a19eea39",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Verification compares the submitted code or token with the per-session resetToken/manualCode using safeEqual and enforces stage/expiry."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are stored and validated only within the requesting session, so the same code does not work for another user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password change updates only the current session and account hash, while other session objects remain valid until expiry."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS certificates and HTTP is rejected, but the code does not specify or verify the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS protects transit and passwords are bcrypt-hashed, but reset codes and identifiers are stored in plaintext session state."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is sent; the simulated delivery returns and logs the manual recovery code and verification URL, exposing private reset data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are constrained by format and length validators, and the client renders dynamic values with textContent rather than HTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "Links are limited to the internal /verify path or the app's own HTTPS origin, with no external redirect mechanism."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are implemented; the mock delivery is plain text/JSON and contains no user-controlled HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic error pages avoid disclosure, but the browser Logs panel and console explicitly display recovery codes, verification URLs, and the MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is hardcoded and reset secrets are stored unencrypted in session state."
+    },
+    "12": {
+      "score": 2,
+      "why": "A fixed account hash is hardcoded and the MFA code is a fixed value, so default or shared credentials are not conclusively prevented."
+    },
+    "13": {
+      "score": 5,
+      "why": "The attempts map applies progressive delays and returns 429 after repeated failed recovery, verification, MFA, password, or login attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Unknown identifiers are routed to a sink account and recovery/login failures use generic messages, avoiding account enumeration."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token and manual code are generated with crypto.getRandomValues, are long base64url strings, and are bound to the requesting session/account."
+    }
+  },
+  "cost_usd": 0.086158,
+  "generation_id": "gen-1785926208-f1cZaj6l4dAIJVQWL46Z",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 5,
+    "8": 4,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.3333,
+  "capture_complete": false
+}

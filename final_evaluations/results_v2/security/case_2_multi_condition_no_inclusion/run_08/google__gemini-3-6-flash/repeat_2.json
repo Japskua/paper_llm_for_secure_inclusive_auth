@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:42:27.650174+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c4fd046aaec21d61dbcea92c3e7d1830bd59eb3cc9562fc7c9e6a0dc0ee90617",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verification endpoint checks the hash of the supplied token directly against resetTokenHash stored on the current session object."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset token hashes are bound to individual session objects, meaning a code issued to one session cannot match or validate in another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password updating only modifies state on the current active session object and does not revoke or invalidate other sessions in the session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application runs via Bun.serve with TLS certificate files enabled and sends Strict-Transport-Security headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords are hashed with bcrypt and reset/MFA tokens are hashed with SHA-256 before being stored."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated messages and UI notices use generic responses that omit sensitive account or personal data."
+    },
+    "7": {
+      "score": 5,
+      "why": "All user input is strictly validated against regular expression allowlists and rendered on the client using safe DOM text properties."
+    },
+    "8": {
+      "score": 5,
+      "why": "All routes and navigation use same-origin relative paths protected by standard CSP form-action directives."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not use external email templates or interpolate user inputs into HTML email bodies."
+    },
+    "10": {
+      "score": 1,
+      "why": "Client-side scripts explicitly write raw recovery tokens and security codes into the on-screen activity log and console output."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA security code is hardcoded directly as a string constant (MFA_CODE = '482915') in the backend source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "There are no pre-configured default account credentials present in the application."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification logic blocks token and MFA code attempts for 60 seconds after 5 consecutive wrong tries."
+    },
+    "14": {
+      "score": 5,
+      "why": "The account recovery API returns identical generic messaging regardless of whether the submitted account input exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using 32 bytes of cryptographically secure random values via crypto.getRandomValues()."
+    }
+  },
+  "cost_usd": 0.057195,
+  "generation_id": "gen-1785922917-qqFbEssKHALtQPbYqMaL",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

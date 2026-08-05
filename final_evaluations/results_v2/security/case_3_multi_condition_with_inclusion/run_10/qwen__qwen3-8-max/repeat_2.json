@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:40:20.554424+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "5def0af8851cb528c3f00ff512506269aa19299d60d5780a568a1790a19eea39",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The /api/verify handler compares the submitted code or token with the value stored in the current session, but it does not independently prove ownership of the supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each recovery code or token is stored only in the session that requested it, so a code from one session will not verify in another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing a password updates the account hash and current session only, while other unexpired session entries are not revoked."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is started with TLS certificates and HTTP via x-forwarded-proto is rejected, but no minimum or latest TLS version is explicitly configured or observable."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset codes and identifiers are kept as plaintext values in server-side session state, although passwords are bcrypt hashed and TLS protects transport."
+    },
+    "6": {
+      "score": 1,
+      "why": "The recovery delivery is simulated by returning and logging the manual code and verification URL, so the message does not hide the secret recovery data."
+    },
+    "7": {
+      "score": 4,
+      "why": "User inputs are constrained by validation regexes and length checks, and client-side dynamic output uses textContent instead of innerHTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "The only verification link is a same-origin /verify path or hardcoded localhost URL, and no open redirect or external redirect target is present."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates in the code, and the simulated delivery messages are plain text rendered without user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The visible Logs panel and console.log output expose the manual recovery code and MFA code, even though error pages are generic."
+    },
+    "11": {
+      "score": 1,
+      "why": "A static MFA code and an initial bcrypt hash are embedded in the source, so secret material is present in code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The fixed MFA code 246810 is hardcoded and accepted, which is a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "The fail and allowed functions impose progressive 429 delays after repeated failed recovery, verify, MFA, password, and login attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Unknown identifiers are sent to a sink account and generic messages are returned, avoiding disclosure of whether an identifier exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "Recovery codes are generated with crypto.getRandomValues as high-entropy base64url strings and stored per session/account request, though identifier ownership is not separately verified."
+    }
+  },
+  "cost_usd": 0.061438,
+  "generation_id": "gen-1785926198-34xcb25s82CsSsRXZkWi",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 4,
+    "8": 4,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 2.9333,
+  "capture_complete": false
+}

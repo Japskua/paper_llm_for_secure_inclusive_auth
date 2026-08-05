@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:31:36.499059+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are looked up by hash and tied to a userId and session before verified state is set."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token record is bound to the userId created during recovery and the issuing session, so it cannot be used for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset changes the user's password hash but does not invalidate existing server-side sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is configured for HTTPS and sends HSTS, but the code does not specify or prove the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords and reset tokens are hashed and TLS protects transit, but reset codes and user records are not encrypted at rest."
+    },
+    "6": {
+      "score": 1,
+      "why": "No actual email message is implemented; recovery codes are returned directly in API responses rather than guarded email."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email, password, code, and token inputs are validated with format and policy checks, and user input is not rendered as HTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "No redirect endpoints or external redirect links are present, and CSP sets form-action 'self'."
+    },
+    "9": {
+      "score": 1,
+      "why": "The code contains no email templates, so their safety and absence of user-injected scripts cannot be established."
+    },
+    "10": {
+      "score": 1,
+      "why": "The page script writes delivery authorization codes, recovery tokens, and MFA codes to the visible activity log/console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are Argon2id hashed, the MFA and delivery authorization codes are hardcoded secrets in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "A demo user is created with a known hardcoded initial password that can be used until changed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, delivery, and reset-request attempts are limited and locked after repeated failures."
+    },
+    "14": {
+      "score": 4,
+      "why": "Reset and login responses are generic for unknown identifiers, although no explicit timing-side-channel mitigation is shown."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is generated with randomBytes(32), is a 64-character hex value, and is stored with the target userId."
+    }
+  },
+  "cost_usd": 0.058216,
+  "generation_id": "gen-1785925694-VK21nRQAoBVLDQbC2wpj",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 4,
+    "9": 1,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 3.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 2.8667,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:08:32.497441+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by verifying `record.sessionId === session.id` in `/api/reset/verify`."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for any other user because it is tied to a specific session (`record.sessionId`)."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after password reset because `session.mfaVerified` is set to `false` and no explicit session reuse is allowed."
+    },
+    "4": {
+      "score": 5,
+      "why": "The website uses HTTPS with TLS (certs provided via `Bun.serve` with `tls` config)."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset codes are hashed (SHA-256) but not encrypted; user data is not explicitly encrypted in the code."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages hide private user data (generic message: 'If eligible, recovery instructions have been prepared.')."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., email, passwords) is validated via `validContact` and `passwordIssue` functions."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are safe (only internal navigation via `navigate` and `link` functions)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are not user-controlled; the system uses hardcoded generic messages."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose private information (generic messages like 'Service unavailable')."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are hashed with Argon2id (`Bun.password.hash`), and no plaintext passwords are stored in code."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials are present; passwords are dynamically hashed and verified."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system blocks repeated wrong attempts via `blocked` and `recordAttempt` (e.g., 5 attempts for login)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether a username/email exists (generic message for all recovery requests)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset codes are random (64-char hex), complex, and user-specific (tied to `session.id`)."
+    }
+  },
+  "cost_usd": 0.018066,
+  "generation_id": "gen-1785920908-MYbtDuRgkmUC8rGh2mSG",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 3,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.8667,
+  "capture_complete": true
+}

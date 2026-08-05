@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:08:28.061252+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The `/api/reset/verify` route checks that `record.sessionId` matches the current session ID (`session.id`)."
+    },
+    "2": {
+      "score": 1,
+      "why": "The system explicitly prevents session reuse for reset codes by asserting `record.sessionId === session.id`."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates `passwordHash` but does not invalidate other existing sessions stored in the `sessions` map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application serves TLS via `Bun.serve` and redirects all HTTP requests to HTTPS."
+    },
+    "5": {
+      "score": 1,
+      "why": "MFA reset codes are stored unencrypted in memory and sensitive data relies on cryptographic hashing rather than encryption."
+    },
+    "6": {
+      "score": 5,
+      "why": "The system does not send emails and uses generic response messages that do not expose private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated using regex patterns on the server and safely rendered in the frontend via `textContent`."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects strictly target local HTTPS URLs and relative paths, preventing unsafe external redirects."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates or dynamic HTML email generation exist in the application codebase."
+    },
+    "10": {
+      "score": 1,
+      "why": "Simulated recovery tokens and MFA codes are output to the browser console and rendered in the on-screen log list."
+    },
+    "11": {
+      "score": 1,
+      "why": "MFA codes `482913` and `741852` are hardcoded directly in the application source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "Initial authentication relies on an environment variable for `passwordHash` and does not define default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting via `recordAttempt` blocks further attempts after 3 to 5 failures with 429 status codes."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery route returns identical generic messaging regardless of whether the provided contact is valid or registered."
+    },
+    "15": {
+      "score": 1,
+      "why": "The secondary reset MFA code is hardcoded to static value `482913` instead of being random and user-specific."
+    }
+  },
+  "cost_usd": 0.0485325,
+  "generation_id": "gen-1785920884-i8FRlBtq5VhTrSgshFg7",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 1
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

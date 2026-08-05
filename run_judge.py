@@ -188,6 +188,8 @@ def build_tables(args) -> Dict[str, int]:
             "rubric_sha256": r["rubric_sha256"][:12],
             "app_ts_sha256": (r.get("app_ts_sha256") or "")[:12],
             "screenshot_count": r.get("screenshot_count", 0),
+            "screenshots_available": r.get("screenshots_available", 0),
+            "screenshots_sampled": bool(r.get("screenshots_sampled")),
         }
         row.update({f"c_{k}": v for k, v in r["constructs"].items()})
         artifact_rows.append(row)

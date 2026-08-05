@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:23:22.409236+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "3769d8d72d3a6dbf94059901d58bea2f193d416f5864a40b1cd79da802df6e1a",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token is stored in the session with an accountId and /api/reset/verify accepts only the exact pending token for that session/account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is accepted only when it matches the current session's pending reset record, so it does not work for another user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password change updates the account hash but does not invalidate existing session records, so previously authenticated sessions remain usable."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server serves HTTPS with a TLS certificate and redirects HTTP to HTTPS, but no TLS protocol version is specified or observable to confirm the latest version."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS and bcrypt password hashing are used, but reset tokens and recovery email data are stored/exposed unencrypted rather than encrypted with appropriate algorithms."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent, and the mock delivery exposes the private reset token through /api/recovery/status and the client Logs rather than guarding it."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email is regex-validated, passwords are policy-checked, reset tokens are format-checked, and client-side messages are rendered with textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a fixed redirect to https://localhost with the original path/search, and client navigation uses internal relative routes."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present, and the simulated messages are fixed strings without user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses and server logs are generic, but the page Logs display the mock reset token and MFA codes, exposing private tokens."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but a demo password hash is hardcoded in the source and mock secret codes are exposed rather than kept securely out of code/UI."
+    },
+    "12": {
+      "score": 2,
+      "why": "A fixed demo account with a hardcoded bcrypt password hash remains usable for login until changed, leaving preset-credential risk."
+    },
+    "13": {
+      "score": 5,
+      "why": "isAllowed and failure enforce per-session and global lockouts after repeated failed login, MFA, and reset-verification attempts."
+    },
+    "14": {
+      "score": 2,
+      "why": "The recovery request response is generic, but /api/recovery/status reveals a reset token only when the email matches an account, enabling enumeration."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are generated with crypto.randomBytes, are 43-character base64url values, and are associated with an accountId in the session reset record."
+    }
+  },
+  "cost_usd": 0.084354,
+  "generation_id": "gen-1785925157-ZiKDTpq971FRrKS67PvR",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.0667,
+  "capture_complete": true
+}

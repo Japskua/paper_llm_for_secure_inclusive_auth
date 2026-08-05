@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:50:57.418272+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "verify-reset compares the submitted token hash with the hash stored in the current session, but it does not bind the token to an account or email address."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is accepted only when its hash matches the hash stored in the same session, so the same code does not work for another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "set-password changes only the current session and global password hash, leaving existing sessions valid until their normal expiry."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires TLS certificates and serves HTTPS through Bun.serve, but the code does not show or enforce a specific latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens and passwords are hashed with SHA-256 and Argon2id, but the code does not encrypt reset codes or user data."
+    },
+    "6": {
+      "score": 2,
+      "why": "The simulated delivery exposes the recovery token and fixed MFA code in the API response and client logs instead of guarding them in a private email."
+    },
+    "7": {
+      "score": 4,
+      "why": "User input is constrained by safeEmail, safeToken, strongPassword, JSON checks, and safe DOM text handling."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation only changes local hash routes such as #verify and #portal, and no external redirect URLs are used."
+    },
+    "9": {
+      "score": 3,
+      "why": "No actual email templates are present, so unsafe email HTML or scripts cannot be observed, but email safety cannot be fully confirmed."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error messages are generic, but the client-side logs explicitly display the recovery token and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords and reset tokens are hashed, but the fixed MFA code 246810 and initial password string appear in the source code."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no default username/password login endpoint, but the hardcoded MFA code 246810 is accepted as a default secret."
+    },
+    "13": {
+      "score": 4,
+      "why": "rateAllowed limits a session to five API attempts within one minute and returns HTTP 429 when the limit is reached."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset endpoint always returns the same generic eligible-account message and does not look up or reveal whether the email exists."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset token is random and complex, but it is bound to a session rather than to a distinct user identity."
+    }
+  },
+  "cost_usd": 0.077406,
+  "generation_id": "gen-1785919611-zjrWcGnDQAUzJ0MHA8R8",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.0667,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:58:05.731346+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "verify-reset treats the code as a bearer token: it looks up resetTokens by the code alone without checking the email or requesting session, only binding the resulting grant to the verifier's sid afterward."
+    },
+    "2": {
+      "score": 4,
+      "why": "Because verification is not tied to the user or session that requested it, any other user who obtains a valid unused code can successfully consume it (mitigated only by randomness and single-use deletion)."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no session invalidation on password change: request-reset clears resetCompletedAccountId but never sets authenticated=false, so a previously authenticated session keeps working after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with a TLS cert/key and an HSTS header is sent, though the TLS version is not explicitly pinned (Bun defaults apply) and the cert appears to be a local demo cert."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with Argon2id, but reset codes are stored as plaintext values in the in-memory resetTokens map rather than being hashed/encrypted at rest."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery message contains only the generated code and no PII, and the request-reset response is the generic 'If that email matches an account...' for all inputs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are trimmed, length-capped, and validated (email regex, token/password limits) and all user-derived display uses textContent rather than HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only link generated is built from location.origin with an encodeURIComponent'd token, there are no user-controlled redirects, and CSP sets form-action 'self'."
+    },
+    "9": {
+      "score": 5,
+      "why": "The simulated email template is a fixed server-side string containing only the generated code, with no user input or HTML, and it is rendered via textContent."
+    },
+    "10": {
+      "score": 2,
+      "why": "Although error messages are generic, the demo Logs panel and API responses deliberately display the reset code, recovery link, and MFA code, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 3,
+      "why": "Passwords are stored only as Argon2id hashes, but the MFA secret '246810' is hardcoded directly in the source, violating the 'no secret codes in the code' part of the statement."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default or usable password exists (the fixture is an Argon2id hash with no corresponding plaintext) and login is only possible after completing a verified reset flow."
+    },
+    "13": {
+      "score": 5,
+      "why": "Server-side rate limiting with temporary blocking (HTTP 429) is enforced on reset requests (3/15min), code verification (5/5min), login (5/5min), and MFA attempts (5/5min)."
+    },
+    "14": {
+      "score": 4,
+      "why": "Request and verify responses are identical whether or not the email exists, though a timing difference (Argon2 hashing only for real accounts) and the inability to sign in later give minor indirect signals."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset code is a 256-bit CSPRNG hex value with a 15-minute expiry mapped to the account record, though it functions as a bearer token rather than being bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.1118022,
+  "generation_id": "gen-1785923778-cOF1QOapPlwTB4OwJICk",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 2,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 3,
+    "12": 4,
+    "13": 5,
+    "14": 4,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.0,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 3.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

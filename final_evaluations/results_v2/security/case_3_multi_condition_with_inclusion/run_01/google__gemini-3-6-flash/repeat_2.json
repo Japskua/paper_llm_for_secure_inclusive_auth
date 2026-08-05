@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:55:33.362535+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset codes are paired directly with the corresponding account ID in the server's resetTokens map during generation and verification."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are tied strictly to a specific user's account ID and are deleted upon use, preventing them from working for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Resetting a password updates the account's password hash but does not revoke or clear existing active session entries stored in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server enables HTTPS via TLS certificate options and enforces Strict-Transport-Security headers."
+    },
+    "5": {
+      "score": 2,
+      "why": "While user passwords are hashed with Argon2id, generated reset codes are stored as plain hexadecimal strings in server memory without encryption or hashing."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated recovery deliveries and API responses use generic text that does not reveal private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are trimmed, length-limited, normalized, and rendered into the DOM exclusively via safe textContent methods."
+    },
+    "8": {
+      "score": 5,
+      "why": "Recovery links are safely constructed using relative paths derived directly from location.origin."
+    },
+    "9": {
+      "score": 5,
+      "why": "Delivery logs use fixed format strings and safe token variables, preventing script or HTML injection into email content."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error responses and server logs return standard generic messages without exposing tokens or sensitive user data."
+    },
+    "11": {
+      "score": 5,
+      "why": "No plaintext passwords or secret keys exist in the codebase; passwords are stored as Argon2id hashes and tokens are dynamically generated."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application includes no default plaintext credentials and restricts sign-in until a password reset is completed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Server-side rate limiting tracks request frequencies and temporarily blocks users after exceeding allowed attempt thresholds."
+    },
+    "14": {
+      "score": 5,
+      "why": "The password reset request endpoint returns an identical success message regardless of whether the email address exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated as 64-character cryptographically secure random hexadecimal strings bound to the requesting account."
+    }
+  },
+  "cost_usd": 0.055245,
+  "generation_id": "gen-1785923704-UsaMsDiAiBStdvJxTi8B",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

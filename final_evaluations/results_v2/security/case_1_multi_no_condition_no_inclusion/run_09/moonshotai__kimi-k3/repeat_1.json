@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:01:11.281496+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Validation compares the submitted token strictly against the server-side session's stored resetToken, which is only set when the request was for the known mock account, binding the code to that user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A code is only accepted if it equals session.resetToken of the issuing session, so the same code fails for any other session/user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password update only clears the reset token fields; the session itself is never invalidated and continues on to MFA and authenticated state, and no cross-session invalidation exists."
+    },
+    "4": {
+      "score": 3,
+      "why": "HTTPS is enforced with TLS certs, HSTS, and an HTTP rejection port, but no TLS version is configured in the code, so 'latest TLS version' cannot be confirmed."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are bcrypt-hashed at cost 12, but reset tokens are stored in plaintext session memory and the MFA code is a hardcoded plaintext constant."
+    },
+    "6": {
+      "score": 4,
+      "why": "No actual email is sent — delivery is simulated locally in the browser — and the simulated message contains only the reset code, no other private user data."
+    },
+    "7": {
+      "score": 4,
+      "why": "The server validates email, token, and password formats, and the client builds all UI via createElement/textContent so user input is never rendered as HTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects at all; navigation is internal screen state and origin validation restricts requests to https://localhost:3000."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates; the simulated delivery message is system-generated plain text inserted via textContent, with CSP nonces blocking any injected scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "The reset code and MFA code are deliberately written into the on-page log panel and via console.log, so tokens do appear in logs despite generic error pages."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are stored only as bcrypt hashes, but the MFA secret '482913' is hardcoded directly in the source code."
+    },
+    "12": {
+      "score": 3,
+      "why": "No default username/password login exists and passwords must be user-set under a strong policy, but the fixed hardcoded MFA code acts like a shared default credential."
+    },
+    "13": {
+      "score": 4,
+      "why": "Per-session rate limiting throttles reset requests (3/15min), reset code guesses (5/15min), and MFA attempts (5/15min)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset-request endpoint returns the identical generic message and an opaque token for every valid-format email, revealing nothing about account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 256-bit cryptographically random base64url strings, single-use, 15-minute expiry, and stored only for the specific session/account that requested them."
+    }
+  },
+  "cost_usd": 0.108681,
+  "generation_id": "gen-1785920241-9LrhjIyS3FGJK57HN9AG",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6,
+  "capture_complete": false
+}

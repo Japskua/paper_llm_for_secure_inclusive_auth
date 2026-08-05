@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:19:51.507472+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "3769d8d72d3a6dbf94059901d58bea2f193d416f5864a40b1cd79da802df6e1a",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset verify compares the supplied token only to session.reset.token, which was issued with a bound accountId for that session."
+    },
+    "2": {
+      "score": 1,
+      "why": "The reset token lives only on the issuing session and must match that session’s reset record, so it does not work for another user’s session."
+    },
+    "3": {
+      "score": 5,
+      "why": "password/change marks the reset used and clears recovery flags but never invalidates other sessions’ authenticatedAccountId values."
+    },
+    "4": {
+      "score": 5,
+      "why": "Bun.serve is started with TLS cert/key on 3443 and plain HTTP on 3000 permanently redirects to HTTPS with HSTS set."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are bcrypt-hashed, but reset tokens and MFA codes are stored/returned as plaintext secrets in session memory rather than encrypted."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email body is built from user input; responses use a generic message and logs avoid account detail, though mock tokens are exposed in-session for the demo."
+    },
+    "7": {
+      "score": 5,
+      "why": "Emails are normalizeEmail-validated, passwords go through validPassword, bodies are JSON-parsed objects, and client UI uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects are fixed to https://localhost and client navigation only uses hard-coded same-origin paths with no user-controlled URL."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates that embed user-supplied HTML or scripts; delivery is only simulated server-side."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error JSON is generic, but recovery/status and the client Logs deliberately surface mockDeliveryToken and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "The demo account’s bcrypt password hash is hard-coded in source; runtime secrets are only in memory, not absent from the codebase entirely."
+    },
+    "12": {
+      "score": 2,
+      "why": "A single demo account with a fixed precomputed password hash is embedded and is the only login target, i.e. default demo credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "isAllowed/failure enforce per-session and global attempt windows with lockouts on login, reset-verify, and MFA verify."
+    },
+    "14": {
+      "score": 5,
+      "why": "recovery/request always returns the same generic ‘If an eligible account matches…’ message whether or not the email exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are randomBytes(32) base64url values bound to session.reset.accountId and checked as user/session-specific."
+    }
+  },
+  "cost_usd": 0.0186172,
+  "generation_id": "gen-1785925150-SUaVaWhjPtPJRrY4qmJ1",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

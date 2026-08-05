@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:33:20.843322+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The verify-token handler compares the submitted token with the token stored in the current session using timingSafeEqual, but there is no separate user account identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are generated per session and validated only against that session's stored token, so the same code does not work across other sessions or users."
+    },
+    "3": {
+      "score": 4,
+      "why": "The same session object and cookie continue through password reset and sign-in without session invalidation or session identifier rotation."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires TLS certificates and serves HTTPS, but the code does not configure or verify that the latest TLS version is used."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens and MFA codes are held in server session state without encryption, and only passwords are bcrypt-hashed."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no real email message, and the simulated delivery log exposes the reset token rather than guarding private data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Account, token, and MFA inputs are whitelist-validated and rendered with textContent, although the code does not implement general sanitization for every input."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a hardcoded HTTP-to-HTTPS redirect to https://localhost:3000/, with no user-controlled redirect target."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the source code, so the safety of email templates cannot be observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error responses are generic, but the client-side simulated logs display the reset token and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is hardcoded as 482913 and stored in plaintext session state."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default username or password exists, but the fixed hardcoded MFA code acts as a default second-factor secret."
+    },
+    "13": {
+      "score": 5,
+      "why": "The code tracks failures per action and blocks further attempts for 60 seconds after five failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns generic messages and does not check or reveal whether an account identifier exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are generated with crypto.getRandomValues and bound to the session, but no actual user account identity makes them only session-specific."
+    }
+  },
+  "cost_usd": 0.078402,
+  "generation_id": "gen-1785922110-LTh5DyoDHpVutPXQaFws",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.1334,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 2,
+  "judged_at": "2026-08-05T10:11:33.106163+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "0be553360932f12d1a5bea672dc6e8e0d645f1196fb57be45010ded64f5f9480",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset token is verified only against the recovery record stored in the current session and tied to an existing account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is accepted only when the current session has a matching live recovery record, so it is not valid for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset changes the account hash but does not revoke or delete other existing sessions, so prior authenticated sessions can remain valid."
+    },
+    "4": {
+      "score": 3,
+      "why": "HTTPS/TLS is configured and enforced, but the code does not specify or prove the latest TLS protocol version."
+    },
+    "5": {
+      "score": 3,
+      "why": "TLS protects data in transit and passwords/token hashes use strong algorithms, but reset codes and in-memory user data are not explicitly encrypted at rest."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email is sent; the simulated delivery does not include private user data, but it does expose the recovery code and email behavior is not implemented."
+    },
+    "7": {
+      "score": 4,
+      "why": "User inputs are constrained by validation patterns and rendered via textContent, although there is no general-purpose sanitization library."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application only uses same-origin API calls and hash-based navigation, with no external redirect targets."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present, so unsafe user-controlled email HTML or scripts cannot be observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client-side logs and console output display mock recovery tokens and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is a hardcoded plaintext value used as a secret."
+    },
+    "12": {
+      "score": 2,
+      "why": "The startup password is random, but the fixed MFA code functions as a default second-factor secret."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery-code verification, and MFA verification all lock or throttle after repeated failed attempts."
+    },
+    "14": {
+      "score": 1,
+      "why": "The recovery page embeds the mock account/reference identifier in the form, revealing that identifier to any visitor."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is generated with randomBytes, has a long base64url format, and is bound to the session/account recovery record."
+    }
+  },
+  "cost_usd": 0.057478,
+  "generation_id": "gen-1785924471-ZjhOmVoJFvkBI4SmObyz",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 3,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

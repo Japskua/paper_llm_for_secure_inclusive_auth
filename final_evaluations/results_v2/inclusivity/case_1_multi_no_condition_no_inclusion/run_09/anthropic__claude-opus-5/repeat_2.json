@@ -1,0 +1,113 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:59:14.091335+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 5,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_reset_instructions_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_set_new_password.png",
+    "step_05_new_password_entered_INCOMPLETE.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All five screens are static, flat pages with no animation, carousels, or modal pop-ups — only a plain banner, one card, and a collapsible log section."
+    },
+    "2": {
+      "score": 4,
+      "why": "Headings ('Reset your password', 'Verify reset code') are large and bold and the primary action is a solid blue button, though the persistent 'Protect your account' banner sits above and competes with the actual task."
+    },
+    "3": {
+      "score": 2,
+      "why": "The reset code she needs is buried inside a collapsed 'Logs (simulated delivery and verification events)' panel, which no ordinary user would think to open, and step 5 shows the flow dead-ending on the same error screen."
+    },
+    "4": {
+      "score": 2,
+      "why": "She must carry a 40-character random code ('gdk6MnuDHxAqFnoYNY39DlzMY-esxweTpLBFokP9e_k') from a log panel to a different screen, plus remember which of the two header tabs to use and that codes are single-use and expiring."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager hint, no autofill affordance, no 'remember me' checkbox, and no show/paste helper appears on any of the five screenshots."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing is saved or visually recognizable — the only familiar element is her manually typed email (helena@example.test) echoed back in step 2; the reset code is opaque random text."
+    },
+    "7": {
+      "score": 4,
+      "why": "Sentences are short and plainly worded, but items like 'simulated delivery log', 'https://localhost:3000', and the monospace log text add unnecessary technical reading load."
+    },
+    "8": {
+      "score": 2,
+      "why": "The red message 'That reset code is invalid, expired, or has already been used' lists three possible causes without saying which applies or giving any recovery instruction, and it reappears unchanged in step 5."
+    },
+    "9": {
+      "score": 1,
+      "why": "No field shows a sample value, format hint, or placeholder — the email and reset-code inputs are entirely blank with no example, and no password-composition example is shown."
+    },
+    "10": {
+      "score": 3,
+      "why": "The two available actions ('Verify code' / 'Request another code', 'Send reset instructions' / 'Enter reset code') are clearly labelled, but there is no visible choice between password, code, or biometric login methods at all."
+    },
+    "11": {
+      "score": 5,
+      "why": "Each screen presents at most two buttons in the card plus two header links, so the user is never faced with a crowded set of options."
+    },
+    "12": {
+      "score": 2,
+      "why": "Step 2 confirms 'reset instructions have been prepared' and step 4 shows an error, but step 5 (labelled INCOMPLETE) is visually identical to step 4 with no confirmation, progress indicator, or success state, so the outcome of the final action is unclear."
+    },
+    "13": {
+      "score": 3,
+      "why": "Each card carries one or two lines of guidance and a standing security tip, but there are no contextual tips, tooltips, or help link for the unfamiliar code-retrieval step."
+    },
+    "14": {
+      "score": 3,
+      "why": "A 'Request another code' button and editable, value-retaining fields allow retrying, but the identical error in steps 4 and 5 shows the retry does not actually get her past the block."
+    },
+    "15": {
+      "score": 5,
+      "why": "Header, blue rule, security banner, card layout, typography, and button styling are identical across all five screens, so the pattern is learnable."
+    }
+  },
+  "cost_usd": 0.08676,
+  "generation_id": "gen-1785920318-IF7XKf6ZJLmUuVmOj28D",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 2,
+    "4": 2,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 2,
+    "9": 1,
+    "10": 3,
+    "11": 5,
+    "12": 2,
+    "13": 3,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 1.6667,
+    "comprehension": 2.3333,
+    "decision_making": 3.3333,
+    "learning": 3.6667
+  },
+  "overall": 2.9333,
+  "capture_complete": false
+}

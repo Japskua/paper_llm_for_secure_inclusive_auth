@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:43:33.862095+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c4fd046aaec21d61dbcea92c3e7d1830bd59eb3cc9562fc7c9e6a0dc0ee90617",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "Reset tokens are bound to a session, but the submitted account is never stored or linked to a user identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is validated against its issuing session's hash and therefore does not work in another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset completion does not invalidate any other existing sessions, which remain usable until their normal expiration."
+    },
+    "4": {
+      "score": 3,
+      "why": "The Bun server uses TLS and sends HSTS, but the code does not explicitly require or demonstrate the latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, although encryption of broader user or session data is not demonstrated."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email system is implemented, while the simulated delivery exposes the reset token but does not include submitted account or patient data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Account, token, MFA, and password inputs are constrained by allowlists, length limits, and format validation before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The generated reset path is an internal fixed path and the client constructs its link using the current same-origin location."
+    },
+    "9": {
+      "score": 5,
+      "why": "Simulated delivery content contains only generated tokens and fixed internal paths, and dynamic output is written with textContent rather than HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client deliberately displays and console-logs both the reset token and the fixed MFA code."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords and issued codes are hashed in session storage, the MFA code 482915 is hard-coded in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "There are no default username/password credentials, but every session receives the same hard-coded MFA code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset-token and MFA verification are blocked for one minute after five failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Every syntactically valid account submission receives the same response and a recovery token without checking or revealing account existence."
+    },
+    "15": {
+      "score": 3,
+      "why": "Reset tokens are cryptographically random and complex but are bound only to a session, not to a stored or verified user identity."
+    }
+  },
+  "cost_usd": 0.047295,
+  "generation_id": "gen-1785922877-Rt7ORvCDnDFuRsR94JP0",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

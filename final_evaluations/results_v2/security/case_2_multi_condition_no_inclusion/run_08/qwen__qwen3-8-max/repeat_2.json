@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:46:16.771860+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c4fd046aaec21d61dbcea92c3e7d1830bd59eb3cc9562fc7c9e6a0dc0ee90617",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The /api/verify-token handler compares the submitted token hash with the resetTokenHash stored in the current session and rejects mismatches."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are stored per session, so a token issued for one session is not valid for another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates only the active session object and does not invalidate or delete other sessions in the sessions Map."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS and HTTPS is enforced, but the code does not specify or verify the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens and MFA codes are only SHA-256 hashed and passwords are bcrypt-hashed, while no encryption of user data is implemented."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email flow, and the simulated delivery exposes the recovery token in the UI and console log rather than guarding it."
+    },
+    "7": {
+      "score": 5,
+      "why": "Account, token, and password inputs are validated with restrictive allowlist regexes, and dynamic output uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link is the internal /reset path and the client does not redirect to external or user-controlled URLs."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present, and simulated delivery output is plain text, but the absence of templates makes direct confirmation limited."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client-side activity log and console explicitly print the reset token and MFA code, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are hashed with bcrypt, but the MFA code is hardcoded as MFA_CODE = 482915 in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The fixed hardcoded MFA code 482915 acts as a default credential that can be used by any session after password reset."
+    },
+    "13": {
+      "score": 5,
+      "why": "Both reset-token and MFA verification increment failure counters and block further attempts for 60 seconds after five failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the same eligibility message without checking or revealing whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated with crypto.getRandomValues(32 bytes), validated by format, hashed, and bound to the issuing session."
+    }
+  },
+  "cost_usd": 0.063072,
+  "generation_id": "gen-1785922947-DPxTpq3nIJtMGb9RpBa2",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

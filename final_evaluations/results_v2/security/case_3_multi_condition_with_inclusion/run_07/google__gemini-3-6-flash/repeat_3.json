@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 2,
+  "judged_at": "2026-08-05T10:23:58.491981+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system ties recovery records to the user's specific session ID and verifies that the record matches the requesting session."
+    },
+    "2": {
+      "score": 1,
+      "why": "The recovery record is explicitly bound to the session ID of the user who requested it, preventing other sessions from using it."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password update endpoint modifies the password hash without clearing or invalidating other existing user sessions in the session store."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server is configured with Bun's native TLS capabilities and enforces strict HSTS security headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords and recovery tokens are hashed using bcrypt with a cost factor of 10 prior to storage."
+    },
+    "6": {
+      "score": 5,
+      "why": "The system uses generic messaging and does not expose private user details during the recovery process."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are sanitized using character allowlists, length limits, control character checks, and client-side HTML escaping."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation and redirection are strictly controlled using a hardcoded whitelist of safe internal application routes."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not insert user input into executable HTML email templates."
+    },
+    "10": {
+      "score": 5,
+      "why": "Global error catch blocks log generic fallback messages without displaying stack traces, tokens, or private data."
+    },
+    "11": {
+      "score": 1,
+      "why": "Default account passwords and MFA verification codes are hardcoded in plaintext within the source file."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system includes hardcoded default credentials for a demo account that can be used to authenticate."
+    },
+    "13": {
+      "score": 5,
+      "why": "Throttling mechanisms lock out users after multiple failed attempts across login, MFA, and code verification endpoints."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery request responses return identical success messaging regardless of whether the provided identifier exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset tokens are generated using 32 cryptographically secure random bytes and bound to the user session."
+    }
+  },
+  "cost_usd": 0.0318963,
+  "generation_id": "gen-1785925421-YSP7f4FgilROBzFzR42f",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

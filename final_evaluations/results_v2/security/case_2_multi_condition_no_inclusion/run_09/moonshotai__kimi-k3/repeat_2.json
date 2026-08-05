@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:49:00.002573+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Verification requires equalSecret(session.resetTokenHash, suppliedHash) plus token.sessionId === session.id and token.accountId === mockAccount.id, so the code is strictly bound to its owning session and account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code cannot be used by anyone else: /api/verify-reset rejects tokens whose sessionId or accountId do not match the current session, so the statement is false."
+    },
+    "3": {
+      "score": 5,
+      "why": "The reset-password handler never invalidates other sessions (the sessions map is untouched on password change), so any previously established sessions remain valid until their 30-minute TTL expires."
+    },
+    "4": {
+      "score": 4,
+      "why": "HTTPS is enforced with a TLS listener, HSTS (max-age=31536000; includeSubDomains), and a 308 HTTP→HTTPS redirect to a fixed origin, but no TLS version is explicitly pinned (platform defaults are used)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes, passwords as bcrypt (cost 12), and the account email as a SHA-256 hash — these are appropriate one-way hashes rather than reversible encryption."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email channel; the simulated delivery returns an identical privacy-neutral message with a random (possibly decoy) token that does not confirm account existence or expose account data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email, token, and password inputs are validated (format, length, payload size caps) and the client renders all dynamic values via textContent, though the server performs validation rather than explicit sanitization."
+    },
+    "8": {
+      "score": 5,
+      "why": "The HTTP listener builds redirects only from the fixed CONFIGURED_HTTPS_ORIGIN and rejects untrusted Host headers (421), and the only client link is a relative '/reset' URL."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user input is ever rendered as HTML or script — the static shell uses a nonce-based CSP (default-src 'none', script-src nonce) and the client inserts content exclusively with textContent."
+    },
+    "10": {
+      "score": 2,
+      "why": "The in-page 'Logs' panel explicitly displays the recovery token ('Privacy-neutral test recovery token: ...') and the MFA code, so tokens are shown in a log despite error responses being generic."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but a secret code is hardcoded in the source (session.mfaCode = \"246810\") and the initial credential's hash constant is embedded in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system ships with a built-in initial password for the single account (precomputed bcrypt hash constant in source), i.e., a default credential exists, compounded by the hardcoded MFA code '246810'."
+    },
+    "13": {
+      "score": 5,
+      "why": "Failed verifications increment a counter that locks recovery after 5 attempts, reset requests are throttled to 3 per 10-minute window, and MFA is limited to 5 attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Every /api/request-reset response returns the identical message and a same-shaped random token (a decoy for non-matching addresses), so account existence is not revealed."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 32-byte CSPRNG base64url values (256 bits), bound to the account ID and session ID, single-use, and expire after 15 minutes."
+    }
+  },
+  "cost_usd": 0.096528,
+  "generation_id": "gen-1785923261-YH5kSCeoXxtOjLPtkaLm",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

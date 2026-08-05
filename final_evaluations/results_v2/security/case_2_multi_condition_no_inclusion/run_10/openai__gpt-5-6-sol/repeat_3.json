@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:50:29.076375+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c2876b4ed426a65417ec33b6fbb9afae2da3d7affeb88cb28b5873f4558bbdcc",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "The reset token is bound to a recovery session, but no user account or submitted contact value is stored or associated with it."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is verified only against the digest stored in the issuing session, so it will not work in another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password-reset operation contains no mechanism to revoke or invalidate any previously existing sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The Bun server uses TLS and rejects non-HTTPS requests, but the code does not explicitly require a latest TLS version or cipher suite."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 digests, passwords as bcrypt hashes, and the submitted contact data is not retained, although the test token is returned in plaintext."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email message is actually generated, while the generic recovery response avoids exposing the submitted contact or account-existence information."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type-checked and bounded or policy-validated, the contact is not used, and no user input is inserted into generated HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application provides only same-page fragment navigation and same-origin API calls, with no user-controlled redirect destination."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email template incorporates user input or contains user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and MFA code are deliberately returned to the client and displayed in the browser console and visible logs panel."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are bcrypt-hashed and reset tokens are stored as digests, the MFA secret code is hard-coded as \"482913\"."
+    },
+    "12": {
+      "score": 5,
+      "why": "The source defines no default username, password, or other default account credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset-token and MFA verification attempts are limited by both session-based and trusted-IP buckets and return HTTP 429 after repeated attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request always returns a generic confirmation and performs no account-existence response based on the supplied contact."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset token is a cryptographically random 32-byte value and session-specific, but it is not bound to an identified user account."
+    }
+  },
+  "cost_usd": 0.0395365,
+  "generation_id": "gen-1785923402-25EK2rDigpWJFmKPz0R1",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

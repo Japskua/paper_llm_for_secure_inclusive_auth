@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:51:46.680141+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "382826be6a70be6d0d503a9383b0a4ec86ceeb15e56bcec319dd73312f8c12a0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "Recovery tokens are not associated with an email or user account, only with a generated flowId."
+    },
+    "2": {
+      "score": 5,
+      "why": "Any session can submit an unused token because token verification does not check the requesting email, user, or originating session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates the global password hash but does not invalidate any existing sessions."
+    },
+    "4": {
+      "score": 4,
+      "why": "The application serves over TLS, redirects HTTP to HTTPS, and sets HSTS, but it does not explicitly configure or verify the latest TLS version."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are stored as plaintext map keys and no encryption of user data is implemented, although passwords are hashed with Argon2id."
+    },
+    "6": {
+      "score": 2,
+      "why": "The response does not include account details, but the simulated delivery exposes the reset token in the page logs and browser console."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server enforces body and field limits, validates email and token formats, validates password complexity, and hashes passwords with Argon2id."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is constructed from a fixed HTTPS localhost origin, and SPA navigation uses internal hash routes."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML template incorporates user input, and dynamically displayed values are assigned through textContent rather than HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and fixed MFA code are deliberately displayed in the visible Logs panel and written to the browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are Argon2id-hashed, but the MFA code 482916 is hard-coded and reset tokens are retained in plaintext memory."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no conventional default account, but every flow accepts the same hard-coded MFA code 482916."
+    },
+    "13": {
+      "score": 5,
+      "why": "Token verification is rate-limited by client IP and the recovery flow is cleared after five incorrect MFA attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery requests return the same generic success message without checking or disclosing whether an email account exists."
+    },
+    "15": {
+      "score": 3,
+      "why": "Reset tokens are cryptographically random 64-character hexadecimal values, but they are not associated with a specific user or email."
+    }
+  },
+  "cost_usd": 0.048341,
+  "generation_id": "gen-1785919877-s74Ryn3U0OAdkQ1WfpHw",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 1,
+    "3": 1,
+    "4": 4,
+    "5": 1,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.0,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 2.8,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:14:28.306686+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-token checks `token.sessionId !== session.id` and `token.accountBinding`, so the code is bound to the requesting session/account before acceptance."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is only accepted when its stored sessionId matches the current session cookie, so the same reset code cannot be redeemed from any other user's session."
+    },
+    "3": {
+      "score": 4,
+      "why": "After /api/set-password succeeds the session is only flagged `passwordChanged` — no sessions are invalidated or rotated, so pre-existing sessions remain valid for the full 30-minute TTL."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is sent, but no minimum/latest TLS version (e.g. minVersion TLS1.3) or cipher policy is specified anywhere."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes and the password is hashed with bcrypt (cost 10), which is appropriate protection, though nothing is actually encrypted at rest and state is in-memory."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is generated at all; instead the raw token, recovery link and MFA code are returned in the JSON response and echoed into the on-page Logs panel/console, which guards nothing."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type/length validated (`validShortString`, content-length cap), the token is regex-restricted to `[A-Za-z0-9_-]+`, and the password is policy-checked, though the contact field itself is never format-validated."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link is the relative `/?token=...` and client navigation uses `location.pathname` plus a whitelisted hash view, so no external redirect target is possible."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates, and the single HTML page is a fixed String.raw template into which only a server-generated nonce and CSRF value are injected — no user input is templated into markup."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors are generic, but the client deliberately logs `Test token:`, the recovery link and the MFA test code to the console and the visible #log-output panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never returned, but the MFA verification code \"482913\" is hard-coded as a literal in both the handler and the response body."
+    },
+    "12": {
+      "score": 2,
+      "why": "The hard-coded, deterministic MFA code \"482913\" functions as a default credential for every session, and the single account starts with an empty passwordHash."
+    },
+    "13": {
+      "score": 4,
+      "why": "Per-category `recordFailure`/`limitStatus` locks for 5 minutes after 5 failures on token, MFA and password endpoints, though the counters live in the session so a fresh cookie resets them."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery-request always returns the identical message \"If an eligible account exists, recovery instructions have been sent.\" regardless of input validity or existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from `randomValue(32)` using crypto.getRandomValues (256 bits, URL-safe), are single-use, expire in 10 minutes, and are bound to the specific session/account."
+    }
+  },
+  "cost_usd": 0.11532,
+  "generation_id": "gen-1785921236-yhOZLfsdsk1WmcLRuykU",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

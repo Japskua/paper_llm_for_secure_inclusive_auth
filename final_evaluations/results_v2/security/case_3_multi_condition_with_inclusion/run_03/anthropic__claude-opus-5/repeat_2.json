@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:05:21.065597+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "0be553360932f12d1a5bea672dc6e8e0d645f1196fb57be45010ded64f5f9480",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The recovery record is stored on the server session with an explicit accountId, and /api/recovery/verify only compares the supplied token against that session-bound tokenHash, so a code can only be used by the account it was issued for."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is hashed and stored solely inside the issuing session's `recovery` object (and the demo has one account), so a code cannot be replayed against any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "After /api/recovery/reset only `recovery.used`/`verified` are changed; no other sessions in the `sessions` map are invalidated and no password/session version is checked, so pre-existing authenticated sessions continue to work."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, non-HTTPS requests are rejected and HSTS with preload is set, though no explicit minimum TLS version is pinned (it relies on Bun/OpenSSL defaults which include TLS 1.3)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are generated with crypto randomBytes and only stored as SHA-256 digests, passwords are bcrypt-hashed (cost 10), and comparisons are constant-time — appropriate algorithms, though nothing is encrypted at rest per se."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email delivery; the 'delivery' returns the raw mockToken in the API JSON and prints it into a visible on-page log panel and console, so the simulated message does not guard the secret."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers and tokens are validated against strict regexes, JSON bodies are type-checked, password policy is enforced, and all DOM output uses textContent so no user data is interpolated into markup."
+    },
+    "8": {
+      "score": 4,
+      "why": "There are no server-issued redirects; client navigation uses a hash route allowlist, and CSP sets form-action 'self' and base-uri 'none', preventing off-site redirection."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist in the code at all; the substitute delivery is plain JSON/text with no HTML or script, so the statement is only vacuously satisfied."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client deliberately logs the recovery token ('Mock recovery delivery: use this code here: ' + mockToken) and MFA codes to the visible Logs panel and console, so tokens are exposed in logs."
+    },
+    "11": {
+      "score": 3,
+      "why": "The startup password is randomly generated and kept only as a bcrypt hash, but the MFA verification code is hardcoded in the source as the literal '246810'."
+    },
+    "12": {
+      "score": 3,
+      "why": "No default login password exists (the credential is random and never revealed), yet the fixed hardcoded MFA code '246810' functions as a default shared secret for the second factor."
+    },
+    "13": {
+      "score": 5,
+      "why": "MAX_ATTEMPTS = 5 with a 10-minute lockout is enforced for login (per identifier), recovery-code verification, and MFA verification, plus a 3-per-window cap on recovery requests."
+    },
+    "14": {
+      "score": 4,
+      "why": "Recovery returns the neutral 'If the account can be recovered…' message and login returns a single generic error while always running bcrypt.verify against a dummy hash to equalise timing; only the practice UI prefills the demo reference."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is randomToken(24) from node:crypto randomBytes encoded base64url, bound to a specific session/accountId, single-use, and expires after 10 minutes."
+    }
+  },
+  "cost_usd": 0.1305,
+  "generation_id": "gen-1785924286-rRYHxQjj6alvHDT8jCka",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 3,
+    "10": 1,
+    "11": 3,
+    "12": 3,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

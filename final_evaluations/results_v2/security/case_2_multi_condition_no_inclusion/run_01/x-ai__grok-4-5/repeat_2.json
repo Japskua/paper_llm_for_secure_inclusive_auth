@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:09:22.350954+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset verification requires record.sessionId === session.id, binding the token to the requesting session, though there is no multi-user identity store."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset token fails for another session because verification rejects records when record.sessionId !== session.id."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password change only clears mfaVerified on the current session and never invalidates or deletes other entries in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HTTP 308-redirects to HTTPS with HSTS, but the TLS protocol version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens are stored as SHA-256 verifiers and passwords with argon2id, but MFA codes and session fields sit in memory in plaintext and are not encrypted."
+    },
+    "6": {
+      "score": 1,
+      "why": "No email is composed or sent at all; recovery only returns a generic JSON message and an academic testingToken."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are strictly validated (validContact, validToken, passwordIssue, JSON body checks) and the client writes only via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses fixed in-app paths via pushState and the only redirect is the HTTP→HTTPS localhost upgrade with no user-controlled URL."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates and no user input is embedded into any HTML email, so no script/HTML injection path exists there."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors are generic, but API responses and the client Logs panel deliberately expose testingToken and testingMfaCode values."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hashes use argon2id/env, yet recovery and login MFA codes are hardcoded literals (482913, 741852) in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default password is present; login requires a non-empty passwordHash from env or a prior argon2id hash and fails otherwise."
+    },
+    "13": {
+      "score": 5,
+      "why": "recordAttempt/blocked enforce per-action limits (e.g. 3–5 failures) with a 60s lockout on recovery, verify, MFA, and login."
+    },
+    "14": {
+      "score": 5,
+      "why": " /api/recovery always returns the same generic eligibility message whether or not the contact is valid."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset token is randomHex(32) and session-bound, but the paired recovery MFA code is the fixed string 482913 rather than random."
+    }
+  },
+  "cost_usd": 0.0206132,
+  "generation_id": "gen-1785920912-9rRYAOSNw8s7ZysfPrl9",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 3.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

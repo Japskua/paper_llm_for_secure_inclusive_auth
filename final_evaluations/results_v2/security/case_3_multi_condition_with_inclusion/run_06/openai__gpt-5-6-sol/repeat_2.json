@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:18:40.527531+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "3769d8d72d3a6dbf94059901d58bea2f193d416f5864a40b1cd79da802df6e1a",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Each reset record is bound to an accountId and stored in the requesting session, with account consistency checked during MFA and password change."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token must exactly match the token in the same session's reset record, so it cannot be reused for another user or session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password change marks the reset token used but does not revoke or invalidate any previously authenticated sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The application serves HTTPS and redirects HTTP to HTTPS, but it does not explicitly configure or demonstrate use of the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Transport is protected by TLS and passwords use bcrypt, but reset tokens, MFA codes, email addresses, and other user data are held as plaintext in memory."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email is generated, while the generic response omits private account data and the simulated delivery token is exposed only through session-bound recovery state."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email is normalized and validated, passwords are policy-validated, tokens are format-checked, and client output uses textContent rather than HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect target is a hard-coded HTTPS localhost hospital endpoint, and no user-controlled redirect URL is accepted."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email template incorporates user-supplied HTML or scripts, and displayed messages are inserted with textContent."
+    },
+    "10": {
+      "score": 1,
+      "why": "Although server errors and server logs are generic, active reset tokens and MFA codes are intentionally displayed in the browser's practice Logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but MFA codes are deterministically generated and stored in plaintext, and the source contains a fixed demo password hash."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application ships with a fixed demo account and a precomputed initial password hash, constituting a built-in default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, reset-token, and MFA failures are counted and blocked after configured thresholds with a 15-minute lock period."
+    },
+    "14": {
+      "score": 1,
+      "why": "The immediate recovery response is generic, but subsequent session recovery status changes and exposes a token only when the submitted email matches an account, revealing existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated from 32 cryptographically random bytes, are bound to a specific account and session, expire after 15 minutes, and are single-use."
+    }
+  },
+  "cost_usd": 0.04528,
+  "generation_id": "gen-1785925073-XilbxcfmlssJPEC5BR4f",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:47:40.331475+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Verify compares the submitted token’s SHA-256 to session.resetTokenHash, so the code must match the session that requested it; there is no separate multi-user account registry."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset hashes live only on the requesting session, so the same code is rejected for any other session/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "set-password only clears recoveryGrantUntil and sets authenticated on the current session; no other sessions are invalidated."
+    },
+    "4": {
+      "score": 4,
+      "why": "Server refuses to start without TLS cert/key and serves only via HTTPS; exact latest TLS version is not pinned in code."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens are SHA-256-hashed and passwords Argon2id-hashed in memory, but nothing is encrypted at rest and ‘encrypted’ is not literally accurate."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email; the API returns testToken/testMfaCode in JSON and the UI logs them, so private codes are not guarded in a message."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated via safeEmail/safeToken/strongPassword, strict JSON limits, and DOM updates use textContent/JSON encoding."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses only same-origin location.hash; no user-controlled external redirects are followed."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML templates exist that interpolate user input; delivery is only simulated client-side logging."
+    },
+    "10": {
+      "score": 2,
+      "why": "Success responses include testToken and testMfaCode and the on-page log pane prints recovery codes, so tokens are shown."
+    },
+    "11": {
+      "score": 2,
+      "why": "MFA secret \"246810\" and the initial password string are hardcoded in source; only the password hash is stored with Argon2id."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed MFA code 246810 acts as a standing default credential on every verify-reset."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateAllowed caps each session at 5 attempts per 60s window and returns 429 when exceeded."
+    },
+    "14": {
+      "score": 5,
+      "why": "request-reset always returns the same generic message regardless of whether an account exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "Tokens come from crypto.getRandomValues (32 bytes, URL-safe) and are bound to the requesting session, though not to a persisted user id."
+    }
+  },
+  "cost_usd": 0.0207604,
+  "generation_id": "gen-1785919607-lDUPksLfXLEuEZeormzI",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

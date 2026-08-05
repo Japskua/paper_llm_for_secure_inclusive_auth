@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:27:26.037538+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are stored server-side with a bound userId and originating sessionId, and both `resetRecord` (sessionId check) and `verifiedRecord` (userId/expiry match) enforce that the code belongs to the requesting user's recovery flow."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token only validates if `record.sessionId === current.id` and the verified state matches the stored userId, so a code cannot be reused for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "`/api/reset-complete` only calls `clearVerified()` and rehashes the password; nothing iterates the `sessions` map to revoke other sessions, so pre-existing authenticated sessions remain valid after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS (max-age=31536000; includeSubDomains) is set, but no explicit minVersion/cipher policy is specified, so 'latest TLS' relies solely on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords use Argon2id and reset tokens are stored only as SHA-256 hashes of 32 random bytes with timing-safe comparisons, though user records themselves live unencrypted in an in-memory Map."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email delivery at all — the recovery code, delivery authorization code and MFA code are returned in JSON, printed on the page, and echoed into a visible activity log, so no message-level guarding of private data exists."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated (`validEmail`, `validCode`, `validToken`, `passwordIssue`, 8 KiB body cap, JSON-object-only parsing) and no user input is ever interpolated into HTML or SQL."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects whatsoever and CSP sets `form-action 'self'` and `base-uri 'none'`, so there is no open-redirect surface, but the claim is satisfied vacuously rather than by explicit URL whitelisting."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist; the single server-rendered page contains only static markup plus a nonce and JSON-encoded CSRF token, with no user-supplied content reflected."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the recovery token, delivery authorization code and MFA code are deliberately returned to the client and written to the on-page 'Activity logs' and browser console via the overridden `console.log`."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed, but `DELIVERY_AUTHORIZATION_CODE = \"864200\"`, `MFA_CODE = \"246810\"` and the demo password `\"Initial-Only-Password!42\"` are all hardcoded constants in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "A seeded demo account (`helena@hospital.test`) ships with a fixed in-source initial password, and the delivery/MFA codes are static defaults that every user must use."
+    },
+    "13": {
+      "score": 5,
+      "why": "`attemptAllowed`/`failedAttempt` enforce MAX_ATTEMPTS = 5 with a 10-minute lockout on login, MFA and delivery authorization, plus a per-context cap on reset requests."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/reset-request` always returns the same 'If an account is available...' message and issues a token regardless of existence, and login always answers with the generic 'We could not sign you in.'"
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is `randomBytes(32)` hex (64 chars), stored only as a SHA-256 hash, single-use (`record.used`), 15-minute TTL, and bound to a specific userId and sessionId."
+    }
+  },
+  "cost_usd": 0.14141,
+  "generation_id": "gen-1785925612-MGCGppYl0vuiQKn5KIqx",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

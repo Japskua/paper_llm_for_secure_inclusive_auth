@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:03:31.908537+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset tokens are bound to sessionId and verified with record.sessionId === session.id plus expiry/used checks; ownership is session-based rather than an explicit multi-user id."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token from another session fails verification because reset-verify requires record.sessionId === session.id, so the same code does not work for any other user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only marks the token used and clears verifiedResetToken on the current session; no code invalidates other entries in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Primary server uses Bun.serve TLS with cert/key and HTTP redirects to HTTPS, but the TLS protocol version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens and MFA secrets are stored/returned in plaintext in memory, not encrypted at rest."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no real email channel; the reset token is returned as testToken in the API JSON and written to the client-visible logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers are normalized/regex-validated via cleanIdentifier, passwords checked with validPassword, bodies parsed safely, and token input trimmed."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is the fixed HTTP→HTTPS localhost upgrade; no user-controlled redirect targets exist."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates render user input; delivery is simulated without HTML email construction from client data."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and the MFA code are returned in API responses and appended to the on-page Logs panel, so secrets are shown in logs/UI."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hashes use bcrypt and are not hardcoded, but the MFA secret \"482913\" is embedded directly in source and returned to the client."
+    },
+    "12": {
+      "score": 2,
+      "why": "The flow documents and accepts the fixed training identifier demo-account and a deterministic MFA code, i.e. default/demo credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "requestRate (3), verifyRate (5), per-token verifyAttempts (5), and mfaRate (5) throttle repeated failed attempts within RATE_WINDOW_MS."
+    },
+    "14": {
+      "score": 2,
+      "why": "Message text is generic, but only demo-account responses include testToken, which enumerates that the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are created with crypto.getRandomValues (32 bytes, base64url), short-lived, single-use, and bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.0173628,
+  "generation_id": "gen-1785920561-QULTmTQkiMZQ68kzNKqU",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

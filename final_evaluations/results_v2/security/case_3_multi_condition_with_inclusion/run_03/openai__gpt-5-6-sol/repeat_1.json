@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:04:19.219816+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "0be553360932f12d1a5bea672dc6e8e0d645f1196fb57be45010ded64f5f9480",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Each recovery record contains an accountId and a hash of the token and is stored within the initiating session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code is validated only against the hashed token in the recovery record of the session that requested it."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates the password hash but does not invalidate any existing authenticated sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server configures TLS and rejects non-HTTPS requests, but it does not explicitly specify or verify the latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Recovery tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, although general user-data encryption is not implemented."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email implementation or email message exists, as recovery delivery is simulated through API responses and browser logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "The server applies type, length, format, and password-complexity validation, while client output uses textContent or JSON serialization."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application uses only allowlisted internal routes and has no user-controlled external redirect mechanism."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are implemented, so their handling of scripts or user-supplied HTML cannot be directly evaluated."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens and MFA codes are deliberately returned by APIs and displayed in the visible log panel and browser console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords and recovery tokens are hashed, but the MFA code 246810 is hardcoded and stored in plaintext session state."
+    },
+    "12": {
+      "score": 5,
+      "why": "The startup password and recovery reference are randomly generated rather than supplied as default account credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery-token, and MFA verification paths impose a ten-minute lock after five failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery and login responses are generic, and login performs a bcrypt comparison even when the supplied identifier is unknown."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery codes are generated from 24 cryptographically random bytes and bound to a session recovery record containing the account ID."
+    }
+  },
+  "cost_usd": 0.08958375,
+  "generation_id": "gen-1785924227-1fIpCEAtrDSnDK8UEK3t",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

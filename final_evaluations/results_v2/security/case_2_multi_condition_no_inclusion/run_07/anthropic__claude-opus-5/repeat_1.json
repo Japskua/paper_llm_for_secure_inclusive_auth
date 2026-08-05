@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:37:25.822976+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "Reset records store an identityScope and are single-use/expiring, but /api/verify-reset never compares the record's scope to the requesting session's recoveryIdentity — it simply adopts the record's scope, so any session presenting a valid code is accepted."
+    },
+    "2": {
+      "score": 2,
+      "why": "Only one mock account exists and codes are bound to an identity scope and marked used after a single verification, so a code cannot be replayed for a different user identity, though it is not bound to the originating browser session."
+    },
+    "3": {
+      "score": 2,
+      "why": "After /api/new-password the loop over sessions clears authenticated, pendingMfa, privacyAccepted and appointmentBooked for every session, so previously signed-in sessions lose access (session records themselves are not deleted, hence not a full 1)."
+    },
+    "4": {
+      "score": 4,
+      "why": "The main server is started with serve({tls:{cert,key}}) over HTTPS and HTTP is 308-redirected to HTTPS with HSTS, but no explicit minVersion/TLS 1.3 or cipher configuration is set — it relies on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 hashes (tokenHash) and passwords as bcrypt(cost 10) hashes via Bun.password.hash, which are appropriate algorithms, although all state is plaintext in-memory maps."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email; the simulated delivery instead returns the raw reset code in the JSON response and prints it in the visible log panel ('Test reset code: ' + data.code), which exposes rather than guards the secret."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type/length checked (identifier ≤160, password ≤128), codes are regex-allowlisted /^[A-Za-z0-9_-]{32,128}$/, JSON content-type enforced, and all output uses textContent, though the identifier itself is only normalized, not format-validated."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is the HTTP listener's fixed 'https://localhost' + port + pathname target, ignoring the Host header, and route handling uses a fixed allowlist with no user-supplied redirect parameter."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templating exists at all; the equivalent client-side notification path builds nodes with document.createElement and textContent and the reset link is encodeURIComponent-escaped, so no user input reaches HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors are generic ('Service unavailable', genericError) with no stack traces, but eventLog writes the reset code and the MFA code both to console.log and to the visible on-page 'Logs' panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed at rest, yet the initial password 'Initial!DemoPassword2025', the MFA code '246810' and the recovery identity 'helena.recovery@localhost' are hardcoded literals in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The account is seeded with a hardcoded default password ('Initial!DemoPassword2025') and a static MFA code '246810' that both authenticate successfully with no forced change, so default credentials are allowed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login and MFA use account-scoped lockouts after 5 failures (LOCKOUT_WINDOW 5 min) and recovery request/verification use consumeAttempt limits of 3 and 5 per 10-minute window returning HTTP 429."
+    },
+    "14": {
+      "score": 2,
+      "why": "Although the message string is identical, the response for the valid identity additionally contains a 'code' field (and the UI then renders a verification link), so a requester can distinguish an existing account from a non-existent one."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes are 32 bytes from crypto.getRandomValues encoded base64url, stored hashed, bound to an identity scope, single-use, and expire after RESET_TTL of 10 minutes."
+    }
+  },
+  "cost_usd": 0.13553,
+  "generation_id": "gen-1785922603-vzFu2ZW3LOlDV27RhfHh",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

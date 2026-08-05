@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:28:52.013130+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset token is verified with timingSafeEqual only against the token stored on that browser recovery session, so it is bound to the caller session though not to a persisted user record."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each session has its own resetToken; another user/session cannot use a different session’s token because verification reads session.resetToken only."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only updates the current session’s passwordHash and never invalidates or tracks other sessions, so any prior sessions would keep working."
+    },
+    "4": {
+      "score": 4,
+      "why": "Server refuses to start without TLS certs, serves HTTPS on 3000, and redirects HTTP to HTTPS, but does not explicitly pin a TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens and MFA codes sit in memory as plaintext and are not encrypted at rest."
+    },
+    "6": {
+      "score": 3,
+      "why": "User-facing recover messages are generic and avoid account details, yet the API returns testToken and the UI logs panel prints tokens for the simulation."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated with strict allow-lists/length checks (validAccountInput, validToken, validMfa, passwordProblem) and client rendering uses textContent, not raw HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Only redirect is the fixed HTTP→HTTPS localhost hospital URL; API also rejects non-matching Origin and has no open-redirect parameter."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no HTML email templates with user input; delivery is simulated server-side strings without embedding unsanitized user HTML/scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery token and MFA code are returned in JSON (testToken/testMfaCode) and appended into the on-page Logs panel, so tokens are shown."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password is stored only as bcrypt via Bun.password.hash, but the MFA code is hardcoded as \"482913\" in source and secrets live in the in-memory session."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default username/password login exists and new passwords must pass a strong policy, though the fixed demo MFA value is a static testing secret."
+    },
+    "13": {
+      "score": 5,
+      "why": "Per-action limits increment failures and after MAX_FAILURES (5) set blockedUntil for BLOCK_MS, returning 429 genericBlockedResponse."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recover always returns the same generic \"If the account can be recovered...\" style message whether input is valid-looking or not, without enumerating accounts."
+    },
+    "15": {
+      "score": 5,
+      "why": "resetToken is from crypto.getRandomValues (32 bytes, base64url), single-use, TTL-limited, and checked only against that session’s stored value."
+    }
+  },
+  "cost_usd": 0.0331564,
+  "generation_id": "gen-1785922073-ApT0iAFJsL0SqVfbjjTi",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}
