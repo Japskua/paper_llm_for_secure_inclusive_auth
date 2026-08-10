@@ -1,0 +1,119 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:44:15.723245+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "410e1cc46bbbbc0cb7869109d020fb69db0a302c9f3a7d9f4feb7974c90fbca9",
+  "screenshot_count": 11,
+  "screenshots": [
+    "step_01_request_reset_page.png",
+    "step_02_reset_code_delivered.png",
+    "step_03_verify_reset_code.png",
+    "step_04_set_new_password.png",
+    "step_05_security_check_after_password_reset.png",
+    "step_06_privacy_conditions_after_password_reset.png",
+    "step_07_privacy_conditions_accepted_after_password_reset.png",
+    "step_08_sign_in.png",
+    "step_09_security_check_after_sign_in.png",
+    "step_10_privacy_conditions_after_sign_in.png",
+    "step_11_privacy_conditions_accepted_after_sign_in.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every screenshot shows a static, flat layout with no animations, carousels, banners or modal pop-ups — only fixed panels (header, tabs, safety notice, task card, Logs)."
+    },
+    "2": {
+      "score": 3,
+      "why": "Primary actions are dark-blue filled buttons and success messages are bold green, but the always-present 'Stay safe' notice and the large technical 'Logs' panel compete visually with the actual task card, diluting emphasis."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each step shows one focused form with a clear heading, but the three tabs (Request reset / Enter code / Sign in) are unlabelled as to order and the user must scroll past a Logs console containing raw tokens to see everything, so finding the next needed item is not consistently quick."
+    },
+    "4": {
+      "score": 2,
+      "why": "The flow requires remembering/transferring a very long reset code (fd-83gNz4_xjEST1_5TJx8FCVaOmFDaqFRGBzJhIZCE), a 6-digit MFA code, and a new 12+ character password with four character classes, plus knowing which tab to visit next — a substantial rule and step load."
+    },
+    "5": {
+      "score": 1,
+      "why": "No 'remember me' checkbox, no password-manager hint, no autofill affordance, no show/hide password toggle, and no paste helper appears on any of the reset, security-code or sign-in screens."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing saved or familiar is surfaced — no masked account hint, no remembered contact, no saved-device recognition; the contact and password fields start empty on every visit."
+    },
+    "7": {
+      "score": 4,
+      "why": "Sentences are short, plain and in a readable sans-serif with good contrast (e.g. 'Enter the one-time security code.'), though a few lines are dense with security caveats and the Logs output is raw technical text."
+    },
+    "8": {
+      "score": 1,
+      "why": "No error state is shown in any of the 11 screenshots — only success messages appear, so there is no evidence of error messages describing a problem and its fix, and the deliberately ambiguous 'result is the same whether or not an account is found' message hides the cause."
+    },
+    "9": {
+      "score": 2,
+      "why": "There is a textual rule for the password ('At least 12 characters, with uppercase, lowercase, a number, and a symbol') and a hint to 'Use an email-style contact value', but no placeholder examples, no sample formats in the fields, and no worked example of what to type."
+    },
+    "10": {
+      "score": 2,
+      "why": "Only password-plus-code authentication exists; there is no face/biometric or alternative login option presented, so the statement about clear choices of password/code/face login does not hold for this system."
+    },
+    "11": {
+      "score": 4,
+      "why": "Each screen presents a single form with one primary button and only three top-level tabs, so the user is not overloaded with simultaneous choices."
+    },
+    "12": {
+      "score": 4,
+      "why": "Bold green confirmations state outcomes ('Security check complete. You may review the privacy conditions.', 'Updated privacy conditions have been accepted.') and the Logs panel echoes each event, though the reset request outcome is intentionally vague."
+    },
+    "13": {
+      "score": 2,
+      "why": "Only brief static descriptions accompany each step; there is no help link, tooltip, progress indicator, or contextual tip for new steps such as where to find the code."
+    },
+    "14": {
+      "score": 3,
+      "why": "Forms remain on-screen and buttons stay enabled so the user can re-submit, and codes can be re-pasted, but codes expire after 15 minutes and are single-use with no visible 'resend code' or 'start over' control."
+    },
+    "15": {
+      "score": 5,
+      "why": "All 11 screens reuse the identical header, tab bar, safety notice, card styling, label/field layout and button style, giving a highly consistent and learnable design."
+    }
+  },
+  "cost_usd": 0.128025,
+  "generation_id": "gen-1785919431-1e0W9csoCxLAblhZaUS4",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 3,
+    "3": 3,
+    "4": 2,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 1,
+    "9": 2,
+    "10": 2,
+    "11": 4,
+    "12": 4,
+    "13": 2,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 1.6667,
+    "comprehension": 2.3333,
+    "decision_making": 3.3333,
+    "learning": 3.3333
+  },
+  "overall": 2.8667,
+  "capture_complete": true
+}

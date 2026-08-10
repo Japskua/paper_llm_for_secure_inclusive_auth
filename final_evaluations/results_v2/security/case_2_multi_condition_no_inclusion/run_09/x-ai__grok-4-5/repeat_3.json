@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:47:45.127996+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-reset requires the token hash to match session.resetTokenHash and token.sessionId/accountId, so the code must belong to that user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to sessionId and accountId and fail verification for any other session/user, so the claim is false."
+    },
+    "3": {
+      "score": 5,
+      "why": "reset-password never invalidates other sessions; only the current grant is consumed, so prior sessions keep working."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, HSTS, and HTTP→HTTPS redirect, though the TLS version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and emails are SHA-256 hashed and passwords bcrypt-hashed; not classical encryption, but appropriate crypto protection is used."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email body is built; responses use a generic privacy-neutral message and do not echo private account fields."
+    },
+    "7": {
+      "score": 5,
+      "why": "Emails/passwords/tokens are validated and length-limited, passwords hashed, and the client only inserts textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects use fixed CONFIGURED_HTTPS_ORIGIN only after Host checks; client recovery links are same-origin paths."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no server email templates that embed user input; delivery is a simulated JSON field only."
+    },
+    "10": {
+      "score": 2,
+      "why": "API errors are generic, but testToken and testMfaCode are returned and written into the on-page log list."
+    },
+    "11": {
+      "score": 2,
+      "why": "Initial password bcrypt hash and the fixed MFA value \"246810\" are embedded in source; only runtime password updates are bcrypt-hashed."
+    },
+    "12": {
+      "score": 2,
+      "why": "Sign-in MFA is always the hardcoded code 246810, which functions as a default credential in this flow."
+    },
+    "13": {
+      "score": 5,
+      "why": "Wrong reset verifications lock after 5 tries, reset requests are rate-limited, and MFA fails after 5 attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "request-reset always returns the same generic message and token shape whether or not the email matches."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from secureToken(32) (cryptographic random base64url) and are stored/verified as user- and session-specific hashes."
+    }
+  },
+  "cost_usd": 0.0193012,
+  "generation_id": "gen-1785923216-DpXkVEioIvMeR739ZBX1",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

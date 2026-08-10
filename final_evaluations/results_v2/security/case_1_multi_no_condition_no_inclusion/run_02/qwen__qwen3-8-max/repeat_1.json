@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:50:03.383400+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify endpoint accepts a token only when it matches the unused, unexpired token stored in the current session's recovery state."
+    },
+    "2": {
+      "score": 1,
+      "why": "A recovery token is checked against the current session's stored token, so the same code is not valid for another session or user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The reset handler changes the password hash and current session flags but does not remove or invalidate other existing sessions in the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is TLS-only and rejects non-HTTPS URLs, but the code does not specify or enforce a latest TLS version."
+    },
+    "5": {
+      "score": 1,
+      "why": "Recovery tokens and account state are held in server memory without encryption, although passwords are bcrypt-hashed."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is sent, and the simulated delivery returns the secret recovery token in the API response and logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are validated and user-controlled values are rendered with textContent under a strict CSP, but there is no general HTML sanitizer."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application uses no redirect responses or external navigation targets, and view changes are same-origin history.pushState transitions."
+    },
+    "9": {
+      "score": 1,
+      "why": "The source contains no email templates, and the only simulated delivery is a JSON response exposing the token."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic errors avoid detail disclosure, but the UI/console logs and API responses expose recovery tokens and the MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is hardcoded and recovery tokens are exposed in responses and logs."
+    },
+    "12": {
+      "score": 1,
+      "why": "The fixed MFA_TEST_CODE and mock recovery scenario act as default or test credentials in the code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Token and MFA verification failures are counted and blocked for one minute after five failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request returns the same generic message for all identifiers and does not log or reflect the submitted identifier."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery tokens are generated with crypto.getRandomValues, are long base64url strings, expire, are one-use, and are stored for the requesting session and account."
+    }
+  },
+  "cost_usd": 0.085038,
+  "generation_id": "gen-1785912346-Ex3sIPC6kSceCxCNgGvD",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 1,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 3.3333,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

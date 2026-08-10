@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:27:57.414626+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset codes are attached to specific session objects and verified directly against the requesting user's session state."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are cryptographically random values bound to individual sessions and will not work across different session records."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates the current session's password hash but does not revoke or invalidate other active session entries in memory."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application requires TLS certificates, enforces HTTPS with HSTS, and redirects all port 8080 HTTP traffic to port 3000 HTTPS."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens and user session data are kept in memory as unencrypted plaintext strings rather than encrypted values."
+    },
+    "6": {
+      "score": 5,
+      "why": "No actual emails are sent, and simulated recovery responses use generic text that hides private user details."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated against whitelist regex patterns and rendered into DOM elements via text content to prevent HTML script injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "The HTTP server performs a hardcoded 308 redirect strictly to the local hospital HTTPS URL."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application contains no email rendering engines or HTML templates accepting user input."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generated reset tokens and test MFA codes are explicitly output into the visible browser logs panel."
+    },
+    "11": {
+      "score": 1,
+      "why": "The secondary authentication code '482913' is hardcoded directly in the source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not configure, implement, or accept any default accounts or credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Failed attempts are tracked per endpoint, blocking further requests for 60 seconds once five failures occur."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns an identical generic response regardless of whether the submitted account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset codes are created using 32 bytes of cryptographically random data generated per session."
+    }
+  },
+  "cost_usd": 0.042441,
+  "generation_id": "gen-1785922056-50S750UDM7haqdusWx8G",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

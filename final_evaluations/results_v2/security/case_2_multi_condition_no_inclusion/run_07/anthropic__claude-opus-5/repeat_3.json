@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:37:34.209646+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "Reset records store an identityScope hash and /api/new-password requires session.resetVerified plus session.recoveryIdentity, but /api/verify-reset accepts any valid code from any session and simply adopts the token's scope rather than comparing it to a user the requester claims, and only one mock account exists."
+    },
+    "2": {
+      "score": 2,
+      "why": "Codes are bound to a hashed identity scope, marked used on first verification, and expire after 10 minutes, so a given code cannot be replayed against a different account (and the mock has only one account)."
+    },
+    "3": {
+      "score": 1,
+      "why": "After /api/new-password the loop over all sessions clears authenticated, pendingMfa, privacyAccepted and appointmentBooked, so pre-reset sessions no longer work."
+    },
+    "4": {
+      "score": 4,
+      "why": "The app serves over TLS with cert/key files, redirects HTTP to HTTPS with 308, and sets HSTS, but no minimum/latest TLS version is explicitly configured (relies on Bun defaults)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are 32 random bytes stored only as SHA-256 hashes and passwords use bcrypt (cost 10), which is appropriate, though no data-at-rest encryption exists (in-memory Maps only)."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all; instead the raw reset code is returned in the JSON response and printed into the visible 'Logs' pane and console, so the simulated delivery does not guard the secret."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are type/length checked, identifiers normalized, reset codes matched against a strict /^[A-Za-z0-9_-]{32,128}$/ allowlist, passwords policy-validated, and all UI text is written via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a fixed 308 to https://localhost + internal path (Host header never used), and client navigation uses hard-coded internal routes from an allowlisted set."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist in the code, and the substitute simulated log/message output is inserted with textContent under a nonce-based CSP, so no user HTML or script can appear."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces, but the reset code and the MFA code ('246810') are deliberately written to console.log and to the on-page Logs element."
+    },
+    "11": {
+      "score": 2,
+      "why": "The initial account password 'Initial!DemoPassword2025', the static MFA code '246810', and the valid recovery identity are all hard-coded literals in the source, even though the password is hashed with bcrypt in memory."
+    },
+    "12": {
+      "score": 2,
+      "why": "A hard-coded default credential ('Initial!DemoPassword2025' plus fixed MFA code 246810) is provisioned at startup and can be used to sign in without any forced change."
+    },
+    "13": {
+      "score": 5,
+      "why": "Account-scoped lockout after 5 failed logins and 5 failed MFA attempts (5-minute lock), plus 3/10min recovery-request and 5/10min code-verification throttles, all server-side and session-independent."
+    },
+    "14": {
+      "score": 2,
+      "why": "Although the message text is identical, only the valid recovery identity gets a response containing a 'code' field (and the UI then renders a verification link), so the response clearly distinguishes existing from non-existing accounts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes come from crypto.getRandomValues (32 bytes, base64url), are stored hashed with an identity scope, are single-use and expire in 10 minutes."
+    }
+  },
+  "cost_usd": 0.13163,
+  "generation_id": "gen-1785922618-Oa0wYzeOIrVIaglzd2JV",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 4,
+    "3": 5,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

@@ -1,0 +1,132 @@
+{
+  "variables": {
+    "email": "helena@example.test",
+    "new_password": "ValidReset1!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "csrf",
+    "in": "body",
+    "endpoint": "/api/recovery-status",
+    "method": "GET"
+  },
+  "steps": [
+    {
+      "name": "load recovery session state",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "body": {
+        "email": "${email}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "token": "deliveryCode"
+      }
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "body": {
+        "token": "${token}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "save new password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "body": {
+        "password": "${new_password}",
+        "confirm": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign in with reset password",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "code"
+      }
+    },
+    {
+      "name": "confirm MFA code",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "${mfa_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid email rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "body": {
+        "email": "not-an-email",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "missing valid CSRF rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "body": {
+        "email": "${email}",
+        "csrf": "invalid-csrf-token"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "password": "WrongPassword1!",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

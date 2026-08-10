@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:46:33.521170+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Recovery tokens are bound to the requesting session and verified with equalSecurely against state.recovery; reset-password also requires state.recovery.accountRef === \"protected-account\"."
+    },
+    "2": {
+      "score": 1,
+      "why": "The reset token lives only on the session that requested recovery, so another session/user cannot successfully verify the same code."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates protectedAccount.passwordHash and the current session flags but never deletes or invalidates other entries in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and non-HTTPS requests are rejected, though the TLS version is not explicitly pinned to the latest in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but recovery tokens and session state are stored in memory in plaintext, not encrypted."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email is sent; API messages are generic and do not include account profile data, though the mock may return a delivery token for the test scenario."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers are format-validated, passwords must pass passwordPolicy, bodies are JSON-parsed safely, and the client inserts dynamic text only via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses same-origin history.pushState with an allowlisted view set; mockRecoveryLink is only a relative /?view=verify URL."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates that interpolate user input; recovery messaging is fixed server strings without HTML from callers."
+    },
+    "10": {
+      "score": 2,
+      "why": "Generic API/error responses avoid secrets, but the SPA explicitly logs mockDeliveryToken and mockMfaCode into the on-page log list and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hashes use bcrypt, yet MFA_TEST_CODE \"246810\" (and the mock recovery identifier) are hardcoded secrets in source."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default username/password login path exists and the initial passwordHash is empty, though a fixed demo MFA code is embedded."
+    },
+    "13": {
+      "score": 5,
+      "why": "tokenAttempts and mfaAttempts enforce MAX_FAILURES (5) then BLOCK_MS (60s) with 429 responses on verify endpoints."
+    },
+    "14": {
+      "score": 2,
+      "why": "The message text is generic, but eligible mock recovery adds mockDeliveryToken/mockRecoveryLink, which distinguishes a valid recoverable identifier."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are crypto.getRandomValues 32-byte values, base64url-encoded, single-use, time-limited, and tied to the session/accountRef."
+    }
+  },
+  "cost_usd": 0.0216652,
+  "generation_id": "gen-1785912344-GSTxveG01Y3cbUjaTVn4",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 4,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

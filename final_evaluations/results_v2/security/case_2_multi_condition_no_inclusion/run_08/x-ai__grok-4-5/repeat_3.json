@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:43:04.021854+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c4fd046aaec21d61dbcea92c3e7d1830bd59eb3cc9562fc7c9e6a0dc0ee90617",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset token is verified only against the issuing session’s stored SHA-256 hash and marked single-use, binding the code to that recovery session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each session stores its own resetTokenHash; another session lacks that hash so the same code does not validate elsewhere."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password update only mutates the current session’s passwordHash and never invalidates or deletes other entries in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS/upgrade-insecure-requests are set; exact TLS version is left to runtime defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords via Bun.password bcrypt; storage is hashed rather than encrypted but algorithms are appropriate."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email body; the API returns deliveryToken/resetPath and the UI log prints the full recovery token and link in plaintext."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are allowlisted (validAccountInput/validToken/validPassword) and client output uses textContent, not HTML interpolation."
+    },
+    "8": {
+      "score": 5,
+      "why": "resetPath is a same-origin relative path built only from a server-generated token; no user-controlled redirect targets are accepted."
+    },
+    "9": {
+      "score": 5,
+      "why": "No server-side email HTML templates exist; simulated delivery is plain text via textContent and does not embed raw user HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery/MFA tokens and mock codes are returned in JSON and appended to the on-page activity log and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in session state, but the MFA secret is the hardcoded constant MFA_CODE = \"482915\" in source."
+    },
+    "12": {
+      "score": 2,
+      "why": "No classic default login pair exists, yet every MFA challenge uses the fixed in-code code 482915, i.e. a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Both verify-token and MFA paths increment failure counters and set resetBlockedUntil/mfaBlockedUntil after five bad attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": " /api/recovery always returns the same eligibility-agnostic message whether or not the account string would be valid."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery tokens are crypto.getRandomValues 32-byte base64url values, hashed, expiry-bound, and stored only on the requesting session."
+    }
+  },
+  "cost_usd": 0.0182968,
+  "generation_id": "gen-1785922942-1sgDygYKpH71axYpFEYp",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

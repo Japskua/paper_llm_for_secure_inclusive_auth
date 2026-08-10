@@ -1,0 +1,146 @@
+{
+  "variables": {
+    "email": "demo.patient@example.com",
+    "new_password": "ValidPass1!xx"
+  },
+  "steps": [
+    {
+      "name": "recovery_page",
+      "actions": [
+        {
+          "do": "wait_for",
+          "selector": "text=Recover your account"
+        }
+      ]
+    },
+    {
+      "name": "recovery_delivery",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#recovery-email",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery instructions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Test-only recovery token:"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Test reset token: ([a-f0-9]{64})",
+          "into": "reset_token"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=Continue to token verification"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#reset-token"
+        }
+      ]
+    },
+    {
+      "name": "additional_verification",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify recovery token')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa-code"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Deterministic test code: (\\d{6})",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "mfa_code_entered",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${mfa_code}"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#new-password"
+        }
+      ]
+    },
+    {
+      "name": "new_password_entered",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#new-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm-password",
+          "value": "${new_password}"
+        }
+      ]
+    },
+    {
+      "name": "updated_privacy_statement",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacy-check"
+        }
+      ]
+    },
+    {
+      "name": "privacy_acknowledgement_selected",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#privacy-check"
+        }
+      ]
+    },
+    {
+      "name": "recovery_complete",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept privacy statement')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Recovery complete"
+        }
+      ]
+    }
+  ]
+}

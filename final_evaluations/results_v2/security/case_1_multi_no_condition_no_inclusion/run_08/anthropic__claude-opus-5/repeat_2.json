@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:52:27.629486+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "382826be6a70be6d0d503a9383b0a4ec86ceeb15e56bcec319dd73312f8c12a0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "Recovery records contain only token, flowId, expiry and attempt counters — there is no user/account store at all, so no ownership check between a reset code and a user is ever performed."
+    },
+    "2": {
+      "score": 4,
+      "why": "Because tokens are generated without any binding to an email/account, any session presenting the hex string succeeds (until the single-use flag is set), so the code is effectively not user-specific."
+    },
+    "3": {
+      "score": 4,
+      "why": "The /api/reset handler only sets session.resetComplete and rewrites the global passwordHash; no session invalidation or revocation of other session entries occurs, so pre-existing sessions in the `sessions` Map remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is started with TLS cert/key, HSTS with preload is set, and plain HTTP only 308-redirects to HTTPS, though no explicit minimum TLS version is pinned (relies on Bun/OpenSSL defaults, which are TLS 1.3-capable)."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are hashed with Argon2id, but reset tokens are stored in the `recoveries` Map as raw plaintext hex values with no hashing or encryption, and no other user data is protected."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email delivery; the reset token is returned directly in the JSON API response as `mockToken` and written into the visible Logs panel and browser console, i.e. exposed rather than guarded."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated: conservative email regex plus 254-char cap, token regex /^[a-f0-9]{64}$/, password length caps and complexity policy, 2 KB bounded JSON body parsing with fatal UTF-8 decoding."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is the HTTP listener's fixed 308 to `https://localhost:<HTTPS_PORT>` with no user-controlled destination, and CSP sets form-action 'self' and base-uri 'none'."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist in the code; the only rendered dynamic values are the CSRF token/nonce injected via JSON.stringify, and client-side output uses textContent, so no user input is interpolated into HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client explicitly logs `[Mock delivery] Reset token: <token>` and `[Mock MFA delivery] Verification code: <code>` to the on-page Logs panel and console.log, directly exposing secrets."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed, but the MFA verification code \"482916\" is hard-coded twice in the source (returned to the client and compared server-side), so a secret does live in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no username/password login, but the hard-coded static MFA code \"482916\" and the \"initial-placeholder-value\" seed hash function as fixed default credentials that are always accepted."
+    },
+    "13": {
+      "score": 5,
+      "why": "consumeRateLimit enforces 5 token verifications and 8 recovery requests per IP per 10-minute window with a 10-minute block, a 3-per-session recovery cap, and MFA failures ≥5 clear the flow with a 429."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery returns the same generic \"If an account can be recovered...\" message and always mints a token regardless of input, and verify/reset errors are uniformly worded, so no existence oracle is provided."
+    },
+    "15": {
+      "score": 3,
+      "why": "Tokens are 32 bytes from crypto.getRandomValues (random and high-entropy) and single-use, but they are not tied to any user or email, so the user-specific part of the statement is false."
+    }
+  },
+  "cost_usd": 0.141055,
+  "generation_id": "gen-1785919903-VHB5fnM4IgCnSmX6IuxA",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 2,
+    "3": 2,
+    "4": 4,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

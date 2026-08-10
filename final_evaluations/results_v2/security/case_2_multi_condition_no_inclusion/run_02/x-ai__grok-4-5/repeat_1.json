@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:15:13.175702+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-token requires token.sessionId === session.id and accountBinding match before accepting the reset token."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to sessionId, so the same reset code is rejected for a different session/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "set-password does not invalidate or expire other existing sessions after a password change."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key so HTTPS is used, though the exact TLS version is not pinned in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords via Bun bcrypt; appropriate protection though hashing not encryption."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email body is built with user PII; responses use a generic message that does not disclose private account data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are type/length-checked (validShortString), tokens regex-validated, and passwords run through passwordPolicy."
+    },
+    "8": {
+      "score": 5,
+      "why": "testLink is a same-origin path (/?token=...) and client views are restricted to an allowlist with no open redirect."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates that interpolate user input; HTML is a fixed PAGE constant only."
+    },
+    "10": {
+      "score": 1,
+      "why": "API returns testToken/testLink/mfaTestCode and the UI logs panel prints recovery tokens and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in memory, but the MFA secret 482913 is hardcoded in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default username/password credentials or built-in default login account are defined or accepted."
+    },
+    "13": {
+      "score": 5,
+      "why": "limitStatus/recordFailure lock categories after repeated failures (e.g. 5 attempts) for LOCK_MS."
+    },
+    "14": {
+      "score": 5,
+      "why": "recovery-request always returns the same generic message whether or not the contact is valid."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens come from crypto.getRandomValues (32 bytes), are long/complex, and bound to the session."
+    }
+  },
+  "cost_usd": 0.0293284,
+  "generation_id": "gen-1785921273-Ywpk46497TLLpYlJd1J6",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.0667,
+  "capture_complete": true
+}

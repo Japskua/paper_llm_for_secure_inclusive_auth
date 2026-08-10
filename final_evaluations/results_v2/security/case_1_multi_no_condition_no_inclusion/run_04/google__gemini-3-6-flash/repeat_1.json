@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:33:00.427939+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "dd919db6c46d435a4395fbd6c5d383fdf23013f639ab84eb58ad2b157be067a6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The backend verifies that the reset token's session ID matches the active user session during verification."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to a specific session ID and are rejected if submitted from another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset handler updates session state flags but does not iterate or clear other active sessions in memory."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server explicitly configures TLS certificates on the main port and enforces HSTS headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are stored as SHA-256 hashes and passwords are hashed using bcrypt."
+    },
+    "6": {
+      "score": 5,
+      "why": "The system returns generic recovery status messages and does not include sensitive user data in recovery outputs."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are filtered through strict regular expressions and dynamic page content is set strictly using textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "All redirects and links in the application use relative internal paths or hardcoded local host destinations."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application returns JSON responses and does not construct dynamic HTML email templates from user input."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error responses and catch blocks return static, generic messages without leaking tokens or diagnostic details."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA secret code is hardcoded directly in the source code as '482916'."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application does not configure or permit default administrative or user credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification endpoints track failed attempts and block requests after 5 consecutive failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request endpoint returns identical success responses regardless of whether the identifier exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using cryptographically secure 32-byte random buffers bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.0467505,
+  "generation_id": "gen-1785918757-fOKyxHAnuCsSizoq4Pgv",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

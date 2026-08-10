@@ -1,0 +1,124 @@
+{
+  "variables": {
+    "email": "local-recovery-demo",
+    "new_password": "ValidPassword1!"
+  },
+  "steps": [
+    {
+      "name": "recovery_page",
+      "actions": []
+    },
+    {
+      "name": "recovery_code_delivered",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name='identifier']",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Request secure recovery')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Mock recovery delivery token:"
+        },
+        {
+          "do": "read",
+          "selector": "#log-list",
+          "regex": "Mock recovery delivery token: ([A-Za-z0-9_-]+)",
+          "into": "recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "verify_recovery_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Open simulated recovery link')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "input[name='token']"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "input[name='password']"
+        }
+      ]
+    },
+    {
+      "name": "complete_second_factor",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name='password']",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "input[name='confirm']",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save password securely')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "input[name='code']"
+        },
+        {
+          "do": "fill",
+          "selector": "input[name='code']",
+          "value": "246810"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "button:has-text('I accept the privacy conditions')"
+        }
+      ]
+    },
+    {
+      "name": "accept_privacy_conditions",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('I accept the privacy conditions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "button:has-text('Confirm appointment request')"
+        }
+      ]
+    },
+    {
+      "name": "confirm_appointment_request",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm appointment request')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Appointment request confirmed"
+        }
+      ]
+    }
+  ]
+}

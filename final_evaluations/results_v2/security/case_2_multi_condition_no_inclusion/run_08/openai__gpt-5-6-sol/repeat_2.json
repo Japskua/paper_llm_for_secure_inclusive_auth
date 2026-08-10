@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:41:36.457668+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c4fd046aaec21d61dbcea92c3e7d1830bd59eb3cc9562fc7c9e6a0dc0ee90617",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "The reset token is checked against a hash stored in the current session, but it is never associated with or validated against the submitted user account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code is bound to the issuing session and cannot be validated in another user's session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset changes only the current session, while all other existing sessions remain in the sessions map and are not revoked."
+    },
+    "4": {
+      "score": 3,
+      "why": "The Bun server is configured for TLS and sends HSTS, but the code does not explicitly require a particular latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens and passwords are securely hashed, but general session and user-related data are held unencrypted in memory and delivery tokens are returned in plaintext."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no real email implementation, and the simulated delivery exposes the complete reset token and link in the page log and browser console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Account values, reset tokens, passwords, and MFA codes are subjected to strict type, length, format, or complexity validation before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The reset link uses a relative internal path combined with the current origin, and no user-controlled redirect destination is accepted."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email template is implemented, but simulated delivery messages use fixed text and generated values without incorporating user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Although error responses omit secrets, the full reset token, reset link, and MFA code are intentionally displayed in the activity log and browser console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords use bcrypt and reset tokens are hashed, but the MFA code is a fixed secret hard-coded as MFA_CODE and is returned to the client."
+    },
+    "12": {
+      "score": 2,
+      "why": "The application has no conventional default username or password, but every session uses the same hard-coded MFA code 482915."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset-token and MFA verification both impose a one-minute block after five failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery returns a generic eligibility response and performs no account-existence lookup that could disclose whether an email or username exists."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset code is cryptographically random and complex, but it is bound only to a browser session rather than to the submitted user identity."
+    }
+  },
+  "cost_usd": 0.042435,
+  "generation_id": "gen-1785922873-cvCMBdVt2tA8WgYtDSac",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.0667,
+  "capture_complete": true
+}

@@ -8,10 +8,18 @@ from langgraph.graph import StateGraph, END
 
 from app.constants import INIT_CODE
 from app.utils.io import vprint, safe_invoke, normalize_content, set_args
-from app.utils.tokens import TOK, add_usage, extract_usage
+from app.utils.tokens import (
+    MODEL_VERSIONS,
+    MODELS_SEEN,
+    TOK,
+    add_usage,
+    extract_usage,
+    resolve_providers,
+)
+from app.utils.parsing import is_pass, parse_decision, parse_new_tasks, parse_task_list
 from app.utils.pricing import load_pricing
 from app.utils.summary import finalize_summary
-from provider import make_three_llms
+from provider import make_three_llms, resolved_models
 
 
 class State(TypedDict):
@@ -84,6 +92,15 @@ def run_multi(args) -> None:
                 f"evaluator in={pricing['evaluator']['in']}, cached_in={pricing['evaluator']['cached_in']}, out={pricing['evaluator']['out']}",
             )
 
+    # Protocol compliance counters. A model that cannot follow "output STRICT
+    # JSON" is a result in its own right, so the corrective retry below is
+    # recorded rather than silently absorbed.
+    protocol = {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0,
+    }
+
     # Initial state
     state: State = {
         "code_tsx": INIT_CODE,
@@ -106,35 +123,63 @@ def run_multi(args) -> None:
         state["step"] = int(state.get("step", 0)) + 1
         prefix = f"[iter {state.get('iter','?')} | step {state.get('step','?')}]"
         vprint(f"{prefix} TASKER: invoking")
-        resp = safe_invoke(
-            llm_tasker,
-            [
-                {"role": "system", "content": SYSTEM_TASKER},
-                {"role": "user", "content": user_msg},
-            ],
-            "TASKER",
-            int(state.get("iter", 0)),
-        )
-        # Tokens
-        it, ot, cit = extract_usage(resp)
-        add_usage("tasker", it, ot, cit)
-        if args.verbose:
-            vprint(
-                f"{prefix} TASKER tokens: input={it}, cached_input={cit}, output={ot}"
-            )
+        messages = [
+            {"role": "system", "content": SYSTEM_TASKER},
+            {"role": "user", "content": user_msg},
+        ]
 
-        text = normalize_content(resp.content)
-        if args.verbose:
-            preview = (text[:400] + "…") if len(text) > 400 else text
-            vprint(f"{prefix} TASKER output (preview): {preview}")
+        # Models vary in whether they honour "STRICT JSON": some wrap the object
+        # in ``` fences or add a preamble. parse_task_list tolerates both; if it
+        # still fails we re-ask once with a corrective instruction rather than
+        # killing a run that may already be hours old.
+        new_list = None
+        text = ""
+        for attempt in (1, 2):
+            resp = safe_invoke(llm_tasker, messages, "TASKER", int(state.get("iter", 0)))
+            usage = extract_usage(resp)
+            add_usage("tasker", usage)
+            if args.verbose:
+                vprint(
+                    f"{prefix} TASKER tokens: input={usage['input']}, "
+                    f"cached_input={usage['cached_input']}, output={usage['output']}, "
+                    f"reasoning={usage['reasoning']}"
+                )
 
-        try:
-            data = json.loads(text)
-        except json.JSONDecodeError as e:
-            vprint(f"{prefix} TASKER JSON ERROR. Raw:\n{text}")
-            raise ValueError(f"Tasker did not return valid JSON. Got:\n{text}") from e
+            text = normalize_content(resp.content)
+            if args.verbose:
+                preview = (text[:400] + "…") if len(text) > 400 else text
+                vprint(f"{prefix} TASKER output (preview): {preview}")
 
-        new_list = data.get("task_list", [])
+            try:
+                new_list = parse_task_list(text)
+                if attempt == 2:
+                    protocol["tasker_json_recovered_by_retry"] += 1
+                break
+            except ValueError:
+                protocol["tasker_json_parse_failures"] += 1
+                if attempt == 2:
+                    protocol["tasker_json_hard_failures"] += 1
+                    vprint(f"{prefix} TASKER JSON ERROR after retry. Raw:\n{text}")
+                    pathlib.Path(
+                        args.output, f"PROTOCOL_VIOLATION_tasker_json_iter{state.get('iter', 0)}.txt"
+                    ).write_text(text, encoding="utf-8")
+                    raise ValueError(
+                        f"Tasker did not return valid JSON after 2 attempts. Got:\n{text}"
+                    )
+                vprint(f"{prefix} TASKER: unparseable JSON, re-asking once")
+                messages = messages + [
+                    {"role": "assistant", "content": text},
+                    {
+                        "role": "user",
+                        "content": (
+                            "That was not valid JSON. Reply with ONLY a JSON object "
+                            'of the form {"task_list": ["...", "..."]} — no prose, '
+                            "no markdown code fences."
+                        ),
+                    },
+                ]
+
+        assert new_list is not None
         # Evaluator is authoritative for 'done'; do not modify state['done'] here.
         if new_list:
             state["task_list"] = new_list
@@ -172,17 +217,11 @@ def run_multi(args) -> None:
         latest_path = pathlib.Path(args.output, "tasker_report.md")
         versioned_path = pathlib.Path(args.output, f"tasker_report_iter{iter_no}.md")
         latest_path.write_text(report_md, encoding="utf-8")
-        if not versioned_path.exists():
-            versioned_path.write_text(report_md, encoding="utf-8")
-            if args.verbose:
-                vprint(
-                    f"{prefix} TASKER: wrote tasker_report.md and {versioned_path.name}"
-                )
-        else:
-            if args.verbose:
-                vprint(
-                    f"{prefix} TASKER: versioned exists, skipping overwrite of {versioned_path.name}"
-                )
+        # Always overwrite: a re-run of this run directory must not inherit
+        # artifacts from a previous attempt.
+        versioned_path.write_text(report_md, encoding="utf-8")
+        if args.verbose:
+            vprint(f"{prefix} TASKER: wrote tasker_report.md and {versioned_path.name}")
 
         return state
 
@@ -208,11 +247,13 @@ def run_multi(args) -> None:
             "CODER",
             iter_no=state.get("iter", 0),
         )
-        it, ot, cit = extract_usage(resp)
-        add_usage("coder", it, ot, cit)
+        usage = extract_usage(resp)
+        add_usage("coder", usage)
         if args.verbose:
             vprint(
-                f"{prefix} CODER tokens: input={it}, cached_input={cit}, output={ot}"
+                f"{prefix} CODER tokens: input={usage['input']}, "
+                f"cached_input={usage['cached_input']}, output={usage['output']}, "
+                f"reasoning={usage['reasoning']}"
             )
 
         text = normalize_content(resp.content)
@@ -256,11 +297,13 @@ def run_multi(args) -> None:
             "EVALUATOR",
             int(state.get("iter", 0)),
         )
-        it, ot, cit = extract_usage(resp)
-        add_usage("evaluator", it, ot, cit)
+        usage = extract_usage(resp)
+        add_usage("evaluator", usage)
         if args.verbose:
             vprint(
-                f"{prefix} EVALUATOR tokens: input={it}, cached_input={cit}, output={ot}"
+                f"{prefix} EVALUATOR tokens: input={usage['input']}, "
+                f"cached_input={usage['cached_input']}, output={usage['output']}, "
+                f"reasoning={usage['reasoning']}"
             )
 
         text = normalize_content(resp.content)
@@ -273,7 +316,7 @@ def run_multi(args) -> None:
         versioned_name = f"evaluator_report_iter{iter_no}.md"
         pathlib.Path(args.output, versioned_name).write_text(text, encoding="utf-8")
 
-        decision = _parse_decision(text)
+        decision = parse_decision(text)
 
         if args.verbose:
             preview_tasks = state.get("task_list", [])[:3]
@@ -287,29 +330,8 @@ def run_multi(args) -> None:
         else:
             # Evaluator is authoritative: FAIL means we are not done.
             state["done"] = False
-
-            # Parse NEW_TASKS and filter out sentinel non-tasks.
-            def _is_sentinel_task(s: str) -> bool:
-                return s.strip().lower() in {"none", "none.", "n/a", "no tasks", ""}
-
-            tasks = []
-            capture = False
-            for ln in text.splitlines():
-                if ln.strip().upper().startswith("NEW_TASKS"):
-                    capture = True
-                    continue
-                if capture:
-                    if ln.strip().startswith(("-", "1.", "2.", "3.")):
-                        clean = (
-                            ln.lstrip("- ").split(".", 1)[-1].strip()
-                            if ln.strip()[0].isdigit()
-                            else ln.lstrip("- ").strip()
-                        )
-                        if not _is_sentinel_task(clean):
-                            tasks.append(clean)
-                    elif ln.strip() == "":
-                        break
             # Use evaluator-provided tasks directly (no retention of stale tasks).
+            tasks = parse_new_tasks(text)
             state["task_list"] = tasks
             if args.verbose:
                 vprint(
@@ -340,34 +362,13 @@ def run_multi(args) -> None:
     g.set_entry_point("tasker")
     app = g.compile()
 
-    # PASS/FAIL parsing helpers
-    def _parse_decision(md: str) -> str:
-        lines = [ln.strip() for ln in (md or "").splitlines()]
-        for i, ln in enumerate(lines):
-            if ln.upper().startswith("DECISION"):
-                # Same-line variant: "DECISION: PASS" / "DECISION: FAIL"
-                if ":" in ln:
-                    val = ln.split(":", 1)[1].strip().upper()
-                    if val in {"PASS", "FAIL"}:
-                        return val
-                # Next non-empty line variant:
-                j = i + 1
-                while j < len(lines) and lines[j] == "":
-                    j += 1
-                if j < len(lines):
-                    nxt = lines[j].upper()
-                    if nxt in {"PASS", "FAIL"}:
-                        return nxt
-                break
-        return "FAIL"
-
-    def _pass_from_md(md: str) -> bool:
-        return _parse_decision(md) == "PASS"
-
     # RUN LOOP
-    logf = open(os.path.join(args.output, "log.jsonl"), "a", encoding="utf-8")
-    statef = open(os.path.join(args.output, "state.jsonl"), "a", encoding="utf-8")
+    # Write mode, not append: one run per directory. Appending across attempts
+    # made per-iteration token deltas meaningless (prev_totals restarts at 0).
+    logf = open(os.path.join(args.output, "log.jsonl"), "w", encoding="utf-8")
+    statef = open(os.path.join(args.output, "state.jsonl"), "w", encoding="utf-8")
     prev_totals = {"input": 0, "output": 0}
+    converged = False
 
     print(
         "Starting loop… (if this hangs, a network call is stuck; use --verbose and check CRASH_* files)"
@@ -380,14 +381,12 @@ def run_multi(args) -> None:
         state.update(state_local)
         # Belt-and-suspenders: if evaluator reports PASS, force done=True
         try:
-            if _pass_from_md(state.get("evaluator_md", "")):
+            if is_pass(state.get("evaluator_md", "")):
                 state["done"] = True
-                # Write a marker file once for auditability
-                marker = os.path.join(args.output, "PASS_MARKER")
-                if not os.path.exists(marker):
-                    pathlib.Path(marker).write_text(
-                        "evaluator decision PASS\n", encoding="utf-8"
-                    )
+                # Marker file for auditability; rewritten each attempt.
+                pathlib.Path(args.output, "PASS_MARKER").write_text(
+                    f"evaluator decision PASS at iteration {i + 1}\n", encoding="utf-8"
+                )
         except Exception:
             # Non-fatal; keep running with evaluator-set state
             pass
@@ -418,6 +417,8 @@ def run_multi(args) -> None:
                     "tokens_cumulative": {
                         "input": TOK["total"]["input"],
                         "output": TOK["total"]["output"],
+                        "reasoning": TOK["total"]["reasoning"],
+                        "cost_usd": TOK["total"]["cost_usd"],
                     },
                     "tokens_by_agent": TOK,  # snapshot
                 },
@@ -432,10 +433,37 @@ def run_multi(args) -> None:
 
         print(f"Iter {i+1} done. done={state['done']}, tasks={len(state['task_list'])}")
         if state["done"]:
+            converged = True
             break
 
     logf.close()
     statef.close()
 
+    if not converged:
+        # A run that exhausts max-iters is a recorded outcome, not a failure to
+        # hide: convergence rate is itself reportable per case.
+        pathlib.Path(args.output, "NO_CONVERGENCE").write_text(
+            f"evaluator never returned PASS within {MAX_ITERS} iterations\n",
+            encoding="utf-8",
+        )
+        print(f"WARNING: no convergence within {MAX_ITERS} iterations.")
+
     # Final summary
-    finalize_summary(args.output, pricing, pricing_missing, args.verbose)
+    finalize_summary(
+        args.output,
+        pricing,
+        pricing_missing,
+        args.verbose,
+        run_meta={
+            "converged": converged,
+            "iterations": int(state.get("iter", 0)),
+            "max_iters": MAX_ITERS,
+            "protocol_violations": protocol,
+            "models": resolved_models(),
+            "models_served": dict(MODELS_SEEN),
+            # resolve_providers() also populates MODEL_VERSIONS, so it must run first.
+            "providers_seen": resolve_providers(),
+            "model_versions": dict(MODEL_VERSIONS),
+            "requirements": args.requirements,
+        },
+    )

@@ -1,0 +1,116 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:12:13.335009+00:00",
+  "rubric_file": "inclusivity_eval_case_3.md",
+  "rubric_sha256": "72f5afbf5ecd676432e29ce4d603db651dc5fd336191b13da1c2e1dfb9ae2914",
+  "app_ts_sha256": "24a6e1467197c0ef6a9566560dbce218c9ba1da70fee6592759ec6e6f7e54b02",
+  "screenshot_count": 8,
+  "screenshots": [
+    "step_01_password_reset_start.png",
+    "step_02_confirm_approved_channel.png",
+    "step_03_check_recovery_message.png",
+    "step_04_verify_reset_code.png",
+    "step_05_set_new_password.png",
+    "step_06_sign_in.png",
+    "step_07_complete_second_factor.png",
+    "step_08_accept_privacy_statement.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All eight screens are static, single-column cards with no animation, carousels, or pop-up overlays; the only extra panel is a fixed dark Logs box."
+    },
+    "2": {
+      "score": 4,
+      "why": "Each screen has a large bold heading, a highlighted blue 'Next step' banner, and a single dark primary button, though the dense monospaced Logs panel competes visually for attention."
+    },
+    "3": {
+      "score": 4,
+      "why": "The stepper, explicit next-step instruction and small number of controls make the needed action easy to locate, but the required secret/code is buried in raw log text that a user must scan."
+    },
+    "4": {
+      "score": 3,
+      "why": "The stepper and per-step reminders offload sequence memory, yet the user must still carry long random secrets/tokens (e.g. OSsxJNi0Hw6qQMsSxAjYDHNMPXihgmPt78H2HSVqJ_A) from the Logs panel into input fields."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager hint, autofill guidance, 'remember me' checkbox, or show-password toggle appears on any screen, including the sign-in and new-password steps."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing is saved or pre-filled for recognition — no masked email, saved device, or remembered account is shown; only the completed-step colouring in the stepper is recognizable."
+    },
+    "7": {
+      "score": 4,
+      "why": "Headings and body text are short, plain-language sentences ('We will guide you one small step at a time'), although the log output is technical and hard to read."
+    },
+    "8": {
+      "score": 2,
+      "why": "No error state is shown in any screenshot; only success confirmations ('Code checked', 'Password accepted') appear, so problem-plus-fix messaging cannot be observed."
+    },
+    "9": {
+      "score": 2,
+      "why": "The password rule is stated ('At least 12 characters, uppercase, lowercase, number, symbol, and no spaces') but no example values, format hints, or placeholder samples are given for email, secret, or code fields."
+    },
+    "10": {
+      "score": 3,
+      "why": "Password and one-time code paths are clearly labelled and step 3 offers 'Open simulated recovery link' or 'Enter a code manually', but no biometric/face or passkey option exists and 'approved-channel authorization secret' is jargon."
+    },
+    "11": {
+      "score": 5,
+      "why": "Each screen presents at most one input plus two or three clearly ranked buttons, never overwhelming the user with parallel choices."
+    },
+    "12": {
+      "score": 5,
+      "why": "Every step shows an explicit outcome banner ('Code checked', 'Password changed', 'Privacy statement accepted', 'Confirmation recorded') plus an updated stepper."
+    },
+    "13": {
+      "score": 4,
+      "why": "Persistent 'Next step' guidance, pause reassurance, and a 'Get help and safety advice' link appear on every screen, though the tips are generic rather than tailored to each new task."
+    },
+    "14": {
+      "score": 4,
+      "why": "'Start recovery again', 'Send the authorization secret again', and 'Restart password recovery' buttons let the user retry, with reassurance that progress stays on the step."
+    },
+    "15": {
+      "score": 5,
+      "why": "All eight screens reuse the identical header, five-item stepper, card layout, banner styles, button styling, and footer text."
+    }
+  },
+  "cost_usd": 0.100045,
+  "generation_id": "gen-1785924712-8AhuO4Vb5tmnk9cH718j",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 4,
+    "4": 3,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 2,
+    "9": 2,
+    "10": 3,
+    "11": 5,
+    "12": 5,
+    "13": 4,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.3333,
+    "memory": 2.0,
+    "comprehension": 2.6667,
+    "decision_making": 4.3333,
+    "learning": 4.3333
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

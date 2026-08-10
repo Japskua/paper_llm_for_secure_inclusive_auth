@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:45:31.295949+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The recovery token is stored in the requesting session and reset authorization additionally requires its server-controlled accountRef to equal \"protected-account\"."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is validated only against the RecoveryState in the session that requested it, so another session cannot use the same token."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset changes the password hash but does not revoke or invalidate any other existing sessions for the protected account."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is TLS-only and rejects non-HTTPS requests, but the code does not explicitly configure a minimum or exact TLS protocol version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but recovery tokens and other session data are retained in plaintext in the in-memory sessions map rather than encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email message is implemented, while the simulated delivery returns the recovery token and link directly to the client."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers and passwords undergo strict type, length, format, and policy validation, and user-supplied values are not interpolated into HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is constructed with same-origin relative paths through history.pushState, and no user-controlled external redirect target is accepted."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates to inspect, although the displayed interface uses textContent and does not place user input into executable HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The simulated recovery token, recovery link, and fixed MFA code are explicitly written to the browser console and on-page log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although the password is bcrypt-hashed, the MFA code \"246810\" is hardcoded and recovery secrets are stored unencrypted in memory."
+    },
+    "12": {
+      "score": 2,
+      "why": "The application has no conventional default account credentials, but every recovery uses the same hardcoded MFA test code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery-token and MFA verification are blocked for one minute after five unsuccessful attempts."
+    },
+    "14": {
+      "score": 4,
+      "why": "Arbitrary identifiers receive the same generic response, although the documented mock identifier is distinguishable because its response includes a token and link."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery codes contain 32 cryptographically random bytes and are bound to the requesting session and the server-controlled protected-account reference."
+    }
+  },
+  "cost_usd": 0.0417915,
+  "generation_id": "gen-1785912298-G9drYqWjzWV8JNJFIDbp",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

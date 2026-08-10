@@ -1,0 +1,145 @@
+{
+  "variables": {
+    "new_password": "NewPassw0rd!"
+  },
+  "html_variables": {
+    "recovery_reference": "id\\.value=\"([^\"]+)\""
+  },
+  "csrf": {
+    "html_regex": null,
+    "field": "x-csrf-token",
+    "in": "header",
+    "session_path": "/api/session?route=home"
+  },
+  "steps": [
+    {
+      "name": "open recovery portal",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "initialize secure session",
+      "method": "GET",
+      "path": "/api/session?route=home",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery/initiate",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "identifier": "${recovery_reference}"
+      },
+      "capture": {
+        "recovery_token": "mockToken"
+      }
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "token": "${recovery_token}"
+      }
+    },
+    {
+      "name": "set replacement password",
+      "method": "POST",
+      "path": "/api/recovery/reset",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "password": "${new_password}",
+        "confirm": "${new_password}"
+      },
+      "capture": {
+        "mfa_code": "mockCode"
+      }
+    },
+    {
+      "name": "confirm reset MFA code",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "code": "${mfa_code}"
+      }
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {}
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment/confirm",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {}
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid recovery reference rejected",
+      "method": "POST",
+      "path": "/api/recovery/initiate",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "identifier": "!"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/recovery/initiate",
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "identifier": "${recovery_reference}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "headers": {
+        "content-type": "application/json",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "identifier": "${recovery_reference}",
+        "password": "WrongPassw0rd!"
+      },
+      "expect_failure": true
+    }
+  ]
+}

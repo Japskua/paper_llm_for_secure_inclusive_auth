@@ -1,0 +1,112 @@
+{
+  "variables": {
+    "email": "demo@example.test",
+    "new_password": "N0rth!River2025"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#account",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery instructions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#tokenStage:not(.hidden)"
+        },
+        {
+          "do": "read",
+          "selector": "#testToken",
+          "regex": "([a-f0-9]{64})",
+          "into": "reset_token"
+        }
+      ]
+    },
+    {
+      "name": "confirm_security_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfaStage:not(.hidden)"
+        },
+        {
+          "do": "read",
+          "selector": "#logOutput",
+          "regex": "SIMULATED MFA DELIVERY — security code: (\\d{6})",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm security code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#passwordStage:not(.hidden)"
+        },
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirmPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacyStage:not(.hidden)"
+        }
+      ]
+    },
+    {
+      "name": "accept_privacy_conditions",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#privacyCheck"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept conditions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#successStage:not(.hidden)"
+        }
+      ]
+    },
+    {
+      "name": "recovery_complete",
+      "actions": []
+    }
+  ]
+}

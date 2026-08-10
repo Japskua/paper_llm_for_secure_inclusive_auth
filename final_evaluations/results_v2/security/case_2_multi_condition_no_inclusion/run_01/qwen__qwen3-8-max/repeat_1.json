@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:11:21.794473+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset verification endpoint checks that the stored reset record's sessionId matches the current session before accepting the token."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is bound to the issuing session and deleted after successful verification, so the same code does not work for another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "After password reset the code changes the global password hash and current session flags but does not invalidate other existing sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is configured with TLS certificate and key and redirects HTTP to HTTPS, but no explicit TLS version or minimum version is specified."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are stored as SHA-256 verifiers and passwords are Argon2id hashed, but reset codes and user data are not encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email-sending or email message implementation is present in the supplied code, so the claim cannot be positively verified."
+    },
+    "7": {
+      "score": 4,
+      "why": "Contact, token, and password inputs are validated with strict patterns and length rules, and DOM output uses textContent rather than injecting untrusted HTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "The only server redirect is to a fixed HTTPS localhost origin, and client navigation uses relative paths rather than external URLs."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the supplied code, so their safety cannot be positively assessed."
+    },
+    "10": {
+      "score": 1,
+      "why": "The API returns testingToken and testingMfaCode, and the client logs those values in the page and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id hashed at runtime, but fixed MFA codes such as \"482913\" and \"741852\" are embedded in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no embedded plaintext password, but deterministic hardcoded MFA codes are present and disclosed during testing flows."
+    },
+    "13": {
+      "score": 4,
+      "why": "The code applies per-session attempt limits and temporary 60-second blocks for recovery, token verification, MFA, login, and login MFA."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery and login failures return generic messages that do not reveal whether the supplied contact or account exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset token is generated with randomHex(32) and validated through a session-bound SHA-256 verifier, though it is tied to a session rather than a persistent user identity."
+    }
+  },
+  "cost_usd": 0.05682,
+  "generation_id": "gen-1785920929-Uj31dz4KZvtvF9rhpRdD",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 3,
+    "7": 4,
+    "8": 4,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

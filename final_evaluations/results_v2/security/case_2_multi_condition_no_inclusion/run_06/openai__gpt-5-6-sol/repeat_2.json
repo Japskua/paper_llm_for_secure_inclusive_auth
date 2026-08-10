@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:31:32.288539+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The submitted token is checked against the hash stored in a recovery record bound to the current session, although no actual user account is associated with the supplied email."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is tied to one recovery and session, so another session cannot retrieve the corresponding recovery record to use it."
+    },
+    "3": {
+      "score": 5,
+      "why": "The code performs no revocation of existing sessions after resetting a password, and the current session remains valid until its normal expiration."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires TLS certificate files and serves HTTPS, but it does not explicitly configure or enforce a minimum or latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, while the application stores no substantive user data."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is generated, and the simulated delivery exposes the complete reset token in the API response, page, activity log, and browser console."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are constrained and validated before security-sensitive use and are not rendered as HTML, although the calculated email-validity result is ignored."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application uses only same-origin API paths and fixed fragment links and implements no user-controlled external redirects."
+    },
+    "9": {
+      "score": 4,
+      "why": "There is no actual email template, while the simulated delivery uses static content and inserts dynamic values through textContent rather than HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token is deliberately displayed in the interface and written to both the activity log and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are securely hashed and reset tokens are hash-stored, but the MFA code is hard-coded as MFA_CODE and duplicated in client-side code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The fixed value 246810 functions as a default MFA credential available to every recovery session."
+    },
+    "13": {
+      "score": 5,
+      "why": "Token, MFA, and password failures trigger recovery-level blocking after five attempts and additional client-level rate limits."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery initiation always returns the same generic response and creates a simulated recovery regardless of email validity or account availability."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset token is a cryptographically random 64-character value specific to a recovery session, but it is not associated with an authenticated user or the supplied email address."
+    }
+  },
+  "cost_usd": 0.0480505,
+  "generation_id": "gen-1785922271-hvRq6DoMjP4dCm3CYoCN",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

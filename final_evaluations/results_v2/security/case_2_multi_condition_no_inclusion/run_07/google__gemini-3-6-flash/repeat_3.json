@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:37:39.004360+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset records store an explicit identity scope upon creation and are validated against registered reset token hashes."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are marked as used upon verification and cannot be reused by any session or user."
+    },
+    "3": {
+      "score": 1,
+      "why": "During password updates, the server iterates over all active sessions and revokes their authentication and MFA flags."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application serves HTTPS traffic using Bun's TLS configuration with certificate and key files."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords are hashed using bcrypt with a cost factor of 10, and reset tokens are stored as SHA-256 hashes."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated recovery instructions and messages refrain from exposing private user payload data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are safely bound to DOM nodes using textContent and processed through generic JSON payloads."
+    },
+    "8": {
+      "score": 5,
+      "why": "HTTP redirects enforce a hardcoded host destination ('https://localhost') and client navigation is restricted to an allowlist of internal paths."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not generate or render HTML email templates from user input."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error responses return static generic text, and exceptions catch runtime errors without exposing tokens or stack traces."
+    },
+    "11": {
+      "score": 1,
+      "why": "A default initial password hash string and a hardcoded MFA code ('246810') are present directly in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system boots with a predefined default password ('Initial!DemoPassword2025') hardcoded into the initial account state."
+    },
+    "13": {
+      "score": 5,
+      "why": "Server-side rate limiting and temporary lockouts are enforced on recovery, verification, login, and MFA attempts."
+    },
+    "14": {
+      "score": 1,
+      "why": "The recovery endpoint returns a 'code' field in the JSON response when the target identity matches, exposing account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using 32 bytes of cryptographically secure random data and bound to an identity scope."
+    }
+  },
+  "cost_usd": 0.0550755,
+  "generation_id": "gen-1785922631-3Sk30QdtnqsOvcmSMCmx",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

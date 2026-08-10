@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:02:40.651237+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset tokens are stored with the requesting account's accountKey and bound into the session recovery flow, so a confirmed code only resets the account that requested it."
+    },
+    "2": {
+      "score": 2,
+      "why": "Codes are 256-bit random, single-use, hash-stored and tied to one accountKey, so the same code does not generally work for other users, though tokens are bearer-style and confirmation is not bound to the requesting session."
+    },
+    "3": {
+      "score": 5,
+      "why": "replacePassword only updates account.passwordHash and never invalidates existing sessions or clears authenticatedAccount, so previously authenticated sessions keep working after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with a TLS cert/key, plain HTTP is rejected with 426 and HSTS is set, but no explicit TLS version pinning confirms the 'latest' version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords are Argon2id-hashed and reset/identity codes are stored as SHA-256 digests (appropriate, though hashing rather than encryption), while account data sits unencrypted in memory."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email; the mock delivery returns the token in the API response and renders it in the page log/sessionStorage, though responses avoid exposing other private user data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifier, token, identity, and MFA inputs are validated with strict whitelist regexes, bodies are size-bounded and safely parsed, and client rendering uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "renderLink only builds same-origin links with fixed pathname '/' and a whitelisted recovery-test parameter, and all API calls use relative same-origin paths."
+    },
+    "9": {
+      "score": 5,
+      "why": "The single page template is server-generated with a nonce-based CSP and all dynamic content (including mock delivery messages) is inserted via textContent, so no user input becomes HTML or script."
+    },
+    "10": {
+      "score": 2,
+      "why": "The in-page 'Logs' panel and console deliberately display reset tokens, identity codes, and MFA codes, even though server error responses are generic and stack-trace free."
+    },
+    "11": {
+      "score": 2,
+      "why": "Stored passwords use Argon2id and tokens are hashed, but the seed password 'Initial!HospitalPassword9' is hardcoded in source and MFA/possession codes are plaintext in the session and sessionStorage."
+    },
+    "12": {
+      "score": 2,
+      "why": "provision() creates three accounts sharing the same hardcoded initial password with no forced change, so default credentials exist and are usable."
+    },
+    "13": {
+      "score": 5,
+      "why": "Five-failure five-minute lockouts exist for login, token confirmation, identity verification, and both MFA steps, plus a 3-per-15-minute throttle on recovery requests."
+    },
+    "14": {
+      "score": 4,
+      "why": "Recovery and login return identical generic messages whether or not the account exists, though unknown-account logins skip the Argon2 verify leaving a minor timing discrepancy."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are 32-byte CSPRNG base64url values stored only as SHA-256 hashes, bound to a single accountKey, 15-minute expiry, single-use with atomic reservation."
+    }
+  },
+  "cost_usd": 0.1413462,
+  "generation_id": "gen-1785924102-ObkjCSgUFSOHnD2JnI2Q",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

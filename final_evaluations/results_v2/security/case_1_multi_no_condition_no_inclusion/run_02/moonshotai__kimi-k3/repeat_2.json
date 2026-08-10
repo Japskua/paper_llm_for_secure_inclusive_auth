@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:47:47.996533+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Verification compares the submitted token against the requesting session's stored recovery.token via equalSecurely, and reset-password additionally requires state.recovery.accountRef === \"protected-account\", binding the code to its owner session."
+    },
+    "2": {
+      "score": 1,
+      "why": "The token exists only inside the originating session's state.recovery, so any other session has no matching recovery record and the same code fails validation — the statement is false."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset performs no session invalidation: entries in the sessions map (including previously authenticated ones) persist until TTL expiry, so previous sessions continue to work."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server is TLS-only (Bun.serve tls) with HSTS and rejects non-HTTPS requests, but no TLS protocol version is pinned in code, so enforcement of the latest TLS version cannot be confirmed."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are 32-byte crypto.getRandomValues values and passwords are hashed with bcrypt (cost 10), though tokens sit in plaintext in the in-memory session map rather than being encrypted."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email is sent; the simulated delivery returns only the token and link with no user identifiers, so the message contains no private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are strictly validated (identifier whitelist regex, token format/length checks, password policy) and output is rendered exclusively via textContent and JSON, never innerHTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is restricted to whitelisted views via safeView() and same-origin pushState paths, and the generated recovery link is same-origin only; no external or user-controlled redirects exist."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates at all, and the single page template interpolates no user input (nonce-based CSP, textContent-only DOM updates), so no user-controlled scripts or HTML appear anywhere."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces, but the client log() function writes the mock recovery token and MFA code into the on-page log list and browser console, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but secret codes are hardcoded in the source: MFA_TEST_CODE = \"246810\" and MOCK_RECOVERY_SCENARIO = \"local-recovery-demo\"."
+    },
+    "12": {
+      "score": 2,
+      "why": "The hardcoded static MFA_TEST_CODE \"246810\" is accepted for every password reset, effectively functioning as a default/shared credential built into the system."
+    },
+    "13": {
+      "score": 4,
+      "why": "Token and MFA endpoints throttle via registerFailure/blocked, returning 429 after 5 failures for 60 seconds, though the lockout is per-session only."
+    },
+    "14": {
+      "score": 4,
+      "why": "The recovery request returns the same generic message for every input, revealing nothing about account existence; only the documented local demo value yields additional mock fields."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is a 32-byte CSPRNG value (crypto.getRandomValues, base64url) with a 10-minute TTL, single-use flag, and binding to the session's protected-account recovery record."
+    }
+  },
+  "cost_usd": 0.1370754,
+  "generation_id": "gen-1785912388-AKHSUjRZ50Mo4pMQ0D3x",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

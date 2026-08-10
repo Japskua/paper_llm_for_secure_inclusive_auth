@@ -1,0 +1,69 @@
+{
+  "ok": false,
+  "stage": "partial",
+  "steps_planned": 10,
+  "steps_captured": 5,
+  "screenshots": [
+    {
+      "index": 1,
+      "name": "login_page",
+      "file": "step_01_login_page.png",
+      "incomplete": false
+    },
+    {
+      "index": 2,
+      "name": "reset_instructions_sent",
+      "file": "step_02_reset_instructions_sent.png",
+      "incomplete": false
+    },
+    {
+      "index": 3,
+      "name": "verify_reset_code",
+      "file": "step_03_verify_reset_code.png",
+      "incomplete": false
+    },
+    {
+      "index": 4,
+      "name": "set_new_password",
+      "file": "step_04_set_new_password.png",
+      "incomplete": false
+    },
+    {
+      "index": 5,
+      "name": "new_password_entered",
+      "file": "step_05_new_password_entered_INCOMPLETE.png",
+      "incomplete": true
+    }
+  ],
+  "console_errors": [],
+  "failure": {
+    "step": "new_password_entered",
+    "index": 5,
+    "action": {
+      "do": "fill",
+      "selector": "#new-password",
+      "value": "${new_password}"
+    },
+    "error": "TimeoutError: Page.fill: Timeout 12000ms exceeded.\nCall log:\n  - waiting for locator(\"#new-password\")\n",
+    "html": "<!DOCTYPE html><html lang=\"en\"><head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Secure Recovery Portal</title>\n  <style nonce=\"\">\n    :root { color-scheme: light; --blue:#075a9f; --ink:#14212b; --muted:#52616c; --line:#c9d4dc; --soft:#f2f7fa; --good:#126a41; --warn:#8a4b00; }\n    * { box-sizing:border-box; }\n    body { margin:0; background:#edf3f6; color:var(--ink); font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif; }\n    header { background:#fff; border-bottom:4px solid var(--blue); }\n    .bar, main, footer { max-width:820px; margin:auto; padding-left:24px; padding-right:24px; }\n    .bar { min-height:86px; display:flex; align-items:center; justify-content:space-between; gap:20px; }\n    h1 { font-size:1.32rem; margin:0; } h2 { margin-top:0; font-size:1.45rem; }\n    nav { display:flex; gap:8px; flex-wrap:wrap; }\n    main { padding-top:28px; padding-bottom:24px; }\n    .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:26px; box-shadow:0 2px 9px #18354a12; }\n    .card + .card { margin-top:20px; }\n    p { margin:0 0 16px; } .muted { color:var(--muted); }\n    label { display:block; margin:16px 0 6px; font-weight:650; }\n    input { width:100%; padding:11px; border:1px solid #8495a1; border-radius:5px; font:inherit; }\n    input:focus, button:focus { outline:3px solid #8cc7ec; outline-offset:2px; }\n    button { border:1px solid #075a9f; border-radius:5px; padding:10px 15px; background:var(--blue); color:#fff; font:inherit; font-weight:650; cursor:pointer; }\n    button.secondary { background:#fff; color:#075a9f; } button:disabled { opacity:.55; cursor:not-allowed; }\n    .actions { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:21px; }\n    .notice { border-left:4px solid var(--blue); background:var(--soft); padding:14px 16px; margin:0 0 20px; }\n    .notice strong { display:block; margin-bottom:4px; }\n    .status { min-height:24px; margin-top:16px; font-weight:600; } .status.error { color:#9b1c1c; } .status.ok { color:var(--good); }\n    .checkline { display:flex; gap:10px; align-items:flex-start; margin-top:18px; } .checkline input { width:auto; margin-top:5px; }\n    ul { padding-left:21px; } code { background:#eaf0f3; padding:1px 4px; border-radius:3px; }\n    details summary { cursor:pointer; font-weight:650; } pre { white-space:pre-wrap; word-break:break-word; margin:10px 0 0; font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; }\n    footer { padding-bottom:28px; color:var(--muted); font-size:.9rem; }\n    @media (max-width:560px) { .bar { padding-top:16px; padding-bottom:16px; align-items:flex-start; flex-direction:column; } .card { padding:20px; } }\n  </style>\n</head>\n<body>\n  <header>\n    <div class=\"bar\">\n      <h1>Local Health Portal — Account Recovery</h1>\n      <nav aria-label=\"Recovery navigation\">\n        <button class=\"secondary\" type=\"button\" data-screen=\"request\">Request reset</button>\n        <button class=\"secondary\" type=\"button\" data-screen=\"verify\">Enter reset code</button>\n      </nav>\n    </div>\n  </header>\n  <main>\n    <div class=\"notice\" role=\"note\">\n      <strong>Protect your account</strong>\n      Verify that this is the <code>https://localhost:3000</code> portal. Never share a password, reset link, or verification code by email, phone, or chat. Hospital staff will not ask for them.\n    </div>\n    <div id=\"status\" class=\"status error\" role=\"status\" aria-live=\"polite\">That reset code is invalid, expired, or has already been used.</div>\n    <section id=\"app\" aria-live=\"polite\" aria-busy=\"false\"><section class=\"card\" aria-labelledby=\"verify-title\"><h2 id=\"verify-title\">Verify reset code</h2><p>Paste or type the reset code from the simulated delivery log. Reset codes expire and can be used for one password reset only.</p><form><label for=\"reset-code\">Reset code</label><input id=\"reset-code\" name=\"reset-code\" type=\"text\" required=\"required\" autocomplete=\"one-time-code\" maxlength=\"100\" style=\"\"><div class=\"actions\"><button type=\"submit\" class=\"\">Verify code</button><button type=\"button\" class=\"secondary\">Request another code</button></div></form></section></section>\n    <section class=\"card\" aria-labelledby=\"logs-title\">\n      <details open=\"\">\n        <summary id=\"logs-title\">Logs (simulated delivery and verification events)</summary>\n        <pre id=\"logs\" aria-live=\"polite\">Secure local session established. No external network delivery is used.\nSIMULATED RESET DELIVERY: reset code gdk6MnuDHxAqFnoYNY39DlzMY-esxweTpLBFokP9e_k. Enter it manually in the verification screen. Never share this code.</pre>\n      </details>\n    </section>\n  </main>\n  <footer>Demo recovery flow. Delivery is simulated locally; no email, SMS, or external service is contacted.</footer>\n  <script nonce=\"\">\n    (() => {\n      \"use strict\";\n      const app = document.getElementById(\"app\");\n      const status = document.getElementById(\"status\");\n      const logs = document.getElementById(\"logs\");\n      const state = { csrf: \"\", resetCode: \"\", screen: \"request\" };\n      const allowedScreens = new Set([\"request\", \"verify\", \"password\", \"mfa\", \"privacy\", \"confirmed\"]);\n\n      // Requirements 2 and 5: all UI content is constructed with DOM/text APIs, never injected HTML.\n      function node(tag, text, attrs) {\n        const element = document.createElement(tag);\n        if (text !== undefined && text !== null) element.textContent = text;\n        if (attrs) for (const [key, value] of Object.entries(attrs)) {\n          if (key === \"className\") element.className = value;\n          else element.setAttribute(key, value);\n        }\n        return element;\n      }\n      function log(message) {\n        console.log(message);\n        logs.textContent = (logs.textContent === \"Waiting for secure session…\" ? \"\" : logs.textContent + \"\\n\") + message;\n      }\n      function setStatus(message, error) {\n        status.textContent = message || \"\";\n        status.className = \"status"
+  },
+  "chosen_attempt": "initial",
+  "attempts": [
+    {
+      "label": "initial",
+      "ok": false,
+      "captured": 5
+    },
+    {
+      "label": "repaired",
+      "ok": false,
+      "captured": 2
+    },
+    {
+      "label": "rederived",
+      "ok": false,
+      "captured": 3
+    }
+  ],
+  "output_dir": "/Users/japskua/projects/lut/paper_llm_for_secure_inclusive_auth/generations/password_recovery_health/case_1_multi_no_condition_no_inclusion/run_09/screenshots"
+}

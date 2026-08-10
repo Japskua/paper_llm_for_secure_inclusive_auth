@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:57:55.969356+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset validation requires token === session.resetToken for the caller’s session after that session requested the reset."
+    },
+    "2": {
+      "score": 1,
+      "why": "The reset token is stored only on the requesting session, so another user’s session has no matching resetToken and cannot use it."
+    },
+    "3": {
+      "score": 5,
+      "why": "password-update only mutates the current session and never invalidates or removes other entries in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS certs and non-HTTPS is rejected, but the TLS protocol version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens and session fields are stored in memory in plaintext, not encrypted."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email body; API copy is generic and does not include profile PII beyond the demo mock token channel."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email/token/password inputs are type-checked and validated, and the UI builds nodes with textContent rather than injecting HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "No user-controlled redirect targets exist; navigation is in-app screen changes and fetch calls to same-origin /api paths."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates that interpolate user input into HTML or scripts; delivery is only simulated locally."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server error JSON is generic with no stack traces, but the UI logs panel deliberately prints reset and MFA tokens."
+    },
+    "11": {
+      "score": 1,
+      "why": "MFA_CODE is hardcoded as \"482913\" in source; only the password is stored via bcrypt on the session."
+    },
+    "12": {
+      "score": 4,
+      "why": "There is no default password login path and new passwords must meet a strong policy, though the demo MFA secret is fixed."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateAllowed throttles reset-request (3/15m), reset-validate (5/15m), and mfa-verify (5/15m) attempts per session."
+    },
+    "14": {
+      "score": 5,
+      "why": "reset-request always returns the same generic message and a mock token whether or not the email is the known account."
+    },
+    "15": {
+      "score": 5,
+      "why": "reset tokens are 32-byte crypto random base64url values stored on the requesting session, hence complex and session-specific."
+    }
+  },
+  "cost_usd": 0.018188,
+  "generation_id": "gen-1785920230-uYm3aBvLBaRg9VS4twJQ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 1,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": false
+}

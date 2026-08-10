@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:57:05.583315+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "`/api/reset-validate` and `/api/password-update` compare the submitted token strictly against `session.resetToken` (only set when the request matched MOCK_ACCOUNT_EMAIL), so a code only works within the session/account it was issued for, though there is no real per-user record."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are stored solely in the server-side session and validated with `token === session.resetToken`, so a code from one session/user cannot be used in another — the statement is false of this system."
+    },
+    "3": {
+      "score": 4,
+      "why": "Nothing in `/api/password-update` rotates the session id or deletes other sessions, so any pre-existing session cookies remain valid until the 30-minute TTL expires."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured with TLS cert/key, HTTP-only port 3001 returns 426, HSTS is set and non-HTTPS requests are rejected (421), but no explicit minimum TLS version is pinned, relying on Bun defaults."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with bcrypt cost 12 and traffic is TLS-protected, but reset tokens are kept in memory in cleartext (not hashed) and returned verbatim to the client as `mockDeliveryToken`."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email message at all — 'delivery' is simulated by returning the reset code in the API JSON and printing it to the page log/console, which does not guard the secret."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are type-checked, trimmed, length-limited (4KB body, maxLength fields), validated with regexes for email/code/password, and all UI is rendered via `textContent`/`setAttribute` with a nonce-based CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application performs no redirects or outbound requests; navigation is limited to an allow-list of internal screen names, with `form-action 'self'`, `base-uri 'none'` and `default-src 'none'`."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, and the equivalent notification content is generated with DOM text nodes only, so no user input is ever interpolated into HTML or script."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server error responses are generic with no stack traces, but the reset token and MFA code are deliberately written to `console.log` and the visible 'Logs' pane, so secrets do appear in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA secret is hardcoded in the source (`const MFA_CODE = \"482913\"`) along with the account email constant."
+    },
+    "12": {
+      "score": 2,
+      "why": "The static, hardcoded six-digit MFA code `482913` functions as a default credential that always satisfies `/api/mfa-verify`, and the mock account email is fixed in code."
+    },
+    "13": {
+      "score": 4,
+      "why": "`rateAllowed` throttles reset requests (3/15 min), reset-code guesses (5/15 min) and MFA attempts (5/15 min), though counters are per-session and can be reset by obtaining a fresh cookie via `/api/bootstrap`."
+    },
+    "14": {
+      "score": 4,
+      "why": "`/api/reset-request` returns the identical generic message and an opaque random token for every valid-format email, so the immediate response does not disclose account existence (only later validation failure differs)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from `crypto.getRandomValues` over 32 bytes encoded base64url, are bound to the session, single-use (`resetUsed`) and expire after 15 minutes."
+    }
+  },
+  "cost_usd": 0.138425,
+  "generation_id": "gen-1785920183-DJTl900RtvZDBhKgNBNM",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.5333,
+  "capture_complete": false
+}

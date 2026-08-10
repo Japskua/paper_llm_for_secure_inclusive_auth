@@ -1,0 +1,118 @@
+{
+  "variables": {
+    "email": "demo-account",
+    "new_password": "ValidReset1!Pass"
+  },
+  "steps": [
+    {
+      "name": "request_password_reset",
+      "actions": []
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#identifier",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Request secure reset code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#token-screen:not([hidden])"
+        },
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "Test reset code: ([A-Za-z0-9_-]+)",
+          "into": "reset_code"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#reset-token",
+          "value": "${reset_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password-screen:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "confirm_identity",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#new-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa-screen:not([hidden])"
+        },
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "Training MFA code: ([0-9]{6})",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "updated_privacy_conditions",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacy-screen:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "password_recovery_complete",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#privacy-check"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept and continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#complete-screen:not([hidden])"
+        }
+      ]
+    }
+  ]
+}

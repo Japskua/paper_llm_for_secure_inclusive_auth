@@ -1,0 +1,160 @@
+{
+  "variables": {
+    "email": "helena.patient@hospital.test",
+    "new_password": "ValidPassw0rd!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "const b=await api\\(\"(/api/bootstrap)\"\\);if\\(!b\\.ok\\).*?csrf=b\\.csrf",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "bootstrap recovery session and CSRF",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "read initial recovery status",
+      "method": "GET",
+      "path": "/api/status",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "start password recovery",
+      "method": "POST",
+      "path": "/api/recovery/start",
+      "body": {
+        "email": "${email}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "authorization_secret": "authorizationSecret"
+      }
+    },
+    {
+      "name": "confirm approved channel",
+      "method": "POST",
+      "path": "/api/recovery/channel",
+      "body": {
+        "code": "${authorization_secret}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "token": "token"
+      }
+    },
+    {
+      "name": "open simulated recovery link",
+      "method": "GET",
+      "path": "/recovery/verify?token=${token}"
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "token": "${token}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "save new password",
+      "method": "POST",
+      "path": "/api/recovery/password",
+      "body": {
+        "token": "${token}",
+        "password": "${new_password}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "email": "${email}",
+        "password": "${new_password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mfaCode"
+      }
+    },
+    {
+      "name": "complete MFA",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid recovery email rejected",
+      "method": "POST",
+      "path": "/api/recovery/start",
+      "body": {
+        "email": "not-an-email"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong approved-channel secret rejected",
+      "method": "POST",
+      "path": "/api/recovery/channel",
+      "body": {
+        "code": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "password policy violation rejected",
+      "method": "POST",
+      "path": "/api/recovery/password",
+      "body": {
+        "token": "${token}",
+        "password": "short"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "email": "${email}",
+        "password": "WrongPassw0rd!"
+      },
+      "expect_failure": true
+    }
+  ]
+}

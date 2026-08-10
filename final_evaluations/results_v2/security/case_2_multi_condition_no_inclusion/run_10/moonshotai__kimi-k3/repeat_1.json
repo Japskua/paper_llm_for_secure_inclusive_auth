@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:56:37.512273+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c2876b4ed426a65417ec33b6fbb9afae2da3d7affeb88cb28b5873f4558bbdcc",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The token digest is stored in the session's recovery record and verification uses a constant-time safeEqual against that session-bound digest, confirming the code belongs to this session/user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Recovery records are per-session and compared only against the current session's stored digest, so a code issued in one session cannot verify in another; the statement is false."
+    },
+    "3": {
+      "score": 5,
+      "why": "There is no session-invalidation logic anywhere; sessions remain in the map until the 30-minute expiry, so previous sessions genuinely still work after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server is a TLS-only listener that rejects non-HTTPS requests and sets HSTS, but the TLS version is not explicitly pinned to the latest version in the configuration."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests and passwords are hashed with bcrypt (cost 12); these are appropriate one-way protections, though technically hashing rather than encryption."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email is actually sent; the contact value is never transmitted or logged, but the simulated delivery channel exposes the token in plaintext in the browser console and visible logs panel."
+    },
+    "7": {
+      "score": 4,
+      "why": "All request bodies are type-validated, tokens are hashed before comparison, passwords are policy-checked and hashed, and the client inserts all data via textContent with server-side escapeHtml for dynamic values."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is hash-based routing entirely within the single-page app, no external redirect targets exist, and CSP enforces form-action 'self' and base-uri 'none'."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, and all dynamic page content is inserted via textContent or escaped HTML under a strict nonce-based CSP, so no user input can appear as script or HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error pages are generic with no stack traces, but the reset token and MFA code are deliberately written to console.log and the visible #logs panel, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and reset tokens stored as digests, but the MFA secret code is hardcoded in the source as \"482913\", contradicting the statement."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default accounts or credentials exist and a strong password policy is enforced server-side, though the fixed MFA code functions as a shared, predictable code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Both per-session throttling and a bounded trusted-IP rate limiter cap attempts (3 for token issuance, 5 for token verification, password submission, and MFA) with 429 responses."
+    },
+    "14": {
+      "score": 5,
+      "why": "Every recovery request returns the identical generic message and the contact value is never stored, logged, or checked against any account list, so account existence is not revealed."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset token is a 256-bit CSPRNG value bound to the session, but it is issued without verifying any real user identity and the accompanying MFA code is deterministic (\"482913\")."
+    }
+  },
+  "cost_usd": 0.090285,
+  "generation_id": "gen-1785923505-BtBbNHVv4W91m678QpG9",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

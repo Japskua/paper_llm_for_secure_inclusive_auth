@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:01:55.650352+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "/api/reset-validate and /api/password-update require token === session.resetToken, and that token is only stored server-side when the request email matches the known mock account, binding the code to that user's session."
+    },
+    "2": {
+      "score": 1,
+      "why": "The reset token is stored per session and only for the mock account, so a code issued in one session fails validation in any other session (token === session.resetToken)."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password update only flags the current session (session.resetUsed = true) and nothing revokes other sessions, which remain usable until the 30-minute TTL sweeper removes them."
+    },
+    "4": {
+      "score": 4,
+      "why": "The app serves only over TLS with HSTS, rejects plain HTTP (426) and non-HTTPS requests (421), but the TLS version is not explicitly pinned, so 'latest' relies on runtime defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords are hashed with bcrypt (cost 12) and tokens are 32-byte CSPRNG values, though the reset token itself is held in plaintext in the in-memory session rather than hashed or encrypted."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email is sent; the simulated local delivery message contains only the reset code plus never-share guidance, with no other private user data exposed."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email is trimmed/lowercased and regex-validated, passwords are policy-validated, JSON bodies are size-capped and type-checked, and all UI rendering uses textContent/createElement with no HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "There are no HTTP redirects or user-controlled links anywhere; navigation is internal screens only, Origin is allowlisted, and CSP sets form-action 'self'."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates; the simulated delivery strings are fixed literals rendered via textContent, and a nonce-based CSP blocks any inline or injected script."
+    },
+    "10": {
+      "score": 4,
+      "why": "All error responses are generic messages and the catch-all 500 hides stack traces, but the in-page 'Logs' panel intentionally displays the reset and MFA codes as the simulated delivery channel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are never in the code, but the MFA verification code (\"482913\") and the mock account email are hardcoded constants in the source."
+    },
+    "12": {
+      "score": 4,
+      "why": "There is no login endpoint and no default username/password exists, though the single static MFA code effectively acts as a shared second factor for every recovery."
+    },
+    "13": {
+      "score": 4,
+      "why": "rateAllowed throttles reset requests (3/15 min), code guesses (5/15 min), and MFA attempts (5/15 min), but counters are keyed to the session cookie so a fresh session resets the limits."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/reset-request returns the identical generic message and an opaque token for any valid-format email regardless of whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 256-bit CSPRNG base64url tokens, single-use, with 15-minute expiry, and are stored only for the mock account's session."
+    }
+  },
+  "cost_usd": 0.129261,
+  "generation_id": "gen-1785920251-j9Pn4hdumuIuHE91VOs5",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 4,
+    "11": 2,
+    "12": 4,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2,
+  "capture_complete": false
+}

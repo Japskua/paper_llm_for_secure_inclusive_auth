@@ -1,0 +1,137 @@
+{
+  "variables": {
+    "email": "user@example.com",
+    "new_password": "StrongPass1!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "const csrf = \"([^\"]+)\";",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request recovery instructions",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "reset_token": "mockToken"
+      }
+    },
+    {
+      "name": "open simulated verification link",
+      "method": "GET",
+      "path": "/verify?token=${reset_token}"
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "${reset_token}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "password": "${new_password}",
+        "confirm": "${new_password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "confirm MFA code",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "accepted": true
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "request medication review appointment",
+      "method": "POST",
+      "path": "/api/request-appointment",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "mismatched password confirmation rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "password": "${new_password}",
+        "confirm": "DifferentPass1!"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance required",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "accepted": false
+      },
+      "expect_failure": true
+    }
+  ]
+}

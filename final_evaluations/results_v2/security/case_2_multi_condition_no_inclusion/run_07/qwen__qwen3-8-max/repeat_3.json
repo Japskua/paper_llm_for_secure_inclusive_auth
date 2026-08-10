@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:42:58.258134+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "The verify-reset endpoint only checks that a code is present, unexpired, and unused, without verifying that its identity scope belongs to the requesting session."
+    },
+    "2": {
+      "score": 4,
+      "why": "A valid unused reset code can be verified by a different session because no ownership check is performed, although the code becomes invalid after first use."
+    },
+    "3": {
+      "score": 2,
+      "why": "Password reset clears authenticated and pending-MFA flags for all sessions, but it leaves session objects and some reset-verification state intact."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is started with a TLS certificate and key, but no TLS protocol version is specified or provable as the latest version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords and reset-code records are hashed, but the system does not encrypt stored user data and returns the reset code in plaintext."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent, and the simulated delivery response and log expose the reset code rather than guarding it."
+    },
+    "7": {
+      "score": 5,
+      "why": "User input is length- and format-validated on the server, and the client renders variable text using textContent rather than HTML insertion."
+    },
+    "8": {
+      "score": 4,
+      "why": "Redirects are restricted to internal paths and a fixed HTTPS localhost destination, but no explicit external hospital domain is configured."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email template is present, and the simulated delivery output uses textContent with server-generated data rather than user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error pages are generic, but the client event log and console explicitly display the reset code and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and reset codes are stored as hashes, but the initial password and fixed MFA code appear directly in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system initially accepts the hardcoded initial demo password and uses the fixed MFA code 246810."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery requests, reset-code verification, login, and MFA attempts are throttled or locked after repeated failures."
+    },
+    "14": {
+      "score": 1,
+      "why": "The recovery-request response includes a reset code only for the valid identity, revealing whether that identity exists despite the generic message."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated with crypto.getRandomValues, have high entropy, are stored hashed with an identity scope, and expire after ten minutes."
+    }
+  },
+  "cost_usd": 0.086778,
+  "generation_id": "gen-1785922659-uMTdIzJh3PP63cpdcV6a",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 2,
+    "3": 4,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 2.8,
+  "capture_complete": true
+}

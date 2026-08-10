@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:54:54.250533+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c2876b4ed426a65417ec33b6fbb9afae2da3d7affeb88cb28b5873f4558bbdcc",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify endpoint compares the submitted token against the SHA-256 digest stored in the current session's recovery record, tying the reset code to that session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is validated only against the digest stored in the session that requested it, so the same token does not work for another session."
+    },
+    "3": {
+      "score": 4,
+      "why": "The password-change handler updates only the current session and does not invalidate other in-memory sessions, so earlier sessions are not terminated."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is HTTPS-only and sets HSTS, but the code does not specify or prove that the latest TLS version is enforced."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as bcrypt hashes, but the reset code is not encrypted as the statement literally requires."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is sent, and the simulated recovery response exposes the reset token in the client-visible test logs rather than guarding it."
+    },
+    "7": {
+      "score": 4,
+      "why": "User-supplied data is accepted as JSON and never rendered as HTML, with client-side rendering using textContent, although the contact value is discarded rather than explicitly sanitized."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application only uses same-page hash navigation and contains no external redirect links or redirect endpoints."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates are present in the code, so there is no observed path for user input to inject scripts or HTML into email content."
+    },
+    "10": {
+      "score": 1,
+      "why": "The simulated reset token and MFA code are written to the browser console and visible test logs, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is a hardcoded plaintext secret in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The MFA step uses the fixed code 482913 embedded in the code, which functions as a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Session-level and trusted-IP throttling return 429 after repeated recovery, token verification, password, and MFA attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request returns the same generic message regardless of the supplied contact value and does not indicate account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated with randomBytes(32), stored as per-session SHA-256 digests, and validated only within that session."
+    }
+  },
+  "cost_usd": 0.05585,
+  "generation_id": "gen-1785923486-ZwiACSwiXGH9JM0R17jH",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:19:51.672061+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Verify-token requires record.sessionId === session.id and a matching accountBinding before accepting the reset token."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token from another session fails the sessionId check, so the same reset code does not work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only mutates the current session; no other entries in the sessions Map are invalidated."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS and non-https requests are rejected, but the TLS version is not explicitly pinned to the latest."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens are SHA-256 digests and passwords bcrypt-hashed; that is hashing/protection, not encryption of user data."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email; API copy is generic and does not echo private contact fields, though mock tokens are returned locally."
+    },
+    "7": {
+      "score": 5,
+      "why": "requestJson caps body size; contact, token, password, and MFA inputs are type/length/charset validated before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The app performs no redirects and only serves fixed same-origin paths, rejecting query strings and hashes."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates; mock delivery logs server-generated tokens without inserting user-controlled HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "recoveryToken and mfaCode are returned in API JSON and written to the on-page Logs panel and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are stored as bcrypt hashes, but the MFA secret is the hardcoded value \"482916\" in source."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default username/password pair exists, yet the MFA confirmation code is always the fixed default 482916."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery, token verification, and MFA endpoints rate-limit and lock out after repeated failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery always returns the same generic message whether or not the contact is recognized."
+    },
+    "15": {
+      "score": 4,
+      "why": "Tokens are 32-byte crypto-random values bound to the requesting session, though accountBinding is a constant opaque string."
+    }
+  },
+  "cost_usd": 0.0185824,
+  "generation_id": "gen-1785921549-iQZcVSy5Sx2Hw8avrbRM",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

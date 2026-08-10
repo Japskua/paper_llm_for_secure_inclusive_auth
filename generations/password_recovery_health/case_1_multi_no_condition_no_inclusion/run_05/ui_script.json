@@ -1,0 +1,167 @@
+{
+  "variables": {
+    "email": "helena@hospital.test",
+    "new_password": "Renewed!Passw0rd2025"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "request_password_reset",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery instructions')"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "wait_for",
+          "selector": "text=Verify recovery code"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "SIMULATED DELIVERY — reset token: ([A-Za-z0-9_-]+)",
+          "into": "reset_token"
+        }
+      ]
+    },
+    {
+      "name": "confirm_identity",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Confirm your identity"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "SIMULATED MFA DELIVERY — verification code: (\\d{6})",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm identity')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Create a new password"
+        }
+      ]
+    },
+    {
+      "name": "password_updated",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Password updated"
+        }
+      ]
+    },
+    {
+      "name": "sign_in",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#continue-login"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Sign in"
+        }
+      ]
+    },
+    {
+      "name": "updated_privacy_conditions",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#login-email",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#login-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in securely')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Updated privacy conditions"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions_accepted",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#accept"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept conditions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Privacy conditions accepted"
+        }
+      ]
+    },
+    {
+      "name": "signed_out",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#logout"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Reset your password"
+        }
+      ]
+    }
+  ]
+}

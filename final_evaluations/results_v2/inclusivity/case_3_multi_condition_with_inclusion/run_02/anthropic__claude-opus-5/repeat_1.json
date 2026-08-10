@@ -1,0 +1,120 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:02:43.304599+00:00",
+  "rubric_file": "inclusivity_eval_case_3.md",
+  "rubric_sha256": "72f5afbf5ecd676432e29ce4d603db651dc5fd336191b13da1c2e1dfb9ae2914",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 12,
+  "screenshots": [
+    "step_01_request_recovery.png",
+    "step_02_recovery_instruction_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_reset_code_confirmed.png",
+    "step_05_verify_recovery_identity.png",
+    "step_06_recovery_identity_confirmed.png",
+    "step_07_set_new_password.png",
+    "step_08_sign_in.png",
+    "step_09_verify_safety_code.png",
+    "step_10_verify_possession_value.png",
+    "step_11_accept_privacy_conditions.png",
+    "step_12_confirm_appointment_request.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The interface is static and calm across all 12 screenshots with no pop-ups, modals, or moving imagery; only the always-visible dark 'Logs' console adds unnecessary technical noise."
+    },
+    "2": {
+      "score": 4,
+      "why": "The step title, primary blue action button, and green confirmation banner clearly stand out, and the active step chip is highlighted in dark blue, though the large log panel competes for attention."
+    },
+    "3": {
+      "score": 4,
+      "why": "Each screen shows only one task with one field and one button plus a 'Need help?' button top-right, so the needed action is easy to locate, but on step 9 two fields/buttons appear at once and the token values must be hunted for in the log panel."
+    },
+    "4": {
+      "score": 2,
+      "why": "The user must carry opaque values (reset token 'omktg0xuGl7TEd0fQ_...', identity value '2RJFRPZS', code '226554', possession value '-PWLADAI') across seven steps, which is a heavy memory/transcription load even though some are auto-restored."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager hint, autofill affordance, 'remember me' checkbox, or show-password toggle is visible anywhere in the flow."
+    },
+    "6": {
+      "score": 3,
+      "why": "Fields are pre-restored with previously delivered values and completed steps turn green, aiding recognition, but the items themselves are random machine strings that are inherently unrecognizable."
+    },
+    "7": {
+      "score": 4,
+      "why": "Sentences are short, plain, and consistent (e.g. 'Use 12 or more characters, with uppercase, lowercase, number, and symbol.'), though jargon like 'separate possession value' and 'testing mock reset token' is not laypersonfriendly."
+    },
+    "8": {
+      "score": 2,
+      "why": "No error state is shown in any of the 12 screenshots; only success banners appear, so there is no evidence of errors describing the problem and its fix."
+    },
+    "9": {
+      "score": 3,
+      "why": "The password rule is stated and token/code fields are pre-filled with the actual expected value, which acts as an implicit example, but no explicit formatted examples (e.g. 'e.g. 226554') are given."
+    },
+    "10": {
+      "score": 2,
+      "why": "Only a single password + code + possession-value path exists; no alternative login choices (face, passkey, email link) are offered or explained."
+    },
+    "11": {
+      "score": 5,
+      "why": "Each screen presents essentially one decision and one button, with the only exception being step 9 showing two sequential fields."
+    },
+    "12": {
+      "score": 5,
+      "why": "Every action produces an explicit green confirmation stating what happened and what comes next, e.g. 'Testing mock reset token confirmed. Next, enter the separate recovery identity value.'"
+    },
+    "13": {
+      "score": 3,
+      "why": "A persistent 'Need help?' button, the 'You can pause at any time' hint, and next-step guidance in banners exist, but no per-step tips or explanations of unfamiliar concepts like the possession value are shown."
+    },
+    "14": {
+      "score": 3,
+      "why": "Fields remain editable with the submit button always available and no timeout or lockout is shown, implying retry is possible, but no explicit 'try again', 'go back', or 'resend code' affordance is visible."
+    },
+    "15": {
+      "score": 5,
+      "why": "Layout, header, 7-step progress bar, typography, button styling, and banner placement are identical on every screen throughout the flow."
+    }
+  },
+  "cost_usd": 0.14166,
+  "generation_id": "gen-1785924141-XfrX10oWAeWUlVP3kVMp",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 2,
+    "5": 1,
+    "6": 3,
+    "7": 4,
+    "8": 2,
+    "9": 3,
+    "10": 2,
+    "11": 5,
+    "12": 5,
+    "13": 3,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 2.0,
+    "comprehension": 3.0,
+    "decision_making": 4.0,
+    "learning": 3.6667
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

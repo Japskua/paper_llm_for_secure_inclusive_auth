@@ -1,0 +1,113 @@
+{
+  "variables": {
+    "email": "any-contact@example.test",
+    "new_password": "ValidReset!2025"
+  },
+  "steps": [
+    {
+      "name": "recovery_request",
+      "actions": []
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#contact",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Request recovery token')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#token"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated reset token: ([A-Za-z0-9_-]+)",
+          "into": "reset_token"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${reset_token}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify token')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password"
+        }
+      ]
+    },
+    {
+      "name": "verify_security_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated MFA code: ([0-9]{6})",
+          "into": "mfa_code"
+        }
+      ]
+    },
+    {
+      "name": "accept_privacy_statement",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify security code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#accept"
+        }
+      ]
+    },
+    {
+      "name": "privacy_statement_accepted",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#accept"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept privacy statement')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Privacy statement accepted"
+        }
+      ]
+    }
+  ]
+}

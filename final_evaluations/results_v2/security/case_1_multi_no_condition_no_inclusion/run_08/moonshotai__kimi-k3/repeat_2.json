@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:58:36.773725+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "382826be6a70be6d0d503a9383b0a4ec86ceeb15e56bcec319dd73312f8c12a0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "Verification (recoveries.get(token)) checks only existence, expiry, used and blocked status; RecoveryRecord stores no email or user identifier, so no ownership check exists beyond bearer possession."
+    },
+    "2": {
+      "score": 4,
+      "why": "Tokens are bearer credentials bound to no account and not even to the requesting session, so any other user holding an unused token can verify it, though record.used=true blocks reuse after first consumption."
+    },
+    "3": {
+      "score": 5,
+      "why": "A reset only sets session.resetComplete on the current session; no other sessions are invalidated and in-flight sessions keep flowId/verifiedFlowExpiresAt, so previous sessions remain usable until the 8-hour expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "The app serves only over TLS with cert/key, the HTTP listener merely 308-redirects to the fixed HTTPS origin, and HSTS preload is set, but the TLS version is not explicitly pinned and relies on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords are Argon2id-hashed and all traffic is TLS-protected, but reset tokens sit as plaintext in the in-memory recoveries map rather than being hashed or encrypted at rest."
+    },
+    "6": {
+      "score": 3,
+      "why": "The mock delivery returns the raw token (mockToken) and the client prints it and the MFA code into the visible Logs panel and console; only the generic non-account-specific request message guards anything."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are strictly validated server-side (conservative email regex, ^[a-f0-9]{64}$ token allowlist, length caps, bounded JSON body) and the client renders everything via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a 308 to the fixed https://localhost:PORT origin, client routing uses a hash-route allowlist, and CSP enforces form-action and connect-src 'self'."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no HTML email templates; the simulated message is plain text inserted via textContent and the nonce-based CSP blocks inline or untrusted scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the app deliberately writes the reset token and MFA code to the in-page Logs panel and browser console via log(\"[Mock delivery] Reset token: ...\"), so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed, but the MFA secret \"482916\" is hardcoded in the source and even returned in the /api/reset response."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed universal MFA code \"482916\" and the known initial placeholder password (\"initial-placeholder-value\") function as static default secrets."
+    },
+    "13": {
+      "score": 5,
+      "why": "Multiple throttles exist: 8 recovery and 5 verify attempts per IP per 10 minutes with 10-minute blocks, 3 recovery requests per session per window, and flow termination after 5 MFA failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery always returns the identical \"If an account can be recovered...\" message (plus a token) for any email, with an explicit comment that the response is intentionally not account-specific."
+    },
+    "15": {
+      "score": 3,
+      "why": "Tokens are 32-byte CSPRNG hex values with 15-minute expiry and single-use enforcement (random and complex), but the record carries no user or email binding, so they are not user-specific."
+    }
+  },
+  "cost_usd": 0.157149,
+  "generation_id": "gen-1785919947-GEDrCjvngWvVpl91y4m3",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 2,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

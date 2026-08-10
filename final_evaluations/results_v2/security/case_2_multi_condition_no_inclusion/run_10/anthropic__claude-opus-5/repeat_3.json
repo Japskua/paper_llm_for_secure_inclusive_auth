@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:51:22.008111+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c2876b4ed426a65417ec33b6fbb9afae2da3d7affeb88cb28b5873f4558bbdcc",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "The reset token digest is stored on and validated against the requesting session only, so cross-session reuse is impossible, but the app has no user store at all and never associates the token with the submitted contact/identity, so 'belongs to the user' is only partially true."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token can only be verified against `session.recovery.tokenDigest` of the very session that requested it, so the same code cannot work for any other session/user."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no session invalidation or ID rotation after `/api/recovery/password` succeeds — the same `recovery_session` cookie stays valid and simply advances to the next stage — although the demo has no concept of other logged-in sessions to invalidate."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured TLS-only with cert/key, non-HTTPS is rejected, and HSTS plus `upgrade-insecure-requests` are set; however no minimum TLS version/cipher policy is explicitly pinned (it relies on Bun defaults, which are TLS 1.2/1.3)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests and compared in constant time, and passwords are hashed with bcrypt cost 12; no other user data is stored, though nothing is actually encrypted at rest."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is ever generated or sent — delivery is simulated by returning `testResetToken`/`testMfaCode` directly in the HTTP JSON response and printing them in the page, so there is no email message guarding private data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Request bodies must be JSON objects, fields are type-checked (`typeof body.token === 'string'`), lengths/policy are enforced server-side, `escapeHtml` is applied to injected page values, and client rendering uses `textContent` only; the contact value is never stored or reflected."
+    },
+    "8": {
+      "score": 5,
+      "why": "There are no server- or client-side redirects; navigation is purely local hash routing and CSP sets `form-action 'self'`, `base-uri 'none'`, `default-src 'none'`, so no off-site destinations are reachable."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates in the codebase at all, so while no user-supplied HTML/script can appear in an email, the statement cannot be positively verified for this system."
+    },
+    "10": {
+      "score": 2,
+      "why": "The live reset token and MFA code are returned in API responses and explicitly written to the browser console and the visible `#logs` panel via `mockLog`, so secrets are shown in logs (error responses themselves are generic and leak nothing)."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and tokens hashed, but the MFA secret is hardcoded in source as `session.mfaCode = \"482913\"`, i.e. a secret code embedded in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed, source-embedded MFA code `482913` functions as a default credential that any user can supply, even though there are no default admin accounts or default passwords."
+    },
+    "13": {
+      "score": 5,
+      "why": "Both a per-session `throttled()` bucket and a bounded per-trusted-IP `ipThrottled()` bucket cap request/verify/password/MFA attempts (3–5 per 10 minutes) and return HTTP 429."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/recovery/request` always returns the same neutral message ('If the contact can be used for recovery…') and the contact value is never validated, stored, or reflected, so existence is never disclosed."
+    },
+    "15": {
+      "score": 4,
+      "why": "The token is `randomBytes(32)` base64url, single-use, 10-minute TTL, and bound to the issuing session, so it is random and complex; 'user-specific' holds only in the session sense since no user identities exist."
+    }
+  },
+  "cost_usd": 0.141225,
+  "generation_id": "gen-1785923444-HEnXGBQS3FdhPhPLIXrq",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

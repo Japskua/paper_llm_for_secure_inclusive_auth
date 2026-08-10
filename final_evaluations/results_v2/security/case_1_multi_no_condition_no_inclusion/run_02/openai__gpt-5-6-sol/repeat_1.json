@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:45:25.723185+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Recovery tokens are stored in the requesting session and reset authorization additionally requires the server-controlled protected-account reference."
+    },
+    "2": {
+      "score": 1,
+      "why": "A recovery token is verified only against the recovery state of the session that requested it, so another session cannot use it."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset does not revoke or modify any other entries in the global sessions map, so previously authenticated sessions remain valid until expiration."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server creates only a TLS listener and rejects non-HTTPS requests, although it does not explicitly configure a minimum or latest TLS protocol version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and transport uses TLS, but recovery tokens and other session data are stored in plaintext in memory rather than encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email message is implemented, while the simulated delivery response contains a recovery token but no private user data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers and passwords receive server-side type, format, length, and policy validation, while dynamic output uses JSON encoding and textContent rather than dangerous HTML sinks."
+    },
+    "8": {
+      "score": 5,
+      "why": "The generated recovery link is relative to the same origin, navigation uses a fixed allowlist of local views, and no external redirect target is accepted."
+    },
+    "9": {
+      "score": 5,
+      "why": "The page contains no user-controlled HTML interpolation and inserts dynamic messages through textContent under a nonce-restricted CSP."
+    },
+    "10": {
+      "score": 1,
+      "why": "The simulated recovery token and link are returned to the client and explicitly displayed in the page log and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are stored as bcrypt hashes, the MFA code is hard-coded as MFA_TEST_CODE and recovery tokens remain plaintext in session memory."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default username-password credentials are defined, although the evaluation mock uses a fixed and publicly returned MFA code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery-token and MFA verification are blocked for one minute after five failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery requests for ordinary usernames or email addresses receive the same generic response regardless of whether an account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery codes contain 32 cryptographically random bytes and are bound to a specific session recovery record and protected account reference."
+    }
+  },
+  "cost_usd": 0.10433625,
+  "generation_id": "gen-1785912297-8EynRuMxrCaEMMLq72T0",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

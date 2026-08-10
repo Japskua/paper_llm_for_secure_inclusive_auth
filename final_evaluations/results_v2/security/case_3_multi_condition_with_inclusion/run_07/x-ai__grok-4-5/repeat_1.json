@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:24:05.728018+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Recovery verify loads the session-bound recovery record and accepts the code only if record.sessionId matches the caller session and the bcrypt token hash verifies."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot be used by another user because verification requires the record tied to the requester’s session id and matching token hash."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only updates accountPasswordHash and the current session flags; no other sessions are invalidated or removed."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key on https://localhost:3000 and HSTS is set, but the TLS protocol version is not explicitly pinned to a latest version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens and passwords are bcrypt-hashed (not encrypted), and there is no broader encryption of user data at rest beyond hashing secrets."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email body is sent; the user-facing recovery response is a generic account-enumeration-safe message that does not include private profile fields."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs pass through cleanText/validIdentifier/validPassword which bound length and reject control characters and angle brackets before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation targets are server-provided relative paths and a client whitelist of hash routes; there is no open redirect to external URLs."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email HTML templates that interpolate user input; delivery is only simulated in API/demo logs without rendering user-controlled HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "API success payloads return testToken/testMfaCode and the SPA writes those tokens into the on-page logs, so secrets are visible in client logs despite generic error pages."
+    },
+    "11": {
+      "score": 2,
+      "why": "Live passwords are bcrypt-hashed in memory, but demo secrets such as MFA_TEST_CODE and the initial password string are hard-coded in source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system ships with fixed demo credentials (helena@hospital.test / Welcome!2025Heart and MFA code 246810), so default credentials are allowed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery-request, recovery-verify, and MFA paths apply attempt counters and temporary lockouts after repeated failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery always returns the same conditional message and login failures are generic, without stating whether the identifier exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 32-byte randomBytes base64url values, stored as bcrypt hashes, and bound to a per-session recovery record."
+    }
+  },
+  "cost_usd": 0.0375004,
+  "generation_id": "gen-1785925412-LGW5pU4UHsCpTutbWnzL",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

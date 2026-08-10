@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:37:37.758191+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "5def0af8851cb528c3f00ff512506269aa19299d60d5780a568a1790a19eea39",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset token/manual code are stored on the caller’s session bound to accountId/identifier and verified only against that session with safeEqual."
+    },
+    "2": {
+      "score": 1,
+      "why": "Codes are per-session secrets; another user/session has different resetToken/manualCode so the same code does not authenticate them."
+    },
+    "3": {
+      "score": 5,
+      "why": "password-change updates only the current session and account hash and never deletes or invalidates other entries in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HTTP is rejected, but no explicit minimum/latest TLS version is set in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens/codes and session user fields are stored in plaintext memory with no encryption."
+    },
+    "6": {
+      "score": 1,
+      "why": "No email is sent; codes and verification URLs are returned in JSON and written to the browser Logs panel in clear form."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated (validId/validCode/validPass) and the client assigns all dynamic strings with textContent only."
+    },
+    "8": {
+      "score": 5,
+      "why": "verificationPath/Url are fixed to this origin’s /verify route; no user-controlled redirect targets are honored."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no HTML email templates; mocked delivery does not interpolate user input into scripts or HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "By design the UI Logs/console and API responses expose manualRecoveryCode, verificationUrl, and testMfaCode."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hashes use bcrypt and are not plaintext in source, but MFA_CODE is a hardcoded secret in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "Login is only allowed after the staged reset (stage passwordChanged) with the newly set password; no default-credential login path exists."
+    },
+    "13": {
+      "score": 5,
+      "why": "allowed/fail implement progressive per-action/identifier/IP throttling returning 429 after repeated failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "Unknown identifiers are bound to sinkId and receive the same recovery response path, avoiding existence oracles."
+    },
+    "15": {
+      "score": 5,
+      "why": "resetToken/manualCode are crypto.getRandomValues base64url values, short-lived, single-use, and stored only on that user’s session."
+    }
+  },
+  "cost_usd": 0.0239932,
+  "generation_id": "gen-1785926196-wTdwDlLkuvoApwZb6DiI",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.7333,
+  "capture_complete": false
+}

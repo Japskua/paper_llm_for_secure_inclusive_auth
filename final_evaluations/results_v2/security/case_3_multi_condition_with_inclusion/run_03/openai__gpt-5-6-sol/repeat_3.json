@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:04:46.114987+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "0be553360932f12d1a5bea672dc6e8e0d645f1196fb57be45010ded64f5f9480",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Each recovery record stores an accountId and tokenHash in the initiating session, and reset uses that bound account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is hashed into one session-specific recovery record and cannot be used through another user's session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset changes the password hash but does not revoke or invalidate any previously authenticated sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server configures TLS and rejects non-HTTPS requests, but it does not explicitly configure or demonstrate use of the latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords use bcrypt and recovery tokens are stored as SHA-256 hashes, although the fixed MFA code is retained in plaintext session memory."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email implementation is present, and simulated delivery instead exposes recovery and MFA codes in API responses and visible logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers, tokens, and passwords receive type, format, and length validation, while dynamic browser output is inserted with textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application performs no external redirects and restricts client navigation to a fixed allowlist of local routes."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates to inspect, although displayed dynamic values are handled as text rather than injected HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens and MFA codes are deliberately returned by APIs and displayed in the visible activity log and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are bcrypt-hashed, the MFA secret is hard-coded as 246810 and stored in plaintext."
+    },
+    "12": {
+      "score": 4,
+      "why": "The account identifier and startup password are randomly generated rather than default credentials, but a universal hard-coded MFA code remains."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery-token, and MFA verification flows lock further attempts for ten minutes after five failures."
+    },
+    "14": {
+      "score": 2,
+      "why": "Initial responses are generic, but subsequent recovery state and verification responses differ depending on whether the supplied reference exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery codes contain 24 random bytes and are hashed within a session recovery record bound to a specific account."
+    }
+  },
+  "cost_usd": 0.0425745,
+  "generation_id": "gen-1785924259-phJ8H96AxQM32tXeHhX8",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 4,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

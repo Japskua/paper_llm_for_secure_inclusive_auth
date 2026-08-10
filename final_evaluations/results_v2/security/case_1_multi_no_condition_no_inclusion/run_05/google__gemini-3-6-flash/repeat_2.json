@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:37:38.136265+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The API checks that the reset record's accountId and claimedBy session match the requesting session and user before updating the password."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are bound to a specific account and session upon claim and marked as used, preventing reuse by other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "The update-password handler sets record.used to true but does not clear or revoke active sessions in the sessions Map."
+    },
+    "4": {
+      "score": 5,
+      "why": "Bun.serve is configured with TLS certificates and sets Strict-Transport-Security headers to enforce HTTPS."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens are stored as SHA-256 hashes and user passwords are hashed using bcrypt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated message delivery logs omit private user data and display only sanitized token strings."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated via email/password rules and rendered using DOM textContent rather than unescaped HTML string concatenation."
+    },
+    "8": {
+      "score": 5,
+      "why": "Reset links are built using location.origin and navigation relies strictly on internal relative routes."
+    },
+    "9": {
+      "score": 5,
+      "why": "The system uses static DOM structures and textContent for log entries without inserting user input into HTML templates."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and MFA codes are explicitly rendered in the on-screen UI log panel and written to console.log."
+    },
+    "11": {
+      "score": 1,
+      "why": "The initial account password 'Initial!Passw0rd2025' and MFA verification code '246810' are hardcoded in the source file."
+    },
+    "12": {
+      "score": 1,
+      "why": "The code creates a functional mock account with default credentials upon startup without requiring a password change."
+    },
+    "13": {
+      "score": 5,
+      "why": "The application tracks attempt timestamps and enforces account lockouts or request limits after 3 to 5 failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Reset and login handlers return generic failure and success messages that do not expose whether an email address exists in the system."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are created with crypto.getRandomValues using 32 random bytes and are linked directly to the account record."
+    }
+  },
+  "cost_usd": 0.0380715,
+  "generation_id": "gen-1785919034-DSOg2uRbmSJIEBQzGjUu",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

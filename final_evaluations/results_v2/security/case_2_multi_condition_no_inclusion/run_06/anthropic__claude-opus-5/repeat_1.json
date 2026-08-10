@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:31:51.615078+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "`ownedRecovery()` requires `recovery.sessionId === session.id` and the submitted token is SHA-256 compared only against that session's own `tokenHash`, so the code is bound to the requesting party (though there is no real user account model)."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is only ever checked against the recovery record owned by the current session cookie, so another session's token verification would fail — the statement does not hold."
+    },
+    "3": {
+      "score": 3,
+      "why": "There are no authenticated login sessions to invalidate, but the recovery session cookie is never rotated or destroyed after `Bun.password.hash` succeeds, so the pre-reset session does continue to work."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is started only with TLS cert/key (throwing if absent) and sends HSTS with a one-year max-age, though no explicit minimum TLS version/cipher policy is configured, relying on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are 32 random bytes stored only as a SHA-256 hash and passwords are hashed with bcrypt cost 12; no other user data is persisted."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is ever sent; instead the raw reset token is returned in the JSON response as `mockToken`, rendered in a `<code>` element and written to the activity log/console, so no message-level guarding of private data exists."
+    },
+    "7": {
+      "score": 4,
+      "why": "Bodies are size-capped and must be JSON objects, email is length/regex checked, tokens are `/^[a-f0-9]{64}$/`-validated, passwords are policy- and byte-length-checked, and all output is inserted via `textContent`."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses only same-origin hash routes filtered through an allowlist (`safeHashView`, `approvedPages`) plus CSP `form-action 'self'`/`base-uri 'none'`, with no user-controlled redirect target."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates in the code at all, so the claim is vacuous; the in-browser equivalent messages are built with `textContent` and are script-free."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces, but the client explicitly logs the live reset token (`\"Test reset token: \"+state.mockToken`) and the MFA code into the visible log panel and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never retained in plaintext, but the shared verification secret is hardcoded in source as `const MFA_CODE = \"246810\"`."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed, source-embedded MFA code \"246810\" acts as a default credential accepted for every recovery session (and is even displayed to the user), so the system does allow default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "`registerFailure` blocks token/MFA/password steps for 60 s after 5 failures, and `clientRateAllowed` adds per-IP sliding-window limits (3 recoveries, 8 attempts per minute)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The `/api/recovery` handler discards the email validity result (`void validEmail`) and always returns the same \"If an eligible account is available…\" message, with matching UI copy."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from `randomHex(32)` via `crypto.getRandomValues`, expire in 15 minutes, are single-use (`tokenUsed`, hash cleared), and are tied to a specific session-owned recovery record."
+    }
+  },
+  "cost_usd": 0.12945,
+  "generation_id": "gen-1785922279-pkPxOeBfGjOSL4AKdW31",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 3,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

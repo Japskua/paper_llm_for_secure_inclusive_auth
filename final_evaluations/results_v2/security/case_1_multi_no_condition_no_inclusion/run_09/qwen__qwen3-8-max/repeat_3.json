@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:00:37.728592+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "reset-validate accepts a token only if it equals resetToken stored in the requesting session, but there is no explicit account/user identifier beyond the session."
+    },
+    "2": {
+      "score": 1,
+      "why": "reset tokens are stored per session and validated against that session's resetToken, so the same code is not accepted for another session/user."
+    },
+    "3": {
+      "score": 4,
+      "why": "password-update modifies only the current session and contains no revocation of other sessions, so prior authenticated sessions are not invalidated."
+    },
+    "4": {
+      "score": 3,
+      "why": "HTTPS/TLS is required via Bun.serve with certificate and key, but no configuration shows that only the latest TLS version is enforced."
+    },
+    "5": {
+      "score": 1,
+      "why": "reset tokens are held in server memory unencrypted and passwords are hashed rather than encrypted, so the claim of encryption for reset codes/user data is not supported."
+    },
+    "6": {
+      "score": 1,
+      "why": "there is no real email and the simulated delivery message displays the reset code in the page/logs, so private token data is not hidden."
+    },
+    "7": {
+      "score": 4,
+      "why": "email, reset-code, and password inputs are validated with format/length rules and UI text is created via textContent, though no general HTML sanitizer is present."
+    },
+    "8": {
+      "score": 4,
+      "why": "no redirect endpoints or external anchor navigation are present, and the only referenced service is the local HTTPS portal."
+    },
+    "9": {
+      "score": 4,
+      "why": "no email templates are present and the simulated delivery output is plain text without user-controlled HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "error responses are generic, but the client-side log prints the reset code and MFA code, exposing tokens in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "passwords are bcrypt-hashed, but the MFA code is a hardcoded plaintext constant in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "the MFA endpoint accepts the hardcoded constant 482913, which is a known/default secret in the code."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateAllowed limits reset requests, reset-code guesses, and MFA attempts within a time window and returns 429 when exceeded."
+    },
+    "14": {
+      "score": 5,
+      "why": "reset-request returns the same generic message and mock delivery token for any syntactically valid email, not revealing whether the mock account exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "reset tokens are generated with crypto.getRandomValues and validated only in the issuing session, but the implementation is session-specific and limited to a single mock account."
+    }
+  },
+  "cost_usd": 0.056754,
+  "generation_id": "gen-1785920239-YOU2nKHauHslogwS5aWp",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 4,
+    "8": 4,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.0667,
+  "capture_complete": false
+}

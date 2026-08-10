@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:49:05.506293+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "410e1cc46bbbbc0cb7869109d020fb69db0a302c9f3a7d9f4feb7974c90fbca9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "resetRecordFor checks the hashed token and requires record.sessionId to match the current session, though it does not compare a separate persistent user identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is rejected unless its stored sessionId matches the current session, so it does not work for another user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset replaces passwordHash but does not clear the sessions map, so previously authenticated sessions remain valid until expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server is started with Bun.serve TLS certificates and rejects x-forwarded-proto http, but no minimum/latest TLS protocol version is configured or shown."
+    },
+    "5": {
+      "score": 2,
+      "why": "Tokens and contact data are stored as SHA-256 hashes and passwords use bcrypt, but there is no actual encryption of stored reset codes/user data."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email is sent; the only simulated delivery is a browser log, so email handling of private data cannot be assessed."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are trimmed, length-limited, type/format checked, and the client renders untrusted values using textContent rather than HTML insertion."
+    },
+    "8": {
+      "score": 5,
+      "why": "The code performs no external redirects and navigation is confined to same-page hash routes with CSP form-action 'self'."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the source, so their safety cannot be observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic error responses avoid disclosure, but the application writes reset tokens and the MFA code to visible logs/console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although the current password is bcrypt-hashed, the initial password and MFA code are hardcoded secrets in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The hardcoded initial password and fixed MFA code provide known credentials that can be used unless changed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting or temporary lockout is implemented for reset requests, token verification, login failures, and MFA failures."
+    },
+    "14": {
+      "score": 2,
+      "why": "The visible message is generic, but the JSON response includes mockToken only when the contact matches the registered account, which can reveal existence."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are generated with crypto.getRandomValues and bound to the requesting session/contact digest, but the code lacks a separate durable user identifier."
+    }
+  },
+  "cost_usd": 0.129958,
+  "generation_id": "gen-1785919301-0Plk3et0LRiYn0Hq6izu",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 2,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.0667,
+  "capture_complete": true
+}

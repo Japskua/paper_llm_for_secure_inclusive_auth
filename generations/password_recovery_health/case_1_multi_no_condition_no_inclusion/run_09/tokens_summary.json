@@ -1,0 +1,109 @@
+{
+  "total_input_tokens": 32721,
+  "total_cached_input_tokens": 1765,
+  "total_output_tokens": 23700,
+  "total_reasoning_tokens": 5454,
+  "total_calls": 6,
+  "by_agent": {
+    "tasker": {
+      "input": 5175,
+      "output": 700,
+      "cached_input": 1765,
+      "reasoning": 0,
+      "calls": 2,
+      "cost_usd": 0.0086375
+    },
+    "coder": {
+      "input": 10548,
+      "output": 17274,
+      "cached_input": 0,
+      "reasoning": 2428,
+      "calls": 2,
+      "cost_usd": 0.1168275
+    },
+    "evaluator": {
+      "input": 16998,
+      "output": 5726,
+      "cached_input": 0,
+      "reasoning": 3026,
+      "calls": 2,
+      "cost_usd": 0.055602
+    },
+    "total": {
+      "input": 32721,
+      "output": 23700,
+      "cached_input": 1765,
+      "reasoning": 5454,
+      "calls": 6,
+      "cost_usd": 0.181067
+    }
+  },
+  "run": {
+    "converged": true,
+    "iterations": 2,
+    "max_iters": 12,
+    "protocol_violations": {
+      "tasker_json_parse_failures": 0,
+      "tasker_json_recovered_by_retry": 0,
+      "tasker_json_hard_failures": 0
+    },
+    "models": [
+      {
+        "model": "openai/gpt-5.6-terra",
+        "temperature": null,
+        "temperature_supported": false,
+        "reasoning_effort": "medium",
+        "seed": null,
+        "provider_order": [
+          "openai"
+        ],
+        "role": "tasker",
+        "llm_provider": "openrouter"
+      },
+      {
+        "model": "openai/gpt-5.6-terra",
+        "temperature": null,
+        "temperature_supported": false,
+        "reasoning_effort": "medium",
+        "seed": null,
+        "provider_order": [
+          "openai"
+        ],
+        "role": "coder",
+        "llm_provider": "openrouter"
+      },
+      {
+        "model": "openai/gpt-5.6-terra",
+        "temperature": null,
+        "temperature_supported": false,
+        "reasoning_effort": "medium",
+        "seed": null,
+        "provider_order": [
+          "openai"
+        ],
+        "role": "evaluator",
+        "llm_provider": "openrouter"
+      }
+    ],
+    "models_served": {
+      "openai/gpt-5.6-terra": 6
+    },
+    "providers_seen": {
+      "OpenAI": 6
+    },
+    "model_versions": {
+      "openai/gpt-5.6-terra-20260709": 6
+    },
+    "requirements": "requirements/password_recovery_health/password_recovery_health_no_inclusivity_no_condition.md"
+  },
+  "cost_computation": {
+    "status": "reported_by_provider",
+    "total_cost_usd": 0.181067,
+    "by_agent_usd": {
+      "tasker": 0.0086375,
+      "coder": 0.1168275,
+      "evaluator": 0.055602
+    },
+    "source": "OpenRouter usage accounting (usage.include=true)"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:23:28.955167+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "`/api/recovery-verify` and `/api/password` both load the record via `session.recovery.recordId` and additionally assert `record.sessionId === session.id`, so the code must belong to the requesting session/user."
+    },
+    "2": {
+      "score": 1,
+      "why": "A code cannot be redeemed by anyone else: the record is looked up only from the requester's own session state and its `sessionId` is compared to the current session, and it is marked `used`/`verified` on first success."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password change only replaces `accountPasswordHash`; no other entries in the `sessions` map are invalidated or deleted, so previously established sessions remain valid after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured with TLS certs and HSTS is sent on every response, but no explicit minimum/maximum TLS version is set — it relies on Bun's defaults (TLS 1.2/1.3) rather than pinning the latest version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and the MFA code are stored only as bcrypt (cost 10) hashes and passwords are bcrypt-hashed, though user data itself is held in plaintext in-memory maps rather than encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all — the 'delivery' is a JSON field (`testToken`) returned directly to the browser and printed into a visible log panel, so no guarded email message exists."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs pass through `cleanText` (control-char/`<>` rejection, length bounds), `validIdentifier` (strict character whitelist), `validPassword` (length cap) and strict JSON body validation, and client output goes through `esc()`/`textContent`."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is confined to the `validRoutes` whitelist with a `/login` fallback in `go()`/`rawRoute()`, no server-issued `Location` redirects from user input, and CSP sets `form-action 'self'` and `base-uri 'none'`."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist in the codebase, so the claim cannot be verified as true; in-app messages are escaped, but the statement's subject is absent."
+    },
+    "10": {
+      "score": 2,
+      "why": "Live secrets are deliberately surfaced: `testMfaCode` and `testToken` are returned in API responses and written to `console.log` and the on-page `#log-output` panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "The demo account password `\"Welcome!2025Heart\"` and MFA code `\"246810\"` are hardcoded constants in the source, even though they are hashed at runtime."
+    },
+    "12": {
+      "score": 2,
+      "why": "A fixed default credential pair (`helena@hospital.test` / hardcoded password) plus a static MFA code `246810` are accepted by the login and MFA endpoints, so default credentials are allowed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login (5 failures), MFA (5 failures) and recovery-code verification (5 failures) all trigger a 2-minute lockout, and recovery requests are capped at 3 per 10-minute window per account+session key."
+    },
+    "14": {
+      "score": 3,
+      "why": "Login and recovery-request responses are generic (\"If the details match an account…\"), but `/api/password` returns a distinct \"We could not complete this request\" only when `record.accountExists` is false, leaking account existence at that step."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from `randomBytes(32).toString(\"base64url\")`, are bcrypt-hashed, expire in 15 minutes, are single-use, and are tied to a specific record/session."
+    }
+  },
+  "cost_usd": 0.14874,
+  "generation_id": "gen-1785925373-6qj7yH8NZWTIFzJ4GhIR",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

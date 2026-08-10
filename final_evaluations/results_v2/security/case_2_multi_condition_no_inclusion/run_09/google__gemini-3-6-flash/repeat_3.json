@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:46:56.302982+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify-reset endpoint verifies that the supplied token hash matches the session's stored resetTokenHash and belongs to the specified account ID."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are explicitly bound to a single session ID and account ID, preventing them from being reused by another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset handler updates the account's password hash but does not iterate through or invalidate other active session objects stored in memory."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application runs a Bun TLS server with custom certificate configuration and sets Strict-Transport-Security headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "User passwords are stored using bcrypt with cost 12, while reset tokens and sensitive lookup data are stored as SHA-256 hashes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The system utilizes generic user-facing responses that obscure whether an email address exists or holds private data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are sanitized via backend validation routines and safely populated in the UI using textContent properties."
+    },
+    "8": {
+      "score": 5,
+      "why": "The HTTP server strictly limits redirects to the configured HTTPS origin and ignores untrusted Host headers."
+    },
+    "9": {
+      "score": 5,
+      "why": "The inline UI script uses static string generation with nonces and does not reflect user input into executable HTML or script templates."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error handling routes return generic JSON messages without leaking tokens, user details, or backend stack traces."
+    },
+    "11": {
+      "score": 5,
+      "why": "No plaintext passwords or secrets exist in the source code or runtime state, utilizing bcrypt hashes and secure random byte generation."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application does not include default account credentials or hardcoded administrative access paths."
+    },
+    "13": {
+      "score": 5,
+      "why": "Failed recovery verifications and MFA requests are limited to five attempts before locking the flow or returning 429 status codes."
+    },
+    "14": {
+      "score": 5,
+      "why": "The request-reset endpoint returns identical generic messages and token structures regardless of whether the submitted email matches an account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using 32 bytes of cryptographically secure random data and bound directly to the user's session."
+    }
+  },
+  "cost_usd": 0.03483495,
+  "generation_id": "gen-1785923195-gDuXoTI3c6ZNtjrZ6Gcf",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

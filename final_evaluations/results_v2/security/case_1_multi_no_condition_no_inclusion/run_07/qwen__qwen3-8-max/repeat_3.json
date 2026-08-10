@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:51:23.157267+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "It verifies the submitted reset token against the SHA-256 hash stored in the current session, but it does not bind the token to an account or email identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is only accepted if its hash matches the hash stored in the same session, so it does not work for another user's session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates the current session and password hash but does not invalidate other existing sessions, so prior sessions can remain valid until expiry."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires TLS certificates and serves HTTPS, but no minimum or latest TLS version is specified or enforced in the code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens and passwords are protected by SHA-256 and Argon2id hashing rather than encryption, and no user-data encryption is implemented."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is sent; the simulated delivery returns and logs the recovery token and MFA code, exposing private data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated by safeEmail, safeToken, and strongPassword, and dynamic output uses textContent with CSP nonces."
+    },
+    "8": {
+      "score": 5,
+      "why": "The app only uses local location.hash routes and sets form-action 'self' and base-uri 'none', with no external redirect links."
+    },
+    "9": {
+      "score": 3,
+      "why": "No actual email templates are implemented; the simulated delivery is plain text and does not render user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client-side simulated delivery logs the recovery token and MFA code, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id hashed and reset tokens hashed, but the source contains a hardcoded initial password and a fixed MFA code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system accepts the hardcoded MFA code 246810 and includes an initial password string in source, so default credentials/secrets are present."
+    },
+    "13": {
+      "score": 4,
+      "why": "It blocks a session after five attempts within 60 seconds with HTTP 429, but the limit is session-based rather than account/IP-based."
+    },
+    "14": {
+      "score": 5,
+      "why": "The request-reset endpoint returns the same generic response and simulated token regardless of whether an account exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset token is generated with crypto.getRandomValues and is session-bound, but it is not tied to a persistent user identity."
+    }
+  },
+  "cost_usd": 0.063148,
+  "generation_id": "gen-1785919650-mn3nPPqexUnyZRxpwpQz",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.0666,
+  "capture_complete": true
+}

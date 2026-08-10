@@ -1,0 +1,163 @@
+{
+  "variables": {
+    "email": "demo.patient@example.com",
+    "new_password": "ValidPass1!xx"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "check initial recovery stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "request recovery instructions",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "email": "${email}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "token": "mockToken"
+      }
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "body": {
+        "token": "${token}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "check MFA stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "body": {
+        "code": "246810",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "check password reset stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "reset password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "body": {
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "check privacy stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "accepted": true,
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "check confirmation stage",
+      "method": "GET",
+      "path": "/api/recovery-status",
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "used recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "body": {
+        "token": "${token}",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "body": {
+        "password": "weakpassword",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acknowledgement required",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "accepted": false,
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid body CSRF rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "email": "${email}",
+        "csrf": "invalid"
+      },
+      "expect_failure": true
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:21:20.977639+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The /api/verify-token handler rejects any token whose stored sessionId or accountBinding does not match the requesting session, so the reset code is verified as belonging to the requester."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to the originating sessionId and are marked used upon successful verification, so the same code cannot work for any other session or user."
+    },
+    "3": {
+      "score": 4,
+      "why": "After a successful set-password only session.passwordChanged is set on the current session and no other sessions in the sessions Map are invalidated, so previous sessions remain usable until their 30-minute expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with a TLS cert/key and sends Strict-Transport-Security, but no explicit minimum/latest TLS version is configured in the code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes and passwords are hashed with Bun.password.hash bcrypt (cost 10), i.e. appropriate one-way protection rather than reversible encryption."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email exists; the mock delivery message is generic and contains only the token/link, but that token is printed in plaintext to the in-page Logs panel and browser console."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are validated via validShortString length/type checks, a strict token regex ^[A-Za-z0-9_-]+$, and a 20 kB body cap, and the client renders all server messages via textContent only."
+    },
+    "8": {
+      "score": 5,
+      "why": "The issued link is a relative same-origin path ('/?token='), there is no redirect parameter anywhere, and client navigation is restricted to a fixed view whitelist with history.replaceState on location.pathname."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates and the single HTML page is fixed markup with nonced script/style blocks; no user input is ever templated into HTML (only textContent is used) and CSP forbids inline scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the mock delivery deliberately writes the reset token, recovery link, and MFA code into the visible Logs panel and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never stored plaintext, but the MFA verification code '482913' is hardcoded in the source and even returned to the client."
+    },
+    "12": {
+      "score": 3,
+      "why": "No default username/password exists (the account hash starts empty and a strong policy is enforced), but the fixed universal MFA code '482913' functions as a hardcoded default credential for the verification step."
+    },
+    "13": {
+      "score": 4,
+      "why": "recordFailure locks each category for 5 minutes after 5 failures and the API returns 429 with retry seconds, though the limits are per-session and can be reset by obtaining a new session."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery-request always returns the identical 'If an eligible account exists, recovery instructions have been sent.' message, even for malformed input, revealing nothing about account existence."
+    },
+    "15": {
+      "score": 4,
+      "why": "The token is 32 bytes from crypto.getRandomValues (base64url), stored only as a SHA-256 hash, single-use with a 10-minute TTL and bound to the requesting session, though the accountBinding is a fixed constant in this single-account demo."
+    }
+  },
+  "cost_usd": 0.121809,
+  "generation_id": "gen-1785921317-57BNkxDVPDufIzizXWNy",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

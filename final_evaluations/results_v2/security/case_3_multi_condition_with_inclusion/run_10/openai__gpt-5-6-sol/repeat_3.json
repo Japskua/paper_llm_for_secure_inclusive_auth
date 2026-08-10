@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 2,
+  "judged_at": "2026-08-05T10:36:48.179651+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "5def0af8851cb528c3f00ff512506269aa19299d60d5780a568a1790a19eea39",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset codes and tokens are stored in a specific session that is bound to an accountId and are validated only within that session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code from one session cannot validate another user's session because verification compares it with that session's stored code or token."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password changes do not revoke or invalidate any other sessions associated with the account, so previously authenticated sessions can remain usable."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun TLS and HSTS provide HTTPS, but the code does not explicitly configure or demonstrate use of the latest TLS version."
+    },
+    "5": {
+      "score": 1,
+      "why": "Passwords are bcrypt-hashed, but reset codes, identifiers, and other session data are stored in plaintext in server memory rather than encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email implementation is present, and the simulated delivery instead returns recovery secrets directly to the browser."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers, codes, and passwords are type-, length-, and character-validated, while dynamic client output uses textContent."
+    },
+    "8": {
+      "score": 4,
+      "why": "The clickable verification link is constructed from a fixed internal /verify path, although the displayed absolute URL is hardcoded to localhost rather than a hospital production domain."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are implemented, though browser-rendered messages avoid user-supplied HTML and use textContent."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset codes, verification URLs, tokens, and the MFA code are deliberately written to the visible Logs panel and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is hardcoded as 246810 and recovery secrets are retained in plaintext session objects."
+    },
+    "12": {
+      "score": 2,
+      "why": "The flow does not expose a normal default-password login, but it uses a fixed globally known MFA confirmation code embedded in the source."
+    },
+    "13": {
+      "score": 5,
+      "why": "Repeated recovery, verification, MFA, password, and login failures trigger progressively longer delays and HTTP 429 responses."
+    },
+    "14": {
+      "score": 5,
+      "why": "Unknown identifiers are assigned to a sink account and receive the same recovery behavior and generic authentication errors as known identifiers."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens and manual codes are generated with crypto.getRandomValues, stored per session, bound to its account, and checked with constant-time comparison."
+    }
+  },
+  "cost_usd": 0.053661,
+  "generation_id": "gen-1785926176-inldLCLEAucgbNPyArJa",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.2,
+  "capture_complete": false
+}

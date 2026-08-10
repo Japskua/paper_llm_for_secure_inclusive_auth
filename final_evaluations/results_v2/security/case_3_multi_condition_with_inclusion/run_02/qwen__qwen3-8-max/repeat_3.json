@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:06:03.630678+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Each reset token record is bound to an accountKey and replacePassword changes only that account, although confirmInstruction does not re-check the originally supplied identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is tied to one accountKey and marked used after consumption, so the same code cannot be used to reset another user's password."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only updates the account password hash and token state; existing session records are not revoked, so prior authenticated sessions can remain valid."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is configured with TLS certificates and rejects x-forwarded-proto http, but no minimum or latest TLS protocol version is explicitly enforced in the code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are hashed with Argon2id and reset tokens are stored as SHA-256 hashes, but reset codes and in-memory user/session data are not encrypted and reset secrets are returned in API responses."
+    },
+    "6": {
+      "score": 1,
+      "why": "The simulated email/response exposes the reset token, identity value, and MFA codes in JSON and UI logs rather than hiding them."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifier, token, identity, and password inputs are constrained by strict validation and body limits, and output uses textContent, though this is validation rather than full sanitization."
+    },
+    "8": {
+      "score": 5,
+      "why": "renderLink only allows a same-origin path of '/' with a recovery-test parameter and rejects protocol-relative or external URLs."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no HTML email templates, and the simulated delivery messages are constructed as plain text without user-supplied scripts or HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error responses are generic, but the client-side logs and console output display reset tokens, identity values, and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "Account passwords are Argon2id hashed, but a default password appears in source code and MFA/CSRF secrets are held unencrypted in server memory."
+    },
+    "12": {
+      "score": 1,
+      "why": "provision creates multiple accounts with the fixed password Initial!HospitalPassword9, which can be used to sign in."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, reset-token confirmation, and identity checks all impose failure counters and temporary lockouts."
+    },
+    "14": {
+      "score": 1,
+      "why": "Recovery responses reveal account existence by returning deliveryPath/testValue only when the account exists, while generic text alone is used otherwise."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated with crypto.getRandomValues, are long base64url strings, expire quickly, and are stored with the associated accountKey."
+    }
+  },
+  "cost_usd": 0.063346,
+  "generation_id": "gen-1785924097-Hg1q2VfdPLqzVeZ6ifYi",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

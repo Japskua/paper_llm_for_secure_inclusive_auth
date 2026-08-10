@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:41:03.453210+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "410e1cc46bbbbc0cb7869109d020fb69db0a302c9f3a7d9f4feb7974c90fbca9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset records are bound to both the registered contact digest and the requesting session ID, which resetRecordFor validates."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code cannot work in another session because resetRecordFor requires record.sessionId to equal the current session ID."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset does not revoke or remove other existing authenticated sessions, so those sessions continue to work."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is configured for TLS-only HTTPS and sends HSTS, but the source does not explicitly require a particular latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords use bcrypt and reset tokens and contacts use SHA-256 hashes, but these values are hashed rather than encrypted as the statement literally claims."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email message is generated or sent, so there is no email content in the source from which this claim can be established."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs receive type, length, format, and policy validation, while dynamic browser output is written with textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application performs no external redirects and only uses fixed same-origin API paths and internal fragment routes."
+    },
+    "9": {
+      "score": 3,
+      "why": "The application contains no email template or email-generation mechanism to evaluate for scripts or user-supplied HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and the fixed MFA code are deliberately displayed in the browser Logs panel and the reset token is also shown on the page."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are bcrypt-hashed and reset tokens are stored as hashes, the MFA_CODE secret is hard-coded in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application includes a hard-coded initial password and a fixed hard-coded MFA code that function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset, verification, login, and MFA attempts are limited, with login and MFA lockouts applied after five failures."
+    },
+    "14": {
+      "score": 1,
+      "why": "Although the textual reset response is generic, only the registered contact receives a mockToken field, revealing whether the contact exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes contain 32 cryptographically random bytes and are bound server-side to the registered contact digest and requesting session."
+    }
+  },
+  "cost_usd": 0.052645,
+  "generation_id": "gen-1785919232-XcdvzmnuoFN2XHBT2C0W",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.0667,
+  "capture_complete": true
+}

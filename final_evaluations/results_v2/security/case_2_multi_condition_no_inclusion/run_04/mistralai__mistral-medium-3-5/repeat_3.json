@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:23:13.751297+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c43f687abc2a0bd6c32d9c194677456a716e23dd223e7cff75a916ca005d46d1",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating the tokenHash against the session's recovery token."
+    },
+    "2": {
+      "score": 1,
+      "why": "The reset code is unique per session and cannot work for any other user due to session-specific tokenHash validation."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after password reset (session.csrf is rotated, and recovery is deleted)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server enforces HTTPS with TLS (Bun.serve with cert/key) and rejects non-HTTPS requests."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed with SHA-256, and passwords are hashed with Argon2id."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email templates (simulated logs) do not expose private user data; testToken is only returned to the owning session."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (contact, password) is validated with strict regex and length checks."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are not user-controlled; the frontend only navigates to hardcoded routes (e.g., #request)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates (simulated logs) contain no user input; testToken is server-generated and not derived from input."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs are generic (e.g., 'Service temporarily unavailable') and do not expose private info."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are hashed with Argon2id, and no plaintext or secrets are stored in code."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials are present; sessions and recoveries require explicit creation."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting (recordFailure/checkLimit) bars users after 5 failed attempts (e.g., tokenLimit, passwordLimit)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The system always returns the same generic message ('If recovery is available...') regardless of contact validity."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are cryptographically random (randomHex(32)), single-use (tokenUsed flag), and session-specific."
+    }
+  },
+  "cost_usd": 0.0172395,
+  "generation_id": "gen-1785921789-nsa4pszNyVDkJfLUesKx",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

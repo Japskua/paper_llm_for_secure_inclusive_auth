@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:39:26.628870+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "A reset token is marked actionable only when issued for the mock account, although the reset record does not store an explicit user identifier."
+    },
+    "2": {
+      "score": 5,
+      "why": "A valid reset token is a bearer credential that can be verified from any browser session because it is not bound to the requesting session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password-update handler does not invalidate any existing sessions after changing the password."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server uses Bun TLS and HSTS, but the code does not explicitly require a particular latest TLS version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as Argon2id hashes, but the mock account identifier and deterministic MFA code are stored in plaintext."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email message is implemented, and the simulated delivery exposes the recovery token directly to the browser."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers, reset tokens, MFA codes, and passwords receive strict type, length, and format validation before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated reset link is a same-origin relative URL, and no user-controlled redirect destination is accepted."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML template accepts user input, and browser output uses textContent or text nodes instead of inserting input as HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The visible client log explicitly displays both the recovery token and the deterministic MFA code."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords use Argon2id and reset tokens are digested, the MFA code and initial demo password are hard-coded in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application initializes the account with a fixed demo password and uses a fixed MFA code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Per-session rate limits block reset requests after three attempts and reset-token or MFA verification after five attempts within ten minutes."
+    },
+    "14": {
+      "score": 5,
+      "why": "Known and unknown identifiers receive the same generic response shape, message, and simulated token delivery."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are random 32-byte base64url tokens and are actionable only for the mock account, though no explicit user identifier is stored with each token."
+    }
+  },
+  "cost_usd": 0.0410765,
+  "generation_id": "gen-1785911943-VAZ2j01ntbx7MYWIcohD",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 1,
+    "3": 1,
+    "4": 3,
+    "5": 3,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.0,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

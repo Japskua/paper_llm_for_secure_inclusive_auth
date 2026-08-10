@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:20:07.535550+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "3769d8d72d3a6dbf94059901d58bea2f193d416f5864a40b1cd79da802df6e1a",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset verify compares the supplied token to session.reset.token and password change uses that record's accountId, so the code is bound to the requesting user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "The reset token lives only on the issuing session; another user/session has no matching session.reset and cannot use the same code."
+    },
+    "3": {
+      "score": 5,
+      "why": "password/change marks the reset used and updates the hash but never clears authenticatedAccountId or other sessions, so prior sessions keep working."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun serves TLS on 3443 with HTTP 308 redirect to HTTPS and HSTS, but the TLS version is not pinned explicitly to a named latest version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords use bcrypt hashing; reset tokens are random secrets held in memory plaintext, not encrypted with a separate algorithm."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email body is built; responses are generic and server logs avoid account detail, though mock tokens are exposed to the same session for the demo."
+    },
+    "7": {
+      "score": 5,
+      "why": "Emails are normalized/validated, passwords checked against a strong policy, tokens regex-checked, and client output uses textContent/JSON rather than raw HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects are only the fixed HTTP→HTTPS localhost Location and client history paths (/recovery, /login, /privacy); no user-controlled redirect targets."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates that embed user input as HTML/scripts; delivery is simulated without rendering user-supplied markup."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error JSON is generic, but recovery/status and the client Logs intentionally surface mockDeliveryToken and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "Runtime secrets are generated with randomBytes, yet the demo account's bcrypt passwordHash is hardcoded in source."
+    },
+    "12": {
+      "score": 2,
+      "why": "A single demo account with a fixed precomputed password hash is embedded and login verifies against it, i.e. default demo credentials exist."
+    },
+    "13": {
+      "score": 5,
+      "why": "isAllowed/failure enforce per-session and global attempt windows with lockouts (e.g. reset-verify, mfa-verify, login) returning 429 when exceeded."
+    },
+    "14": {
+      "score": 5,
+      "why": "recovery/request always returns the same eligible-account message whether or not the email matched, and login does not disclose account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "issueReset uses token() from 32 random bytes (base64url ~43 chars), ties it to accountId on that session, and verifies exact match before use."
+    }
+  },
+  "cost_usd": 0.0386424,
+  "generation_id": "gen-1785925147-ZisTXgwlOz6tcuUyGzi1",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

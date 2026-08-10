@@ -1,0 +1,116 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:35:05.009011+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "dd919db6c46d435a4395fbd6c5d383fdf23013f639ab84eb58ad2b157be067a6",
+  "screenshot_count": 8,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_recovery_instructions_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_set_new_password.png",
+    "step_05_security_confirmation.png",
+    "step_06_privacy_conditions.png",
+    "step_07_request_medication_review.png",
+    "step_08_appointment_request_received.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All eight screens are static cards with no animations, carousels or modal pop-ups, though the always-visible dark 'Logs' console adds technical clutter to an otherwise clean layout."
+    },
+    "2": {
+      "score": 4,
+      "why": "Each screen has a large bold heading and a single filled blue primary button (e.g. 'Verify code', 'Accept conditions'), so the key element is visually dominant, but the equally sized 'Logs' card competes for attention."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each step presents one main task, but the recovery code must be located inside a developer-style 'Logs' console (step 2/3), which is not where a patient would expect to find what she needs."
+    },
+    "4": {
+      "score": 2,
+      "why": "The flow spans eight steps and requires transferring a 40-character token ('o79yOR_4yA5k0o9Hr0nEmlbxJ6sMB6UKc2sH-Cc9N0k'), a six-digit MFA code, and remembering a 12-character password rule set."
+    },
+    "5": {
+      "score": 1,
+      "why": "No 'remember me' checkbox, autofill hint, password-manager suggestion or 'show password' toggle appears on any screen, including the login/recovery and new-password pages."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing is saved or pre-recognised for the user — the email must be typed from scratch and the only 'familiar item' offered is an opaque random token in a console log."
+    },
+    "7": {
+      "score": 4,
+      "why": "Body text is short, plain-language and in a legible sans-serif at good size (e.g. 'Choose at least 12 characters with uppercase, lowercase, a number, and a symbol.'), though log text is small monospace."
+    },
+    "8": {
+      "score": 2,
+      "why": "No error state is shown in any of the eight screenshots — only success/neutral notices — so there is no observable evidence of error messages that explain a problem and its fix."
+    },
+    "9": {
+      "score": 2,
+      "why": "Requirements are stated in prose but no worked examples or field placeholders are provided; the step-01 email field is empty with no sample format, and no example password is shown."
+    },
+    "10": {
+      "score": 3,
+      "why": "The steps that do offer options label them plainly ('Open simulated verification link' vs 'Enter recovery code'), but there is only one authentication path and no visible password/code/face-login choice."
+    },
+    "11": {
+      "score": 5,
+      "why": "Every screen presents a single primary action with at most one secondary option ('Start over'), so the user is never faced with many simultaneous choices."
+    },
+    "12": {
+      "score": 4,
+      "why": "Outcomes are explicitly confirmed after each action — 'a recovery message has been prepared', 'Mock MFA verification completed', 'Appointment request received' — mirrored in the log panel."
+    },
+    "13": {
+      "score": 4,
+      "why": "Each new step carries a one-line instruction plus safety tips ('Stay safe: Hospital staff will never ask for your password…', 'Do not share passwords, recovery links, or security codes')."
+    },
+    "14": {
+      "score": 3,
+      "why": "'Start over' exists on the code-verification screen and 'Return to recovery start' at the end, but the password, MFA and privacy screens offer no back or retry control."
+    },
+    "15": {
+      "score": 5,
+      "why": "All screens reuse the identical dark-blue header, white rounded card, bold heading, label-above-field inputs and blue primary button, making the pattern highly predictable."
+    }
+  },
+  "cost_usd": 0.115135,
+  "generation_id": "gen-1785918873-v1rxs7Wn2v4ZpJq9TBBr",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 2,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 2,
+    "9": 2,
+    "10": 3,
+    "11": 5,
+    "12": 4,
+    "13": 4,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 1.6667,
+    "comprehension": 2.6667,
+    "decision_making": 4.0,
+    "learning": 4.0
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

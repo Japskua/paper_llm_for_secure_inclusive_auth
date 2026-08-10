@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:28:47.020493+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c43f687abc2a0bd6c32d9c194677456a716e23dd223e7cff75a916ca005d46d1",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-token only accepts a token whose SHA-256 hash matches the recovery record bound to the current session ID."
+    },
+    "2": {
+      "score": 1,
+      "why": "currentRecovery requires recovery.sessionId === session.id, so another session cannot use the same reset code."
+    },
+    "3": {
+      "score": 4,
+      "why": "Server-side sessions are not deleted or rotated when verify-mfa completes, so an existing session cookie remains valid until its TTL expires."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS certificates and rejects non-HTTPS URLs, but no minimum or latest TLS version is specified."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS protects transit and tokens or passwords are hashed, but reset codes and user data are not stored as encrypted data."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent and the visible message is generic, but the simulated delivery exposes the reset token in the page log."
+    },
+    "7": {
+      "score": 5,
+      "why": "Contact, token, MFA code, and password inputs are validated with strict patterns or length checks, and DOM output uses textContent rather than raw HTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "The client only changes location.hash and calls same-origin API paths, with no external redirect links or redirect endpoints observed."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates, and the simulated delivery or log output is created with textContent rather than user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The API responses include testToken and testMfaCode, and the frontend appends those values to the visible logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id hashed and reset tokens are SHA-256 hashed, but the fixed MFA code 482913 appears in the source code and response."
+    },
+    "12": {
+      "score": 1,
+      "why": "The MFA step accepts the hardcoded constant 482913, which functions as a default or shared credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "checkLimit and recordFailure impose attempt limits and lockouts for recovery requests, token verification, password submission, and MFA verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "recovery-request returns the same generic message and issues a simulated token regardless of whether the contact is valid or associated with an account."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is generated with crypto.getRandomValues as 32 random bytes rendered as 64 hex characters and is bound to a session-specific recovery record."
+    }
+  },
+  "cost_usd": 0.091112,
+  "generation_id": "gen-1785921807-1UkKP6I6ZeljVfxC4ZZO",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

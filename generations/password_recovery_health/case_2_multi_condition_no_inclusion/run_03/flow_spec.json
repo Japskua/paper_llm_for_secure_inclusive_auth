@@ -1,0 +1,108 @@
+{
+  "variables": {
+    "email": "recovery@example.test",
+    "new_password": "Recovery!Pass2025"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "const\\s+CONFIG\\s*=\\s*\\{\"csrf\":\"([^\"]+)\"\\};",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open recovery page and establish session",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "prepare recovery instructions",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "contact": "${email}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_token": "recoveryToken"
+      }
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "body": {
+        "token": "${recovery_token}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "replace password",
+      "method": "POST",
+      "path": "/api/password",
+      "body": {
+        "password": "${new_password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mfaCode"
+      }
+    },
+    {
+      "name": "confirm MFA sign-in",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "accept": true
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid recovery contact rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "contact": "x"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "body": {
+        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/password",
+      "body": {
+        "password": "shortpassword"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance required",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "accept": false
+      },
+      "expect_failure": true
+    }
+  ]
+}

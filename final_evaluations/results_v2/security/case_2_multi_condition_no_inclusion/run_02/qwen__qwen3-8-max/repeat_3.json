@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:17:46.659719+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "verify-token checks the supplied token hash against a stored record requiring matching sessionId and accountBinding before accepting it."
+    },
+    "2": {
+      "score": 1,
+      "why": "A recovered token is marked used and is only accepted when its stored sessionId and accountBinding match the current session, so it does not work for another user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "set-password only updates the current session and account password hash, leaving other existing sessions in the sessions map valid until expiry."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS certificate and key, but no minimum/maximum TLS version is specified to confirm the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Recovery tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, but there is no encryption of user data and hashing is not encryption."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email message; the mock recovery response and Logs expose the test token and local verification link, so private reset data is not guarded."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are constrained by validShortString, token regex, and password policy, and no user input is interpolated into served HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only recovery link is a same-origin relative URL and client navigation uses same-page hashes, with no external redirect."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates are present, and the served HTML uses fixed markup plus nonce placeholders rather than user-supplied scripts or HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses use generic safeError messages, but localLog/console output displays the recovery token, link, and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is stored with bcrypt, but the MFA code 482913 is hard-coded and exposed in code/responses/logs."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default password login is present, but the fixed MFA verification code acts as a default secret."
+    },
+    "13": {
+      "score": 4,
+      "why": "Session-scoped limitStatus/recordFailure lock recovery, token, MFA, and password actions after repeated failures, although limits are per session."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery-request endpoint returns the same 'If an eligible account exists...' message regardless of contact validity or account existence."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset tokens are generated with crypto.getRandomValues and bound to a session/account binding, but the binding is to a single local account rather than a verified contact/user."
+    }
+  },
+  "cost_usd": 0.055146,
+  "generation_id": "gen-1785921275-uDvjAeuSdsY2ti8wNTBG",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.2666,
+  "capture_complete": true
+}

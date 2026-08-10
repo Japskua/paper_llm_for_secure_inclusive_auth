@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:11:26.384828+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "0be553360932f12d1a5bea672dc6e8e0d645f1196fb57be45010ded64f5f9480",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The recovery token is compared against the hashed token stored in the session-bound recovery record associated with the account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are validated only against the initiating session's recovery record, so they are not globally valid for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset changes the account hash but does not invalidate or delete existing authenticated sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "TLS is configured and non-HTTPS requests are rejected, but the source does not specify or prove use of the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS protects data in transit and reset tokens/passwords are hashed, but reset codes and user/session data are not encrypted at rest."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email flow, and the simulated recovery delivery exposes the one-time code in client-visible logs rather than guarding it."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated with format and length checks, and dynamic UI text is inserted via textContent rather than HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is limited to same-origin hash routes and same-origin API calls, with no external redirect URLs."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templating or email-rendering code is present, and no user-supplied HTML or scripts are used in message output."
+    },
+    "10": {
+      "score": 1,
+      "why": "The visible logs and console explicitly print recovery and MFA codes, even though error responses are generic."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is a fixed value in the source and is stored in plaintext in session state."
+    },
+    "12": {
+      "score": 2,
+      "why": "The startup password is random and hashed, but the fixed MFA code and displayed recovery reference provide predictable credential material."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery-code, and MFA verification attempts are counted and locked after exceeding the allowed attempt threshold."
+    },
+    "14": {
+      "score": 2,
+      "why": "Authentication responses are generic for valid identifiers, but the recovery page pre-fills the valid mock recovery reference, revealing an existing identifier."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery codes are generated with randomBytes, constrained by validation, and tied to the initiating session/account recovery record."
+    }
+  },
+  "cost_usd": 0.072178,
+  "generation_id": "gen-1785924401-Vh9CrRpgvj3hOxWghmBI",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

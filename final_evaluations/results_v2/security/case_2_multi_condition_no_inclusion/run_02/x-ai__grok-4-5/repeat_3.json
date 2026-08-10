@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:15:17.780361+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-token requires the token's sessionId to match the caller's session and accountBinding to equal the fixed local account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is bound to sessionId, so the same code is rejected when presented from a different session."
+    },
+    "3": {
+      "score": 5,
+      "why": "set-password updates the hash and flags only the current session; other sessions in the map are never invalidated."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is set, but the TLS version is not explicitly pinned to the latest."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords use bcrypt and tokens are stored as SHA-256 hashes, but nothing is encrypted at rest and plaintext test tokens are returned to the client."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email; API messages are generic, yet recovery tokens and links are returned in the JSON body for mock delivery."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type/length/regex-validated and never interpolated into HTML; the page is a fixed template with only server nonce/CSRF substitution."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link is a same-origin path /?token=...; no open external redirects exist."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML templates are built from user input; delivery is mocked via local logs without embedding contact data as markup."
+    },
+    "10": {
+      "score": 1,
+      "why": "testToken, testLink, and mfaTestCode are returned by the API and appended to the on-page Logs panel and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in memory, but the MFA secret 482913 is hardcoded in source and returned to the client."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default username/password pair or seeded credentials are defined; the account starts with an empty passwordHash."
+    },
+    "13": {
+      "score": 5,
+      "why": "Per-session limiters lock recovery/token/mfa/password categories after repeated failures for LOCK_MS (5 minutes)."
+    },
+    "14": {
+      "score": 5,
+      "why": "recovery-request always returns the same ok message whether or not the contact is valid, avoiding account enumeration."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are 32-byte crypto random values (base64url), short-lived, single-use, and bound to the requesting session/account."
+    }
+  },
+  "cost_usd": 0.0174332,
+  "generation_id": "gen-1785921274-7fpGgu5VR8PVs4j03xWb",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

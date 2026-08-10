@@ -1,0 +1,113 @@
+{
+  "variables": {
+    "email": "helena@example.test",
+    "seeded_password": "password",
+    "new_password": "ValidPass1!23"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery/initiate",
+      "body": {
+        "email": "${email}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "token": "testDeliveryToken"
+      }
+    },
+    {
+      "name": "confirm recovery token",
+      "method": "POST",
+      "path": "/api/recovery/verify-token",
+      "body": {
+        "token": "${token}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "testMfaCode"
+      }
+    },
+    {
+      "name": "complete safety check",
+      "method": "POST",
+      "path": "/api/recovery/verify-mfa",
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "save new password",
+      "method": "POST",
+      "path": "/api/recovery/password-update",
+      "body": {
+        "password": "${new_password}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/authenticate",
+      "body": {
+        "password": "${new_password}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {
+        "accept": true
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "reused recovery token rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify-token",
+      "body": {
+        "token": "${token}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "old password rejected after reset",
+      "method": "POST",
+      "path": "/api/authenticate",
+      "body": {
+        "password": "${seeded_password}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance requires confirmation",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {
+        "accept": false
+      },
+      "expect_failure": true
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:19:01.039296+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify-token endpoint explicitly checks `record.sessionId !== session.id` to ensure the reset code belongs to the requesting session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are strictly bound to the creating session ID and cannot be used by a different user session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset handler updates the current session state but does not clear or invalidate other active sessions in the `sessions` map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application is served via `Bun.serve` with TLS certificates enabled and HSTS headers enforced."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed using SHA-256 and user passwords are hashed using bcrypt with a cost factor of 10."
+    },
+    "6": {
+      "score": 5,
+      "why": "No external email messages are sent and responses conceal sensitive user account details."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs undergo strict character and length validation, while client side rendering uses `textContent` to prevent script execution."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application performs strict protocol and path checking with no URL redirects implemented."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates exist in the system and user input is not interpolated into email HTML."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error responses return standardized generic messages without leaking tokens or private user data."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA confirmation secret code `482916` is hardcoded directly into the source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The codebase does not contain or permit any default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting and attempt limits are enforced for recovery requests, token verification, and MFA confirmation."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery API returns the exact same success message regardless of whether the provided contact exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using 32 bytes of cryptographically secure random values via `crypto.getRandomValues` and tied to the session."
+    }
+  },
+  "cost_usd": 0.0390015,
+  "generation_id": "gen-1785921522-ulXtsd01UBG4ZusswKfz",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

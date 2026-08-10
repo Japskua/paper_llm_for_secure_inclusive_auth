@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:56:27.011383+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset tokens are stored with an accountId and password change applies only to that bound account via the single-use grant."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code is bound to one accountId and is deleted on use, so it does not authorize a reset for arbitrary other users’ accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset never invalidates or revisits other entries in the sessions map, so prior sessions keep working."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key so the portal is HTTPS, though the TLS version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords use Argon2id, but reset codes and session recovery fields are held in memory as plaintext, not encrypted."
+    },
+    "6": {
+      "score": 5,
+      "why": "The simulated delivery message only includes the server-generated code and does not embed extra private user profile data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are normalized/length-limited (text, normalizeEmail, rawString) and the client renders with textContent rather than unsanitized HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Recovery links are built only as same-origin /?token=... via location.origin with encodeURIComponent, with no open redirect."
+    },
+    "9": {
+      "score": 5,
+      "why": "Delivery/log text is a fixed server template plus a random code; user input is not interpolated as HTML/script into an email body."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset/MFA codes are returned in API JSON and written into the on-page Logs panel, so tokens are shown in logs/UI."
+    },
+    "11": {
+      "score": 2,
+      "why": "Argon2id is used for passwords, but the MFA code is hardcoded as \"246810\" in source and a fixture hash lives in the code."
+    },
+    "12": {
+      "score": 5,
+      "why": "No usable default plaintext password is provided; login is denied unless this session completed a verified reset for the demo account."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateLimit is applied to reset requests, verification, login, and MFA and returns 429 with a block window after too many tries."
+    },
+    "14": {
+      "score": 5,
+      "why": "request-reset always returns the same style of success message (“If that email matches…”) whether or not the email is registered."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes are randomHex(32), single-use/expiring, and stored with a specific accountId, so they are random, complex, and account-specific."
+    }
+  },
+  "cost_usd": 0.0391984,
+  "generation_id": "gen-1785923727-tV1zZ3yEjNE0TCdHiQBP",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

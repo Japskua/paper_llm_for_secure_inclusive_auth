@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:52:15.076193+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "382826be6a70be6d0d503a9383b0a4ec86ceeb15e56bcec319dd73312f8c12a0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by associating it with a session flowId and verifying it in /api/verify."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for any other user because tokens are randomly generated and tied to specific recovery records."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after password reset because session.resetComplete is set to true, and recoveryFlowExpired clears the flow."
+    },
+    "4": {
+      "score": 5,
+      "why": "The website uses HTTPS with TLS as enforced by the Bun.serve TLS configuration and HSTS header."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are encrypted (randomValue uses crypto.getRandomValues) and user data is not exposed in logs or errors."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages (simulated) do not expose private user data; mockToken is only shown in logs for demo purposes."
+    },
+    "7": {
+      "score": 5,
+      "why": "The code sanitizes user-supplied data (email, password) via length checks, regex validation, and server-side enforcement."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are safe and only go to the hospital’s site (no external URLs are allowed in the SPA logic)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are safe; no scripts or HTML from user input are rendered (static HTML with nonce-based CSP)."
+    },
+    "10": {
+      "score": 5,
+      "why": "User’s private information or tokens are not shown in error pages or logs (errors are generic and logs only show mock data)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are stored securely using Argon2id hashing, and no secrets are hardcoded in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not allow default credentials; all sessions and tokens are randomly generated."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system bars the user from making several wrong attempts via rate limiting (VERIFY_LIMIT, RECOVERY_IP_LIMIT, and mfaFailures)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether the username/email exists (anti-enumeration in /api/recovery)."
+    },
+    "15": {
+      "score": 5,
+      "why": "The password reset code is random (32-byte hex), complex, and user-specific (tied to a recovery record)."
+    }
+  },
+  "cost_usd": 0.019032,
+  "generation_id": "gen-1785919929-US1amiTpOkfXVnKDaqzE",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

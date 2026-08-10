@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:01:50.987235+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are stored with a bound accountKey and password replacement only updates that account after the session-attached tokenHash is validated."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each reset token record is tied to a single accountKey, so the same code cannot reset a different user's password."
+    },
+    "3": {
+      "score": 5,
+      "why": "replacePassword updates the password hash and marks the token used but never invalidates other existing sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "Bun.serve is configured with TLS cert/key, HSTS is set, and HTTP via x-forwarded-proto is rejected with 426."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords use argon2id and reset tokens/identifiers are stored as SHA-256 digests, though this is hashing rather than encryption of all user data."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email body leaks account details; responses use a generic recovery message, though test tokens are returned in API JSON for the mock flow."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated via identifier/passwordProblem regexes, body size limits, and JSON parsing; client display uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "renderLink only accepts same-origin paths starting with '/' that match pathname '/' with a recovery-test param, rejecting protocol-relative and external URLs."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no HTML email templates; mock delivery is plain JSON/log text without injecting user-controlled HTML/scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Mock recovery/MFA tokens and codes are written into the on-page logs UI and returned in API fields such as testValue and testMfaCode."
+    },
+    "11": {
+      "score": 2,
+      "why": "Runtime passwords are argon2id-hashed, but provision() hardcodes Initial!HospitalPassword9 in source and MFA/demo codes sit in session memory in plaintext."
+    },
+    "12": {
+      "score": 1,
+      "why": "provision() creates accounts with the known default password Initial!HospitalPassword9, which remains valid for login."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, reset confirmation, identity, and MFA paths lock out after repeated failures (e.g., 5 tries) for LOCK_MS."
+    },
+    "14": {
+      "score": 5,
+      "why": "recoveryRequest always returns the same conditional success message whether or not the account exists; login uses a generic mismatch error."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens come from crypto.getRandomValues (base64url), are long/complex, and are bound to a specific accountKey/user record."
+    }
+  },
+  "cost_usd": 0.0416204,
+  "generation_id": "gen-1785924050-ztfc7hht8d9wfLANSMiO",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

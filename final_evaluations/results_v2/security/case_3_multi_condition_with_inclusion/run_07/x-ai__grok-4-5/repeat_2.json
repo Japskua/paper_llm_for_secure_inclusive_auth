@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:24:18.200371+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Recovery verification requires the record’s sessionId to match the caller’s session and the submitted code to match the stored bcrypt token hash bound to that recovery request."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same code cannot be used from another session because recovery-verify enforces record.sessionId === session.id and per-record token hash checks."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates accountPasswordHash and the current session only; no other sessions are invalidated or logged out."
+    },
+    "4": {
+      "score": 5,
+      "why": "Bun.serve is configured with TLS cert/key and responses send HSTS, so the app is served over HTTPS."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and passwords are protected with bcrypt hashing (not classical encryption); no separate encryption of other user data at rest."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email body is sent; the user-facing recovery message is generic and does not echo private account fields, though testToken is returned in the API for the demo."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs pass through cleanText/validIdentifier/validPassword, which bound length and reject control characters and <>."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses a fixed in-app hash allowlist and API next paths are relative internal routes only, with no open external redirects."
+    },
+    "9": {
+      "score": 5,
+      "why": "There is no email template rendering of user input; client rendering escapes dynamic text via esc()."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error JSON is generic and server catch hides stacks, but recovery/MFA tokens are returned as testToken/testMfaCode and written to the on-page logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Runtime password storage uses bcrypt, yet the initial password plaintext and MFA_TEST_CODE are hardcoded in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The demo accepts fixed default credentials helena@hospital.test / Welcome!2025Heart."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery-request, recovery-verify, and MFA paths throttle or lock after repeated failures."
+    },
+    "14": {
+      "score": 4,
+      "why": "Login and recovery-request messages are generic, but a non-existent account can still be distinguished at the password step after code verification."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are 32-byte randomBytes values (base64url), hashed at rest, and bound to the requesting session/recovery record."
+    }
+  },
+  "cost_usd": 0.0209628,
+  "generation_id": "gen-1785925413-bR0noGwbcfkgM2bZPnKG",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

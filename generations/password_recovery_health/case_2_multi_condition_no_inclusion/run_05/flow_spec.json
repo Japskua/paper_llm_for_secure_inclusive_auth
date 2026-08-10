@@ -1,0 +1,218 @@
+{
+  "variables": {
+    "email": "any-valid-account@example.com",
+    "new_password": "N3w!SecurePass9"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "csrf",
+    "in": "body"
+  },
+  "steps": [
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recover",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "account": "${email}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "reset_token": "testToken"
+      }
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "token": "${reset_token}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "testMfaCode"
+      }
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "code": "${mfa_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "reset password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "password": "${new_password}",
+        "confirmation": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "accepted": true,
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/book-appointment",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "missing CSRF rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "account": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong origin rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "headers": {
+        "Origin": "https://example.invalid"
+      },
+      "body": {
+        "account": "${email}",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid account input rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "account": "x!",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "password": "password123",
+        "confirmation": "password123",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong new password rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "password": "Wrong!Password9",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

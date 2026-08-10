@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:37:29.887364+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "verify-token compares the SHA-256 of the submitted token only against the hash of the recovery bound to the current session (recovery.sessionId === session.id via ownedRecovery), though ownership is session-scoped since no real user accounts exist."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token issued in one session cannot validate in another because ownedRecovery requires recovery.sessionId === session.id and the hash must match that specific recovery record."
+    },
+    "3": {
+      "score": 5,
+      "why": "Sessions are never invalidated or rotated on password reset — the same session continues through /api/accept-privacy and confirmation after the password is set."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server only listens over TLS (Bun.serve with tls cert/key, plus an HSTS header), but no TLS version is explicitly pinned, so 'latest TLS version' rests on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as bcrypt (cost 12) — appropriate one-way hashing rather than encryption, held only in memory."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email is sent; responses are generic and hide account existence, but the simulated delivery prints the token into the page and browser console."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are strictly validated (email regex with 254 cap, 64-hex token check, password policy, 4KB body limit, cookie value whitelist) and dynamic DOM output uses textContent only."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is hash-based and restricted to a fixed whitelist of views (safeHashView), with no user-controlled redirect targets and CSP form-action/connect-src locked to 'self'."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates at all; the simulated messages insert dynamic values via textContent and CSP permits only nonce-based scripts, so no user input becomes HTML or script."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces, but the reset token is explicitly displayed in the on-page 'Recovery activity logs' panel and console.log, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never logged, but the MFA secret code '246810' is hardcoded in the source (MFA_CODE constant and client-side state.mfaCode)."
+    },
+    "12": {
+      "score": 3,
+      "why": "There are no default accounts or conventional default credentials, but the fixed universal MFA code shipped in the code functions as a shared default secret for the recovery flow."
+    },
+    "13": {
+      "score": 5,
+      "why": "Each stage has attempt counters that block for 60 seconds after 5 failures (registerFailure/ATTEMPT_LIMIT/BLOCK_MS), plus per-IP rate limits of 8 attempts/min and 3 recovery requests/min."
+    },
+    "14": {
+      "score": 5,
+      "why": "The /api/recovery endpoint deliberately returns the same generic message regardless of email validity or account existence (validEmail is computed then voided)."
+    },
+    "15": {
+      "score": 4,
+      "why": "The token is a 32-byte CSPRNG hex value (randomHex), single-use, 15-minute TTL, hashed at rest, and bound to the requesting session — session-specific rather than account-specific since no accounts exist."
+    }
+  },
+  "cost_usd": 0.106263,
+  "generation_id": "gen-1785922373-kYEL8gpGuO2Cx36f4BZK",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

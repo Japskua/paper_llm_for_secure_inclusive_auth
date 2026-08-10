@@ -1,0 +1,160 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 18,
+  "steps_passed": 18,
+  "happy_path_passed": 14,
+  "happy_path_total": 14,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "create session and obtain csrf",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery/request",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "read delivered recovery token",
+      "method": "GET",
+      "path": "/api/recovery/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "send recovery security code",
+      "method": "POST",
+      "path": "/api/mfa/send",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "read recovery security code",
+      "method": "GET",
+      "path": "/api/recovery/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify recovery security code",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/password/change",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "read sign-in security code",
+      "method": "GET",
+      "path": "/api/login/mfa/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify sign-in security code",
+      "method": "POST",
+      "path": "/api/login/mfa/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "recovery request without csrf rejected",
+      "method": "POST",
+      "path": "/api/recovery/request",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "used recovery token rejected",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong sign-in password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "privacy acceptance while signed out rejected",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 18
+}

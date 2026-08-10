@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:36:32.348754+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "ownedRecovery requires the recovery record's sessionId to match the current session, and verify-token compares the submitted token hash only against that session's stored tokenHash."
+    },
+    "2": {
+      "score": 1,
+      "why": "There is no global token lookup, so a token created for one session is validated only against that session's recovery and will not verify for another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The reset-password handler does not delete, rotate, or invalidate existing sessions, so session cookies remain usable until their normal expiry."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is started with TLS certificate and key, but the source does not specify or enforce which TLS protocol version is used."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens and passwords are protected by SHA-256 and bcrypt hashing rather than encryption, and no encryption of user data is shown."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent, and the simulated delivery exposes the raw reset token in the UI and console instead of guarding it."
+    },
+    "7": {
+      "score": 3,
+      "why": "The code validates token and password constraints and uses textContent for dynamic output, but it does not sanitize the submitted email and the email-format check is unused."
+    },
+    "8": {
+      "score": 5,
+      "why": "safeHashView restricts navigation to internal stage names and the links use only fragment routes, with no external redirect target observed."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templating is present, so the safety of email templates cannot be observed beyond the simulated delivery containing no user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic error responses avoid private details, but the browser console and activity log output the raw reset token and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA secret 246810 is hardcoded in the source rather than kept out of the code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application accepts the hardcoded MFA code 246810 as a deterministic test credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Token, MFA, password, and recovery endpoints use attempt counters, temporary blocks, and client/IP rate limits after repeated failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the same generic response regardless of the supplied email address or account availability."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset token is a 64-character cryptographic random value bound to the initiating session, although it is not linked to a real user account."
+    }
+  },
+  "cost_usd": 0.08695,
+  "generation_id": "gen-1785922332-5PFEkElBm07qr0eN2TGQ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 3,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

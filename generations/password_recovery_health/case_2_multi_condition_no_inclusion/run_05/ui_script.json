@@ -1,0 +1,149 @@
+{
+  "variables": {
+    "email": "any-valid-account@example.com",
+    "new_password": "N3w!SecurePass9"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_recovery_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#account",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#token"
+        }
+      ]
+    },
+    {
+      "name": "confirm_second_factor",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Test reset token: ([A-Za-z0-9_-]+)",
+          "into": "reset_token"
+        },
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${reset_token}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Test MFA code: ([0-9]{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password"
+        }
+      ]
+    },
+    {
+      "name": "sign_in_confirmation",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirmation",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save secure password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "button:has-text('Confirm and sign in')"
+        }
+      ]
+    },
+    {
+      "name": "privacy_acceptance",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm and sign in')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Updated privacy conditions"
+        }
+      ]
+    },
+    {
+      "name": "appointment_request",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "input[type='checkbox']"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept conditions and continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "button:has-text('Confirm appointment request')"
+        }
+      ]
+    },
+    {
+      "name": "appointment_request_confirmed",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm appointment request')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Appointment request confirmed"
+        }
+      ]
+    }
+  ]
+}

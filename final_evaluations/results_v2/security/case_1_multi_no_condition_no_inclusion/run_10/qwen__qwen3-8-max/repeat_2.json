@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:06:24.778105+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset verification rejects a token unless the stored record's sessionId matches the current session, so it checks ownership."
+    },
+    "2": {
+      "score": 1,
+      "why": "A different session cannot use the same token because reset-verify requires the token record to be bound to the current session ID."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password reset only marks the token used and changes the current session, while other stored sessions are not revoked."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is started over TLS using certificate and key, but no minimum or latest TLS version is configured or demonstrated."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS protects traffic and the password is bcrypt-hashed, but reset tokens and the hardcoded MFA code are not encrypted or cryptographically protected at rest."
+    },
+    "6": {
+      "score": 1,
+      "why": "No actual email message is sent, and the reset token is returned in the API response and written to the visible training log."
+    },
+    "7": {
+      "score": 4,
+      "why": "The identifier is validated with a strict regex, the password is checked against policy, and user input is not directly rendered into HTML."
+    },
+    "8": {
+      "score": 2,
+      "why": "The only redirect is the plain-HTTP listener redirecting to https://localhost with the original path, not to a configured hospital site."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the source, so there is no observed email template containing user-controlled scripts or HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The visible log output prints the simulated reset code and MFA code, so tokens are shown in logs despite generic error pages."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is bcrypt hashed, but the MFA code is hardcoded in source and reset tokens are kept in plaintext in memory."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no normal password login, but the flow uses a demo account identifier and a fixed MFA code, which is default credential-like behavior."
+    },
+    "13": {
+      "score": 4,
+      "why": "The code enforces per-session rate limits and attempt counters on reset verification and MFA verification, returning 429 after excess attempts."
+    },
+    "14": {
+      "score": 2,
+      "why": "The reset-request response includes testToken only for the existing demo-account, so the response can reveal account existence despite a generic message."
+    },
+    "15": {
+      "score": 3,
+      "why": "Reset tokens are generated with crypto.getRandomValues and bound to the requesting session, but they are not explicitly linked to a persistent user identity."
+    }
+  },
+  "cost_usd": 0.058518,
+  "generation_id": "gen-1785920574-17RulavTwpjYXzvP91W7",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 2,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 2,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 3.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 3.0
+  },
+  "overall": 2.6667,
+  "capture_complete": true
+}

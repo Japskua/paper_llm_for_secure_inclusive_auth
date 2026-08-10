@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:43:55.529972+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c4fd046aaec21d61dbcea92c3e7d1830bd59eb3cc9562fc7c9e6a0dc0ee90617",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The /api/verify-token route hashes the candidate code with SHA-256 and constant-time-compares it against the session-bound resetTokenHash, also enforcing expiry and single-use, so a code is only accepted for the session (user) that requested it."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to the issuing session's resetTokenHash and are marked used on verification, so the same code cannot be redeemed by any other session/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing in /api/password invalidates the current or any other session in the sessions map; sid sessions remain valid until their 30-minute expiry even after a password reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server runs TLS-only via Bun.serve with certificates, sets HSTS, and rejects non-https x-forwarded-proto, but it does not explicitly pin a minimum/latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored as SHA-256 hashes and passwords are hashed with bcrypt (cost 10), which are appropriate protections (hashing rather than encryption), and essentially no other user data is persisted."
+    },
+    "6": {
+      "score": 2,
+      "why": "The simulated delivery message openly prints the recovery token and reset link to the on-page log and browser console rather than hiding or guarding that sensitive data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Account, token, and password inputs are validated with strict allowlist regexes, JSON bodies are size-limited and type-checked, and all client-side rendering of input uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Reset links are server-constructed same-origin paths (/reset?stage=verify&token=...) combined with location.origin, with no user-controlled redirect targets and CSP form-action restricted to 'self'."
+    },
+    "9": {
+      "score": 5,
+      "why": "Templates are static HTML with only server-generated nonce/CSRF values interpolated, user input is never HTML-interpolated, and CSP script-src 'self' forbids inline scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "While error responses are generic and stack-free, the recovery token and MFA code are deliberately displayed in the 'Secure activity log' element and console.log output."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the secret MFA code is hardcoded in the source as const MFA_CODE = \"482915\"."
+    },
+    "12": {
+      "score": 2,
+      "why": "Although no default usernames/passwords exist, the hardcoded universal MFA code 482915 functions as a static default credential shared by all sessions."
+    },
+    "13": {
+      "score": 5,
+      "why": "Five consecutive wrong reset-code or MFA attempts set resetBlockedUntil/mfaBlockedUntil for one minute and return HTTP 429, barring further attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The /api/recovery endpoint returns the identical generic message ('If the entered account information is eligible...') regardless of whether the account exists, and no account database is consulted."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is 32 bytes from crypto.getRandomValues encoded base64url (256-bit, random and complex) and is stored as a hash tied to the requesting session, making it user/session-specific."
+    }
+  },
+  "cost_usd": 0.1040202,
+  "generation_id": "gen-1785922978-QZy5SnpCthF281KYZcMX",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:37:30.269314+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "The verify-reset endpoint accepts any valid code regardless of session ownership without validating if it belongs to the active user."
+    },
+    "2": {
+      "score": 5,
+      "why": "Any user session presenting a valid, unexpired reset code can successfully complete verification."
+    },
+    "3": {
+      "score": 1,
+      "why": "The password update handler explicitly iterates over all existing sessions and revokes their authenticated state."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server is served over HTTPS using TLS with configured PEM certificate and key files."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords are securely hashed using bcrypt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated notifications and messages use standardized, static descriptions that protect private user information."
+    },
+    "7": {
+      "score": 5,
+      "why": "Client-side rendering strictly uses textContent rather than innerHTML to avoid executing user input."
+    },
+    "8": {
+      "score": 5,
+      "why": "All allowed endpoints are limited to an internal route allowlist and standard localhost HTTPS destinations."
+    },
+    "9": {
+      "score": 5,
+      "why": "Message output and simulated delivery logs render text safely without interpreting HTML or user scripts."
+    },
+    "10": {
+      "score": 5,
+      "why": "Generic response functions and global catch blocks prevent private tokens, stack traces, and debug info from leaking."
+    },
+    "11": {
+      "score": 1,
+      "why": "Default initial password strings and static MFA verification codes are embedded directly in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system initializes with hardcoded default account credentials and a fixed MFA code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Global rate-limiting mechanisms throttle and lock out excess failed attempts across login, MFA, and recovery routes."
+    },
+    "14": {
+      "score": 1,
+      "why": "The recovery request route includes a code property in the JSON payload only when a valid account identity is submitted."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes consist of 32 cryptographically random bytes mapped server-side to the user's recovery identity scope."
+    }
+  },
+  "cost_usd": 0.0387633,
+  "generation_id": "gen-1785922627-qKII2qEnokdSAdtLuoIv",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 1,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

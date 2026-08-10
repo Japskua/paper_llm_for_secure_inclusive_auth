@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:35:46.958292+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "5def0af8851cb528c3f00ff512506269aa19299d60d5780a568a1790a19eea39",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset codes are stored in a session bound to an accountId and are validated only against that session's stored code or token."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code from one session will not match the independently generated code stored in another user's session."
+    },
+    "3": {
+      "score": 4,
+      "why": "The password-change logic neither rotates the current session identifier nor revokes any other sessions associated with the account."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun TLS and HSTS provide HTTPS, but the code does not explicitly configure or verify the minimum or latest supported TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and transport uses TLS, but reset tokens, manual codes, and user identifiers remain plaintext in server memory and codes are returned to the browser."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email implementation is present, while the simulated delivery exposes recovery codes and verification URLs directly in browser logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers, codes, and passwords receive strict type, length, format, and policy validation before use, although passwords are validated rather than sanitized."
+    },
+    "8": {
+      "score": 4,
+      "why": "Verification links are generated from a fixed internal /verify path and cannot be supplied as arbitrary external redirect destinations, though the absolute simulation URL is hardcoded to localhost."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates to inspect, although the browser interface uses textContent and does not insert user input as executable HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Manual recovery codes, verification URLs containing reset tokens, and the fixed MFA code are deliberately written to the browser console and visible Logs panel."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is hardcoded as 246810 and reset and MFA secrets are stored in plaintext session fields."
+    },
+    "12": {
+      "score": 3,
+      "why": "No plaintext default password is declared, but the application ships with a fixed seeded account and a fixed pre-generated password hash."
+    },
+    "13": {
+      "score": 5,
+      "why": "Repeated failures invoke progressive per-action, identifier, and source delays that eventually cause requests to receive HTTP 429 responses."
+    },
+    "14": {
+      "score": 4,
+      "why": "Recovery requests use a sink account and generic responses to conceal account existence, although the sink account is distinguishable when the final login always fails."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens and manual codes are generated with crypto.getRandomValues, encoded with base64url, and stored within the account-bound recovery session."
+    }
+  },
+  "cost_usd": 0.106395,
+  "generation_id": "gen-1785926116-EwNOXWaFmYCNkMWoDwtm",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 4,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 3,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.2667,
+  "capture_complete": false
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:48:22.571367+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "/api/verify-reset requires the token hash to match session.resetTokenHash, token.sessionId, and the account id before accepting it."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to the requesting session and account, so a code issued to one session fails verification for any other."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing in /api/reset-password invalidates or expires entries in the sessions map, so any pre-existing sessions remain valid until their TTL."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server only serves over TLS with HSTS and an HTTP→HTTPS redirect, but no TLS version is explicitly pinned, so 'latest TLS' rests on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes, email, and passwords are stored only as SHA-256/bcrypt hashes with random CSPRNG tokens, i.e., strongly protected but hashed rather than encrypted."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email is sent; the simulated delivery is privacy-neutral with a generic message and decoy tokens, and a footer warns against sharing codes, so private data is guarded."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email is regex-validated and normalized, passwords are policy-checked and length-capped, payloads are size-limited, and the client writes input via textContent only."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects are built solely from the fixed CONFIGURED_HTTPS_ORIGIN with strict Host-header validation, so links can only go to the configured hospital origin."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates, and the static HTML shell plus textContent-only DOM insertion and a nonced CSP prevent any user input from becoming HTML or script."
+    },
+    "10": {
+      "score": 4,
+      "why": "Error responses are generic and server logs contain no secrets; tokens appear only in the deliberate simulated-delivery display, not in error pages or logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is kept as a bcrypt hash, but the MFA secret code '246810' is hardcoded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The account ships with a fixed precomputed initial password hash (the well-known bcrypt example of 'password') and a hardcoded MFA code, amounting to default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification is locked after 5 failures, reset requests are limited to 3 per 10-minute window, and MFA attempts are capped at 5."
+    },
+    "14": {
+      "score": 5,
+      "why": "Every /api/request-reset submission returns the identical generic message and a same-shaped random (decoy) token regardless of whether the email matches an account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 256-bit CSPRNG tokens stored only as hashes, bound to the session and account, single-use, and expiring after 15 minutes."
+    }
+  },
+  "cost_usd": 0.0789222,
+  "generation_id": "gen-1785923254-i8FpYXXixiyge4JMETbV",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 4,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

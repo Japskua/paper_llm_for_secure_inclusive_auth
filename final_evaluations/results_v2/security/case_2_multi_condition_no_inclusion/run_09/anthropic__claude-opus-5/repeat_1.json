@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:46:34.757700+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-reset checks token.sessionId === session.id, token.accountId === mockAccount.id, and compares against session.resetTokenHash, so the code is bound to the requesting user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is session- and account-bound (sessionId/accountId checks plus session.resetTokenHash equality), so the same code cannot work for another user."
+    },
+    "3": {
+      "score": 2,
+      "why": "Only the current session's grant is consumed; other sessions are not enumerated or invalidated after reset, though in this single-account demo the reset flow does not rotate session IDs — so stale sessions could persist, yet each session is self-contained and unauthenticated until MFA."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve uses TLS with local mkcert PEM files and HSTS plus an HTTP→HTTPS 308 redirect, but no TLS version/cipher configuration is specified so 'latest TLS version' is only implicit via Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens/grants are stored only as SHA-256 hashes, passwords use bcrypt cost 12, and the account email is stored as a hash, though SHA-256 (not HMAC) and localhost-only mock data limit rigor."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email delivery; the 'simulated delivery' prints the raw recovery token and MFA code into the client-side log list and console, which does not guard private data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are type-checked, length-capped, email regex-validated, passwords strength-validated, JSON body size-limited, and all DOM output uses textContent under a nonce-based CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects are built only from the validated CONFIGURED_HTTPS_ORIGIN constant with Host-header rejection (421), and the only client link is a relative /reset?token= URL with encodeURIComponent."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist at all (delivery is simulated in-browser), but the equivalent HTML shell is static with nonce-only scripts and no user input interpolation."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic and stack traces are suppressed, but the client log list and server console intentionally display the live recovery token and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and the initial plaintext is absent, but the bcrypt hash, the recovery email address, and a hard-coded MFA code '246810' are all embedded literals in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "A hard-coded seeded account (helena.recovery@hospital.test with a fixed known bcrypt hash of 'password') and the static MFA code '246810' function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "VERIFY_FAILURE_LIMIT of 5 locks the recovery flow with a 429, MFA attempts cap at 5, and reset requests are limited to 3 per 10-minute window."
+    },
+    "14": {
+      "score": 4,
+      "why": "The generic message and identically shaped decoy testToken avoid direct enumeration, but the response is stateful (a matching email silently arms a verifiable token) and the per-session rate limiting is bypassable with fresh cookies."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are randomBytes(32) base64url, stored hashed, bound to a specific sessionId and accountId, single-use, and expire after 15 minutes."
+    }
+  },
+  "cost_usd": 0.100285,
+  "generation_id": "gen-1785923172-U2hJpA515Xw6ZhkzK3PI",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 4,
+    "4": 3,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

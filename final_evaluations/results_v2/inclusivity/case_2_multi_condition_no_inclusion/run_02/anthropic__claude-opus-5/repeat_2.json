@@ -1,0 +1,114 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:16:46.656827+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "4a6eaf3cfcc73c22842c5c8c14f50a97c9b1281fdf4ac2299c6aa628f1a4e591",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 6,
+  "screenshots": [
+    "step_01_request_password_reset.png",
+    "step_02_verify_reset_code.png",
+    "step_03_additional_verification.png",
+    "step_04_set_new_password.png",
+    "step_05_accept_privacy_conditions.png",
+    "step_06_recovery_complete.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All six screens are static, flat layouts with no carousels, animations, banners or modal pop-ups — only a fixed header, one card, a 'Stay safe' box and a Logs panel."
+    },
+    "2": {
+      "score": 3,
+      "why": "Headings and the single blue primary button do stand out, but the large dark 'Logs' block draws attention away, the step chips (1. Request / 2. Token / 3. Verify) never highlight the current step, and the privacy checkbox on step 5 is tiny and misaligned above its label."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each screen has only one field and one button so the action is findable, but the essential recovery token and MFA code are buried in a technical dark Logs panel / browser console rather than presented as something a user can readily locate."
+    },
+    "4": {
+      "score": 2,
+      "why": "She must carry a 44-character token and a 6-digit code across screens and satisfy a multi-part rule (12+ chars, upper, lower, number, symbol), with no copy button, autofill or on-screen reminder of what she entered."
+    },
+    "5": {
+      "score": 1,
+      "why": "No 'remember me' checkbox, no password-manager/generate suggestion, no autofill hints or paste helpers appear on any screen, including the new-password screen."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing familiar is shown back to her — no masked email/phone confirmation, no saved account, no 'last used' indicator; recognition is replaced by recall of raw tokens."
+    },
+    "7": {
+      "score": 4,
+      "why": "Instruction text is one to two short sentences in plain wording with strong dark-on-light contrast (e.g. 'Use 12 or more characters with upper- and lower-case letters, a number, and a symbol')."
+    },
+    "8": {
+      "score": 2,
+      "why": "No error or validation message is visible in any of the six screenshots, so there is no evidence of messages that name the problem and the fix; only static hint text exists."
+    },
+    "9": {
+      "score": 2,
+      "why": "The password rule is stated but no example password, no email/phone format example, and no sample token format is shown; the only concrete sample is the raw test token inside the developer Logs panel."
+    },
+    "10": {
+      "score": 3,
+      "why": "The labels 'Recovery token', 'Verification code' and 'New password' are clear, but no alternative sign-in choices (face, passkey, phone call) are offered at all, so there is little genuine choice to be clear about."
+    },
+    "11": {
+      "score": 5,
+      "why": "Every step presents a single task with one input (or two matching password fields) and one primary button, plus at most one secondary link ('Enter it manually')."
+    },
+    "12": {
+      "score": 3,
+      "why": "The final 'Recovery complete' screen states the outcome explicitly, but intermediate steps give no visible success confirmation other than lines appearing in the technical Logs panel, and the progress chips never mark completion."
+    },
+    "13": {
+      "score": 4,
+      "why": "Each step includes a short explanatory sentence and a persistent 'Stay safe' tip box with phishing guidance, giving brief just-in-time help."
+    },
+    "14": {
+      "score": 3,
+      "why": "Step 1 offers 'Already received a code? Enter it manually' and step 6 offers 'Return to recovery start', but intermediate screens show no back/cancel/resend control for correcting a mistake."
+    },
+    "15": {
+      "score": 5,
+      "why": "All six screens reuse the identical dark-blue header, three-chip progress row, single white card with bold H1, one blue primary button, the same 'Stay safe' box and the same Logs panel."
+    }
+  },
+  "cost_usd": 0.113135,
+  "generation_id": "gen-1785921365-InMDqzHlI7opNGGQyzls",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 3,
+    "3": 3,
+    "4": 2,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 2,
+    "9": 2,
+    "10": 3,
+    "11": 5,
+    "12": 3,
+    "13": 4,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 1.6667,
+    "comprehension": 2.6667,
+    "decision_making": 3.6667,
+    "learning": 4.0
+  },
+  "overall": 3.1334,
+  "capture_complete": true
+}

@@ -1,0 +1,130 @@
+{
+  "variables": {
+    "email": "helena.recovery@hospital.test",
+    "initial_password": "Initial-Clinical!2025",
+    "new_password": "Recovered-Clinical!2026"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request password reset",
+      "method": "POST",
+      "path": "/api/reset/request",
+      "body": {
+        "contact": "${email}"
+      },
+      "capture": {
+        "reset_token": "mockToken"
+      }
+    },
+    {
+      "name": "verify reset code",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "body": {
+        "token": "${reset_token}"
+      }
+    },
+    {
+      "name": "save new password",
+      "method": "POST",
+      "path": "/api/reset/confirm",
+      "body": {
+        "token": "${reset_token}",
+        "password": "${new_password}"
+      },
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "complete reset MFA",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "body": {
+        "code": "${mfa_code}"
+      }
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {}
+    },
+    {
+      "name": "sign in with recovered password",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "password": "${new_password}"
+      },
+      "capture": {
+        "login_mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "complete sign-in MFA",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "body": {
+        "code": "${login_mfa_code}"
+      }
+    },
+    {
+      "name": "accept privacy after sign-in",
+      "method": "POST",
+      "path": "/api/privacy/accept",
+      "body": {}
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/reset/request",
+      "headers": {
+        "X-CSRF-Token": ""
+      },
+      "body": {
+        "contact": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid reset code rejected",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "body": {
+        "token": "not-a-valid-token"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "password": "Definitely-Wrong!999"
+      },
+      "expect_failure": true
+    }
+  ]
+}

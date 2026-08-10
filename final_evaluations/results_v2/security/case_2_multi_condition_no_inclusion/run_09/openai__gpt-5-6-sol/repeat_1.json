@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:46:28.625361+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are bound to both token.sessionId and token.accountId and must match the requesting session's stored token hash."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token cannot work for another session because verification requires the token's sessionId to equal the current session ID."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates the account password but does not invalidate other existing sessions or revoke their authenticated state."
+    },
+    "4": {
+      "score": 3,
+      "why": "The application uses a Bun TLS listener and redirects HTTP to HTTPS, but it does not explicitly configure or demonstrate the latest permitted TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are generated with randomBytes and stored as SHA-256 hashes, while passwords use bcrypt and transport uses TLS, although the code primarily hashes rather than encrypts stored values."
+    },
+    "6": {
+      "score": 5,
+      "why": "The recovery response is generic and the simulated delivery contains no username, email address, patient data, or other private account information."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email and password inputs receive type, length, format, and complexity validation, though there is no separate general-purpose sanitization routine."
+    },
+    "8": {
+      "score": 5,
+      "why": "HTTP redirects use the fixed configured HTTPS origin, and reset links are relative same-origin paths rather than user-controlled destinations."
+    },
+    "9": {
+      "score": 5,
+      "why": "The HTML shell is static and dynamic client content is inserted with textContent or validated DOM properties rather than user-controlled HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The browser simulation explicitly displays reset tokens and MFA codes in the response-driven on-page logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are bcrypt-hashed, but the MFA secret code is hard-coded as 246810 and returned to the client."
+    },
+    "12": {
+      "score": 2,
+      "why": "No conventional default login is implemented, but the fixed initial password hash and hard-coded MFA code constitute default secret material."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery verification is locked after five failures, MFA verification is blocked after five attempts, and reset requests are rate-limited."
+    },
+    "14": {
+      "score": 1,
+      "why": "Although reset requests return identical responses, verifying the returned token succeeds only for the configured email and therefore reveals account existence through the next step."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens contain 32 cryptographically random bytes and are bound server-side to a specific session and account."
+    }
+  },
+  "cost_usd": 0.0985375,
+  "generation_id": "gen-1785923129-X3x7gabQ8HvbSEOxi5IF",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 5,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

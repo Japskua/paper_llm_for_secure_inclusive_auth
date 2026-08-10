@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:55:37.640050+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Each reset code is stored in `resetTokens` with the resolved `accountId`, and the subsequent grant/password change acts only on that bound account, though the verify step never re-checks the code against the email requested in the current session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A code maps to exactly one `accountId` and is deleted from `resetTokens` on first successful verification, so it cannot be reused for another user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Nothing in `/api/reset-password` iterates the `sessions` map to revoke other sessions, so any previously authenticated session object keeps `authenticated: true` after a password change."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured with TLS cert/key and HSTS (`max-age=31536000; includeSubDomains`) is sent, but no explicit minimum TLS version/cipher policy is set — it relies on Bun defaults."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords use Argon2id via `Bun.password.hash`, but reset codes and grants are kept in plaintext in in-memory maps (and returned in responses) rather than hashed or encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "The simulated delivery message (`SIMULATED recovery delivery. Code: ...`) contains no personal data, but it does carry the secret reset code in cleartext to the client/logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are normalized and constrained: `normalizeEmail`, strict email regex, length caps (200/300/100/20), `text()` trimming, and `passwordIsStrong` validation."
+    },
+    "8": {
+      "score": 5,
+      "why": "`recoveryLinkFor` builds links with `new URL(..., location.origin)` and encodes the token, CSP sets `form-action 'self'` and `base-uri 'none'`, and no user-controlled redirect target exists."
+    },
+    "9": {
+      "score": 5,
+      "why": "The delivery/log message is server-composed from only a random hex code, and the client renders it with `textContent`/`createElement`, never `innerHTML`."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset code is deliberately surfaced in the visible Logs panel and via `console.log` (`demoLog(message + ' | Recovery link: ' + ...)`, and the MFA code is logged too), so tokens do appear in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "The Argon2id hash fixture and the MFA code `\"246810\"` are hardcoded literals in the source rather than being kept in a store or environment configuration."
+    },
+    "12": {
+      "score": 2,
+      "why": "The MFA step accepts a fixed, source-embedded code (`session.mfaCode = \"246810\"`), which functions as a default credential, and the demo account hash is baked into the code."
+    },
+    "13": {
+      "score": 5,
+      "why": "`rateLimit` is applied to reset requests (3/15 min), code verification (5/5 min), login (5/5 min) and MFA (5/5 min), with blocking windows and user-facing pause messages."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/request-reset` always creates a token and returns the neutral message \"If that email matches an account...\" regardless of whether `accountsByEmail` has a match."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes come from `randomHex(32)` using `crypto.getRandomValues` (64 hex chars), expire in 15 minutes, are single-use, and are stored with a specific `accountId`."
+    }
+  },
+  "cost_usd": 0.136455,
+  "generation_id": "gen-1785923694-X6Xl8avFdA76gLtWwLkF",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

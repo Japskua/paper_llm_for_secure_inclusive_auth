@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:54:03.909917+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "382826be6a70be6d0d503a9383b0a4ec86ceeb15e56bcec319dd73312f8c12a0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "/api/verify only looks up the token in the recoveries map and binds record.flowId to the verifying session; no email or user identity is ever associated with a token, so no ownership check exists."
+    },
+    "2": {
+      "score": 4,
+      "why": "Tokens are bearer credentials — any session presenting a valid, unused token passes verification (only used/expiry/block flags are checked), though single-use (record.used = true) prevents replay after consumption."
+    },
+    "3": {
+      "score": 4,
+      "why": "A password reset only replaces the global passwordHash and sets resetComplete on the current session; there is no logic invalidating other existing sessions."
+    },
+    "4": {
+      "score": 4,
+      "why": "The app serves via Bun.serve TLS with a cert/key, redirects all HTTP to HTTPS with a 308, and sets HSTS with preload, but the TLS version is not pinned (defaults negotiate up to TLS 1.3)."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are Argon2id-hashed and tokens come from crypto.getRandomValues, but reset tokens are stored in cleartext in the in-memory recoveries map rather than hashed or encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "The simulated message is returned only to the requesting session over HTTPS, but the reset token is then written into the visible on-page Logs panel and browser console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation enforces strict length caps, a conservative email regex, token format regex, and typed checks with a bounded JSON parser, and the client renders all data via textContent only."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect in the system is the HTTP listener's fixed Location to https://localhost:PORT, the client uses hash-based routing, and no external URLs exist anywhere."
+    },
+    "9": {
+      "score": 5,
+      "why": "The mock delivery message is a fixed server-side string rendered via textContent, and no user-supplied input is ever embedded in any message or template."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server error responses are generic, but the client explicitly logs the reset token and MFA code to the visible Logs panel and console, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are retained only as Argon2id hashes, but the MFA secret \"482916\" and the \"initial-placeholder-value\" password are hardcoded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The hardcoded MFA code 482916 and the initial placeholder password effectively function as default/fixed credentials, so the statement does not hold."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification is limited to 5 attempts per IP per 10-minute window with a 10-minute block, recovery requests are capped per IP and per session, and 5 MFA failures clear the flow."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery returns the identical generic message (\"If an account can be recovered...\") for any well-formed email, revealing nothing about account existence."
+    },
+    "15": {
+      "score": 3,
+      "why": "The token is 32 CSPRNG bytes (64 hex chars) with a 15-minute expiry — random and complex — but it is not bound to any user or email, so it is not user-specific."
+    }
+  },
+  "cost_usd": 0.198072,
+  "generation_id": "gen-1785919946-YHZetaOtafSoaWhpTlEo",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 2,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

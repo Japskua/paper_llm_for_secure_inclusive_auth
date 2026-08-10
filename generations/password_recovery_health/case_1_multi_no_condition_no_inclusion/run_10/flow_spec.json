@@ -1,0 +1,115 @@
+{
+  "variables": {
+    "email": "demo-account",
+    "new_password": "ValidReset1!Pass"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "const CSRF = \"([^\"]+)\";",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request reset code",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "body": {
+        "identifier": "${email}"
+      },
+      "capture": {
+        "reset_token": "testToken"
+      }
+    },
+    {
+      "name": "verify reset code",
+      "method": "POST",
+      "path": "/api/reset-verify",
+      "body": {
+        "token": "${reset_token}"
+      }
+    },
+    {
+      "name": "complete password reset",
+      "method": "POST",
+      "path": "/api/reset-complete",
+      "body": {
+        "password": "${new_password}"
+      },
+      "capture": {
+        "mfa_code": "mfaCode"
+      }
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "body": {
+        "code": "${mfa_code}"
+      }
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "body": {
+        "accepted": true
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "reset request without CSRF is rejected",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "headers": {
+        "X-CSRF-Token": ""
+      },
+      "body": {
+        "identifier": "demo-account"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid reset code rejected",
+      "method": "POST",
+      "path": "/api/reset-verify",
+      "body": {
+        "token": "invalid-reset-code"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset-complete",
+      "body": {
+        "password": "weakpassword"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "incorrect MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance requires authentication",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "body": {
+        "accepted": true
+      },
+      "expect_failure": true
+    }
+  ]
+}

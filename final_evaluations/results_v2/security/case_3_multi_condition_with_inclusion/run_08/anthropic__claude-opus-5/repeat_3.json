@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:27:31.027870+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are stored with a bound userId and sessionId, and both `resetRecord` (sessionId check) and `verifiedRecord` (userId/expiry match) confirm the code belongs to the requesting user's recovery session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token hash maps to exactly one userId and one originating sessionId and is marked `used` after completion, so it cannot be replayed for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "`/api/reset-complete` only rehashes the password and calls `clearVerified`; it never iterates the `sessions` map to revoke other sessions, so any pre-existing authenticated session remains valid after the reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server runs `Bun.serve` with TLS cert/key and sends HSTS, but no explicit minimum TLS version or cipher policy is configured, so 'latest TLS' relies on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords use Argon2id and reset tokens are stored only as SHA-256 hashes with 32 bytes of CSPRNG entropy, though user records themselves are held in plaintext in memory."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email channel; instead the recovery token, delivery authorization code and MFA code are returned in JSON to the browser and printed to the visible activity log, so no delivery message guards secrets."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input is JSON-only with size caps, strict regex validation for email/6-digit codes/64-hex tokens, a full password policy, and client rendering uses textContent for dynamic values so no user data reaches HTML sinks."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application issues no redirects at all and CSP restricts `form-action 'self'` and `base-uri 'none'`, so there is no external redirect path — though also no explicit allow-list logic to inspect."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist in the code; the only rendered template is the server-generated HTML page, which injects only a nonce and CSRF token via JSON.stringify and contains no user-supplied markup."
+    },
+    "10": {
+      "score": 2,
+      "why": "The reset token, the delivery authorization code, and the MFA code are all explicitly console.log'd and rendered into the on-page 'Activity logs' panel, exposing secrets in logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "`DELIVERY_AUTHORIZATION_CODE = \"864200\"`, `MFA_CODE = \"246810\"`, and the demo user's initial password are hardcoded literals in the source rather than externalized secrets."
+    },
+    "12": {
+      "score": 2,
+      "why": "A demo account (helena@hospital.test) is seeded with a fixed built-in password and two static shared codes act as default credentials for delivery authorization and MFA."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, delivery authorization and reset requests each use attempt counters with MAX_ATTEMPTS = 5, a 10-minute window and a 10-minute lockout returning HTTP 429."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/reset-request` always returns the same 'If an account is available...' message regardless of user existence, and login failures always return the generic 'We could not sign you in.'"
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is `randomId(32)` — 32 CSPRNG bytes as 64 hex chars — hashed at rest, single-use, 15-minute TTL, and bound to a specific userId and session."
+    }
+  },
+  "cost_usd": 0.135885,
+  "generation_id": "gen-1785925616-HWYEqtqh1g7D9wblYOJ6",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

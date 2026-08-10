@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:46:47.092685+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset token hash is stored directly on the individual session object and validated against `session.resetTokenHash`."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset token hashes are bound strictly to the specific session that generated them and will not match other sessions."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating the password updates the password hash but does not clear or invalidate other existing entries in the session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application requires TLS certificate files to start and serves traffic over HTTPS with HSTS enabled."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords are hashed using Argon2id and reset tokens are hashed using SHA-256 before storage."
+    },
+    "6": {
+      "score": 5,
+      "why": "The system uses generic recovery responses that expose no private user details or identifiers."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are strictly validated via pattern/length checks on the backend and safely handled via DOM text properties on the frontend."
+    },
+    "8": {
+      "score": 5,
+      "why": "Routing relies solely on internal client-side URL hash fragments without following external redirects."
+    },
+    "9": {
+      "score": 5,
+      "why": "The simulated delivery relies on static API responses without constructing HTML templates from user input."
+    },
+    "10": {
+      "score": 1,
+      "why": "The web interface explicitly prints sensitive test tokens and MFA codes into the client-facing log display."
+    },
+    "11": {
+      "score": 1,
+      "why": "The initial seed password and the static MFA verification code ('246810') are hardcoded directly in the source file."
+    },
+    "12": {
+      "score": 1,
+      "why": "The verification workflow uses a fixed, hardcoded default MFA code ('246810') for all requests."
+    },
+    "13": {
+      "score": 5,
+      "why": "The `rateAllowed` function enforces a maximum of 5 attempts per minute per session, blocking excess requests with HTTP 429."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset request API returns an identical success message regardless of whether the email corresponds to an active user."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using 32 cryptographically secure random bytes and associated specifically with the requester's session."
+    }
+  },
+  "cost_usd": 0.0393735,
+  "generation_id": "gen-1785919585-f5dskDTQeupMRdqRnEAy",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

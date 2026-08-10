@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:29:45.920388+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset token records store userId and sessionId, and both reset-validate (sessionId match) and reset-complete (verifiedUserId match) ensure the code only affects the account it was issued to."
+    },
+    "2": {
+      "score": 1,
+      "why": "resetRecord rejects any token whose sessionId does not match the current session and verifiedRecord checks userId, so the same code cannot be used by any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "reset-complete updates passwordHash but never deletes or revokes entries in the sessions map, so any previously signed-in sessions remain valid after a password reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS plus Secure cookies are set, but the TLS version is not explicitly pinned to guarantee the latest version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 hashes and passwords are hashed with Argon2id, which is appropriate protection (hashing rather than reversible encryption)."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery uses generic non-revealing messages and releases only the token after delivery authorization, with no other private user data included."
+    },
+    "7": {
+      "score": 4,
+      "why": "All user inputs pass strict validators (validEmail, validCode, validToken, passwordIssue, 8KB body cap) and normalization before any use."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects at all, and CSP form-action 'self' and connect-src 'self' confine requests to the same origin."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist and user input is rendered only via .value/textContent, never as HTML, with nonce-based CSP blocking any injected script."
+    },
+    "10": {
+      "score": 2,
+      "why": "Although server error responses are generic, the client-side simulation writes the recovery token, delivery authorization code, and MFA code into the visible Activity logs via console.log."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed, but the delivery authorization code (\"864200\"), MFA code (\"246810\"), and the demo account's initial password are hardcoded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system ships with a pre-seeded demo user whose initial password (\"Initial-Only-Password!42\") is embedded in the code, which functions as a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, recovery-delivery, and reset-request flows all enforce throttling with a 5-attempt limit and 10-minute lockout via the Attempt stores."
+    },
+    "14": {
+      "score": 4,
+      "why": "reset-request and login return identical messages whether or not the account exists, though a minor timing side channel exists because Argon2 verify only runs for existing users."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 32 cryptographically random bytes (64 hex chars), stored hashed, bound to a specific userId and sessionId, single-use, and expire after 15 minutes."
+    }
+  },
+  "cost_usd": 0.1656315,
+  "generation_id": "gen-1785925698-L4ZQwQbOLbMdqdvTq8Ol",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

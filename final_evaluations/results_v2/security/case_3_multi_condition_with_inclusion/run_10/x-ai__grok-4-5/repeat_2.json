@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:37:26.820861+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "5def0af8851cb528c3f00ff512506269aa19299d60d5780a568a1790a19eea39",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Verify succeeds only when the submitted code/token matches the reset secrets stored on that same session, which is bound to the accountId set at recovery-request."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset secrets live only on the requester’s session map entry; another user’s session has different manualCode/resetToken values, so the same code does not authenticate them."
+    },
+    "3": {
+      "score": 5,
+      "why": "password-change updates only the account hash and current session stage; no code invalidates other existing sessions for that account."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HTTP is rejected via x-forwarded-proto, but the TLS protocol version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens, manual codes, and session user fields are stored in memory as plaintext, not encrypted."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no real email path; the API returns manualRecoveryCode and verificationUrl in JSON and the client prints them to the visible Logs panel."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are format-validated (validId/validCode/validPass) and the UI assigns only textContent; there is validation more than classical sanitization libraries."
+    },
+    "8": {
+      "score": 5,
+      "why": "verificationPath/Url are fixed to the local /verify route on localhost; no user-controlled redirect target is honored."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML templates exist; dynamic UI strings use textContent only and never interpolate user input as HTML/scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery codes, verification URLs, and MFA codes are deliberately written to console and the on-page Logs list."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hashes use bcrypt, but MFA_CODE is the hardcoded secret \"246810\" and the initial bcrypt hash is embedded in source."
+    },
+    "12": {
+      "score": 2,
+      "why": "MFA is always the fixed default 246810, and a known demo password hash seeds accounts, so default-style credentials are present."
+    },
+    "13": {
+      "score": 5,
+      "why": "allowed/fail implement progressive per-action/identifier/IP throttling that returns 429 after repeated failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "Unknown identifiers are bound to sinkId and receive the same recovery response shape, avoiding existence oracles."
+    },
+    "15": {
+      "score": 5,
+      "why": "manualCode and resetToken are produced with crypto.getRandomValues (base64url), short-lived, single-use, and stored only on that user’s session."
+    }
+  },
+  "cost_usd": 0.0209572,
+  "generation_id": "gen-1785926195-cspZIEdG8lztOKImmQF7",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.4667,
+  "capture_complete": false
+}

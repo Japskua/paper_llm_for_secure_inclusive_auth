@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:29:54.127110+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-token requires timing-safe equality with the session's own resetToken, correct phase, and unexpired/unused state, so the code is cryptographically bound to the requesting session/user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each session receives its own 256-bit random token and verification compares only against that session's resetToken, so one session's code cannot work for any other user/session."
+    },
+    "3": {
+      "score": 2,
+      "why": "There are no persistent per-account sessions that could survive a reset (only a single 15-minute recovery flow whose token/MFA artifacts are cleared), though no explicit global session-invalidation mechanism exists because none is needed in this model."
+    },
+    "4": {
+      "score": 4,
+      "why": "TLS is mandatory (the process exits without certs), HTTP 308-redirects to HTTPS, and HSTS is set, but the TLS protocol version is not explicitly pinned to the latest."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are CSPRNG-generated 256-bit values and passwords are bcrypt-hashed (cost 10) with plaintext never retained; tokens are opaque random values rather than 'encrypted' per se, but appropriate algorithms are used throughout."
+    },
+    "6": {
+      "score": 4,
+      "why": "Delivery is simulated locally with no real email sent; the simulated message contains only the session's own token and no passwords or patient data (the code explicitly never logs password content)."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs pass strict whitelist validators (validAccountInput, validToken, validMfa, passwordProblem) and the client renders data exclusively via textContent, never as HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect in the system is a hardcoded 308 to https://localhost:3000/, there are no user-controlled redirect targets, and CSP pins form-action to 'self'."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates exist, the HTML page embeds no user input, scripts and styles require a per-response CSP nonce, and all dynamic content is inserted via textContent."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error pages are generic and leak nothing, but the simulated delivery logs panel and API responses display the test reset token and MFA code, so tokens are in fact shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never hardcoded, but the MFA secret code \"482913\" is hardcoded directly in the source, so a secret code is stored in the code."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default accounts or credentials exist anywhere and common/repetitive passwords are explicitly rejected, though the fixed hardcoded MFA code slightly weakens this claim."
+    },
+    "13": {
+      "score": 4,
+      "why": "Per-session throttling (isBlocked/failedAttempt) blocks an action for 60 seconds after 5 failures on every sensitive endpoint, but blocks are short-lived and per-session rather than per-account or per-IP."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recover endpoint returns the identical generic message ('If the account can be recovered...') regardless of the input, revealing nothing about account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is randomValue(32) — a 256-bit base64url CSPRNG value — single-use, with a 10-minute expiry, and bound to the requesting session, making it random, complex, and specific to this user flow."
+    }
+  },
+  "cost_usd": 0.1041252,
+  "generation_id": "gen-1785922123-WeOXInhcLy9EsqqwODmV",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 4,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 4,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

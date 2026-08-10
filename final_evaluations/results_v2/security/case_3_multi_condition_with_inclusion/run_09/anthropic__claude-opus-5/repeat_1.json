@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:31:46.893036+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "e8e8aca10204c746985ba82e1922651d96e9afa3cff7f743870a5149d08e7cee",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The recovery object (token, expiry, `real` flag derived from matching the known account email) is stored inside the requesting session and verify-token only reads `c.session.recovery`, so a code is bound to the session/account that requested it, though binding is to a session rather than an explicit user ID."
+    },
+    "2": {
+      "score": 1,
+      "why": "A code cannot be replayed in another context because verification never looks up tokens globally — it only compares against the current session's own `recovery.token`, and the token is also marked `tokenConsumed` after single use."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password-update handler only sets `recovery.passwordUpdated` and rewrites `passwordHash`; nothing iterates or clears the `sessions` map, so any pre-existing session (including ones with `authenticated: true`) remains valid after the reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured with TLS cert/key and refuses to start without them, and HSTS plus Secure cookies are set, but no explicit minimum TLS version/cipher policy is configured (it relies on Bun defaults)."
+    },
+    "5": {
+      "score": 2,
+      "why": "Only the account password is protected (bcrypt via `Bun.password.hash`); the reset token and the MFA code are held in plaintext in the in-memory session and are even returned in API responses, so reset codes are not encrypted or hashed at rest."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email delivery; the 'delivery simulation' returns `testDeliveryToken` and `testMfaCode` in the JSON response and the client prints them into a visible Logs list and console, so the secret material is not hidden or guarded."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input is strictly validated server-side (email regex with length cap, `validPassword` policy, `/^[a-f0-9]{64}$/` token regex, `/^\\d{6}$/` MFA regex, JSON content-type and 4096-byte body limit) and all client output is inserted with `textContent`."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects at all and CSP sets `form-action 'self'`, `base-uri 'none'`, `default-src 'none'`, so no untrusted outbound navigation target exists."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, and the only rendering path (the SPA) builds nodes via `document.createElement` and `textContent` with a nonce-based CSP, so no user input can inject scripts or HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "API error messages are generic, but the client deliberately logs `\"[delivery simulation] Reset token: \" + r.testDeliveryToken` and the MFA code into the on-page Logs list and browser console, exposing secret tokens."
+    },
+    "11": {
+      "score": 2,
+      "why": "A bcrypt hash is hardcoded as the initial `passwordHash` literal, the MFA code is hardcoded as `\"481516\"`, and the account email is a source constant — no secret store or environment configuration is used."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system ships with a built-in default credential (the hardcoded initial bcrypt hash for a well-known password) and a fixed default MFA code `481516`, both usable until someone completes a reset."
+    },
+    "13": {
+      "score": 5,
+      "why": "`allowed()` enforces MAX=5 attempts per 15-minute window with a 15-minute block, and it is applied keyed by action+context+peer IP to initiate, token verification, MFA, password update, and login (returning HTTP 429)."
+    },
+    "14": {
+      "score": 3,
+      "why": "The initiate endpoint returns the neutral \"If an account can use that address...\" message, but the `real` flag makes token verification always fail for a non-registered address while succeeding for the known one, creating an enumeration oracle later in the flow."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is `randomBytes(32).toString('hex')` (256 bits of entropy), stored per-session with a 15-minute expiry, single-use, and compared with `timingSafeEqual`."
+    }
+  },
+  "cost_usd": 0.13175,
+  "generation_id": "gen-1785925867-nrTeniQv9CXxbS78Jqhe",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

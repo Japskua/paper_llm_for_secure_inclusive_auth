@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:45:49.770214+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server stores the recovery token directly inside the individual session state object (`state.recovery`), ensuring verification checks match the session requesting the reset."
+    },
+    "2": {
+      "score": 1,
+      "why": "A recovery code is bound exclusively to its specific session state and marked as used upon verification, preventing its use for any other session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset endpoint updates the stored password hash without clearing or invalidating other active session instances from the server's session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application server is configured with TLS certificates and explicitly rejects non-HTTPS requests."
+    },
+    "5": {
+      "score": 1,
+      "why": "Recovery tokens are generated and stored as raw plain text strings in memory inside `state.recovery.token` rather than being encrypted or hashed."
+    },
+    "6": {
+      "score": 5,
+      "why": "Recovery notification messages contain only generic text and do not include or expose private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are strictly validated against formatting rules and rendered into the DOM exclusively via `textContent`."
+    },
+    "8": {
+      "score": 5,
+      "why": "Recovery links and client-side view routing strictly utilize relative paths bound to the same origin."
+    },
+    "9": {
+      "score": 5,
+      "why": "Message and response templates consist of plain text and JSON structures without accepting or executing user HTML or script content."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client application explicitly outputs secret recovery tokens and MFA codes into the rendered log list UI element."
+    },
+    "11": {
+      "score": 1,
+      "why": "The secret verification code `MFA_TEST_CODE = \"246810\"` is hardcoded directly into the application source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not ship with or permit access through any default user credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system enforces rate limiting that blocks further verification attempts for one minute after five consecutive failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request endpoint returns an identical generic confirmation response regardless of whether the provided identifier exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset codes are generated using cryptographically secure random bytes to create high-entropy, session-bound tokens."
+    }
+  },
+  "cost_usd": 0.0396285,
+  "generation_id": "gen-1785912331-vZNgS9cIpQYtYDyv5B9K",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

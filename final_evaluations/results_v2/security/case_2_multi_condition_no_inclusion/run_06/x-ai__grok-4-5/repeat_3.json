@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:32:48.707404+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Token verification compares the submitted value to the SHA-256 hash on the recovery record owned by the current session via ownedRecovery/sessionId binding."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is stored only on one session-bound recovery; another session cannot use it because ownedRecovery requires matching sessionId."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only sets recovery.passwordHash and never deletes or rotates other entries in the sessions map, so prior sessions remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is set, but the TLS protocol version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 hashes and new passwords via Bun.password.hash bcrypt cost 12; little other user data is retained."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent; the API returns mockToken in JSON and the UI/console display it, so private reset material is not guarded in transit messaging."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are length/format-checked, passwords strength-checked, JSON bodies capped, and DOM updates use textContent rather than raw HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client navigation uses only same-app hash routes from a fixed allowlist; no open external redirect based on user input."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no server email templates that interpolate user-controlled HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The demo explicitly logs and renders the recovery token in the page log and console, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in memory, but MFA_CODE is hardcoded as plaintext in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The deterministic demo MFA code 246810 acts as a default shared secret accepted by /api/verify-mfa."
+    },
+    "13": {
+      "score": 5,
+      "why": "Per-recovery attempt counters with temporary blocks plus per-IP clientRateAllowed limits reject excessive tries."
+    },
+    "14": {
+      "score": 5,
+      "why": " /api/recovery ignores whether the email is valid/known (void validEmail) and always returns the same generic success message."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are 32-byte values from crypto.getRandomValues, hex-encoded, hashed at rest, single-use, and bound to one recovery/session."
+    }
+  },
+  "cost_usd": 0.0164972,
+  "generation_id": "gen-1785922325-KNJgMSChUah7ofvS4rKm",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

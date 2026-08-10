@@ -1,0 +1,138 @@
+{
+  "variables": {
+    "email": "helena@example.com",
+    "new_password": "ResetPass1!xy"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "load session state and csrf token",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "body": {
+        "identifier": "${email}"
+      },
+      "expect_json_true": "stage",
+      "capture": {
+        "recovery_code": "manualRecoveryCode",
+        "verification_path": "verificationPath"
+      }
+    },
+    {
+      "name": "verify recovery code",
+      "method": "POST",
+      "path": "/api/verify",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "stage",
+      "capture": {
+        "mfa_code": "testMfaCode"
+      }
+    },
+    {
+      "name": "confirm mfa code",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "stage"
+    },
+    {
+      "name": "change password",
+      "method": "POST",
+      "path": "/api/password-change",
+      "body": {
+        "password": "${new_password}",
+        "repeat": "${new_password}"
+      },
+      "expect_json_true": "stage"
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "identifier": "${email}",
+        "password": "${new_password}"
+      },
+      "expect_json_true": "authenticated"
+    },
+    {
+      "name": "confirm privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy-confirm",
+      "body": {},
+      "expect_json_true": "privacyAccepted"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid recovery identifier rejected",
+      "method": "POST",
+      "path": "/api/recovery-request",
+      "body": {
+        "identifier": "x"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify",
+      "body": {
+        "code": "wrong-code"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong mfa code rejected",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/password-change",
+      "body": {
+        "password": "weakpassword",
+        "repeat": "weakpassword"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "identifier": "${email}",
+        "password": "WrongPassword1!"
+      },
+      "expect_failure": true
+    }
+  ]
+}

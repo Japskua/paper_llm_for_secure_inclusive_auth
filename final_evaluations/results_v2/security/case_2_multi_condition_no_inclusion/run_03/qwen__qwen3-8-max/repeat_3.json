@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:22:59.911468+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The /api/verify-token handler rejects a reset record unless record.sessionId matches the current session id, binding the code to that session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Because the token record must match the current session id and is marked used, the same reset code does not work for another user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password handler updates only the current session and does not delete, rotate, or invalidate other stored sessions, so prior sessions can remain active."
+    },
+    "4": {
+      "score": 3,
+      "why": "TLS certificates and an HTTPS-only request check are present, but no configuration or evidence specifies the latest TLS protocol version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as bcrypt hashes, but neither reset codes nor user data are encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email delivery is implemented; the simulated recovery message contains only a token and no contact or identity data, but the token is written to local logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Contact, token, and password inputs receive length/format validation, JSON size is limited, and client rendering uses textContent rather than raw user input."
+    },
+    "8": {
+      "score": 5,
+      "why": "No user-controllable redirect endpoints or redirect URLs are present, and the CSP sets form-action to 'self'."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are implemented, and the simulated delivery uses fixed plain-text log messages rather than user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic error responses avoid exposing details, but the client-side logs explicitly display the recovery token and MFA code."
+    },
+    "11": {
+      "score": 1,
+      "why": "The password is bcrypt-hashed, but the fixed MFA code 482916 is present in source and exposed in the API response and logs."
+    },
+    "12": {
+      "score": 1,
+      "why": "The fixed MFA code 482916 functions as a default secret, so default credentials are not fully prevented."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery, token-verification, and MFA endpoints enforce attempt limits and temporary lockouts after repeated failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the same generic message regardless of whether the contact is recognized, so account existence is not revealed."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated with crypto.getRandomValues using 32 bytes and are bound to the session that requested them."
+    }
+  },
+  "cost_usd": 0.058214,
+  "generation_id": "gen-1785921581-r4IgaeKzNWya8NeDT8nn",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.2667,
+  "capture_complete": true
+}

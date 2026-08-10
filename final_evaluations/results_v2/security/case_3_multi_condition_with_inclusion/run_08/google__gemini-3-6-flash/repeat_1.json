@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 2,
+  "judged_at": "2026-08-05T10:27:52.001925+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system validates reset tokens against records bound directly to the user's account ID."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are stored mapped to a specific user ID in memory and cannot be redeemed for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset completion endpoint updates the user password hash without invalidating active existing sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application runs on Bun's HTTPS server using configured TLS certificates."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords are hashed with Argon2id and reset tokens are hashed using SHA-256."
+    },
+    "6": {
+      "score": 5,
+      "why": "System responses use generic messaging that conceals private user details and account status."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are strictly validated, normalized, and rendered into the DOM using safe textContent bindings."
+    },
+    "8": {
+      "score": 5,
+      "why": "Application state transitions are hardcoded internally without processing external or user-provided redirect URLs."
+    },
+    "9": {
+      "score": 5,
+      "why": "No backend email templates exist that render unescaped user inputs or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens and authorization codes are output directly to the browser console and the on-screen activity log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Secret authorization codes such as DELIVERY_AUTHORIZATION_CODE and MFA_CODE are hardcoded directly into the source file."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system pre-populates a demo user account with static initial credentials upon application startup."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting tracks failed requests and temporarily locks accounts after five incorrect attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset request endpoint returns an identical generic response regardless of whether the identifier exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using 32 cryptographically random bytes and stored mapped to individual users."
+    }
+  },
+  "cost_usd": 0.0404055,
+  "generation_id": "gen-1785925653-hcaAFXo2bUhOCWeyS213",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

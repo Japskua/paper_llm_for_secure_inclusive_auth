@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:39:51.491620+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "Reset records in the resets map store only digests and expiration times without binding tokens to a specific user identifier."
+    },
+    "2": {
+      "score": 5,
+      "why": "The verify route validates any active token from the global resets map regardless of which session or user submits it."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password update handler does not invalidate or clear active sessions stored in the session map."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server enables TLS with certificate/key pairs and sets HSTS headers, relying on runtime defaults for the specific TLS version."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords are hashed using Argon2id and reset tokens are stored as SHA-256 cryptographic digests."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated recovery instructions return generic messages without reflecting private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs undergo validation routines and DOM updates strictly use textContent to avoid script execution."
+    },
+    "8": {
+      "score": 5,
+      "why": "Generated recovery links use relative URL paths pointing strictly to the local application host."
+    },
+    "9": {
+      "score": 5,
+      "why": "No dynamic HTML templates are rendered with unescaped user-supplied input."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error responses and audit logs explicitly omit user identifiers, passwords, and raw reset tokens."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are hashed dynamically with Argon2id and reset tokens are generated using randomBytes."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not contain or accept default administrative credentials for bypass."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting via the limited helper caps repeated request, verify, and MFA attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset-request endpoint returns the exact same success response and token format for valid and invalid identifiers alike."
+    },
+    "15": {
+      "score": 3,
+      "why": "Reset tokens are cryptographically random and high-entropy, but are not tied to a specific user object in storage."
+    }
+  },
+  "cost_usd": 0.037269,
+  "generation_id": "gen-1785911966-5oaDW0vdS73oPekfXMwE",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 1,
+    "3": 1,
+    "4": 4,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

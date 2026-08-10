@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:13:53.909337+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Verification requires the reset record's accountKey to match the recoveryAccountKey bound to the requesting session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code is account-bound, session-context-bound during recovery, and marked used after successful verification."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates the password hash but does not invalidate other authenticated sessions stored in the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server enforces HTTPS and HSTS, but the TLS configuration does not explicitly require a latest protocol version or minimum TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords use bcrypt and reset records use SHA-256 token hashes, but recovery codes are also retained in plaintext session fields for simulated delivery."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email mechanism is implemented, although the simulated delivery contains no account identifier and exposes only the recovery code and relative link."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers, tokens, passwords, and codes are type-, length-, format-, or policy-validated, while displayed data uses JSON encoding or textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated recovery link is the fixed relative path /recovery-link with an encoded token, and no user-controlled redirect target exists."
+    },
+    "9": {
+      "score": 5,
+      "why": "The simulated recovery delivery is fixed JSON with no user-supplied HTML or script content."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery and MFA codes are deliberately written to the browser console and visible activity log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are bcrypt-hashed, the MFA code and fallback password hash are hard-coded and recovery codes are kept plaintext in sessions."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application includes a fixed demo identifier, fallback password hash, and hard-coded MFA code that function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery verification, password, and MFA attempts are rate-limited per session and per source/account over a 15-minute window."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery and login responses use generic messages that do not distinguish an approved account from an unknown syntactically valid account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery codes are generated from 32 cryptographically random bytes and stored in records bound to a specific account key."
+    }
+  },
+  "cost_usd": 0.053739,
+  "generation_id": "gen-1785924806-qB9UePJQNHHUZRh0FWSS",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

@@ -1,0 +1,120 @@
+{
+  "variables": {
+    "email": "helena.patient@hospital.test",
+    "new_password": "Updated-Demo-Password9!"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "recovery_instructions_requested",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#identifier",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "#request-form button:has-text('Send recovery instructions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#reset-link:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "verify_recovery_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#manual-button"
+        },
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "SIMULATED RESET DELIVERY — recovery code: ([A-Za-z0-9_-]+)",
+          "into": "reset_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#reset-token",
+          "value": "${reset_code}"
+        }
+      ]
+    },
+    {
+      "name": "confirm_recovery_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#verify-form button:has-text('Verify recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa-view:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "enter_second_factor_code",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "SIMULATED MFA DELIVERY — verification code: ([0-9]{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${mfa_code}"
+        }
+      ]
+    },
+    {
+      "name": "confirm_second_factor_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#mfa-form button:has-text('Confirm code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password-view:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#new-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm-password",
+          "value": "${new_password}"
+        }
+      ]
+    },
+    {
+      "name": "password_updated",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#password-form button:has-text('Update password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#success-view:not([hidden])"
+        }
+      ]
+    }
+  ]
+}

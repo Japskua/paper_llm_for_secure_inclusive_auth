@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:15:54.121216+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "In /api/verify the reset record’s accountKey must match session.recoveryAccountKey before the code is accepted."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to a specific accountKey, so the same code is rejected for a different user’s account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only clears authority on the current session; no code invalidates other existing sessions for the account."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun is started with TLS cert/key and non-HTTPS is rejected, but the TLS version is not explicitly pinned to a documented latest version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords use bcrypt and reset tokens are stored as SHA-256 hashes, but this is hashing not encryption, and demoDeliveryCode is kept plaintext in the session."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email body with profile data; recovery responses are generic and the simulated delivery only carries the code."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers and tokens are regex-validated, passwords go through policy checks, and the UI renders with textContent rather than untrusted HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "recoveryLink is a same-origin path (/recovery-link?token=...) with no open-redirect parameter handling."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user-controlled HTML/scripts are embedded in any email template; delivery is a mocked JSON code/link only."
+    },
+    "10": {
+      "score": 2,
+      "why": "Demo UI logs deliberately print recovery codes and MFA codes, and API responses include mockMfaCode/mockRecoveryCode."
+    },
+    "11": {
+      "score": 2,
+      "why": "MFA_CODE is hardcoded as \"246810\" and a default bcrypt password hash is embedded in source when the env var is unset."
+    },
+    "12": {
+      "score": 1,
+      "why": "The demo accepts fixed default credentials (helena.demo@hospital.test, known password hash, MFA 246810)."
+    },
+    "13": {
+      "score": 5,
+      "why": "actionAllowed/rateAllowed throttle recovery, verify, login, password, MFA, and related actions with 429 responses."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery always returns the same if-account-exists message, and login failures use one generic sign-in error."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes come from randomBytes(32) base64url tokens, are stored hashed, expire, are single-use, and are tied to accountKey."
+    }
+  },
+  "cost_usd": 0.0225996,
+  "generation_id": "gen-1785924896-0NlTocRGBZekYrUnJcGd",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

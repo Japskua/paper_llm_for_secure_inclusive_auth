@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 2,
+  "judged_at": "2026-08-05T08:51:21.689008+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "410e1cc46bbbbc0cb7869109d020fb69db0a302c9f3a7d9f4feb7974c90fbca9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "resetRecordFor accepts a token only when the stored ResetRecord.sessionId matches the current session, but there is no separate authenticated user identifier check."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token cannot be used by another session because resetRecordFor requires the stored sessionId to match and records are single-use."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing passwordHash during reset does not invalidate or remove existing sessions from the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS certificates, but the code does not specify or enforce a latest TLS protocol version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens, contact values, and passwords are hashed with SHA-256 or bcrypt rather than encrypted, and other state remains in memory."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent, and the simulated delivery/log message displays the reset token rather than hiding sensitive recovery data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Request fields are trimmed, length-limited, and format-checked, and browser rendering uses textContent instead of inserting untrusted HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The app performs no external redirects; client-side routing only switches internal views and CSP sets form-action 'self'."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates are present, and the simulated messages are inserted as plain text via textContent without user-controlled scripts or HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic error responses avoid details, but the Logs panel and mock-token message display reset tokens and the MFA code."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are bcrypt-hashed, but the fixed MFA code and initial password literal are present in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The initial password 'Initial-Clinical!2025' and fixed MFA code are usable defaults until changed or verified."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, reset-request, and reset-code verification paths all use attempt counters and temporary lockouts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Reset requests return the same generic message for unknown or invalid contacts, and login failures do not reveal account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated with crypto.getRandomValues, have high entropy, and are stored with the requesting session and registered contact digest."
+    }
+  },
+  "cost_usd": 0.075648,
+  "generation_id": "gen-1785919592-MhzNy4vApoRr5ng1x9l9",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

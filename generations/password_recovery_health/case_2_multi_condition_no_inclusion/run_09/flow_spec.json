@@ -1,0 +1,138 @@
+{
+  "variables": {
+    "email": "helena.recovery@hospital.test",
+    "new_password": "NewSecure!2025"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "csrf",
+    "in": "body"
+  },
+  "steps": [
+    {
+      "name": "start secure recovery session",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "load session state and CSRF token",
+      "method": "GET",
+      "path": "/api/state",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request recovery token",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "body": {
+        "email": "${email}",
+        "csrf": "${csrf}"
+      },
+      "capture": {
+        "reset_token": "testToken"
+      }
+    },
+    {
+      "name": "open recovery verification link",
+      "method": "GET",
+      "path": "/reset?token=${reset_token}"
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "body": {
+        "token": "${reset_token}",
+        "csrf": "${csrf}"
+      }
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "body": {
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "capture": {
+        "mfa_code": "testMfaCode"
+      }
+    },
+    {
+      "name": "confirm MFA sign-in",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "body": {
+        "code": "${mfa_code}",
+        "csrf": "${csrf}"
+      }
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "body": {
+        "csrf": "${csrf}"
+      }
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/confirm-appointment",
+      "body": {
+        "csrf": "${csrf}"
+      }
+    },
+    {
+      "name": "verify completed account state",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_json_true": "appointmentConfirmed"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "missing or invalid CSRF rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "body": {
+        "email": "${email}",
+        "csrf": "invalid-csrf-token"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "body": {
+        "token": "invalid-recovery-token",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "weak replacement password rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "body": {
+        "password": "weakpassword",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

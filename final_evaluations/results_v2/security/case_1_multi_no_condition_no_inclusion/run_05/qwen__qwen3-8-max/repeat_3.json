@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:43:19.364297+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "Although reset records include an accountId, verify-reset accepts any unclaimed token and binds it to the calling session, so it does not reliably check that the code belongs to the intended user."
+    },
+    "2": {
+      "score": 4,
+      "why": "A valid unclaimed reset token can be submitted by any session and claimed by that session, so another user who obtains the code can use it."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password reset only marks the reset record used and clears the current session's recovery token, while other entries in the sessions map remain valid."
+    },
+    "4": {
+      "score": 3,
+      "why": "TLS is enabled with certificate and key in Bun.serve, but the source does not specify or enforce the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, but hashing is not encryption and the account email is plaintext."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent, and the simulated delivery exposes the reset token in the JSON response and logs rather than guarding private data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are validated with regex and length checks, and user-controlled values are submitted as JSON or rendered with textContent rather than innerHTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "The reset link is constructed from location.origin and there are no external or user-controlled redirect endpoints."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are implemented, so unsafe user-controlled email content is not observed, but the claimed email-template control is not demonstrably present."
+    },
+    "10": {
+      "score": 1,
+      "why": "The Logs panel and console print the reset token and reset link, so private tokens are shown in logs even though error pages are generic."
+    },
+    "11": {
+      "score": 1,
+      "why": "The source contains the initial password literal and a hardcoded MFA code, even though runtime password storage uses bcrypt."
+    },
+    "12": {
+      "score": 1,
+      "why": "The account is created with a known initial password that can be used to sign in before any password change."
+    },
+    "13": {
+      "score": 4,
+      "why": "Login uses session attempt limiting and account lockout after five failures, and reset/MFA endpoints also limit repeated attempts."
+    },
+    "14": {
+      "score": 4,
+      "why": "Reset-request returns the same generic message and a mock token for all emails, and login failures use a generic message, so account existence is not revealed."
+    },
+    "15": {
+      "score": 3,
+      "why": "Reset tokens are random 32-byte base64url strings, but they are not bound to the requesting user/session until claimed and the app has only one account."
+    }
+  },
+  "cost_usd": 0.085154,
+  "generation_id": "gen-1785919070-DpxNZlGGQOjMel2X5U7v",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 2,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 4,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 4,
+    "14": 4,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.0,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 2.5333,
+  "capture_complete": true
+}

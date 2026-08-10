@@ -1,0 +1,120 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:03:01.730343+00:00",
+  "rubric_file": "inclusivity_eval_case_3.md",
+  "rubric_sha256": "72f5afbf5ecd676432e29ce4d603db651dc5fd336191b13da1c2e1dfb9ae2914",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 12,
+  "screenshots": [
+    "step_01_request_recovery.png",
+    "step_02_recovery_instruction_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_reset_code_confirmed.png",
+    "step_05_verify_recovery_identity.png",
+    "step_06_recovery_identity_confirmed.png",
+    "step_07_set_new_password.png",
+    "step_08_sign_in.png",
+    "step_09_verify_safety_code.png",
+    "step_10_verify_possession_value.png",
+    "step_11_accept_privacy_conditions.png",
+    "step_12_confirm_appointment_request.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All twelve screens are static, flat cards with no animations, carousels, or pop-ups/modals; the only visual noise is the dark technical Logs console."
+    },
+    "2": {
+      "score": 4,
+      "why": "Step heading, numbered progress chips, dark-blue primary buttons and green confirmation banners give clear visual hierarchy, though the raw Logs block draws attention away from key content."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each screen exposes only one main field/button, but the values she must enter (reset token, identity value, possession value) have to be hunted out of a developer-style Logs panel, which is not quick or obvious."
+    },
+    "4": {
+      "score": 2,
+      "why": "The flow spans 7 labelled steps and requires carrying over a long random token, an 8-character identity value, a 6-digit code, a distinct possession value and a 12-character password rule, so a lot must be tracked."
+    },
+    "5": {
+      "score": 2,
+      "why": "No password manager, autofill or 'remember me' control appears anywhere; the only related behaviour is the system auto-restoring simulated values into fields."
+    },
+    "6": {
+      "score": 3,
+      "why": "Her email is pre-filled at sign-in and previously issued values are restored into fields, but the tokens/codes themselves are random strings that cannot be recognised."
+    },
+    "7": {
+      "score": 3,
+      "why": "Sentences are short and plainly written, yet terms like 'testing mock reset token', 'recovery identity value' and 'separate possession value' are technical jargon rather than everyday language."
+    },
+    "8": {
+      "score": 2,
+      "why": "No error or validation message is shown in any of the twelve screenshots, so there is no observable evidence that errors explain the problem and the fix."
+    },
+    "9": {
+      "score": 3,
+      "why": "The password step states the rule ('12 or more characters, with uppercase, lowercase, number, and symbol') and one field says 'Paste or type the token here', but no worked examples or format hints for the codes are given."
+    },
+    "10": {
+      "score": 2,
+      "why": "The system offers no choice of sign-in method at all — password plus code plus possession value are mandatory, and no alternatives such as face or passkey login are presented."
+    },
+    "11": {
+      "score": 4,
+      "why": "Each screen presents only one or two inputs and a single primary action; only the safety-check screen shows two fields and two buttons together."
+    },
+    "12": {
+      "score": 5,
+      "why": "Every action produces an explicit confirmation banner stating what happened and the next step, e.g. 'Recovery identity value confirmed. Choose a new password when ready.'"
+    },
+    "13": {
+      "score": 4,
+      "why": "A persistent 'Need help?' button sits in the header, and short guiding notes ('You can pause at any time. Progress remains in this browser session.') accompany the steps."
+    },
+    "14": {
+      "score": 2,
+      "why": "No back links, 'resend', 'start over' or retry affordances are visible on any screen; recovery from a mistyped token or wrong step is not supported in the observed UI."
+    },
+    "15": {
+      "score": 5,
+      "why": "All twelve screens reuse the identical header, title, 7-chip progress bar, single white card, banner and button styling, making the layout highly predictable."
+    }
+  },
+  "cost_usd": 0.160385,
+  "generation_id": "gen-1785924141-u7R1eH4b1aJptWBsBb4C",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 2,
+    "5": 2,
+    "6": 3,
+    "7": 3,
+    "8": 2,
+    "9": 3,
+    "10": 2,
+    "11": 4,
+    "12": 5,
+    "13": 4,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 2.3333,
+    "comprehension": 2.6667,
+    "decision_making": 3.6667,
+    "learning": 3.6667
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

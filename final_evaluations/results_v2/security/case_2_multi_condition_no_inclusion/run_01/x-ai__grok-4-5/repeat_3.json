@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:09:10.757973+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset verification requires record.sessionId === session.id, so the token is bound to the requesting session before MFA proceeds."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same token fails verification in another session because of the sessionId check and single-use delete after success."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password change only updates passwordHash and clears mfaVerified; other sessions in the Map are not invalidated."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun serves TLS on 3000 with HSTS and HTTP redirects to HTTPS, but the TLS version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords with argon2id, but MFA codes and session fields sit in memory plaintext and are not encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email is sent; the API uses a generic recovery message, yet testingToken is returned in the JSON body for academic testing."
+    },
+    "7": {
+      "score": 5,
+      "why": "Contact format, token shape, and password policy are validated server-side, and the UI only uses textContent/JSON rather than raw HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is path-only on the same origin; HTTP only 308-redirects to the local HTTPS site with no user-controlled open redirect."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email templates that embed user input; recovery responses are fixed strings without HTML from clients."
+    },
+    "10": {
+      "score": 1,
+      "why": "testingToken and testingMfaCode are returned by the API and written into the on-page Logs panel, exposing tokens."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hash comes from env/argon2id, but recovery and login MFA codes are hardcoded secrets in the source (482913, 741852)."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default password is embedded; login requires a non-empty passwordHash verified with Bun.password.verify."
+    },
+    "13": {
+      "score": 5,
+      "why": "recordAttempt/blocked enforce per-action limits (e.g. 3–5 tries) and a 60s lockout on recovery, verify, MFA, and login."
+    },
+    "14": {
+      "score": 5,
+      "why": "Invalid and valid recovery contacts both receive the same generic eligibility message with no existence oracle."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are randomHex(32) (64 hex chars), hashed at rest, short-lived, single-use, and bound to the creating session."
+    }
+  },
+  "cost_usd": 0.0156272,
+  "generation_id": "gen-1785920915-PSRLOTG2QHHfM0gcVEWs",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

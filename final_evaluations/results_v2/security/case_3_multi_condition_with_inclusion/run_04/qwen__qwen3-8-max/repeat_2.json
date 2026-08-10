@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:15:40.328265+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "24a6e1467197c0ef6a9566560dbce218c9ba1da70fee6592759ec6e6f7e54b02",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token is checked with safeEqual against a session-specific SHA-256 resetHash created after the email step, but the binding is session-based rather than an explicit user-id check."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token must match the current session's stored resetHash, so the same code would not validate for another session or user."
+    },
+    "3": {
+      "score": 5,
+      "why": "After a password reset, only the current session state and account hash change; other session objects in the sessions map are not revoked."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server uses TLS certificates and sets HSTS, but the source does not specify or enforce the latest TLS version."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as Argon2 hashes, while session data and browser-stored tokens are not encrypted by the application."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no real email delivery, and the simulated delivery messages expose the authorization secret and reset code in the client-side Logs panel."
+    },
+    "7": {
+      "score": 5,
+      "why": "Emails, tokens, and passwords are validated with strict regex and length checks, and the frontend renders dynamic values via textContent or createTextNode under a nonce CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "All navigation targets are same-origin relative paths such as /recovery/verify and /, and CSP includes form-action 'self' with no external redirect logic."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the source, so there is no observed user-controlled script or HTML in email output, but no email implementation can be verified."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic errors avoid details, but the frontend Logs panel and console output authorization secrets, reset tokens, and MFA codes."
+    },
+    "11": {
+      "score": 1,
+      "why": "The source hardcodes the Argon2 password hash and a static MFA code, and reset secrets are kept in server memory rather than in a protected secret store."
+    },
+    "12": {
+      "score": 1,
+      "why": "The MFA code is a hardcoded fixed value '246810', which acts as a default or known second-factor credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Channel, reset-verification, login, and MFA attempts all increment counters and lock out after repeated failures."
+    },
+    "14": {
+      "score": 4,
+      "why": "Responses for recovery and failed login are generic, but the login path may have a timing difference because password verification only runs for the known email."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is generated with randomBytes(32), encoded as base64url, stored only as a digest in the initiating session, and expires after 15 minutes."
+    }
+  },
+  "cost_usd": 0.07541,
+  "generation_id": "gen-1785924638-p74dKmftxd1G4R0s1CNp",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

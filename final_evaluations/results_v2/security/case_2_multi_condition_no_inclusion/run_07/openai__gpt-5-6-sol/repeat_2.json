@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:37:05.355632+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Each reset record contains an identityScope tying the code hash to the recovery identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code is associated with one identity scope, is single-use, and cannot be applied to another account."
+    },
+    "3": {
+      "score": 1,
+      "why": "After a password reset, the code explicitly clears authenticated and pending-MFA state from every session."
+    },
+    "4": {
+      "score": 3,
+      "why": "TLS is configured and HTTP redirects to HTTPS, but no minimum or latest TLS protocol version is explicitly enforced."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored as SHA-256 hashes, passwords use bcrypt, identity scopes are hashed, and transport uses TLS, although general user-data encryption is not demonstrated."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email implementation is present, while the simulated delivery displays only the reset code and no user identity."
+    },
+    "7": {
+      "score": 4,
+      "why": "User inputs receive type, length, format, and password-strength validation, and variable output is placed into textContent rather than HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses fixed internal paths and the HTTP redirect constructs a fixed https://localhost destination without trusting supplied hosts or redirect targets."
+    },
+    "9": {
+      "score": 3,
+      "why": "The application contains no email templates to evaluate, although user input is not HTML-interpolated elsewhere."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client-side simulated logs explicitly display reset codes and the fixed MFA code."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords and reset codes are securely hashed in storage, the initial password and fixed MFA code are embedded directly in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application initializes a known demo password and uses the hardcoded MFA code 246810."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery and reset attempts are rate-limited, while login and MFA are locked for five minutes after five failures."
+    },
+    "14": {
+      "score": 1,
+      "why": "Although response messages are generic, only the valid recovery identity receives a code field, allowing account existence to be inferred."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes use 32 cryptographically random bytes, are bound to an identity scope, expire after ten minutes, and are single-use."
+    }
+  },
+  "cost_usd": 0.0590765,
+  "generation_id": "gen-1785922592-2SJ4Inu3UIRnNku5dshD",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

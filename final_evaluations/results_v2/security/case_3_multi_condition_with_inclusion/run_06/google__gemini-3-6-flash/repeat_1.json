@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:19:05.609353+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "3769d8d72d3a6dbf94059901d58bea2f193d416f5864a40b1cd79da802df6e1a",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset token is tied to the user's session record and validated directly against the stored token for that account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to specific individual session objects, preventing them from being reused across different user sessions."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating a password changes the stored password hash but does not clear or revoke active sessions in the global sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application runs an HTTPS server using TLS certificates and automatically redirects HTTP requests to HTTPS with a 308 status."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are stored as raw unhashed strings inside session memory objects rather than being encrypted or hashed at rest."
+    },
+    "6": {
+      "score": 5,
+      "why": "Recovery responses use non-descript language and do not expose private user details or confirmation of account presence."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated using regex pattern matching and structural checks, while client output is rendered safely using textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The HTTP server strictly redirects to the explicit HTTPS host URL and client navigation relies entirely on fixed internal paths."
+    },
+    "9": {
+      "score": 5,
+      "why": "System status messages are static strings and user inputs are not interpolated into HTML or email markup."
+    },
+    "10": {
+      "score": 1,
+      "why": "Active reset tokens and MFA verification codes are returned in API status endpoints and rendered directly in the web page DOM logs."
+    },
+    "11": {
+      "score": 5,
+      "why": "The application stores account passwords exclusively as bcrypt hashes and keeps no plaintext passwords or secrets in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default plaintext credentials exist in the system, forcing access through the password recovery flow."
+    },
+    "13": {
+      "score": 5,
+      "why": "Failed attempts are tracked per session and globally, triggering 15-minute lockouts after reaching the maximum attempt threshold."
+    },
+    "14": {
+      "score": 5,
+      "why": "Password recovery requests return the exact same generic message whether or not the submitted email address is registered."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are created using cryptographically secure random bytes and are tied to specific session records."
+    }
+  },
+  "cost_usd": 0.0544515,
+  "generation_id": "gen-1785925118-nibXvnLnOdZDA1ti4pem",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

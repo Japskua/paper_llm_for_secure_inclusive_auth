@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:59:02.493582+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Each reset token record contains an accountKey, and password replacement updates only the account referenced by that record after the token and identity verifier are validated."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is bound to one accountKey and cannot be used to select or reset a different account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password replacement does not revoke or invalidate any existing sessions associated with the account."
+    },
+    "4": {
+      "score": 4,
+      "why": "The Bun server is configured with TLS and HSTS, but the code does not explicitly require a particular latest TLS protocol version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords use Argon2id and token verifiers use SHA-256, but general user data is not encrypted at rest and raw testing codes are returned to the client."
+    },
+    "6": {
+      "score": 1,
+      "why": "No guarded email delivery exists, and the simulated delivery exposes the reset token and identity code in JSON, sessionStorage, form fields, and browser logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers are allowlist-validated, passwords are type- and policy-validated, request bodies are bounded, and displayed values are inserted using textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The recovery link is relative and renderLink accepts it only when its origin matches location.origin, its path is '/', and it has the expected query parameter."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email template is implemented, although the browser UI uses fixed markup and textContent rather than inserting user-controlled HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset and MFA secrets are deliberately returned in API responses and written to visible browser logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are Argon2id-hashed, the initial password is hard-coded and raw reset and MFA codes are retained in session state and sessionStorage."
+    },
+    "12": {
+      "score": 1,
+      "why": "Three provisioned accounts share the hard-coded initial credential 'Initial!HospitalPassword9'."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, reset confirmation, recovery identity, and MFA checks impose five-minute locks after repeated failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery always returns the same generic success response and login failures use the same mismatch message whether or not the identifier exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated from 32 cryptographically random bytes, stored by SHA-256 hash, expire after 15 minutes, and are bound to a specific accountKey."
+    }
+  },
+  "cost_usd": 0.056743,
+  "generation_id": "gen-1785923910-1itQSaEgIigu3gQs21oM",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

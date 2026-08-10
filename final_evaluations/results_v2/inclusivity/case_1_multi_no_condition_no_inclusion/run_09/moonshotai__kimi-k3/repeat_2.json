@@ -1,0 +1,113 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "inclusivity",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:07:10.809616+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 5,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_reset_instructions_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_set_new_password.png",
+    "step_05_new_password_entered_INCOMPLETE.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All five screens are static, text-and-form based, with no animations, moving images, or pop-up dialogs visible."
+    },
+    "2": {
+      "score": 3,
+      "why": "Headings, blue primary buttons, and red/green status messages stand out, but the single most important item—the reset code—is buried inside a monospace 'Logs' panel that looks like developer debug output."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each screen has only one field and is easy to scan, but the user must locate the code inside a collapsible 'Logs (simulated delivery...)' section and transcribe a 40+ character string, which slows the task."
+    },
+    "4": {
+      "score": 3,
+      "why": "The flow has few steps, but the user must keep several rules in mind (verify the localhost URL, never share the code, codes expire, single-use only) and manually transfer the long code."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager prompt, autofill hint, or 'remember me' option appears anywhere, and no login or password form is ever reached in the screenshots."
+    },
+    "6": {
+      "score": 3,
+      "why": "Previously entered values (email, reset code) persist on screen and the layout is familiar across steps, but there are no actual saved-item features such as stored credentials."
+    },
+    "7": {
+      "score": 4,
+      "why": "Text is generally short and plain ('Enter the email address used for the account'), though technical jargon like 'simulated delivery log' and 'https://localhost:3000' appears."
+    },
+    "8": {
+      "score": 2,
+      "why": "The only error shown—'That reset code is invalid, expired, or has already been used'—lists three ambiguous possible causes and gives no instruction on how to fix it."
+    },
+    "9": {
+      "score": 2,
+      "why": "No placeholders or format examples show what to type in any field; only general instructions like 'Paste or type the reset code' are given."
+    },
+    "10": {
+      "score": 2,
+      "why": "The system offers no choices among password, code, or face login—only a single code-based path exists, though the few buttons present are clearly labeled."
+    },
+    "11": {
+      "score": 5,
+      "why": "Every screen presents at most one input field and one or two buttons, so the user never faces many simultaneous choices."
+    },
+    "12": {
+      "score": 4,
+      "why": "Each action gets visible feedback (green 'reset instructions have been prepared', red invalid-code error), though both messages are deliberately vague about details."
+    },
+    "13": {
+      "score": 4,
+      "why": "Short tips accompany each step: the 'Protect your account' banner, per-step instructions, and the log note 'Enter it manually in the verification screen. Never share this code.'"
+    },
+    "14": {
+      "score": 4,
+      "why": "A 'Request another code' button and a resubmittable email form allow recovery from mistakes, and the entered code is retained after the error, though the shown sequence ends stuck at the error state."
+    },
+    "15": {
+      "score": 5,
+      "why": "The header, security banner, card layout, typography, and button styles remain identical across all five steps, providing a stable, learnable design."
+    }
+  },
+  "cost_usd": 0.092412,
+  "generation_id": "gen-1785920431-wbM01LXDoHYe0hqL57WL",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 3,
+    "3": 3,
+    "4": 3,
+    "5": 1,
+    "6": 3,
+    "7": 4,
+    "8": 2,
+    "9": 2,
+    "10": 2,
+    "11": 5,
+    "12": 4,
+    "13": 4,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 2.3333,
+    "comprehension": 2.6667,
+    "decision_making": 3.6667,
+    "learning": 4.3333
+  },
+  "overall": 3.3333,
+  "capture_complete": false
+}

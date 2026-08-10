@@ -1,0 +1,145 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 16,
+  "steps_passed": 15,
+  "happy_path_passed": 9,
+  "happy_path_total": 9,
+  "negative_passed": 6,
+  "negative_total": 7,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request recovery code",
+      "method": "POST",
+      "path": "/api/recover",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "reset password",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/book-appointment",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "missing CSRF rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong origin rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": false,
+      "response_message": "If the account can be recovered, instructions are available in this secure browser session."
+    },
+    {
+      "name": "invalid account input rejected",
+      "method": "POST",
+      "path": "/api/recover",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong recovery token rejected",
+      "method": "POST",
+      "path": "/api/verify-token",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-mfa",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset-password",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong new password rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 16
+}

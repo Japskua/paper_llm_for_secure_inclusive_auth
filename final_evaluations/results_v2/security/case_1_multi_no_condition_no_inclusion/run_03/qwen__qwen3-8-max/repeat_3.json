@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:33:42.163978+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token is verified against the SHA-256 digest stored in the current session, but it is not bound to a separately stored account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is accepted only when it matches the digest in the requesting session, so the statement that the same code works for any other user is false."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password-reset handler updates only the current session state and does not invalidate or delete other stored sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The service is served over TLS when certificate files exist and is otherwise disabled, but the code does not specify or prove the latest TLS version."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as bcrypt hashes rather than encrypted data, and account input is not retained."
+    },
+    "6": {
+      "score": 1,
+      "why": "The simulated delivery exposes the recovery token in the API response and browser logs instead of hiding or guarding it in a protected email message."
+    },
+    "7": {
+      "score": 4,
+      "why": "User inputs are length-validated, token format-checked, and rendered through textContent under a CSP, though there is no general HTML-sanitization library."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only recovery link is a same-page fragment built from the current pathname, and no external redirect mechanism is present."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the source code, so their safety or inclusion of user-controlled scripts cannot be observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic error responses avoid private detail, but the application intentionally logs recovery tokens and MFA codes in the browser console and Logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is hardcoded and stored/returned in plaintext, so secret codes are not fully protected."
+    },
+    "12": {
+      "score": 2,
+      "why": "There are no default account passwords, but the fixed MFA code 246810 functions as a known default secret."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery requests, MFA attempts, and password attempts are throttled or locked after repeated failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the same generic response and does not indicate whether the submitted account exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are random 32-byte hexadecimal values and are validated against the initiating session, but they are not bound to a specific account identifier."
+    }
+  },
+  "cost_usd": 0.07021,
+  "generation_id": "gen-1785918554-8fgTGYmNZe26H8cGa2rs",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.0667,
+  "capture_complete": true
+}

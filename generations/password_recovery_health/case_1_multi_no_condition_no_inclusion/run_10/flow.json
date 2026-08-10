@@ -1,0 +1,104 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 11,
+  "steps_passed": 11,
+  "happy_path_passed": 6,
+  "happy_path_total": 6,
+  "negative_passed": 5,
+  "negative_total": 5,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "load recovery page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request reset code",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify reset code",
+      "method": "POST",
+      "path": "/api/reset-verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "complete password reset",
+      "method": "POST",
+      "path": "/api/reset-complete",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "reset request without CSRF is rejected",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid reset code rejected",
+      "method": "POST",
+      "path": "/api/reset-verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "weak password rejected",
+      "method": "POST",
+      "path": "/api/reset-complete",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "incorrect MFA code rejected",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "privacy acceptance requires authentication",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 11
+}

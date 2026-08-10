@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:27:51.696148+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The API verifies that incoming recovery tokens match the reset token attached specifically to the user's active session state."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are cryptographically generated per session and cannot be used by or applied to other user sessions."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset handler updates the current session's password hash without terminating or revoking any existing session records."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application explicitly starts a Bun HTTPS server with TLS certificate files and rejects startup if TLS is unavailable."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens and MFA codes are stored as unencrypted plain text properties on the in-memory session object."
+    },
+    "6": {
+      "score": 5,
+      "why": "No real emails are sent, and simulated local responses provide generic text without exposing private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are strictly sanitized via validation regex patterns and rendered using safe textContent DOM assignments."
+    },
+    "8": {
+      "score": 5,
+      "why": "The HTTP server strictly redirects all requests to the hardcoded local HTTPS hospital URL."
+    },
+    "9": {
+      "score": 5,
+      "why": "No HTML email templates are used, and all client UI elements are safely created via DOM text methods."
+    },
+    "10": {
+      "score": 1,
+      "why": "The simulated browser UI explicitly prints secret reset tokens and MFA codes directly into the visible log window."
+    },
+    "11": {
+      "score": 1,
+      "why": "The second-factor MFA verification code is hardcoded as a static string directly in the application source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system contains no default account credentials and enforces password checks that reject common default passwords."
+    },
+    "13": {
+      "score": 5,
+      "why": "The application tracks failed attempts per phase and blocks further requests for 60 seconds after 5 failures."
+    },
+    "14": {
+      "score": 5,
+      "why": "Account recovery returns identical generic messages regardless of whether the submitted account input is valid or exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using cryptographically strong random bytes converted to 32-byte base64url strings bound to the session."
+    }
+  },
+  "cost_usd": 0.035676,
+  "generation_id": "gen-1785922054-8Uco3NXngXpZ4YE05mKr",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

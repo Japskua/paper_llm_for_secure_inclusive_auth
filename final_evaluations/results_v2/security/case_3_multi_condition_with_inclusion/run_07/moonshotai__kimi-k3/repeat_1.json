@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:25:32.216598+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The recovery-verify handler checks record.sessionId === session.id and verifies the code against the record's bcrypt tokenHash, binding the code to the requesting session/user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each token is a unique 32-byte random value hashed per record and bound to one sessionId, so the same code cannot work for any other user or session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The /api/password handler updates accountPasswordHash but never invalidates other entries in the sessions map, so previously authenticated sessions remain valid until expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and an HSTS header, though the TLS version is not explicitly pinned and relies on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes, the MFA code, and passwords are stored only as bcrypt hashes (appropriate protection), with TLS protecting data in transit, though nothing is encrypted at rest in the in-memory maps."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email message exists; the simulated delivery returns the raw recovery code in the JSON response (testToken) and prints it into the browser log area, so private data is not guarded."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers and codes pass through cleanText (length cap, control-char and '<>' rejection) and a whitelist regex, JSON content-type is enforced, and client output is escaped via esc()/textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is restricted to a hardcoded validRoutes whitelist of same-origin hash routes and server 'next' values are fixed internal paths, with no open or external redirects."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates at all; the only rendered messages are static strings inserted via textContent/esc, so the claim about email templates cannot be confirmed or denied."
+    },
+    "10": {
+      "score": 1,
+      "why": "The on-page log output explicitly displays '[SIMULATED DELIVERY] Current browser recovery code: <token>' and the MFA test code, so tokens are shown in logs despite clean error pages."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code '246810' and the initial account password 'Welcome!2025Heart' are hardcoded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system ships a working demo account (helena@hospital.test) with a known hardcoded password, which functions as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Throttling with lockout is implemented on login (5 attempts), recovery request (3), recovery verify (5), and MFA (5) via the loginThrottle/recoveryThrottle maps and attempt counters."
+    },
+    "14": {
+      "score": 3,
+      "why": "Login and recovery-request use generic non-committal messages, but the password step's distinct 'We could not complete this request' error reveals that an account does not exist (reachable since the demo returns the token to anyone)."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset code is a crypto-random 32-byte (256-bit) base64url token stored only as a bcrypt hash and bound to the requester's session, though it is session-specific rather than account-specific."
+    }
+  },
+  "cost_usd": 0.1685115,
+  "generation_id": "gen-1785925445-mOqnBuQ9E2kOmpsmg4Vw",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 3,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.2667,
+  "capture_complete": true
+}

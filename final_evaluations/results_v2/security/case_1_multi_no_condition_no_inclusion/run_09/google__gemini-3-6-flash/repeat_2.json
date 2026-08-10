@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:57:19.877315+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system validates that the submitted reset token matches the specific reset token stored in the current session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are bound strictly to the generating session and will not validate for any other user's session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password updates only modify the current session object and do not revoke or clear other existing sessions in memory."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application serves traffic over TLS via Bun's server configuration and enforces HTTPS access checks."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset codes are saved as unencrypted raw strings within the session objects in memory."
+    },
+    "6": {
+      "score": 1,
+      "why": "No email messages are generated or sent by the application, as delivery is purely simulated on the client side."
+    },
+    "7": {
+      "score": 2,
+      "why": "User inputs are trimmed, lowercased, and regex-checked, but explicit sanitization routines are not applied."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application handles view state locally without performing any external HTTP redirects."
+    },
+    "9": {
+      "score": 1,
+      "why": "No email templates exist in the codebase because code delivery is simulated entirely in the frontend."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and MFA verification codes are printed directly to the simulated log display in the user interface."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA verification code is hardcoded as a plain text string directly in the source file."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system relies on a hardcoded default MFA code ('482913') for identity verification."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting via rateAllowed blocks users and returns HTTP 429 after 3 to 5 failed attempts within a 15-minute window."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset request endpoint returns the exact same success response regardless of whether the email address exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using cryptographically secure random bytes rendered as 32-byte base64url strings."
+    }
+  },
+  "cost_usd": 0.051768,
+  "generation_id": "gen-1785920213-KP05BvzzHezvTc23KiJZ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 1,
+    "7": 2,
+    "8": 5,
+    "9": 1,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 2.6667,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 2.9333,
+  "capture_complete": false
+}

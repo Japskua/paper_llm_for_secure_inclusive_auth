@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:05:45.329676+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "0be553360932f12d1a5bea672dc6e8e0d645f1196fb57be45010ded64f5f9480",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The recovery record is stored on the server-side session with an explicit accountId and a SHA-256 tokenHash, and /api/recovery/reset only proceeds for the verified recovery bound to that session/account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each session gets its own randomly generated 24-byte token hashed into its own session-bound recovery record, so a code from one session cannot verify in another (liveRecovery reads only session.recovery)."
+    },
+    "3": {
+      "score": 5,
+      "why": "The reset path only sets recovery.used/verified and rewrites account.passwordHash; nothing iterates the sessions map to invalidate other sessions, so previously authenticated sessions remain valid for the 8-hour TTL."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, non-HTTPS requests are rejected, and HSTS with preload is sent, but no explicit minVersion/TLS 1.3-only or cipher configuration is set (relies on Bun defaults)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and MFA codes are compared via SHA-256 digests with a constant-time comparison and passwords are bcrypt-hashed (cost 10), though in-memory records themselves are unencrypted and hashing is used rather than encryption."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email, and the simulated delivery instead returns mockToken/mockCode in the JSON API response which the client prints verbatim into a visible on-page 'Logs' panel and the browser console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated (validReference, validToken regex, length-capped password with complexity rules, JSON-only body with object type check) and all client output uses textContent/createElement rather than innerHTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "There are no server-issued redirects or user-controlled URLs; navigation is same-page hash routing restricted to an allowlisted route set, and CSP sets form-action 'self', base-uri 'none', connect-src 'self'."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist at all in the code, and the equivalent messaging is plain JSON strings with no user input interpolated into HTML, so no script/HTML injection surface is present."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic and stack traces are swallowed, but the recovery token and MFA code are deliberately written to the visible logs panel and console.log by the client after each step."
+    },
+    "11": {
+      "score": 3,
+      "why": "The startup credential is randomly generated and kept only as a bcrypt hash, but the MFA verification code is hardcoded in the source as the literal '246810'."
+    },
+    "12": {
+      "score": 4,
+      "why": "The single mock account's password is a random 32-byte token that is never printed, so no default login password exists, although the fixed '246810' MFA code acts as a hardcoded default second factor."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, recovery-code verification, and MFA verification each count attempts and apply a 10-minute lockout after MAX_ATTEMPTS = 5, plus a 3-per-window cap on recovery initiations."
+    },
+    "14": {
+      "score": 3,
+      "why": "API responses are uniform (same 'If the account can be recovered...' message, always returning a random mockToken, and a dummy bcrypt comparison for unknown identifiers), but the rendered page pre-fills the actual valid recovery reference in the form."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is randomBytes(24) base64url, stored only as a SHA-256 hash, expires in 10 minutes, is single-use (used flag), and is tied to the specific session/accountId."
+    }
+  },
+  "cost_usd": 0.129925,
+  "generation_id": "gen-1785924308-ECBRk9iWCqh4f3AIrTcT",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 3,
+    "12": 4,
+    "13": 5,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 3.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

@@ -1,0 +1,123 @@
+{
+  "variables": {
+    "email": "patient@example.com",
+    "new_password": "New-Secure-Password-42!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "const CSRF = \"([^\"]+)\";",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open recovery page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request recovery verification",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_token": "testToken",
+        "mfa_code": "testMfaCode"
+      }
+    },
+    {
+      "name": "verify recovery and MFA codes",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "${recovery_token}",
+        "mfaCode": "${mfa_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/set-password",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "password": "${new_password}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/accept-privacy",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid email rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "not-an-email",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong MFA code rejected",
+      "method": "POST",
+      "path": "/api/verify-reset",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "token": "${recovery_token}",
+        "mfaCode": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "missing CSRF body field rejected",
+      "method": "POST",
+      "path": "/api/request-reset",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

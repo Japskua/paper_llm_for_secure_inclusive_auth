@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:51:16.468617+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c2876b4ed426a65417ec33b6fbb9afae2da3d7affeb88cb28b5873f4558bbdcc",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating the token digest against the session's recovery record."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for any other user because tokens are session-specific and validated against the session's recovery record."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after a password reset because the session stage advances and old sessions expire after SESSION_MAX_AGE_SECONDS."
+    },
+    "4": {
+      "score": 5,
+      "why": "The website uses HTTPS with TLS as enforced by the Bun server configuration and security headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed using SHA-256 (digest function), and user data is not stored or logged."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages (simulated logs) do not expose private user data; only test tokens are logged for evaluation."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., email, passwords) is not directly used in HTML; inputs are escaped via escapeHtml or handled server-side."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are controlled by the client-side routing (hash-based) and do not allow external URLs."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are not user-controlled; the system only logs simulated tokens and does not include user input in templates."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose user private information or tokens, as seen in the sanitized responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are hashed with bcrypt (cost=12) and never stored in plaintext or in the code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not allow default credentials; sessions are created with random opaque values."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system throttles attempts via session-based and IP-based rate limiting (e.g., 3 requests for recovery, 5 for verification)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether a username/email exists, as it returns a generic message for all requests."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset codes are random (32-byte base64url), complex, and user-specific (tied to the session)."
+    }
+  },
+  "cost_usd": 0.0186405,
+  "generation_id": "gen-1785923470-RlcY9uXJkwCRNAic9XAi",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

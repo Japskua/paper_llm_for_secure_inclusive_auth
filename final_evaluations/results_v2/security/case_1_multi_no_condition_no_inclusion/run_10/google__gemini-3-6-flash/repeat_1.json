@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:02:18.694813+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The backend checks that the reset token's session ID matches the active session ID of the requesting user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are strictly bound to the creating session ID and cannot be verified by another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The application does not revoke or invalidate other active sessions in memory when a password reset is completed."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server runs on Bun HTTPS with TLS certificate configuration and enforces HSTS headers."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are hashed using bcrypt, but reset tokens are stored in plain text within an in-memory Map."
+    },
+    "6": {
+      "score": 5,
+      "why": "No actual emails are generated or sent, preventing any exposure of private user data in email communications."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs like identifiers and passwords are cleaned and validated against strict regular expressions."
+    },
+    "8": {
+      "score": 5,
+      "why": "The plain HTTP server strictly redirects to the configured HTTPS address, and CSP restricts form actions to self."
+    },
+    "9": {
+      "score": 5,
+      "why": "The system does not utilize HTML email templates or inject user input into outgoing emails."
+    },
+    "10": {
+      "score": 2,
+      "why": "Although backend error responses are generic, test tokens and MFA codes are explicitly displayed in the web interface's simulation log box."
+    },
+    "11": {
+      "score": 1,
+      "why": "The secret multi-factor authentication code ('482913') is directly hardcoded into the source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application does not use or permit any pre-configured default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting and max attempt checks are enforced on reset request, verification, and MFA endpoints."
+    },
+    "14": {
+      "score": 1,
+      "why": "The reset endpoint returns a testToken field only when the identifier exists, allowing account enumeration."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are created using cryptographically strong random values generated via crypto.getRandomValues and bound to the user session."
+    }
+  },
+  "cost_usd": 0.041307,
+  "generation_id": "gen-1785920516-Cxym539c7dvtHrQTWxGV",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

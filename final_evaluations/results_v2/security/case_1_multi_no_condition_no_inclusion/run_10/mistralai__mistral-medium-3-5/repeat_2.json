@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:02:28.204242+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by verifying `record.sessionId === session.id` in `/api/reset-verify`."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for another user because tokens are bound to `sessionId` and validated against it."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after password reset via `session.verifiedResetToken = undefined` and token marked as `used: true`."
+    },
+    "4": {
+      "score": 5,
+      "why": "The website uses HTTPS with TLS (certificates loaded from `CERT_PATH` and `KEY_PATH`)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are encrypted (stored as `randomValue(32)`) and user data (e.g., `mockAccount.passwordHash`) is hashed with bcrypt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages (simulated in logs) do not expose private user data; only test tokens are shown in client-side logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., `identifier`, `password`) is sanitized via `cleanIdentifier` and `validPassword` checks."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are hardcoded to the hospital’s site (e.g., `/api/*` endpoints) and no dynamic redirects exist."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates (simulated) contain no user input; logs only show static messages and test tokens."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose private information or tokens (e.g., generic messages like 'Code cannot be verified')."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are stored as bcrypt hashes (`Bun.password.hash`), and no secrets are hardcoded in the source."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials are present; all sessions and tokens are randomly generated."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting (`tooMany`) bars users after 3/5 attempts for requests/verification/MFA."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application returns the same generic message ('If the account is eligible...') regardless of whether the username exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are random (`randomValue(32)`), complex (base64url), and user-specific (bound to `sessionId`)."
+    }
+  },
+  "cost_usd": 0.015048,
+  "generation_id": "gen-1785920539-5n6nb6QnPuRXz9tvCR4k",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

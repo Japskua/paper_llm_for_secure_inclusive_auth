@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:16:08.265209+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "In /api/verify the reset record's accountKey must match session.recoveryAccountKey ('reset.accountKey !== session.recoveryAccountKey' is rejected), so the code is verified as belonging to the requesting account."
+    },
+    "2": {
+      "score": 1,
+      "why": "The statement is false: codes are bound to the accountKey and the session (recoveryAccountKey plus per-session CSRF), so a code issued for one user cannot be replayed by another."
+    },
+    "3": {
+      "score": 5,
+      "why": "The statement is true: after /api/password only the current session's flags are cleared (clearAccountAuthority), and no code invalidates other entries in the sessions Map, so any previously authenticated sessions remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "The Bun server is started with a TLS cert/key, rejects non-HTTPS requests ('HTTPS is required'), and sets HSTS, though no explicit TLS version is pinned so 'latest' cannot be confirmed."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 hashes and passwords are hashed with bcrypt (cost 10), which are appropriate protections, though this is hashing rather than encryption and no at-rest encryption of other user data is shown."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery message contains only the recovery code and a same-origin link with no patient or private data, and the recovery request response is account-agnostic."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated with strict whitelist checks (validIdentifier regex/length, validToken pattern, passwordPolicy) and JSON bodies are type-checked before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect target is the same-origin relative '/recovery-link?token=...' built server-side, with CSP form-action/base-uri locked to 'self', so no external redirect is possible."
+    },
+    "9": {
+      "score": 5,
+      "why": "All rendering uses textContent/DOM nodes with no user input injected as HTML, and a nonce-based CSP blocks inline or untrusted scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error pages are generic, but the browser activity logs and console deliberately display the mock recovery code and MFA code ('Mock hospital delivery: recovery code ...', 'Mock hospital MFA code: ...'), so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA secret is hardcoded as 'const MFA_CODE = \"246810\"' and a fallback password hash is embedded in the code, so a secret code is stored in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "The statement is false: the default accountPasswordHash is the well-known bcrypt hash of 'password', meaning the system ships with a default credential unless an env var overrides it (plus a fixed MFA code)."
+    },
+    "13": {
+      "score": 5,
+      "why": "actionAllowed applies per-session and per-source rate limits (login 5, verify 8, password 5, mfa 6 per 15 minutes) returning 429 with a retry wait once exceeded."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery always answers 'If this account can receive recovery messages...', and login returns the identical 'We could not sign you in' for unknown accounts and wrong passwords, preventing enumeration."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 32-byte crypto-random base64url tokens (randomToken(32)), stored hashed, single-use, 15-minute expiry, and bound to a specific accountKey."
+    }
+  },
+  "cost_usd": 0.0969762,
+  "generation_id": "gen-1785924940-ZWA8IxYIcVL8bBBWPru5",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

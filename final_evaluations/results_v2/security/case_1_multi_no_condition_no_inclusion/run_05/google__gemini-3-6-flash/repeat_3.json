@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:37:41.787386+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system validates that the reset token record matches the target account ID and session during password updates."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are bound to a specific account hash record and session, so a code cannot be used for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset handler marks the reset record as used but does not clear or revoke active sessions in the session map."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server is configured with TLS certificates via Bun's HTTPS server options."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are stored as SHA-256 digests and passwords are hashed using bcrypt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Generic user messaging is returned without exposing sensitive user account details."
+    },
+    "7": {
+      "score": 4,
+      "why": "User inputs are schema-validated, and output elements are assigned dynamically via textContent rather than raw HTML evaluation."
+    },
+    "8": {
+      "score": 5,
+      "why": "Generated redirect and reset links are constructed explicitly using location.origin."
+    },
+    "9": {
+      "score": 5,
+      "why": "UI components and message outputs do not render user-supplied input as unescaped HTML scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The frontend client code explicitly outputs sensitive reset tokens directly to the testing log panel and browser console."
+    },
+    "11": {
+      "score": 5,
+      "why": "No plaintext passwords are stored in the codebase; the default account uses a dynamically generated bcrypt hash."
+    },
+    "12": {
+      "score": 2,
+      "why": "The mock system initializes with a hardcoded account email and seed password in source code."
+    },
+    "13": {
+      "score": 5,
+      "why": "The login route tracks failed attempts and enforces a lock-out window after 5 consecutive failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The reset request API returns an identical status message regardless of whether the email address exists in the system."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using crypto.getRandomValues with 32 cryptographically secure random bytes."
+    }
+  },
+  "cost_usd": 0.0323925,
+  "generation_id": "gen-1785919038-op0Qog5eaU67lOeLtmnC",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 5,
+    "6": 5,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.1334,
+  "capture_complete": true
+}

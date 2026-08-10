@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:04:53.725435+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Both /api/reset-verify and validOwnedToken() enforce record.sessionId === session.id, so the code checks the token belongs to the requesting session (ownership is session-bound in this single mock account)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to sessionId, expire after 10 minutes, and are marked used on reset-complete, so the same code cannot work for any other session/user."
+    },
+    "3": {
+      "score": 4,
+      "why": "No session invalidation occurs after a password reset — the resetting session proceeds to MFA and any other pre-existing sessions/tokens in the maps remain valid until expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve runs with tls cert/key, a second listener 308-redirects all HTTP to HTTPS, and HSTS is set, though the TLS version is not explicitly pinned and relies on Bun defaults."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are bcrypt-hashed and tokens are 32-byte CSPRNG values sent over TLS, but reset codes are stored in cleartext as map keys rather than encrypted/hashed at rest."
+    },
+    "6": {
+      "score": 1,
+      "why": "No email message exists; the simulated delivery returns the token in the JSON response (testToken) and prints it in the browser-visible Logs panel, so nothing hides or guards it."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers are trimmed, lowercased, and allowlist-validated with /^[a-z0-9._-]{3,80}$/, other inputs are type-checked, and client-side rendering uses textContent rather than innerHTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "The only redirect is the HTTP listener's 308 to a hardcoded https://localhost host with the original path/query, so no user-controlled or external redirect target is possible."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates; the HTML page interpolates only server-generated nonce/CSRF values, user data never enters HTML, and nonce-based CSP blocks injected scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The visible Logs panel prints the reset token and MFA code, and the API returns testToken and mfaCode in responses, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed (cost 10) and never stored in plaintext, but the MFA secret '482913' is hardcoded directly in the source code."
+    },
+    "12": {
+      "score": 3,
+      "why": "The mock account starts with an empty passwordHash so no default password works, but the hardcoded deterministic MFA code 482913 functions as a fixed credential."
+    },
+    "13": {
+      "score": 4,
+      "why": "Throttling caps reset requests (3/15min), code verification (5 per window plus 5 per token), and MFA attempts (5), although limits are per-session and new sessions are freely minted."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/reset-request returns the identical generic message ('If the account is eligible, reset instructions have been sent.') whether or not the identifier matches demo-account."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are 32-byte crypto.getRandomValues values (high entropy) bound to the requesting session via sessionId, i.e., user-specific only insofar as sessions are user-specific."
+    }
+  },
+  "cost_usd": 0.1793442,
+  "generation_id": "gen-1785920602-ZImHY79cP2FNoVN0OXcl",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 1,
+    "7": 4,
+    "8": 4,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

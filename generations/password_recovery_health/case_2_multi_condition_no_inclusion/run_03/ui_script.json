@@ -1,0 +1,126 @@
+{
+  "variables": {
+    "email": "recovery@example.test",
+    "new_password": "Recovery!Pass2025"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#contact",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Prepare recovery instructions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#token-view:not(.hidden)"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "recovery token = ([A-Za-z0-9_-]+)",
+          "into": "recovery_token"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify token')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password-view:not(.hidden)"
+        },
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm-password",
+          "value": "${new_password}"
+        }
+      ]
+    },
+    {
+      "name": "confirm_sign_in_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Replace password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa-view:not(.hidden)"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "confirmation code = (\\d{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#mfa-code",
+          "value": "${mfa_code}"
+        }
+      ]
+    },
+    {
+      "name": "sign_in_confirmed",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm sign-in')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#signin-view:not(.hidden)"
+        }
+      ]
+    },
+    {
+      "name": "review_privacy_conditions",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#privacy-next"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacy-view:not(.hidden)"
+        },
+        {
+          "do": "click",
+          "selector": "#accept"
+        }
+      ]
+    },
+    {
+      "name": "privacy_conditions_accepted",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept conditions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#complete-view:not(.hidden)"
+        }
+      ]
+    }
+  ]
+}

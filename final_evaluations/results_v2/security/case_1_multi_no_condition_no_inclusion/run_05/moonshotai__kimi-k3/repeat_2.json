@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:39:28.039644+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-reset binds the token to the claiming session (claimedBy) and update-password re-checks claimedBy, mfaVerifiedBy, and accountId before allowing the change."
+    },
+    "2": {
+      "score": 1,
+      "why": "False — a token claimed by one session is rejected for others (claimedBy check), is single-use, and is tied to accountId, so it cannot work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "True — update-password only marks the reset record used and never deletes or invalidates existing entries in the sessions map, so prior authenticated sessions remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with a TLS cert/key and HSTS is set, but no TLS version is explicitly pinned, so 'latest TLS version' cannot be confirmed."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes and passwords as bcrypt (appropriate one-way protection), though they are hashed rather than encrypted and the account email sits in plaintext."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery message contains only the reset token/link with no password or other personal data, though the token itself is necessarily visible in the mock log output."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are validated (validEmail, validPassword, token length checks, MFA regex, body-size cap) and user values are rendered only via textContent, never as HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only reset/redirect link is built from location.origin with an encodeURIComponent'd token, and no user-controlled URL is ever navigated to."
+    },
+    "9": {
+      "score": 5,
+      "why": "The mock delivery/log templates are static strings rendered with textContent and contain no user input, so no script or HTML injection is possible."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server error pages are generic, but the reset token, reset link, and MFA code are deliberately shown in the in-page Logs panel and console and returned in API responses (mockToken/mockMfaCode)."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code '246810' is hardcoded and the initial password appears as a plaintext literal in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The single account is seeded with a hardcoded initial password ('Initial!Passw0rd2025'), which functions as a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login is throttled per session and the account locks for 15 minutes after 5 failures, and reset-request, verify, and MFA attempts are all rate-limited."
+    },
+    "14": {
+      "score": 4,
+      "why": "Reset and login responses use identical generic messages (and a mockToken is returned for every reset request), though a minor timing difference exists because bcrypt verification only runs for the matching email."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 32-byte CSPRNG base64url tokens, stored hashed, expiring in 15 minutes, and bound to the account ID and claiming session."
+    }
+  },
+  "cost_usd": 0.0729114,
+  "generation_id": "gen-1785919113-XdHBnyiFnvE6NbYUact1",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

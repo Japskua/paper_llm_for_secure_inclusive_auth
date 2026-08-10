@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:30:26.330573+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset token is stored server-side in the session and verify-token checks phase, expiry, single-use flag, and a length-checked crypto.timingSafeEqual match, so a code is only accepted for the session that requested it."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to the issuing session and cleared/marked resetUsed after one success, so another session has no matching resetToken and the code cannot work for any other user."
+    },
+    "3": {
+      "score": 1,
+      "why": "There is no account-level session store; passwordHash and authenticated state are per-session and isolated, so no pre-existing sessions retain account access after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server exits unless TLS certs exist, serves only HTTPS on port 3000, issues a 308 HTTP→HTTPS redirect, and sets HSTS, though no explicit minimum/latest TLS version is configured."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are bcrypt-hashed and traffic is TLS-protected, but reset tokens and the MFA code are stored unencrypted in plaintext in the in-memory session."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email is sent (delivery is simulated), and passwords are never logged, but the simulated delivery messages expose the reset token and MFA code in the page and API responses."
+    },
+    "7": {
+      "score": 5,
+      "why": "All user inputs pass strict whitelist validators (validAccountInput, validToken, validMfa, passwordProblem) and the client renders everything via textContent/createElement over JSON-only APIs."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect in the system is a hardcoded 308 to https://localhost:3000/, and no user-controlled redirect targets exist anywhere."
+    },
+    "9": {
+      "score": 5,
+      "why": "No templates contain user input; simulated log lines are static strings appended via textContent, and CSP permits only nonced scripts and styles."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error pages are generic (503/404 with no details), but the UI 'Logs' panel and API responses explicitly display the reset token and MFA code (testToken/testMfaCode), so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in memory and never stored in code, but the MFA secret is hardcoded in the source as session.mfaCode = \"482913\"."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default accounts or credentials exist and a strong password policy is enforced, although the fixed hardcoded MFA code functions like a shared known factor."
+    },
+    "13": {
+      "score": 4,
+      "why": "Every sensitive action has per-session throttling (5 failures trigger a 60-second block with HTTP 429), but the limits reset with a fresh session cookie and the block duration is short."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recover action returns the identical generic message ('If the account can be recovered...') for every input and performs no account lookup, so account existence is never revealed."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 32-byte CSPRNG base64url values (randomValue(32)), stored per-session, single-use, and expire after 10 minutes (RESET_TTL_MS)."
+    }
+  },
+  "cost_usd": 0.1347852,
+  "generation_id": "gen-1785922127-Wyflyh4yFBmEObkSip1H",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 4,
+    "5": 3,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 4,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.1333,
+  "capture_complete": true
+}

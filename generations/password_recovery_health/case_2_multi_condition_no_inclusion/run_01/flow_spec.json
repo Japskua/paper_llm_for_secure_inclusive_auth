@@ -1,0 +1,132 @@
+{
+  "variables": {
+    "email": "name@example.org",
+    "new_password": "ValidNewPass1!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "const CSRF = \"([a-f0-9]{64})\";",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "load recovery page and establish session",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request recovery token",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "contact": "${email}"
+      },
+      "capture": {
+        "recovery_token": "testingToken"
+      }
+    },
+    {
+      "name": "verify recovery token",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "body": {
+        "token": "${recovery_token}"
+      },
+      "capture": {
+        "recovery_mfa_code": "testingMfaCode"
+      }
+    },
+    {
+      "name": "confirm recovery MFA",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "${recovery_mfa_code}"
+      }
+    },
+    {
+      "name": "set new password",
+      "method": "POST",
+      "path": "/api/password",
+      "body": {
+        "password": "${new_password}",
+        "confirmation": "${new_password}"
+      }
+    },
+    {
+      "name": "sign in with new password",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "password": "${new_password}"
+      },
+      "capture": {
+        "login_mfa_code": "testingMfaCode"
+      }
+    },
+    {
+      "name": "confirm sign-in MFA",
+      "method": "POST",
+      "path": "/api/login/mfa",
+      "body": {
+        "code": "${login_mfa_code}"
+      }
+    },
+    {
+      "name": "accept privacy statement",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "verify completed session state",
+      "method": "GET",
+      "path": "/api/session-status",
+      "expect_json_true": "privacyAccepted"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "reused recovery token rejected",
+      "method": "POST",
+      "path": "/api/reset/verify",
+      "body": {
+        "token": "${recovery_token}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "password": "WrongPassword1!"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid CSRF token rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "headers": {
+        "X-CSRF-Token": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "body": {
+        "contact": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance requires true",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "accepted": false
+      },
+      "expect_failure": true
+    }
+  ]
+}

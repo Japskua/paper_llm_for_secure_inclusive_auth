@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:38:53.637921+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Token verification uses ownedRecovery(), which requires recovery.sessionId === session.id, and compares SHA-256 of the submitted token against that session-owned recovery's stored hash, so the code is checked against its owner."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token presented from any other session fails the ownedRecovery sessionId binding (403) and only matches its own recovery's tokenHash, so the same code does not work for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing in /api/reset-password invalidates, rotates, or deletes entries in the sessions Map or the sid cookie, so existing sessions remain valid after a password reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server is HTTPS-only (startup throws without TLS cert/key) and sets HSTS, but no explicit TLS minimum/latest version is configured, relying on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes and passwords are hashed with bcrypt (cost 12); these are appropriate one-way algorithms though technically hashing rather than encryption."
+    },
+    "6": {
+      "score": 1,
+      "why": "No email message exists at all; the reset token (mockToken) is returned in the API response and displayed openly in the page and browser console instead of being guarded."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, token, cookie, and code inputs are regex- and length-validated, request bodies are size-capped and type-checked, and all dynamic values are rendered via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is hash-based against a fixed whitelist of internal views, approvedPages is a closed set, and CSP enforces form-action/connect-src 'self' with base-uri 'none', so no external redirects occur."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates in the system, and the only rendering path uses static HTML with nonced scripts plus textContent insertion, so no user-controlled scripts or HTML are embedded."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces, but the reset token is deliberately written to the on-page activity log and browser console ('Test reset token: ...')."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never stored or logged, but the secret MFA code '246810' is hardcoded in both the server constant and the client-side script."
+    },
+    "12": {
+      "score": 3,
+      "why": "There are no default login credentials (no login or accounts exist), but the fixed, universal MFA code '246810' effectively functions as a default/shared credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Each stage (token, MFA, password) blocks for 60 seconds after 5 failed attempts, and per-IP rate limits cap attempts (8/min) and recovery requests (3/min)."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery returns the identical generic message for every request and the email-validation result is deliberately discarded (void validEmail), so account existence is never revealed."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is 256 bits from crypto.getRandomValues (64 hex chars), stored only as a hash, single-use with a 15-minute TTL, and bound to the requesting session's recovery record."
+    }
+  },
+  "cost_usd": 0.123003,
+  "generation_id": "gen-1785922369-kIL7mn877jNXwneapQiA",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

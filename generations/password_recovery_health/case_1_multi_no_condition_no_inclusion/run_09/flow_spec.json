@@ -1,0 +1,146 @@
+{
+  "variables": {
+    "email": "helena@example.test",
+    "new_password": "ValidPass1!xx"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "x-csrf-token",
+    "in": "header",
+    "endpoint": "/api/bootstrap"
+  },
+  "steps": [
+    {
+      "name": "open recovery portal",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "start secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request password reset",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "headers": {
+        "origin": "https://localhost:3000",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}"
+      },
+      "capture": {
+        "reset_token": "mockDeliveryToken"
+      }
+    },
+    {
+      "name": "validate reset code",
+      "method": "POST",
+      "path": "/api/reset-validate",
+      "headers": {
+        "origin": "https://localhost:3000",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "token": "${reset_token}"
+      }
+    },
+    {
+      "name": "update password",
+      "method": "POST",
+      "path": "/api/password-update",
+      "headers": {
+        "origin": "https://localhost:3000",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "token": "${reset_token}",
+        "password": "${new_password}"
+      },
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "verify MFA code",
+      "method": "POST",
+      "path": "/api/mfa-verify",
+      "headers": {
+        "origin": "https://localhost:3000",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "code": "${mfa_code}"
+      }
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "headers": {
+        "origin": "https://localhost:3000",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "confirm appointment request",
+      "method": "POST",
+      "path": "/api/appointment-confirm",
+      "headers": {
+        "origin": "https://localhost:3000",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {}
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "missing valid CSRF token rejected",
+      "method": "POST",
+      "path": "/api/reset-request",
+      "headers": {
+        "origin": "https://localhost:3000",
+        "x-csrf-token": "invalid-csrf-token"
+      },
+      "body": {
+        "email": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong reset code rejected",
+      "method": "POST",
+      "path": "/api/reset-validate",
+      "headers": {
+        "origin": "https://localhost:3000",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "token": "aaaaaaaaaaaaaaaaaaaa"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance required",
+      "method": "POST",
+      "path": "/api/privacy-accept",
+      "headers": {
+        "origin": "https://localhost:3000",
+        "x-csrf-token": "${csrf}"
+      },
+      "body": {
+        "accepted": false
+      },
+      "expect_failure": true
+    }
+  ]
+}

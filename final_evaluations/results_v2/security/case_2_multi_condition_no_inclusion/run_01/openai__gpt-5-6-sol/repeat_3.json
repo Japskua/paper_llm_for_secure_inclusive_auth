@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:07:58.219694+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset verification requires the stored record.sessionId to equal the requesting session.id, although no separate account identity is bound to the token."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token cannot be used from another session because verification rejects records whose sessionId differs."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing the password does not revoke or delete other existing sessions, so previously authenticated sessions can remain valid."
+    },
+    "4": {
+      "score": 3,
+      "why": "HTTPS and HSTS are configured, but the code does not explicitly require the latest TLS version or set a minimum TLS version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens are retained only as SHA-256 verifiers and passwords use Argon2id, but MFA codes and session state are stored in plaintext memory."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email-generation or delivery implementation is present, so the handling of private data inside an email message cannot be verified."
+    },
+    "7": {
+      "score": 4,
+      "why": "Contacts, tokens, codes, and passwords receive strict server-side type, format, length, or policy validation, and untrusted values are not inserted as HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses internal paths and the HTTP redirect constructs a fixed https://localhost:3000 destination rather than accepting a user-controlled host."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are implemented, although the displayed interface uses textContent rather than injecting user-controlled HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens and deterministic MFA codes are deliberately displayed in the testing Logs panel and written through console.log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are Argon2id-hashed, but the MFA codes 482913 and 741852 are hard-coded and stored as plaintext session values."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application defines no default password or credentials and requires the initial password hash to be supplied through INITIAL_PASSWORD_HASH."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery, token verification, MFA, and login attempts are rate-limited, with temporary blocking after configured failure thresholds."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery requests return the same generic eligibility message regardless of contact validity and perform no observable account-existence disclosure."
+    },
+    "15": {
+      "score": 4,
+      "why": "Recovery tokens are cryptographically random 256-bit hexadecimal values and are session-specific, though they are not directly bound to a stored user identity."
+    }
+  },
+  "cost_usd": 0.0432305,
+  "generation_id": "gen-1785920855-nIfOqR16riWIgm2Z9a8U",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 3,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

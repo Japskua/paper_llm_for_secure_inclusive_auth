@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:08:34.616075+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by verifying the sessionId matches the current session (line: resetRecords.get(verifier).sessionId !== session.id)."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for any other user because it is tied to a specific sessionId (line: record.sessionId !== session.id)."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after a password reset because the session is not reused (line: sessions.delete(id) for expired sessions)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The website uses HTTPS with TLS (line: Bun.serve({ port: HTTPS_PORT, tls: { cert: Bun.file(CERT_PATH), key: Bun.file(KEY_PATH) } }))."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed with SHA-256 and stored securely (line: const verifier = await sha256(token))."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages do not expose private user data; only generic messages are shown (line: const generic = 'If eligible, recovery instructions have been prepared.')."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., email, passwords) is validated and sanitized (line: validContact, passwordIssue)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are safe and only go to the hospital’s site (no external redirects in the code)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are safe and contain no scripts or HTML from user input (line: generic message without user input)."
+    },
+    "10": {
+      "score": 5,
+      "why": "User’s private information or tokens are not shown in error pages or logs (line: generic error messages)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords and secret codes are stored securely (Argon2id hashing) and not in the code (line: passwordHash = await Bun.password.hash(body.password, { algorithm: 'argon2id' }))."
+    },
+    "12": {
+      "score": 5,
+      "why": "The system does not allow default credentials (no hardcoded credentials in the code)."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system bars the user from making several wrong attempts (line: recordAttempt, blocked)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application does not reveal whether the username/email exists (line: const generic = 'If eligible, recovery instructions have been prepared.')."
+    },
+    "15": {
+      "score": 5,
+      "why": "The password reset code is random, complex, and user-specific (line: const token = randomHex(32), tied to sessionId)."
+    }
+  },
+  "cost_usd": 0.0186435,
+  "generation_id": "gen-1785920910-d4xp4OMWl0eHrr6vjtKE",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

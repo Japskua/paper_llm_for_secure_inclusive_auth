@@ -233,7 +233,80 @@ PRICE_INPUT_PER_1M=1.25
 PRICE_OUTPUT_PER_1M=10.00
 ```
 
-### Running Code Generation
+### Running Code Generation (repeated-runs design)
+
+The experiment generates **10 independent runs per case** (30 runs total) so that
+between-case differences can be tested against between-run variance. Use the batch
+runner:
+
+```bash
+uv run python run_batch.py \
+  --software password_recovery_health \
+  --runs 10 \
+  --concurrency 6 \
+  --max-iters 12 \
+  --model openai/gpt-5.6-terra \
+  --reasoning-effort medium \
+  --smoke-test
+```
+
+Useful flags: `--dry-run` lists the planned runs, `--cases` restricts to a subset,
+`--run-start` extends an existing batch, `--force` re-runs completed runs. Runs
+already completed are skipped, so an interrupted batch can simply be re-invoked.
+
+Each run executes in its own subprocess (isolating token counters and containing
+crashes) and writes to `generations/<software>/<case>/run_NN/`. The batch writes
+`generations/<software>/batch_manifest.json`, which records per run: model, exact
+dated model snapshot, resolved upstream provider, sampling configuration, iteration
+count, convergence, token usage including reasoning tokens, cost, `app.ts` SHA-256,
+and smoke-test result. That manifest is the input to the evaluation stage.
+
+The earlier single-run GPT-4o dataset remains under
+`workspace/<software>/<case>/legacy_single_run_gpt4o/` (moved there by
+`--archive-legacy`), keeping the two generations of results clearly separated.
+
+#### Pinning the upstream provider
+
+OpenRouter may serve one model id from several upstream backends. In a validation
+batch, 11 of 12 calls in one run went to OpenAI and 1 to Azure. Because different
+backends can differ in serving configuration, pin routing before a real batch:
+
+```env
+OPENROUTER_PROVIDER_ORDER=openai
+```
+
+This sets `allow_fallbacks: false`; transient failures are absorbed by the retry
+logic in `app/utils/io.py` rather than by silently switching backend. The provider
+actually used is recorded per run either way.
+
+#### Sampling configuration
+
+Runs are **independent draws**: no seed is ever sent, since a fixed seed would
+suppress the between-run variance the design exists to measure.
+
+Frontier reasoning models — the entire GPT-5.x family, Claude Sonnet 5 — do **not**
+expose `temperature`; they sample at a fixed internal temperature. `provider.py`
+queries each model's `supported_parameters` and sends `temperature` only when the
+model accepts it, recording the effective setting per run. With
+`openai/gpt-5.6-terra` the reported configuration is therefore
+`temperature: null, temperature_supported: false`, and repeated runs vary through
+the model's own sampling rather than a client-set parameter.
+
+`reasoning_effort` **is** exposed, and materially affects both output quality and
+token cost, so it is treated as a recorded experimental parameter (default
+`medium`). If an explicitly set temperature is required, use a frontier model that
+exposes one — `x-ai/grok-4.5`, `google/gemini-3.6-flash` and
+`qwen/qwen3.8-max` all do — and pass `--temperature`.
+
+#### Convergence
+
+A run that reaches `--max-iters` without a PASS verdict writes a `NO_CONVERGENCE`
+marker and is recorded with `converged: false`. Such runs are reported rather than
+discarded: convergence rate is itself a per-case outcome.
+
+#### Single run
+
+To reproduce one artifact in isolation:
 
 ```bash
 # Case 1: No inclusivity specification
@@ -269,9 +342,126 @@ uv run python run.py --mode multi \
 | Parameter | Value | Description |
 |-----------|-------|-------------|
 | LLM Provider | OpenRouter | API aggregation service |
-| Code Generation Model | GPT-5 | Consistent across all cases |
-| Temperature | 0.0 | Deterministic output |
+| Code Generation Model | `openai/gpt-5.6-terra` | Same model for Tasker, Coder and Evaluator, consistent across all cases |
+| Temperature | not client-exposed | Model samples at a fixed internal temperature; see *Sampling configuration* |
+| Reasoning effort | `medium` | Recorded experimental parameter |
+| Seed | none | Deliberately unset, to preserve between-run variance |
+| Runs per case | 10 | Independent draws |
 | Maximum Iterations | 12 | Upper bound for convergence |
+
+### Instrumentation and Threats to Validity
+
+The pipeline is a scaffold, not a neutral observer, so it is worth being explicit
+about where the harness can influence the result. Generation is always finished and
+`app.ts` written **before** any verification runs — nothing from the smoke or flow
+test feeds back into the model — but the generation loop itself is apparatus.
+
+**Affects what is generated.** The `NEW_TASKS` and `DECISION` parser corrections
+below change what the Coder is told to do and when a run stops, so they change the
+artifacts. There is no "unscaffolded model" baseline to compare against: the earlier
+parser was equally an intervention, just an undocumented and lossy one that discarded
+part of the Evaluator's instructions. `reasoning_effort` and the 900s timeout
+likewise shape output — the latter by no longer selecting against runs that generate
+a lot of text. All are held constant across cases, so they do not confound the
+case comparison, but they do define what is being measured and are recorded per run.
+
+**Must not hide model failures.** Non-working output is a result, so the harness is
+built to record rather than rescue:
+
+| Mechanism | Policy |
+|---|---|
+| Tasker emits unparseable JSON | One corrective re-ask, but every occurrence is counted in `protocol_violations`; an unrecoverable case writes `PROTOCOL_VIOLATION_*` and fails the run |
+| Run fails mid-generation | Cause is classified; **only positively identified infrastructure faults** (timeout, 429, 5xx, connection error) are retried. Model and unknown causes are kept as recorded failures |
+| Previous failed attempt | Preserved as `run_NN_failed_attempt_N/`, never deleted |
+| Run hits `--max-iters` | Recorded as `converged: false` with a `NO_CONVERGENCE` marker, and reported |
+| Artifact fails to boot | Recorded; a clash with an unrelated host process is reported as `port_conflict`, distinct from a defect |
+
+The smoke test supplies free ports via `PORT`/`HTTPS_PORT`/`HTTP_PORT` so artifacts
+are not failed for colliding with unrelated local services. This is charitable to the
+artifact, so `smoke.json` records `port_hints` and `used_hint_port`, making visible
+the cases where env configuration rather than the artifact itself avoided a clash.
+
+Batch-level counters (`runs_failed`, `failures_by_cause`, `retried_runs`,
+`tasker_json_parse_failures`) are aggregated in the manifest so any rescue the
+harness performed is visible in the reported results.
+
+**Measurement error.** The flow test is LLM-mediated: a badly derived plan can fail a
+working artifact, and a weak plan can pass a broken one. Its error rate is not
+quantified, so flow results are instrument readings rather than ground truth. Each
+run's derived plan is kept in `flow_spec.json` for audit. During development, four
+executor defects each produced confidently wrong verdicts that were caught only by
+manual inspection — at batch scale, some misclassification should be assumed.
+
+### Changes to the Pipeline
+
+The generation loop was hardened for unattended batch execution. Two changes alter
+behaviour relative to the pipeline that produced the earlier single-run artifacts,
+and are noted here for transparency:
+
+1. **`NEW_TASKS` parsing.** The original parser accepted only `-`, `1.`, `2.` and
+   `3.` line prefixes and stopped at the first blank line, so tasks numbered 4 and
+   above were silently dropped and hierarchical task lists were flattened into a
+   mixture of headings and sub-details. The parser in `app/utils/parsing.py` reads
+   every outermost item and folds nested detail into its parent task.
+2. **`DECISION` parsing.** The original required a line beginning literally with
+   `DECISION` and fell back to `FAIL` otherwise, so a model writing
+   `**DECISION:** PASS` would be forced to run to `--max-iters`. Markdown emphasis
+   and heading markers are now tolerated.
+
+Supporting changes without behavioural effect on a successful run: request timeout
+raised from 60s to 900s (reasoning models routinely exceed 60s), transient API
+failures retried with exponential backoff, Tasker JSON tolerant of code fences with
+one corrective retry, reasoning tokens counted, cost taken from OpenRouter usage
+accounting, and per-run artifacts always overwritten rather than skipped when
+present.
+
+### Verifying Generated Artifacts
+
+`PASS_MARKER` records only that the Evaluator LLM judged the code complete; it does
+not execute anything. Two levels of execution-based verification are available.
+
+**`--smoke-test` (liveness).** Boots the artifact under Bun and checks that it
+answers `GET /`. Result in `run_NN/smoke.json`. Listening ports are read from the
+OS for the child process, because generated apps declare ports through variables,
+read non-standard env names (`PORT`, `HTTPS_PORT`, `HTTP_PORT` have all been
+observed) and may log nothing on startup. Boot-and-probe is serialised by a file
+lock across processes: artifacts hardcode ports such as 443, 80 and 3000, so
+concurrent smoke tests otherwise report working artifacts as broken. A port already
+held by another host process is reported as `port_conflict`, distinct from a defect
+in the artifact.
+
+**`--flow-test` (functional).** Walks the whole recovery journey — request code,
+verify, set password, sign in, MFA, and any later steps — plus negative checks such
+as replayed tokens and forged CSRF. Results in `run_NN/flow.json`, with the derived
+plan preserved in `run_NN/flow_spec.json` for audit.
+
+The call sequence has to be derived per artifact, because every run invents its own
+API. Across the validation runs:
+
+| Artifact | API shape | CSRF transport |
+|----------|-----------|----------------|
+| Case 1 | 7 granular routes (`/api/request-reset`, `/api/verify-token`, …), no `<form>` elements | token from `/api/session` |
+| Case 2 (first generation) | a single `/api/recovery` endpoint with 6 server-rendered forms | JSON body field |
+| Case 2 (regenerated) | 7 routes (`/api/recovery/request`, `/api/recovery/authorize-factor`, …) | `X-CSRF-Token` header |
+| Case 3 | 9 routes (`/api/reset/request`, `/api/reset/verify`, …) plus appointment booking | JSON body field |
+
+The two case 2 rows are the same case and the same prompt, generated twice — the API
+shape and even the CSRF transport differ between runs. A hardcoded probe would
+therefore pass on one run and fail on the next for reasons unrelated to artifact
+quality. An LLM reads `app.ts` and emits the call sequence; it never judges the
+outcome. **Pass/fail comes solely from executing real HTTP requests against the
+running server**, so the verdict stays objective even though the test plan is
+generated. Cost is roughly $0.02 per run.
+
+`ok` reflects the happy path only. Negative checks are reported alongside but do not
+veto it, since they are model-authored and can be poorly chosen — asserting rejection
+on a route that deliberately returns a uniform response to prevent account
+enumeration, for example, where the uniform reply is correct behaviour. When the
+happy path fails, every request fails and the negatives pass for the wrong reason;
+`negatives_meaningful` in `flow.json` flags exactly that.
+
+All three validation artifacts pass in full: happy paths 9/9, 9/9 and 8/8, with
+11/11 negative checks across them.
 
 ## Evaluation Data
 

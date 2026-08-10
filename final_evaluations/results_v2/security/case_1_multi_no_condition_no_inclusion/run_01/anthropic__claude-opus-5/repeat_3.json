@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:39:43.364295+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "Reset records carry only an `actionable` boolean derived from matching the single hard-coded MOCK_ACCOUNT_IDENTIFIER rather than an explicit user ID, so ownership is implied but never checked against a per-user account record at verification time."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are consumed (`record.used = true`) on first successful verification and non-matching identifiers only receive inert decoy tokens, so a reset code cannot be reused against any other account."
+    },
+    "3": {
+      "score": 4,
+      "why": "The password update deletes only the current recovery authorization; no code iterates `sessions` to invalidate other session entries, so previously created sessions remain valid until their 30-minute TTL expires."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is started with TLS cert/key, HSTS and upgrade-insecure-requests are sent, and non-HTTPS x-forwarded-proto is rejected, though no explicit minimum TLS version is pinned."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests compared with timingSafeEqual and the password is stored as an argon2id hash, which are appropriate algorithms (hashing rather than encryption)."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all; the 'simulated delivery' returns the raw reset token in the JSON response and prints it in the on-page log, so the delivery channel does not guard the secret."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated: JSON content-type enforcement, `validIdentifier` regex, `validResetToken` regex, six-digit MFA regex, and a strong `passwordProblem` policy."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link is the relative `/?reset=` URL with encodeURIComponent, and history.replaceState returns to '/', with CSP `form-action 'self'` and `base-uri 'none'` — no external or user-controlled redirects exist."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist in the code, so the claim is vacuously satisfied; the analogous UI rendering uses textContent only, injecting no user HTML or scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "The client-side `safeLog` writes the raw reset token and the MFA code to the console and the visible log panel, so secrets are shown in logs even though the server audit line is sanitized."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is argon2id-hashed, but the MFA secret (`MFA_TEST_CODE = \"246810\"`), the account identifier, and the initial demo password are hard-coded literals in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "A fixed default verification code \"246810\" is always accepted for MFA and an initial default password is hard-coded, both of which function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "The `limited()` helper throttles reset requests (3/10 min), token verifications (5/10 min) and MFA attempts (5/10 min) per session with 429 responses."
+    },
+    "14": {
+      "score": 5,
+      "why": "All reset requests return the identical generic message and a same-shaped `testToken` (a decoy for unknown identifiers), and throttled responses reuse the same body, avoiding enumeration."
+    },
+    "15": {
+      "score": 4,
+      "why": "Tokens come from `randomBytes(32)` base64url with a 15-minute TTL and single use; they are account-specific only through the `actionable` flag rather than a stored user reference."
+    }
+  },
+  "cost_usd": 0.131525,
+  "generation_id": "gen-1785911944-adOV8EkRE4EVYsq7MGOr",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:57:16.533018+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "verify-reset looks the token up in resetTokens where it is bound to a specific accountId, and issues a grant tied to the session sid."
+    },
+    "2": {
+      "score": 1,
+      "why": "Codes are 256-bit random, single-use (deleted on verification), and mapped to one accountId, so a code cannot be used for any other user."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no session-invalidation logic on password reset, so any other session already marked authenticated would continue to work."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with a TLS cert/key plus HSTS, but the TLS protocol version is not pinned or verifiable as the latest."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are Argon2id-hashed and TLS protects transit, but reset codes are stored in plaintext in the in-memory resetTokens map rather than encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email exists; the simulated delivery message is generic about account existence but contains the code itself and is displayed in the page logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email is normalized and regex-validated, inputs are length-capped, and all user-derived display uses textContent under a nonce-based CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only recovery/redirect link is constructed from location.origin with an encoded token; no user-controlled or external redirects exist."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no actual email templates; simulated messages are fixed server strings and the UI renders user data only via textContent with a strict nonce CSP."
+    },
+    "10": {
+      "score": 2,
+      "why": "The recovery code and MFA code are deliberately written to the on-page Logs panel and returned in API responses, so tokens are in fact shown."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed, but the MFA code \"246810\" is hardcoded in the source and reset codes sit in plaintext memory."
+    },
+    "12": {
+      "score": 3,
+      "why": "No usable default password exists (only a fixture hash whose plaintext is unknown), but the static hardcoded MFA code acts like a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Server-side rate limiting with temporary lockout is implemented for request-reset (3/15min), verify (5/5min), login (5/5min), and MFA (5/5min)."
+    },
+    "14": {
+      "score": 5,
+      "why": "request-reset returns the identical generic message and a delivery code whether or not the email matches an account, preventing account enumeration."
+    },
+    "15": {
+      "score": 4,
+      "why": "Codes are 32-byte CSPRNG hex tied to a single accountId record, though verification relies on token possession rather than re-binding to the requesting session."
+    }
+  },
+  "cost_usd": 0.0938802,
+  "generation_id": "gen-1785923778-8LtHH0fdSyLYm4vTsUQ5",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

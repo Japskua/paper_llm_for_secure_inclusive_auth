@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:34:08.765319+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "dd919db6c46d435a4395fbd6c5d383fdf23013f639ab84eb58ad2b157be067a6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-token requires the reset token’s sessionId to match the caller’s session and mockAccountHash to match the bound account before accepting it."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token from another session fails the token.sessionId !== session.id check, so the same reset code does not work for another user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "reset-password marks only the current token used and updates the current session flags; other entries in the sessions map are never invalidated."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun serves TLS with cert/key, HTTP 308-redirects to HTTPS, and HSTS is set, though the TLS version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset secrets are stored as SHA-256 hashes and passwords via Bun bcrypt; protection is hashing plus HTTPS rather than separate at-rest encryption of all user data."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email body with profile PII; only a generic API message and a mock token delivery, so private account fields are not exposed in a message template."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated with strict allowlists/length checks (identifier, token, MFA, password policy) and UI output uses textContent only."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects are only to the local HTTPS origin or relative same-site paths; CSP form-action is 'self' and no user-controlled open redirect exists."
+    },
+    "9": {
+      "score": 5,
+      "why": "No HTML email templates incorporate user input; mock delivery is plain text in the client log."
+    },
+    "10": {
+      "score": 1,
+      "why": "mockToken/mockMfaCode are returned to the client and written into the on-page logs/console, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but MOCK_MFA_CODE = \"482916\" is hardcoded in source, so secret codes are not kept out of the code."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default username/password login is defined; the only fixed secret is the demo MFA code used after reset, not a default portal login."
+    },
+    "13": {
+      "score": 5,
+      "why": "consumeRateLimit/recordVerificationFailure cap recovery requests and token/MFA failures (429 after repeated wrong attempts)."
+    },
+    "14": {
+      "score": 5,
+      "why": "recovery-request always returns the same non-enumerating message regardless of whether an account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "rawToken is randomValue(32) (base64url), stored only as a hash, expiring/single-use, and bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.0196112,
+  "generation_id": "gen-1785918801-fOrvhSEo5K6ZDTGPkIRY",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

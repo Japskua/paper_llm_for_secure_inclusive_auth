@@ -1,0 +1,118 @@
+{
+  "variables": {
+    "email": "demo@example.test",
+    "new_password": "ValidPassword1!"
+  },
+  "steps": [
+    {
+      "name": "request_password_reset",
+      "actions": []
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#contact",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery instructions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#view-token:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "additional_verification",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "Test token: ([A-Za-z0-9_-]+)",
+          "into": "recovery_token"
+        },
+        {
+          "do": "fill",
+          "selector": "#token",
+          "value": "${recovery_token}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify token')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#view-mfa:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#log-output",
+          "regex": "Deterministic MFA test code: ([0-9]+)",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#view-password:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "accept_privacy_conditions",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirm-password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#view-privacy:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "recovery_complete",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#privacy-check"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept conditions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#view-confirmation:not([hidden])"
+        }
+      ]
+    }
+  ]
+}

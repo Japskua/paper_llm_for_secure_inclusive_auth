@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:32:48.983783+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "e8e8aca10204c746985ba82e1922651d96e9afa3cff7f743870a5149d08e7cee",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Verify-token compares the supplied code only to the recovery token stored on the caller’s own session and requires recovery.real for that session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens live only on the initiating session; another user/session has a different recovery object, so the same code does not authenticate for them."
+    },
+    "3": {
+      "score": 5,
+      "why": "password-update only flips recovery.passwordUpdated and rehashes the password; no other sessions are deleted or de-authenticated."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is started with TLS cert/key and HSTS is set; the exact TLS version is not pinned in code but HTTPS is required."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens and session recovery fields are stored in plaintext in memory, not encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is sent; the API returns testDeliveryToken in JSON and the client logs it, so the reset secret is not guarded in the delivery path."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email/token/password inputs are format-validated server-side and all dynamic DOM updates use textContent, preventing script injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "There are no user-controlled redirect parameters or open-redirect responses anywhere in the server or client."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no server email templates that interpolate user input; delivery is only a client-side simulation."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens and MFA codes are returned as testDeliveryToken/testMfaCode and appended to the on-page Logs list."
+    },
+    "11": {
+      "score": 2,
+      "why": "Updated passwords use bcrypt, but the initial password hash and the fixed mfaCode \"481516\" are embedded in source."
+    },
+    "12": {
+      "score": 2,
+      "why": "A fixed initial bcrypt hash is shipped in code with no separate ban on well-known/default passwords beyond normal login checks."
+    },
+    "13": {
+      "score": 5,
+      "why": "allowed() rate-limits each action to 5 attempts per 15-minute window then blocks for 15 minutes."
+    },
+    "14": {
+      "score": 5,
+      "why": "initiate always returns the same generic \"If an account can use that address...\" message whether or not the email matches EMAIL."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are 32-byte values from randomBytes (64 hex chars), single-session, and checked with timingSafeEqual."
+    }
+  },
+  "cost_usd": 0.018826,
+  "generation_id": "gen-1785925920-GGnQWYOdigE7ToxsbAiT",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

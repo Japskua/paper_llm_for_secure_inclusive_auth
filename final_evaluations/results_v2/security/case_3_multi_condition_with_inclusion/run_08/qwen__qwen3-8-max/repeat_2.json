@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:33:47.672684+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset-token validation checks the token hash, session binding, expiry, and stored user association before allowing a password change."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is looked up by hash and is only valid for the session and user record for which it was created."
+    },
+    "3": {
+      "score": 5,
+      "why": "After reset-complete the code changes the password hash and marks the token used but does not revoke existing sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with a TLS certificate and key, but no explicit minimum or latest TLS version is specified."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are stored as SHA-256 hashes and user records remain in plaintext memory, so user data is not encrypted."
+    },
+    "6": {
+      "score": 4,
+      "why": "The reset-request response is generic and does not include user identity or reset token, although it does expose a simulated delivery authorization code."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email, code, token, password, and JSON body inputs are validated and constrained, and user input is not reflected into HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "No redirect endpoints or external links are present, and CSP sets form-action to same-origin."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates are generated, and no user-supplied content is inserted into any email-like output."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client activity logs and API responses expose the delivery code, recovery token, and MFA code."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are Argon2id hashed, but the delivery and MFA codes are hardcoded plaintext constants in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "A demo account is seeded with a preset password and the system uses fixed delivery and MFA codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, and delivery flows use attempt counters that lock after repeated failures."
+    },
+    "14": {
+      "score": 2,
+      "why": "Login and reset-request messages are generic, but successful reset-token validation only occurs when the requested account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is generated with randomBytes(32), is a 64-character hex value, and is stored with a userId."
+    }
+  },
+  "cost_usd": 0.098608,
+  "generation_id": "gen-1785925672-u1HPKGBtdR1YLS02X5f1",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

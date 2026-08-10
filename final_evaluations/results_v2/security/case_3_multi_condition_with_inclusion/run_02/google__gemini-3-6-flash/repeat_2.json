@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:00:45.737299+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are stored in a map linked directly to the target user's digested account key, ensuring the code only resets that specific account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound strictly to a single account key in the resetTokens map and cannot be used for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Active user session objects in the sessions Map are not invalidated or purged when a password is reset."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server is configured with TLS certificates via Bun.serve and enforces Strict-Transport-Security headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens and identity verifiers are hashed using SHA-256 while user passwords are hashed using Argon2id."
+    },
+    "6": {
+      "score": 5,
+      "why": "The application returns generalized feedback messages without exposing sensitive private user data in simulated communications."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are validated with strict regular expressions and inserted into the UI using safe DOM text properties."
+    },
+    "8": {
+      "score": 5,
+      "why": "The renderLink function explicitly verifies that links match location.origin and point strictly to the local root path."
+    },
+    "9": {
+      "score": 5,
+      "why": "The system does not interpolate user input into unescaped HTML or email templates."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and MFA codes are explicitly appended to the client-side on-screen log element and console logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "A default account password ('Initial!HospitalPassword9') is hardcoded directly inside the provision function in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "Default test account credentials are automatically provisioned in the application source code at startup."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, token confirmation, and identity check endpoints enforce a 5-minute lockout after 5 incorrect attempts."
+    },
+    "14": {
+      "score": 1,
+      "why": "The recovery request endpoint includes delivery tokens in the JSON response only when an account exists, revealing account presence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using 32 cryptographically secure random bytes from crypto.getRandomValues and tied to the specific user."
+    }
+  },
+  "cost_usd": 0.04322145,
+  "generation_id": "gen-1785924020-mObXC0qHCjOHoiq4JI1j",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

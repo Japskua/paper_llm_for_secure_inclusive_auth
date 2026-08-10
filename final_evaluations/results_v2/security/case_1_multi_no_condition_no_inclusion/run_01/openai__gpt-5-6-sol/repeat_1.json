@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:39:26.441669+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "Reset records contain only an actionable flag and are not bound to a user identifier, so verification does not check that the code belongs to the requesting user."
+    },
+    "2": {
+      "score": 5,
+      "why": "A valid unused reset code can be submitted from any session because the reset record is not bound to the original user or session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password-update handler does not invalidate other existing sessions after changing the password."
+    },
+    "4": {
+      "score": 4,
+      "why": "The application uses a TLS-only Bun listener and HSTS, although it does not explicitly configure a minimum or latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as Argon2id hashes, though the account identifier remains a plaintext source-code constant rather than encrypted user data."
+    },
+    "6": {
+      "score": 5,
+      "why": "The simulated delivery response uses a generic message and includes no account identifier, patient information, or other private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers, reset tokens, MFA codes, and passwords undergo type, length, and format validation, while dynamic output is inserted using textContent or text nodes."
+    },
+    "8": {
+      "score": 5,
+      "why": "The generated reset link is a same-origin relative URL, and no user-controlled redirect destination is accepted."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML template incorporates user input, and the simulated delivery message is fixed JSON data without user-supplied scripts or markup."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client visibly writes the reset token and deterministic MFA code into the on-page log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are stored as Argon2id hashes, the MFA secret code is hard-coded as MFA_TEST_CODE in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The source includes a fixed initial demo password and a deterministic MFA code that function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Per-session throttling blocks reset requests after three attempts and reset-token or MFA verification after five attempts within ten minutes."
+    },
+    "14": {
+      "score": 5,
+      "why": "Known and unknown identifiers receive the same generic response shape and simulated token-delivery behavior."
+    },
+    "15": {
+      "score": 3,
+      "why": "Reset codes are cryptographically random 32-byte tokens, but their records are not associated with a specific user identifier."
+    }
+  },
+  "cost_usd": 0.0431765,
+  "generation_id": "gen-1785911944-TPitOYiIgeeouhf7XvEl",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 1,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.0,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

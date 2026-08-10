@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:05:13.111664+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset-verify and reset-complete checks require record.sessionId === session.id, so the token is validated as belonging to the requesting session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is rejected if record.sessionId !== session.id, so the same code does not work for another session/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "After password reset the code only invalidates the reset token and changes the current session state; it does not invalidate other existing sessions or rotate session identifiers."
+    },
+    "4": {
+      "score": 3,
+      "why": "The app serves HTTPS with certificate and key and redirects HTTP to HTTPS, but the source does not specify or prove use of the latest TLS version."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are stored in an in-memory Map as plaintext values, and user data is not shown to be encrypted at rest; only the password is bcrypt-hashed."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no real email message; the simulated delivery returns the reset token in the API response and writes it to the visible log, so private reset data is not hidden."
+    },
+    "7": {
+      "score": 4,
+      "why": "The code validates identifier format with a regex, safely parses JSON, and enforces password complexity, though it relies more on validation than broad sanitization."
+    },
+    "8": {
+      "score": 3,
+      "why": "The only redirect is the HTTP-to-HTTPS redirect to localhost with the requested path/search, so it is same-host but not demonstrably limited to a hospital site."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates are present, and the simulated notification contains server-generated token text rather than user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The API returns testToken and mfaCode, and the client-side code logs those values, so private tokens are shown in logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "The password is bcrypt-hashed, but the MFA code 482913 is hard-coded in the source and exposed in responses/logs, so secret codes are not securely kept out of the code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The fixed MFA code 482913 and demo-account training flow function as default credential/verification material."
+    },
+    "13": {
+      "score": 5,
+      "why": "The code enforces attempt limits for reset requests, token verification, and MFA verification using rate-limit counters and token verifyAttempts."
+    },
+    "14": {
+      "score": 1,
+      "why": "Although the textual message is generic, the response includes testToken only when the identifier is demo-account, revealing that the account exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are generated with crypto.getRandomValues and are long/base64url-encoded, and they are bound to the issuing session, but they are not explicitly bound to a persistent user account."
+    }
+  },
+  "cost_usd": 0.053072,
+  "generation_id": "gen-1785920562-5eUi7Zk5gxx644JeJLcL",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 4,
+    "8": 3,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.3333
+  },
+  "overall": 2.6667,
+  "capture_complete": true
+}

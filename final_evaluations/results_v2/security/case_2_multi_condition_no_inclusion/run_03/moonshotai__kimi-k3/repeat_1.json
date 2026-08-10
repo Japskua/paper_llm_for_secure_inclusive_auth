@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:21:43.456508+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The /api/verify-token handler rejects any record whose sessionId does not match the current session and checks accountBinding, so reset-code ownership is enforced at the session level (there are no per-user accounts beyond the session)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to the issuing session (record.sessionId !== session.id causes rejection) and are marked used upon verification, so the same reset code cannot work for any other user."
+    },
+    "3": {
+      "score": 4,
+      "why": "No session invalidation occurs on password change—the resetting session continues into MFA and any other sessions remain valid until the 1-hour max age—though sessions are anonymous and grant no cross-account access."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with a TLS cert/key, non-HTTPS requests are rejected, and HSTS is set, but TLS protocol versions are not pinned in code so the 'latest TLS version' cannot be confirmed."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 digests and passwords only as bcrypt hashes, and the contact value is never persisted—protection is via hashing rather than encryption, but appropriate."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email is sent; mock delivery stays in the local browser and the recovery response is generic, so no private user data is exposed in messages (only the token itself appears in the local log panel)."
+    },
+    "7": {
+      "score": 4,
+      "why": "All inputs are strictly validated (contact control-character/length checks, token character allowlist, 6-digit MFA regex, 2KB JSON size cap, expected fields only) and client output is inserted via textContent with '<' escaped in embedded state."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects whatsoever and CSP restricts form-action and connect-src to 'self', so no unsafe or off-site redirect links exist."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates; the only messages are plain-text local log lines rendered with textContent and containing no user-supplied input, scripts, or HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces or private data, but the client-side 'Logs' panel deliberately displays the raw recovery token and MFA code, so tokens are shown in a log."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and reset tokens stored as digests, but the MFA secret code \"482916\" is hardcoded directly in the source, violating 'not in the code'."
+    },
+    "12": {
+      "score": 3,
+      "why": "No default username/password accounts exist and new passwords must satisfy a strong policy, but the fixed MFA code \"482916\" shared by all sessions effectively functions as a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Multiple throttles exist: recovery limited to 3 per 15 min, verification to 6 per 10 min, tokens invalidated after 5 failed attempts, and MFA locked for 60 seconds after 5 wrong codes."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint always returns the same generic 'If the contact can be used for recovery...' message and performs no account lookup, so whether a contact exists is never revealed."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset code is 32 bytes of crypto-random base64url (random and complex) bound to the requesting session and single-use, though 'user-specific' is realized only as session-binding in this accountless demo."
+    }
+  },
+  "cost_usd": 0.1399002,
+  "generation_id": "gen-1785921584-vHsTt1RriLfU7GcUWAFe",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

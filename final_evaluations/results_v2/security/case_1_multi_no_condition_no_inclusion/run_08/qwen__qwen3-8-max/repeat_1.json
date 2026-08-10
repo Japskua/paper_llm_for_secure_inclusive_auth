@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:55:56.218899+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "382826be6a70be6d0d503a9383b0a4ec86ceeb15e56bcec319dd73312f8c12a0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "The verify endpoint only checks that the token exists and is unused; it never checks that the token belongs to a particular user or email."
+    },
+    "2": {
+      "score": 4,
+      "why": "An unused reset token is a bearer token not bound to a user, so any session presenting it can verify, though it is invalidated after one use."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password reset updates only the current session and global hash; other existing session records remain valid until their lifetime expires."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is HTTPS via Bun.serve with certificate and key, but the source does not specify or prove the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are hashed with Argon2id, but reset tokens are stored in plaintext in memory and no user-data encryption is shown."
+    },
+    "6": {
+      "score": 2,
+      "why": "The recovery response message is generic, but the simulated email/log exposes the reset token, which is sensitive."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email, token, password, and MFA inputs are length-checked/validated, and dynamic messages are assigned with textContent rather than HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a fixed redirect to https://localhost with the original path/search, and there is no user-controlled redirect target."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templating with user input is present; the simulated delivery only logs a server-generated token as plain text."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client-side log explicitly prints the reset token and MFA code, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "The password is hashed, but the MFA code '482916' is hardcoded in the source, so a secret code is in the code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The fixed MFA code '482916' accepted for all sessions acts as a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery, token verification, and MFA attempts are limited by IP/session rate limits and MFA failure lockout."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the same generic message regardless of whether the email is registered."
+    },
+    "15": {
+      "score": 2,
+      "why": "The reset token is random and complex, but it is not tied to a specific user or email, so it is not user-specific."
+    }
+  },
+  "cost_usd": 0.05743,
+  "generation_id": "gen-1785919939-OaAOT4HV6tQk4fMQdbzX",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 2,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 2
+  },
+  "constructs": {
+    "A01_broken_access_control": 1.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 2.6667,
+  "capture_complete": true
+}

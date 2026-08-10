@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:07:35.581592+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cd6a1c5d3e2b8b0a3909f5874c26080427e88ebedcff0e963a78771c3860c1e9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset-token verification requires the stored record.sessionId to equal the requesting session.id, although no distinct user-account record is modeled."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token cannot be used from another session because verification enforces record.sessionId === session.id."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing the password does not revoke or invalidate other existing sessions in the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "HTTPS is configured and HTTP redirects to it, but the code does not explicitly require a minimum or latest TLS version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Recovery tokens are stored as SHA-256 verifiers and passwords as Argon2id hashes, but deterministic MFA codes are stored in plaintext."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email implementation is present, although the recovery response is generic and does not echo the submitted contact."
+    },
+    "7": {
+      "score": 5,
+      "why": "Contacts, tokens, codes, and passwords receive strict validation, while client-rendered messages use textContent rather than untrusted HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect and navigation targets are fixed same-origin paths, and the HTTP redirect is hardcoded to the local HTTPS service."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email template exists to inspect, though no user input is inserted into HTML or message content."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens and deterministic MFA codes are explicitly displayed in the browser Logs panel and written through console.log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are Argon2id-hashed, but MFA secret codes are hardcoded and retained as plaintext session values."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default password is supplied, and an absent INITIAL_PASSWORD_HASH leaves password authentication disabled rather than enabling default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery, token verification, MFA, login, and login-MFA attempts are throttled after configured failure limits."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery always returns the same generic confirmation and does not reveal whether the submitted email or phone number exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "Recovery tokens contain 256 random bits and are session-bound, short-lived, and single-use, although they are not tied to a modeled user account."
+    }
+  },
+  "cost_usd": 0.09379375,
+  "generation_id": "gen-1785920830-sIoRxazfSAj3buyvI7cS",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 3,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

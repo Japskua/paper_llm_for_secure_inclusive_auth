@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:46:24.988525+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "bc4d791407ccc52c6420687015b899914b5c2098fcd3bba45ebf01cb10f60be6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token hash is stored on the server-side session and only validated against that same session's hash, so it is bound to the requester, though there is no real user-account linkage (email is never associated with the token)."
+    },
+    "2": {
+      "score": 1,
+      "why": "A code created in one session cannot be redeemed elsewhere because /api/verify-reset compares sha256(token) only against session.resetTokenHash of the calling session's cookie."
+    },
+    "3": {
+      "score": 5,
+      "why": "After /api/set-password succeeds, no other sessions are enumerated or deleted from the `sessions` map, so any pre-existing session cookies remain valid until natural 30-minute expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server refuses to start without cert.pem/key.pem, serves only via Bun.serve TLS, and sets HSTS, but no minimum TLS version or cipher policy is explicitly configured (relies on Bun defaults)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are 32 random bytes stored only as SHA-256 hashes and the password is hashed with Argon2id, which is appropriate, though tokens are hashed rather than encrypted and no data-at-rest encryption exists (in-memory only)."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email delivery; the API response returns `testToken` and `testMfaCode` in cleartext to the client, which then writes the recovery code into the visible log pane and console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input is strictly validated by allow-list regexes (safeEmail, safeToken, strongPassword), JSON-only parsing with a size cap, and all dynamic client text is written with textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses only local `location.hash` routes and the prefill code is regex-checked; there are no server-side or user-controlled redirects to external hosts."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email template exists at all (delivery is simulated via JSON), so no user input is interpolated into any HTML/email body, but the claim cannot be positively verified in real templates."
+    },
+    "10": {
+      "score": 2,
+      "why": "The recovery token and MFA code are explicitly logged (`log(\"SIMULATED DELIVERY — recovery code: \" + result.testToken)`) to console and the on-page log output, exposing secret material."
+    },
+    "11": {
+      "score": 2,
+      "why": "The initial account password string \"Initial-Not-Usable-Password-42!\" and the static MFA code \"246810\" are hardcoded literals in the source rather than kept in configuration or a secret store."
+    },
+    "12": {
+      "score": 2,
+      "why": "The application ships with a hardcoded initial account password and a fixed, universally accepted MFA code \"246810\", which act as default credentials."
+    },
+    "13": {
+      "score": 4,
+      "why": "rateAllowed() blocks after 5 attempts in a 60-second window and returns HTTP 429, though the counter is per-session cookie so an attacker can reset it by discarding the cookie."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/request-reset always returns the same neutral message, \"If an eligible account exists, verification instructions have been sent,\" regardless of email existence."
+    },
+    "15": {
+      "score": 4,
+      "why": "Tokens come from crypto.getRandomValues with 32 bytes, base64url-encoded, single-use, 10-minute lifetime and bound to the issuing session, but they are tied to a session rather than a verified user identity."
+    }
+  },
+  "cost_usd": 0.10918,
+  "generation_id": "gen-1785919542-igzMttJNlMQaPaykgbe0",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

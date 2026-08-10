@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:19:44.074372+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Verify-token and password routes require the reset record’s sessionId to match the caller’s session and check accountBinding, but binding is a fixed opaque string rather than a real per-user identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset token is rejected for another session because record.sessionId must equal the current session.id, so it does not work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password change only updates the current session object and never invalidates or removes other entries in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS and non-HTTPS requests are rejected, with HSTS set, though the exact TLS version is not pinned in code."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords via bcrypt, but data is not encrypted at rest and tokens/codes also appear in API responses."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email path; mock “delivery” logs the full recovery token and MFA code in the page Logs panel and console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are length-limited, type-checked, contact/token patterns validated, JSON body capped at 2048 bytes, and client UI uses textContent not innerHTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The server issues no redirects at all and only serves same-origin `/` and `/api/*` paths with form-action 'self' in CSP."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email HTML templates incorporate user input; recovery messages are fixed server strings without reflecting contact or other fields as markup."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens and MFA codes are written to the on-page Logs panel and returned in JSON (recoveryToken, mfaCode), so tokens are shown in logs/UI."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed in session state, but the MFA secret is the hardcoded string \"482916\" assigned in source."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default login password is defined, yet every successful reset installs the same default MFA code \"482916\", which acts as a fixed credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery, verify-token, per-token attempt limits, and MFA lockout after five failures throttle or block repeated wrong attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint always returns the same generic success message whether or not the contact is recognized."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are 32-byte crypto.getRandomValues values, URL-safe and long, and bound to the requesting session via digest and sessionId."
+    }
+  },
+  "cost_usd": 0.0293104,
+  "generation_id": "gen-1785921546-LneJH0yGleLpxGFVHrix",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

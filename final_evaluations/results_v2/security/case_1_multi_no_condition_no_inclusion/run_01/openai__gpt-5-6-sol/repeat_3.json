@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:39:35.693531+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Each reset token maps to a server-side record whose actionable flag is set only when the submitted identifier matches the mock account."
+    },
+    "2": {
+      "score": 1,
+      "why": "The application has only one actionable account, and a token cannot be used to select or reset a different user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password update removes only the current recovery authorization and does not invalidate other entries in the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server uses Bun TLS and HSTS, but it does not explicitly configure a minimum or latest TLS protocol version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as Argon2id hashes, but the mock account identifier remains plaintext in source and memory."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email message is implemented, although the simulated delivery response is generic and contains no account identifier or patient data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers, reset tokens, MFA codes, and passwords are type-checked, length-limited, and validated against restrictive formats or policies."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated recovery link is a relative same-origin URL, while CSP restricts forms and connections to the same origin."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email HTML template exists, and the simulated delivery content never incorporates user-controlled input or executable markup."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client explicitly displays reset tokens and the deterministic MFA code in the visible log output."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are hashed and reset tokens are digested, but the initial password and fixed MFA code are embedded directly in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The source contains a known initial demo password and a fixed MFA code that function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Session-specific rate limits block reset requests after three attempts and reset-token or MFA verification after five attempts within ten minutes."
+    },
+    "14": {
+      "score": 5,
+      "why": "Known and unknown identifiers receive the same generic response shape, message, status, and simulated token field."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are random 256-bit base64url tokens linked to server-side records for the sole account, although they are not bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.0561365,
+  "generation_id": "gen-1785911944-4sizBgAgVbURnB9zgO2v",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 3,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

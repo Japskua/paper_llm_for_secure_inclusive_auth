@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:37:34.594434+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Each reset record stores an accountId and is bound to the claiming session (claimedBy), and /api/update-password re-checks record.accountId and record.claimedBy === session.id before changing the password."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token hash maps to exactly one accountId and is locked to the first claiming session, so a code cannot be used for another user (and only one mock account exists)."
+    },
+    "3": {
+      "score": 5,
+      "why": "After /api/update-password nothing clears the sessions map or other sessions' authenticatedAccountId, so previously authenticated sessions remain valid for the full 30-minute sliding window."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS max-age=31536000 is sent, though no explicit minimum TLS version is pinned (relies on Bun defaults of TLS 1.2/1.3)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes and passwords via Bun.password.hash with bcrypt cost 10, which are appropriate algorithms, though nothing is encrypted at rest beyond hashing."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email; the 'SIMULATED DELIVERY' path returns mockToken in the JSON response and prints the raw reset token and link into the page log list and browser console, exposing the secret rather than guarding it."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated (validEmail regex with 254-char cap, validPassword complexity, token length 32–128, /^\\d{6}$/ for MFA, 20 KB body cap, JSON-only object bodies) and all client output uses textContent."
+    },
+    "8": {
+      "score": 4,
+      "why": "The only generated link is built from location.origin + '/reset?token=' with encodeURIComponent, and CSP sets form-action 'self' and base-uri 'none', so no user-controlled redirect target exists."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, and the equivalent simulated-delivery messages are inserted with element.textContent, so no user input is rendered as HTML or script."
+    },
+    "10": {
+      "score": 2,
+      "why": "Reset tokens are deliberately logged in plaintext to console.log and the on-page Logs panel ('SIMULATED DELIVERY — reset token: ...'), so secret material does appear in logs even though stack traces are suppressed."
+    },
+    "11": {
+      "score": 2,
+      "why": "The initial password 'Initial!Passw0rd2025' and the fixed MFA code '246810' are hardcoded literals in the source file rather than kept in a secret store."
+    },
+    "12": {
+      "score": 2,
+      "why": "A built-in default account (helena@hospital.test with the hardcoded 'Initial!Passw0rd2025') is created at startup and can be logged into without any forced change."
+    },
+    "13": {
+      "score": 5,
+      "why": "limited() throttles reset requests (3), verify attempts (5), MFA attempts (5) and login attempts (5) per 15-minute window, plus a 15-minute account lockout after 5 failed logins."
+    },
+    "14": {
+      "score": 5,
+      "why": "Reset requests always return the identical message and a mockToken regardless of email validity, and login always returns the same generic 401 message, preventing enumeration."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes come from crypto.getRandomValues via randomToken(32) (256 bits, URL-safe), are stored hashed, expire in 15 minutes, are single-use, and are tied to one accountId and session."
+    }
+  },
+  "cost_usd": 0.11728,
+  "generation_id": "gen-1785919019-MWbBdG8pAqOdGAYUbZo0",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

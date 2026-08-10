@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:18:37.810881+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The /api/verify handler rejects a reset record whose accountKey does not match the session's recoveryAccountKey, but it does not bind the code to the issuing session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A code is rejected when the reset record's accountKey does not match the session's recovery account, so it does not work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset route changes the password and current session state but does not invalidate other stored sessions, so prior sessions can remain usable."
+    },
+    "4": {
+      "score": 3,
+      "why": "HTTPS is enforced with Bun TLS certificate and key, but the source does not configure or prove use of the latest TLS protocol version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords as bcrypt hashes, but the application does not encrypt reset codes or user data."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email message is implemented, and the simulated delivery exposes the recovery code in browser logs rather than guarding private data."
+    },
+    "7": {
+      "score": 4,
+      "why": "User-supplied identifier and token values are validated with strict patterns, and rendered output uses textContent rather than untrusted HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated redirect target is the relative /recovery-link path, and CSP restricts form actions to self."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the code, so the safety of email templates cannot be confirmed from observed behavior."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generic error responses do not reveal secrets, but client-side logs explicitly print recovery codes and MFA codes."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but a fixed MFA code and default password hash are embedded in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The code includes a fixed demo identifier, hardcoded MFA code, and fallback password hash, so default credentials are not prevented."
+    },
+    "13": {
+      "score": 5,
+      "why": "The rateAllowed/actionAllowed logic throttles repeated recovery, verify, password, login, MFA, and privacy actions."
+    },
+    "14": {
+      "score": 4,
+      "why": "Recovery and login failures return generic messages, although the page displays the synthetic demo identifier."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are random base64url tokens stored with account key, expiry, and single-use flags, though the single demo account reduces user-specific assurance."
+    }
+  },
+  "cost_usd": 0.052734,
+  "generation_id": "gen-1785924924-ElGxn4ct0qQOfcZwWgEC",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 5,
+    "14": 4,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

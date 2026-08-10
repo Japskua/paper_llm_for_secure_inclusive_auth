@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:01:54.397561+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The verify step maps the token to a stored accountId and issues a grant bound to both that account and the verifying session (grantRecord.sid check), so a reset applies only to the account the code was issued for; minor gap: the token itself is a bearer code not tied to the requesting session at verify time."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are single-use (resetTokens.delete on verification) and bound to one accountId, so the same code cannot be used for any other user's account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing in the reset flow invalidates other sessions — the sessions map is untouched on password change, so any previously authenticated session remains usable after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with a TLS cert/key and HSTS is set, but no TLS version is pinned, so use of the latest TLS version cannot be confirmed from the code."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with Argon2id (appropriate), but reset codes are stored in plaintext in the in-memory resetTokens map rather than encrypted or hashed."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery message contains only the generated code and generic text — no personal user data — and responses do not reveal account existence."
+    },
+    "7": {
+      "score": 4,
+      "why": "User inputs are trimmed, length-capped, type-checked, and the email is validated by regex, and all server- or user-derived strings are rendered via textContent in the client."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only token-bearing link is built with new URL('/?token=...', location.origin), i.e., strictly same-origin, and there are no user-controlled redirect targets."
+    },
+    "9": {
+      "score": 5,
+      "why": "The delivery/log message is a fixed template containing only the generated code with no user input embedded, and it is rendered with textContent, not as HTML."
+    },
+    "10": {
+      "score": 2,
+      "why": "The recovery code and MFA code are returned in API responses and deliberately displayed in the page's 'Logs' panel and console via demoLog, so tokens are shown in logs by design, though error pages themselves are generic."
+    },
+    "11": {
+      "score": 2,
+      "why": "The MFA secret code is hardcoded as '246810' in the source, directly contradicting the statement, although passwords are Argon2id-hashed with only a fixture hash present."
+    },
+    "12": {
+      "score": 4,
+      "why": "Only a precomputed Argon2id fixture hash ships with no usable plaintext credential, and login is gated behind a completed reset that replaces the hash, so no default credential can actually be used."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateLimit() enforces attempt caps with temporary lockouts on request-reset (3 per 15 min), verify (5 per 5 min), login (5 per 5 min), and MFA (5 per 5 min)."
+    },
+    "14": {
+      "score": 5,
+      "why": "request-reset returns the same generic message and a simulated delivery whether or not the email matches an account, and verify/login errors are uniform, so account existence is not revealed."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 256-bit values from crypto.getRandomValues, expire after 15 minutes, are single-use, and are stored bound to the requesting account's id."
+    }
+  },
+  "cost_usd": 0.160263,
+  "generation_id": "gen-1785923776-NWCkwJ9uaP8TWZSfgUb8",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

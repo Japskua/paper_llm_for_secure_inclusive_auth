@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:39:42.490606+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "Reset records store only an `actionable` flag rather than an owning user id, so verification checks token validity and whether it was issued for the single mock account, but there is no explicit token-to-user binding check."
+    },
+    "2": {
+      "score": 2,
+      "why": "Decoy tokens issued for non-matching identifiers are marked `actionable: false` and can never change the real account's password, so a code cannot be reused against another account (though there is only one mock account to test against)."
+    },
+    "3": {
+      "score": 4,
+      "why": "On `/api/password-update` only the recovery authorization is deleted; the `sessions` map entry and `sid` cookie remain valid for its 30-minute TTL, and no other sessions are invalidated after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is started with a TLS cert/key, HSTS and `upgrade-insecure-requests` are set, and non-HTTPS `x-forwarded-proto` is rejected with 426, though no explicit minimum TLS version is pinned."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests and compared with `timingSafeEqual`, and passwords are hashed with Argon2id, which is appropriate protection (hashing rather than encryption)."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email delivery; the 'simulated delivery' returns the raw reset token in the API JSON response and prints it in the on-page log, exposing the recovery secret rather than guarding it."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated: `validIdentifier` and `validResetToken` regexes, JSON-only content-type enforcement, a 6-digit MFA regex, and a strong password policy with length bounds."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link is a relative `/?reset=` URL with `encodeURIComponent`, and CSP sets `form-action 'self'`, `base-uri 'none'`, so no external or open redirects are possible."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, and all dynamic client output uses `textContent`/`createTextNode` with a nonce-based CSP, so no user input is ever rendered as HTML or script."
+    },
+    "10": {
+      "score": 2,
+      "why": "The client explicitly logs secrets via `safeLog(\"SIMULATED RESET DELIVERY — recovery code: \" + result.data.testToken)` and the MFA code to `console.log` and the visible log panel, even though the server audit line omits identifiers."
+    },
+    "11": {
+      "score": 2,
+      "why": "Secrets are hardcoded in source: `MFA_TEST_CODE = \"246810\"`, `MOCK_ACCOUNT_IDENTIFIER`, and the seed password string `\"Initial-Demo-Password-Only!\"`."
+    },
+    "12": {
+      "score": 2,
+      "why": "A fixed default MFA code (\"246810\") is always accepted and a default seeded password hash exists, which are effectively default credentials baked into the application."
+    },
+    "13": {
+      "score": 4,
+      "why": "`limited()` throttles reset requests (3/10min), token verification (5/10min) and MFA attempts (5/10min) with 429 responses, though the buckets are per-session and resettable by discarding the `sid` cookie."
+    },
+    "14": {
+      "score": 5,
+      "why": "Both known and unknown identifiers get the identical generic message plus a decoy `testToken` with the same response shape and status, preventing account enumeration."
+    },
+    "15": {
+      "score": 4,
+      "why": "Tokens are 32 bytes from `randomBytes` encoded base64url (high entropy, single-use, 15-minute TTL), but they are only implicitly account-specific via the `actionable` flag rather than tied to a user identifier."
+    }
+  },
+  "cost_usd": 0.129225,
+  "generation_id": "gen-1785911944-evGdGZHqeJ7hCn0mNH0R",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 4,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

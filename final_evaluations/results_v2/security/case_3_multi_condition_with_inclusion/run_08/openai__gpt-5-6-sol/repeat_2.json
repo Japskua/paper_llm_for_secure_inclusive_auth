@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:26:56.685350+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Each reset token record contains a userId and completion changes only the user whose ID matches that record."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is bound to one userId and sessionId, so it cannot reset another user's password."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset completion does not invalidate any existing entries in the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "The Bun server is configured for TLS and HSTS, but the code does not explicitly require the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords use Argon2id, but identifiers and other user data are retained in plaintext rather than encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email message implementation is present, although the simulated reset response uses generic wording and does not include private user data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email addresses, codes, tokens, passwords, JSON bodies, and boolean fields receive type, format, length, or policy validation before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application creates no user-controlled redirects, and its CSP restricts forms and connections to the same origin."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates to inspect, while the simulated delivery responses are JSON and contain no user-supplied HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The recovery token and MFA code are deliberately displayed and written to the browser's visible activity log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are Argon2id hashes, the delivery authorization code, MFA code, and initial demo password are hard-coded in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The source creates a demo account with a fixed identifier and known initial password."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, delivery authorization, and reset requests are limited, with failed-attempt stores imposing a lock after five attempts."
+    },
+    "14": {
+      "score": 1,
+      "why": "An existing account receives a stored token that validates successfully, while a nonexistent account receives an unstored token that fails, allowing account enumeration through the full flow."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated from 32 cryptographically random bytes and stored with a specific userId, sessionId, expiration, and single-use flag."
+    }
+  },
+  "cost_usd": 0.0478495,
+  "generation_id": "gen-1785925587-rgMLCV9zluwdgwAmm26T",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

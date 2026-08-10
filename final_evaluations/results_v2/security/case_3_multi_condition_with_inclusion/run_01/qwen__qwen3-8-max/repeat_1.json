@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:00:50.907102+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "The verify endpoint checks only that a token exists and is unexpired before consuming it, not that it belongs to the current user or session."
+    },
+    "2": {
+      "score": 3,
+      "why": "A valid unexpired token can be presented from another session, but it is single-use and associated with an accountId rather than being universally valid for any user."
+    },
+    "3": {
+      "score": 4,
+      "why": "The password reset updates the account hash but does not remove or invalidate other entries in the sessions map, so prior authenticated sessions could remain usable."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is started with Bun.serve TLS certificate and key, but no minimum or latest TLS version is specified in the code."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset codes and email addresses are held in in-memory maps without encryption, while only passwords are hashed."
+    },
+    "6": {
+      "score": 1,
+      "why": "The simulated delivery exposes the secret recovery code in the API response and Logs panel instead of guarding it as private email content."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are trimmed, length-limited, normalized, validated, and rendered with textContent under a nonce-based CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "Generated links use only location.origin with the path /, and no external redirect destinations are present."
+    },
+    "9": {
+      "score": 4,
+      "why": "The simulated delivery message is static text plus a generated code and does not embed user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "The recovery code is written to the client Logs panel and console via demoLog, so a private token is shown in logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are hashed with Argon2id, but the MFA code is hardcoded as 246810 and reset tokens are stored in plaintext memory."
+    },
+    "12": {
+      "score": 3,
+      "why": "No default plaintext password is included, but the fixed MFA code 246810 creates a default-like authentication secret."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateLimit blocks repeated reset requests, token verifications, logins, and MFA attempts after configured thresholds."
+    },
+    "14": {
+      "score": 5,
+      "why": "The request-reset endpoint returns the same non-committal message and simulated delivery whether or not the email matches an account."
+    },
+    "15": {
+      "score": 3,
+      "why": "Reset codes are 64-character crypto-random hex values and have an accountId in the record, but they are not bound to the requesting session before verification."
+    }
+  },
+  "cost_usd": 0.097268,
+  "generation_id": "gen-1785923733-op4uby4rGv60OG2syyHb",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 3,
+    "3": 2,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 2.8667,
+  "capture_complete": true
+}

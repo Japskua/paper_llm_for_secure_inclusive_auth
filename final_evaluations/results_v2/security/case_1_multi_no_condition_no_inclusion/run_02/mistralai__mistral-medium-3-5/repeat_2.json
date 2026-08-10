@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:45:44.814024+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by validating the token against the session's recovery state (line 240-245)."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for any other user because tokens are session-specific and tied to a single accountRef (line 240-245)."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after password reset because the session state is updated (resetAuthorized set to false) and new CSRF tokens are generated (line 260-265)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The website enforces HTTPS with TLS (line 650-655) and rejects non-HTTPS requests (line 660-662)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are encrypted using cryptographically random values (randomValue function) and stored securely in session state (line 230-235)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages are not actually sent, but mock delivery tokens are logged without exposing private data (line 205-210)."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., email, passwords) is validated (validAccountIdentifier, passwordPolicy) and sanitized (textContent only, no innerHTML) (line 150-155, 300-305)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect links are controlled by the server and only allow same-origin navigation (safeView function, line 320-322)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates are not dynamically generated from user input; all dynamic content uses textContent (line 310-315)."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose private information or tokens (line 670-675, genericError function)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are hashed with bcrypt (line 260-265) and never stored in plaintext or code."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials are hardcoded; all authentication requires explicit recovery and MFA (line 200-270)."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system blocks users after MAX_FAILURES (5) attempts (registerFailure, blocked functions) (line 130-140)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application never reveals whether a username/email exists (generic response for all recovery requests) (line 195-200)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset codes are random (randomValue), complex (32-byte tokens), and user-specific (tied to session) (line 230-235)."
+    }
+  },
+  "cost_usd": 0.019077,
+  "generation_id": "gen-1785912338-TKV7uuuyofTREmy5oaip",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

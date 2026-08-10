@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:20:56.201126+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The /api/verify-token handler rejects tokens whose record.sessionId does not match the current session and checks accountBinding, though that binding is a constant string rather than a real per-user identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to the requesting sessionId and marked used on verification, so the same code cannot work for any other session or user."
+    },
+    "3": {
+      "score": 4,
+      "why": "No session invalidation occurs on password change (sessions map is untouched and the resetting session continues), so previous sessions remain valid until they age out."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with a TLS cert/key, non-HTTPS requests are rejected and HSTS is set, but the TLS version is not explicitly pinned to the latest."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests and passwords as bcrypt hashes, which is appropriate one-way protection, though the MFA code is kept in plaintext."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email exists, and the mock delivery exposes the raw recovery token and MFA code in the API response, browser console, and on-page Logs panel in cleartext."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are strictly validated (contact length/charset, token regex, JSON size caps, type checks) and output is rendered exclusively via textContent."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects whatsoever and CSP restricts form-action and connect-src to 'self', so nothing can navigate off-site."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, and the page escapes '<' in injected state and renders all dynamic content via textContent under a nonce-only CSP, so no user-input HTML or scripts are included."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the recovery token and MFA confirmation code are displayed in the client-side Logs panel and console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and tokens digested, but the MFA confirmation code \"482916\" is hardcoded directly in the source."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default accounts or pre-set login credentials exist anywhere in the system."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery (3/15min), verification (6/10min), token attempts (5 then invalidation), and MFA (5 then 1-minute lockout) are all throttled or blocked."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns an identical generic message whether or not the contact is recognized, preventing account enumeration."
+    },
+    "15": {
+      "score": 4,
+      "why": "The token is 32 bytes of CSPRNG output, single-use, 10-minute-lived, and bound to the requesting session, though 'user-specific' is achieved only via session rather than a distinct account binding."
+    }
+  },
+  "cost_usd": 0.1497195,
+  "generation_id": "gen-1785921590-GDez9FJkpeWx2h4qJqFp",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

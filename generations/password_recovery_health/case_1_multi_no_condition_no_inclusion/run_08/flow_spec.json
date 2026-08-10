@@ -1,0 +1,111 @@
+{
+  "variables": {
+    "email": "recovery.user@example.com",
+    "new_password": "ValidPassw0rd!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "const csrf=\"([a-f0-9]+)\"",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "open recovery page and establish session",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "request reset instructions",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "email": "${email}"
+      },
+      "capture": {
+        "reset_token": "mockToken"
+      }
+    },
+    {
+      "name": "verify reset token",
+      "method": "POST",
+      "path": "/api/verify",
+      "body": {
+        "token": "${reset_token}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "save new password",
+      "method": "POST",
+      "path": "/api/reset",
+      "body": {
+        "password": "${new_password}",
+        "confirmation": "${new_password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mfa_code": "mockMfaCode"
+      }
+    },
+    {
+      "name": "verify MFA code and sign in",
+      "method": "POST",
+      "path": "/api/mfa",
+      "body": {
+        "code": "${mfa_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "accept privacy conditions",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "accepted": true
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid recovery email rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "body": {
+        "email": "not-an-email"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed reset token rejected",
+      "method": "POST",
+      "path": "/api/verify",
+      "body": {
+        "token": "not-a-valid-reset-token"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/recovery",
+      "headers": {
+        "X-CSRF-Token": ""
+      },
+      "body": {
+        "email": "${email}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "privacy acceptance required",
+      "method": "POST",
+      "path": "/api/privacy",
+      "body": {
+        "accepted": false
+      },
+      "expect_failure": true
+    }
+  ]
+}

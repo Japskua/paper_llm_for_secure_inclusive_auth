@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:42:22.867566+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c4fd046aaec21d61dbcea92c3e7d1830bd59eb3cc9562fc7c9e6a0dc0ee90617",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "The reset token is bound only to the current session and is never associated with or checked against the submitted account identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code is stored as a hash in one session and cannot be validated from another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates only the current session and contains no mechanism to invalidate any other existing sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The Bun server is configured for HTTPS, but the code does not explicitly require a particular latest TLS version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset and MFA codes are hashed with SHA-256 and passwords with bcrypt, but other session data is held unencrypted in memory."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email is generated, while the simulated delivery exposes the complete reset token and link in the page log and browser console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Account values, tokens, passwords, MFA codes, JSON type, and request size are validated through strict allowlists and constraints."
+    },
+    "8": {
+      "score": 5,
+      "why": "The reset path is a fixed relative application path combined with location.origin, and user input is never used as a redirect destination."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user input is interpolated into email or delivery content, and simulated messages are rendered using textContent rather than HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token, reset link, and fixed MFA code are deliberately displayed in the activity log and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords and issued token values are hashed, the MFA code 482915 is hard-coded in the source."
+    },
+    "12": {
+      "score": 4,
+      "why": "The application defines no default username or password credentials, although it does use a fixed simulated MFA code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset-token and MFA verification are blocked for one minute after five failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery returns an account-eligibility-neutral response and performs no account existence lookup that could distinguish registered identities."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset code is a cryptographically random 32-byte value but is bound to a session rather than to the submitted user identity."
+    }
+  },
+  "cost_usd": 0.0978,
+  "generation_id": "gen-1785922848-6SMFXPgulVpkOGZhkfdX",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.2667,
+  "capture_complete": true
+}

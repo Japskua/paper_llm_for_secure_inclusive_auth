@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:55:18.672639+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "Each reset token record stores the accountId it was issued for and the derived grant is bound to the session sid, but /api/verify-reset accepts any globally valid token without comparing it to the code issued to this session (session.recoveryDelivery.code is never checked), so the ownership check is only partial."
+    },
+    "2": {
+      "score": 2,
+      "why": "A token maps to one specific accountId and is deleted on first use, so it cannot be replayed to reset a different user's account — though it is not bound to the requesting session, which is a lesser flaw."
+    },
+    "3": {
+      "score": 4,
+      "why": "Nothing in /api/reset-password iterates the `sessions` map to invalidate other sessions, so any previously established (authenticated) session remains valid after a password change."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with a TLS cert/key and HSTS (max-age=31536000; includeSubDomains) is sent, so HTTPS is enforced with Bun's modern defaults (TLS 1.2/1.3), although no explicit minimum TLS version is pinned."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with Argon2id via Bun.password.hash, but reset codes and grants are stored in plaintext in in-memory maps with no hashing or encryption."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email; the simulated delivery returns the raw recovery code in the JSON response and embeds it in a logMessage/recovery link, so the secret is not guarded in the 'message'."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email is normalized, length-capped and regex-validated, token/code inputs are trimmed and truncated by text(), passwords are length-capped, and all display uses textContent/createElement rather than innerHTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "recoveryLinkFor builds URLs with new URL('/?token=...', location.origin) and CSP sets form-action 'self' and base-uri 'none', so there is no user-controlled or off-site redirect."
+    },
+    "9": {
+      "score": 4,
+      "why": "No HTML email template exists; the simulated message contains only a server-generated random hex code and is rendered via textContent, so no user-supplied HTML or script can be injected."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset code is deliberately returned in the API response, written to the on-page Logs panel and console.log, and the MFA code is likewise logged, so secrets are plainly exposed in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "The Argon2id hash fixture and, more importantly, the static MFA code \"246810\" are hardcoded directly in the source file."
+    },
+    "12": {
+      "score": 2,
+      "why": "The hardcoded, always-identical MFA code \"246810\" functions as a default credential, even though the seeded password hash has no known plaintext."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateLimit is applied to reset requests (3/15 min), code verification (5/5 min), login (5/5 min) and MFA (5/5 min) with blocking windows and 429 responses."
+    },
+    "14": {
+      "score": 3,
+      "why": "The reset request always returns the same neutral 'if that email matches an account' message and issues a token regardless, but the login step reveals non-existence via the 403 'Complete a verified password reset' path (and Argon2 verification timing) when no account matched."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes are 32 bytes from crypto.getRandomValues rendered as 64 hex chars, expire in 15 minutes, are single-use, and each record stores the specific accountId."
+    }
+  },
+  "cost_usd": 0.13928,
+  "generation_id": "gen-1785923673-toQJwB4NjTKuTcpEH0Qc",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 4,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

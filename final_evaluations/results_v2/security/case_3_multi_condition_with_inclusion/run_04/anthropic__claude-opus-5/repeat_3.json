@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:10:06.799795+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "24a6e1467197c0ef6a9566560dbce218c9ba1da70fee6592759ec6e6f7e54b02",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset code is hashed into the specific session (session.resetHash) and every verify/password call compares digest(token) against that session's hash, so a code only works for the session/user it was issued to."
+    },
+    "2": {
+      "score": 1,
+      "why": "False — reset tokens are stored per-session as SHA-256 hashes and compared only against the requesting session's resetHash, so a code from one session cannot be replayed by another user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Largely true — the password change only mutates the current session (stage → resetComplete) and never iterates/deletes other entries in the `sessions` map or bumps a credential version, so any other pre-existing session cookies would remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server only starts with TLS cert/key via Bun.serve and sets HSTS, so HTTPS is enforced, though no explicit minVersion/TLS 1.3 configuration is present (relies on Bun defaults)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset/channel secrets are stored only as SHA-256 digests and the account password uses Bun.password.hash with argon2id, though secrets are also handed back in JSON and kept in browser sessionStorage in cleartext."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email, and the simulated 'approved-channel delivery' prints the authorization secret, reset token, full verification link and MFA code verbatim into the console and on-page Logs panel rather than guarding them."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated (email regex with length cap, token regex, 6-digit MFA regex, password policy, 10 KB body limit) and all output is inserted via document.createTextNode/textContent with a nonce-based CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link is a same-origin `/recovery/verify?token=` URL with encodeURIComponent, CSP sets form-action 'self' and base-uri 'none', and no user-controlled redirect target exists."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templating exists; the simulated message strings are concatenated only from server-generated tokens and rendered as text nodes, so no user HTML/script can be injected — but the 'template' does embed raw secrets."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces, but addLog/console.log deliberately writes the authorization secret, reset token and MFA code into browser logs, and the API responses return them too."
+    },
+    "11": {
+      "score": 2,
+      "why": "The account's argon2 hash and the fixed MFA code \"246810\" are hardcoded literals in the source file rather than loaded from a secret store or environment."
+    },
+    "12": {
+      "score": 2,
+      "why": "The build ships a fixed built-in account (helena.patient@hospital.test with a baked-in password hash) and a constant MFA code 246810, which act as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Channel-secret, reset-code verification, login and MFA paths all count failures and impose a 10-minute lockout (or MFA exhaustion) after 5 wrong attempts, with 429 responses."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/recovery/start` sets userId only internally and returns the identical 'If this account can be recovered' message with a fixed 125 ms delay, and login failures return the same generic error regardless of email existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is randomBytes(32) base64url from node:crypto, bound to one session, single-use, and expires after 15 minutes."
+    }
+  },
+  "cost_usd": 0.141785,
+  "generation_id": "gen-1785924573-Yr4XGFWMDhoWsugzR6Ky",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:46:52.541232+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server explicitly verifies that the reset token matches the user's session ID and account ID."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are single-use and bound to specific session and account identifiers, preventing them from working for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "The system updates the password hash upon reset but does not invalidate other active sessions stored in memory."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server runs natively over TLS using configured certificates and enforces strict HSTS headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords are hashed with bcrypt while reset codes and email identifiers are stored using SHA-256 hashes."
+    },
+    "6": {
+      "score": 5,
+      "why": "Recovery messages use opaque generic responses that do not reveal private user details."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are formatted, validated, and inserted into the DOM using safe textContent properties."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects and location headers strictly enforce the configured HTTPS origin and reject external Host headers."
+    },
+    "9": {
+      "score": 5,
+      "why": "Simulated recovery templates contain plain text messages and do not evaluate user input as HTML or script."
+    },
+    "10": {
+      "score": 1,
+      "why": "Test recovery tokens and MFA codes are printed directly to the simulation logs in the user interface."
+    },
+    "11": {
+      "score": 1,
+      "why": "The secret MFA verification code '246810' is hardcoded directly within the source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application does not configure or permit access via default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "The application enforces strict rate limits and locks recovery after five failed verification attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The password recovery endpoint returns an identical generic response and token format regardless of whether the email exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated using 32 cryptographically secure random bytes and are bound to the specific user session."
+    }
+  },
+  "cost_usd": 0.0472185,
+  "generation_id": "gen-1785923188-08vU1RyhWwnhRwIALImR",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

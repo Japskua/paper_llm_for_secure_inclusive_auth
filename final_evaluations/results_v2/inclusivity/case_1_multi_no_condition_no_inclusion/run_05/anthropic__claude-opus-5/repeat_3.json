@@ -1,0 +1,118 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:39:55.041115+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 10,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_request_password_reset.png",
+    "step_03_verify_reset_code.png",
+    "step_04_confirm_identity.png",
+    "step_05_set_new_password.png",
+    "step_06_password_updated.png",
+    "step_07_sign_in.png",
+    "step_08_updated_privacy_conditions.png",
+    "step_09_privacy_conditions_accepted.png",
+    "step_10_signed_out.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All ten screens are static cards with no animation, carousels, or pop-up overlays; the only extra panel is a passive 'Logs' box."
+    },
+    "2": {
+      "score": 4,
+      "why": "Each screen has one bold dark-blue heading and a single high-contrast blue primary button, so the main action stands out, though the checkbox in step 8 is tiny and oddly displaced from its label."
+    },
+    "3": {
+      "score": 4,
+      "why": "Only one task appears per screen with a clear primary button, but the technical 'Logs' panel and the requirement to copy a long token from it add clutter that slows finding the needed item."
+    },
+    "4": {
+      "score": 2,
+      "why": "The flow requires remembering/transferring a 40-character recovery token, a separate 6-digit MFA code, and a new 12-character password across five steps, with no progress indicator of where she is."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager hint, autofill guidance, 'remember me' checkbox, or show-password toggle appears on any screen, including the sign-in (step 7) and password-creation (step 5) pages."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing is pre-saved or recognisable — the email field is empty on both step 1 and step 7, and the only pre-filled item is a random opaque token string that cannot be meaningfully recognised."
+    },
+    "7": {
+      "score": 4,
+      "why": "Instructional text is one or two short plain-language sentences per screen in a legible size, though phrases like 'simulated trusted channel' and 'Your recovery code is no longer valid' are jargon-ish."
+    },
+    "8": {
+      "score": 1,
+      "why": "No error state is shown in any of the ten screenshots, so there is no evidence of error messages that describe a problem and its fix."
+    },
+    "9": {
+      "score": 2,
+      "why": "Only step 5 gives a rule-style description of password requirements; there is no sample email format, no example code, and no worked example of what to type."
+    },
+    "10": {
+      "score": 2,
+      "why": "The system offers only one authentication path (password plus emailed code) — no biometric/face or passkey choice is presented, so 'choices... are clear' does not hold because there are essentially no choices."
+    },
+    "11": {
+      "score": 5,
+      "why": "Each screen presents at most two input fields and one primary button, so the user is never confronted with many simultaneous options."
+    },
+    "12": {
+      "score": 4,
+      "why": "Dedicated confirmation screens ('Password updated', 'Privacy conditions accepted', signed-out state) clearly state outcomes, though intermediate actions like 'Send recovery instructions' show results only inside the technical Logs panel."
+    },
+    "13": {
+      "score": 2,
+      "why": "Apart from the repeated static anti-phishing warning and the password-rule sentence, there are no contextual tips, tooltips, or help links for new steps such as where to find the recovery code."
+    },
+    "14": {
+      "score": 4,
+      "why": "Recovery offers 'Request another code' (steps 2–3) and 'Forgot password?' on sign-in, giving clear retry paths, but there is no back/cancel option on the MFA or new-password screens."
+    },
+    "15": {
+      "score": 5,
+      "why": "Every screen reuses the identical header, card layout, blue button style, safety banner, and Logs panel position, giving a highly consistent learnable design."
+    }
+  },
+  "cost_usd": 0.107355,
+  "generation_id": "gen-1785919176-GAZBKJyjsBKFLbg71yV4",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 4,
+    "4": 2,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 1,
+    "9": 2,
+    "10": 2,
+    "11": 5,
+    "12": 4,
+    "13": 2,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.3333,
+    "memory": 1.6667,
+    "comprehension": 2.3333,
+    "decision_making": 3.6667,
+    "learning": 3.6667
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

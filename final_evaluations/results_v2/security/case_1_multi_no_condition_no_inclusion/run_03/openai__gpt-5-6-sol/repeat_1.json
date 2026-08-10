@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T07:33:19.560119+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset-code digest is stored and validated within the issuing session, although it is not tied to a retained account identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code issued in one session will not match the reset digest stored in another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password-reset flow contains no mechanism to revoke existing sessions, and the current session remains valid after completion."
+    },
+    "4": {
+      "score": 4,
+      "why": "The application serves recovery functionality only when TLS certificates are available, but it does not explicitly configure a minimum or latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 digests, passwords as bcrypt hashes, and account input is not retained, although the demonstration exposes plaintext codes to the client."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email message is implemented, while simulated delivery avoids account data but visibly exposes the recovery code."
+    },
+    "7": {
+      "score": 3,
+      "why": "Inputs receive type, length, format, and password-policy validation, but the server does not generally sanitize the account string."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application performs no external redirects, and its generated recovery link is a relative same-page fragment."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email template exists to evaluate, although user input is not inserted into application HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery and MFA codes are deliberately displayed in the Logs panel and written to the browser console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords and reset-token digests are stored securely, but the MFA code 246810 is hard-coded and exposed to the client."
+    },
+    "12": {
+      "score": 2,
+      "why": "Although there are no default username/password credentials, every session uses the same hard-coded MFA code 246810."
+    },
+    "13": {
+      "score": 4,
+      "why": "Recovery and password operations are throttled after five attempts, and MFA verification is temporarily locked after five failed codes."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint ignores account existence and returns the same response for every syntactically valid account reference."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are cryptographically random 256-bit values bound to an individual session, but they are not tied to a retained user or account identity."
+    }
+  },
+  "cost_usd": 0.0931925,
+  "generation_id": "gen-1785915169-yjDuMNWprK5l0DBSMA13",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 3,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

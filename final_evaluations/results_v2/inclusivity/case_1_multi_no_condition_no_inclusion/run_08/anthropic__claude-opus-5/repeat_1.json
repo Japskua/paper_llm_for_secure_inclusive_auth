@@ -1,0 +1,116 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:53:40.877036+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "382826be6a70be6d0d503a9383b0a4ec86ceeb15e56bcec319dd73312f8c12a0",
+  "screenshot_count": 8,
+  "screenshots": [
+    "step_01_recovery_start.png",
+    "step_02_reset_instructions_requested.png",
+    "step_03_verify_reset_code.png",
+    "step_04_set_new_password.png",
+    "step_05_one_time_verification.png",
+    "step_06_enter_one_time_code.png",
+    "step_07_updated_privacy_conditions.png",
+    "step_08_conditions_accepted.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All eight screens are static cards with no animations, carousels, modals or pop-ups; the only extra element is a stationary Logs panel."
+    },
+    "2": {
+      "score": 4,
+      "why": "Each screen has one bold dark-blue heading and a single filled primary button (e.g. 'Verify token', 'Accept conditions'), though the large dark Logs block competes visually with the task content."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each step shows only one task, but finding the 64-character reset token requires reading it out of a developer-style Logs panel, which is not an obvious place for a user to look."
+    },
+    "4": {
+      "score": 2,
+      "why": "The flow spans email → token copy → new password (12+ chars, uppercase, lowercase, number, symbol) → 6-digit code → checkbox, requiring the user to carry codes and rules across five separate screens."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager integration, autofill hint, 'remember me' checkbox, or show-password toggle appears on any screen."
+    },
+    "6": {
+      "score": 2,
+      "why": "The only recall aid is the previously typed email persisting on step 2; there are no saved accounts, avatars, or recognisable stored items anywhere."
+    },
+    "7": {
+      "score": 3,
+      "why": "Sentences are short and legibly sized, but wording includes unexplained jargon such as 'reset token', 'MFA delivery' and 'simulated recovery link'."
+    },
+    "8": {
+      "score": 2,
+      "why": "No error state is shown in any of the eight screenshots; only success/neutral messages like 'If an account can be recovered, reset instructions have been prepared' are visible, so problem-plus-fix messaging cannot be observed."
+    },
+    "9": {
+      "score": 2,
+      "why": "Step 4 states a password rule ('Use 12 or more characters with uppercase, lowercase, number, and symbol') but no field shows a placeholder or worked example of what to type."
+    },
+    "10": {
+      "score": 3,
+      "why": "Buttons are plainly labelled, but the only authentication methods are a typed password, token and 6-digit code — no biometric/face or alternative login choice is presented, and 'Request reset instructions' vs 'Enter a reset token' is ambiguous at step 1."
+    },
+    "11": {
+      "score": 4,
+      "why": "Each screen offers at most three buttons and one or two input fields, so choice load per screen is low."
+    },
+    "12": {
+      "score": 4,
+      "why": "Actions produce explicit feedback: a green confirmation box on step 2, log entries after each action, and a clear 'Conditions accepted' summary at step 8."
+    },
+    "13": {
+      "score": 3,
+      "why": "There is a persistent 'Stay safe' tip and short per-step instructions plus a password-rule hint, but no contextual help, tooltips or guidance on what a token is or where to find it."
+    },
+    "14": {
+      "score": 3,
+      "why": "A 'Back' button exists on the token screen and 'Return to recovery start' at the end, but there is no visible retry/resend option on the password or verification-code screens."
+    },
+    "15": {
+      "score": 5,
+      "why": "Header, white rounded card, heading style, field styling, primary/secondary button styling and Logs panel are identical across all eight steps."
+    }
+  },
+  "cost_usd": 0.107685,
+  "generation_id": "gen-1785919982-fUZFogndr5TkGYScptAe",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 2,
+    "5": 1,
+    "6": 2,
+    "7": 3,
+    "8": 2,
+    "9": 2,
+    "10": 3,
+    "11": 4,
+    "12": 4,
+    "13": 3,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 1.6667,
+    "comprehension": 2.3333,
+    "decision_making": 3.6667,
+    "learning": 3.6667
+  },
+  "overall": 3.0667,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:57:54.719530+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "68e301a4e63f7c6210b969aba1dd567bba03d2d4ccc4de6cd4d94eaf7c2e9110",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "reset-validate and password-update require the submitted token to equal session.resetToken issued only for that session’s successful mock-account request."
+    },
+    "2": {
+      "score": 1,
+      "why": "resetToken is stored only on the requesting session, so another session/user cannot use that same code."
+    },
+    "3": {
+      "score": 5,
+      "why": "password-update only mutates the current session and never invalidates or deletes other entries in the sessions Map."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS certs, localHttpsRequest/HSTS enforce HTTPS, but no explicit minimum TLS version is set in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "passwords are bcrypt-hashed, but reset tokens and session fields are stored in memory as plaintext, not encrypted."
+    },
+    "6": {
+      "score": 4,
+      "why": "no real email is sent; API copy is generic and does not include profile PII, though the mock token is returned to the client."
+    },
+    "7": {
+      "score": 5,
+      "why": "email/token/password inputs are type-checked and validated, body size-capped, and the UI builds nodes with textContent rather than raw HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "no user-controlled redirect targets exist; navigation is client-side screen switches and fixed same-origin API paths."
+    },
+    "9": {
+      "score": 5,
+      "why": "there are no email templates that interpolate user HTML/scripts; delivery is only a simulated client log string."
+    },
+    "10": {
+      "score": 1,
+      "why": "mockDeliveryToken and mockMfaCode are returned in JSON and written into the on-page logs UI, so tokens are visibly exposed."
+    },
+    "11": {
+      "score": 2,
+      "why": "password hashes use bcrypt, but MFA_CODE is a hardcoded secret in source and reset tokens sit unencrypted in session state."
+    },
+    "12": {
+      "score": 2,
+      "why": "the fixed MFA_CODE \"482913\" acts as a default shared verification credential for every successful reset."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateAllowed limits reset requests (3/15m), reset-code guesses (5/15m), and MFA attempts (5/15m) with 429 responses."
+    },
+    "14": {
+      "score": 5,
+      "why": "reset-request always returns the same generic message regardless of whether the email matches MOCK_ACCOUNT_EMAIL."
+    },
+    "15": {
+      "score": 5,
+      "why": "reset codes are 32-byte crypto random base64url values bound to the issuing session and single-use with expiry."
+    }
+  },
+  "cost_usd": 0.0344704,
+  "generation_id": "gen-1785920228-xlgU7eICqRPHd5lwvcgT",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.7333,
+  "capture_complete": false
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:26:55.556602+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "The reset token is checked against the server-side recovery session, but the application never stores or verifies an association with a specific user account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is scoped to one recovery session and cannot be verified in another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Resetting the password does not invalidate or modify any other sessions stored in the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "TLS is mandatory and HTTP redirects to HTTPS, but no minimum or latest TLS protocol version is explicitly configured."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset and MFA codes are held as plaintext session values rather than encrypted data."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email mechanism exists, and simulated delivery exposes reset and MFA codes directly through API responses and the browser log panel."
+    },
+    "7": {
+      "score": 4,
+      "why": "Account, token, MFA, and password inputs receive strict validation, while client-rendered output uses textContent rather than HTML insertion."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a fixed server-generated redirect to https://localhost:3000/, with no user-controlled destination."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are implemented, although the browser interface does not insert user input as executable HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and MFA codes are returned to the client and explicitly displayed in the simulated browser logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are stored as bcrypt hashes, but the MFA code 482913 is hard-coded and secret codes are retained as plaintext session fields."
+    },
+    "12": {
+      "score": 4,
+      "why": "No default username or password credentials exist, although the application uses a fixed MFA code."
+    },
+    "13": {
+      "score": 5,
+      "why": "After five failures for a protected action, the session is blocked from further attempts for 60 seconds."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application never checks account existence and provides the same recovery message for all syntactically valid account values."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset token is a cryptographically random 32-byte session-specific value, but it is not associated with a verified user identity."
+    }
+  },
+  "cost_usd": 0.10225,
+  "generation_id": "gen-1785921986-u1gjbjOHXo7naMYGDuM9",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

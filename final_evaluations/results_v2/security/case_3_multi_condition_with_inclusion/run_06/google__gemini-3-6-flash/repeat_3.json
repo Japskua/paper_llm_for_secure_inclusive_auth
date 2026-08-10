@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:19:17.710828+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "3769d8d72d3a6dbf94059901d58bea2f193d416f5864a40b1cd79da802df6e1a",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are bound directly to the user's session object (`g.session.reset`) and verified against that specific session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are session-bound and verified strictly against `g.session.reset`, so a reset code cannot be used by another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Changing a password updates `account.passwordHash` but does not clear or invalidate existing authenticated sessions in the `sessions` map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application serves traffic over HTTPS via Bun TLS, sets HSTS headers, and redirects HTTP requests directly to HTTPS."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset codes are generated and stored in memory as plaintext base64url strings without encryption or cryptographic hashing."
+    },
+    "6": {
+      "score": 5,
+      "why": "Recovery messages return a generic notice without exposing private user or account details."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs like email addresses and passwords are strictly normalized and validated against strict format and complexity rules."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirects are hardcoded to the local HTTPS port and no user-supplied redirect targets are accepted."
+    },
+    "9": {
+      "score": 5,
+      "why": "Messages are static JSON strings and client updates use `textContent`, preventing script or HTML injection."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error responses return generic messages and server logs explicitly refrain from recording tokens or private account data."
+    },
+    "11": {
+      "score": 5,
+      "why": "The source code stores only a precomputed bcrypt hash rather than any plaintext passwords or static secrets."
+    },
+    "12": {
+      "score": 5,
+      "why": "There are no default credentials or pre-configured plaintext login combinations present in the system."
+    },
+    "13": {
+      "score": 5,
+      "why": "The application tracks failed attempts and enforces a 15-minute lock after 5 unsuccessful tries."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint yields the exact same generic message regardless of whether the submitted email exists in the database."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using 32 cryptographically secure random bytes (`randomBytes`) and bound to the user's session."
+    }
+  },
+  "cost_usd": 0.047589,
+  "generation_id": "gen-1785925136-lLotEVcapML1cXBdmxXx",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

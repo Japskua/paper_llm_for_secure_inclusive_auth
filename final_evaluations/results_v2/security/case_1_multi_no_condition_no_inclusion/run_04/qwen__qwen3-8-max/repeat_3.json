@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:36:17.474706+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "dd919db6c46d435a4395fbd6c5d383fdf23013f639ab84eb58ad2b157be067a6",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify-token handler rejects tokens unless the stored sessionId and mockAccountHash match the current session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is bound to the issuing session, so the same token cannot be verified from another session/user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Password reset mutates only the current session and does not revoke or delete other session records before their timeout."
+    },
+    "4": {
+      "score": 3,
+      "why": "The app serves HTTPS with certificate and key and redirects HTTP, but the source does not specify or enforce a particular latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "TLS protects transport and reset tokens are SHA-256 hashed, but the raw reset code is returned in JSON and not encrypted at rest."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email is sent and the generic response does not echo the identifier, but actual email-message handling cannot be verified from the code."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifier, token, MFA code, and password inputs are validated with strict regex/length rules and dynamic output uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is the HTTP listener's fixed redirect to the local HTTPS origin and client links are same-origin paths."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates in the source, so their safety cannot be directly observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error pages are generic, but the simulated browser logs explicitly print the reset token and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is a hardcoded constant in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no normal username/password login, but the fixed MOCK_MFA_CODE functions as a predictable default verification code."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery requests and failed token/MFA verifications are limited with server-side counters that return 429 after the maximum."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery requests return the same generic message for valid-format identifiers and do not indicate account existence."
+    },
+    "15": {
+      "score": 4,
+      "why": "Reset codes are 32-byte random base64url values and session-bound, but the mock account hash is constant rather than unique per real user."
+    }
+  },
+  "cost_usd": 0.04464,
+  "generation_id": "gen-1785918809-WpBv6suf5iSC3dNqRUC7",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.4667,
+  "capture_complete": true
+}

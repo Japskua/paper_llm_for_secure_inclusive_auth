@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:40:55.128669+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "Reset verification only checks token digest, expiry, and used flag—not that the code is bound to a particular user identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "Only one mock account exists; a token is single-use and either actionable for that account or a decoy, so it does not work for arbitrary other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "password-update never clears or rotates the sessions map, so prior session cookies remain valid after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is set, but the code does not pin or document a specific latest TLS version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset codes are stored as SHA-256 digests and passwords as argon2id hashes; that is hashing, not encryption of reset codes/user data."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email is sent; responses use a generic message and do not embed private account fields."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers, tokens, and passwords are validated/constrained server-side and the SPA inserts values with textContent only."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only reset link built is same-origin '/?reset=' with encodeURIComponent; no open redirect to external sites."
+    },
+    "9": {
+      "score": 5,
+      "why": "There are no email HTML templates; simulated delivery returns JSON and does not interpolate user input as HTML/script."
+    },
+    "10": {
+      "score": 2,
+      "why": "API responses include testToken/testMfaCode and the client log UI appends those recovery secrets in plaintext."
+    },
+    "11": {
+      "score": 1,
+      "why": "MFA_TEST_CODE and the initial demo password string are hardcoded in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The fixed demo MFA code 246810 and known initial password function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "limited() enforces per-session caps on reset-request, reset-verify, and mfa-verify attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "reset-request always returns the same generic message and shape for valid, invalid, and rate-limited identifiers."
+    },
+    "15": {
+      "score": 4,
+      "why": "Codes come from randomBytes(32) base64url (random/complex); user-specificity is only the actionable flag for the single mock account."
+    }
+  },
+  "cost_usd": 0.0245052,
+  "generation_id": "gen-1785911987-z6lIXXeA4QruPq1ipct5",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.5334,
+  "capture_complete": true
+}

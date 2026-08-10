@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:37:14.335314+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Each valid reset token maps to a ResetRecord containing the account ID, and password updates verify that record.accountId matches the account."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is account-specific, becomes bound to the claiming session, and cannot be used from a different session after being claimed."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating the password does not invalidate other existing authenticated sessions, so previously authenticated sessions remain usable until expiration or logout."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun is configured with a TLS certificate and key, but the code does not explicitly require the latest TLS version or redirect unsecured HTTP requests."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are bcrypt-hashed and reset tokens are stored as SHA-256 hashes, but account data such as the email address is stored in plaintext rather than encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email implementation, and the simulated delivery exposes the complete reset token and link in the page logs and browser console."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email and password inputs are strictly validated and are not inserted into HTML, although the code primarily validates rather than explicitly sanitizes them."
+    },
+    "8": {
+      "score": 5,
+      "why": "The reset link is constructed from location.origin with a URL-encoded token, and no user-controlled redirect destination is accepted."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user input is included in an email template, and simulated delivery messages are rendered with textContent rather than HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The full reset token and reset link are deliberately displayed in the page logs and written to the browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords and reset tokens are hashed, the initial password and fixed MFA code 246810 are embedded directly in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application creates a fixed account with a known hard-coded initial password, which functions as a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset, token-verification, MFA, and login attempts are rate-limited, and the account is temporarily locked after five failed matching-account logins."
+    },
+    "14": {
+      "score": 5,
+      "why": "Reset requests always return the same message and a mock token, while failed logins use the same generic response regardless of whether the email exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated from 32 cryptographically random bytes and stored in records tied to a specific account."
+    }
+  },
+  "cost_usd": 0.0394755,
+  "generation_id": "gen-1785919013-dqKm6Chw7P0FtWx0qbDK",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 3,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:23:39.129446+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "`/api/recovery-verify` and `/api/password` both look up the record via the session's own `recovery.recordId` and additionally assert `record.sessionId === session.id`, so a code can only be redeemed by the requesting user's session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A code is bound to one recovery record whose `sessionId` must match the presenting session, and the token hash is unique per request, so the same code cannot be used by any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The `/api/password` handler only rewrites `accountPasswordHash` and mutates the current session; it never iterates `sessions` to delete or expire other sessions, so previously issued sessions remain valid after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured with TLS cert/key and HSTS headers are sent (HTTP-only serving is not possible), but no explicit minimum TLS version/cipher policy is set — it merely relies on Bun's defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are 32 random bytes stored only as bcrypt(cost 10) hashes and passwords are bcrypt-hashed, though remaining session/user state is kept in plaintext in memory."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email delivery at all; the 'simulated delivery' returns the raw recovery token (`testToken`) and MFA code in the JSON API response, which is the opposite of guarding private data in a message."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs pass through `cleanText` (control-char/`<>` rejection, length bounds), `validIdentifier` (strict character whitelist), `validPassword` length caps, JSON-only body parsing, and all rendered text goes through `esc()`/`textContent`."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation is confined to a hard-coded `validRoutes` whitelist in `rawRoute()`/`go()`, server responses only return internal paths like `/privacy`, and CSP sets `form-action 'self'` and `base-uri 'none'`, so no open redirect exists."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist in the code, and the analogous rendered notices/log output are HTML-escaped or set via `textContent`, so no user-supplied HTML or script can be embedded."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client explicitly logs secrets to the console and the on-page Logs panel: `log(\"[SIMULATED MFA] Browser test verification code: \"+out.testMfaCode)` and `log(\"[SIMULATED DELIVERY] Current browser recovery code: \"+out.testToken)`."
+    },
+    "11": {
+      "score": 2,
+      "why": "Although stored as bcrypt hashes at runtime, the secrets themselves are hard-coded literals in the source: `Bun.password.hash(\"Welcome!2025Heart\")` and `const MFA_TEST_CODE = \"246810\"`."
+    },
+    "12": {
+      "score": 2,
+      "why": "A fixed default account `helena@hospital.test` with the built-in password `Welcome!2025Heart` and a static MFA code `246810` are accepted, i.e. default credentials are permitted."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login (limit 5), recovery requests (limit 3), recovery-code verification (5 attempts → `lockUntil`), and MFA (5 attempts → 2-minute lock) all enforce sliding-window throttling with lockouts keyed to account and session."
+    },
+    "14": {
+      "score": 3,
+      "why": "Login and recovery-request responses are deliberately generic (\"If the details match an account…\"), but `/api/password` leaks existence at the end of the flow by returning a distinct \"We could not complete this request\" message when `!record.accountExists`."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are generated with `randomBytes(32).toString(\"base64url\")`, expire in 15 minutes, are single-use (`used`/`verified` flags), and are bound to the specific requesting session's record."
+    }
+  },
+  "cost_usd": 0.150365,
+  "generation_id": "gen-1785925384-oaikEjMW3Rw1256EqRaf",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

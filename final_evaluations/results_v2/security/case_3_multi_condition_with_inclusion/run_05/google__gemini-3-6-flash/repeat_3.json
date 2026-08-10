@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 2,
+  "judged_at": "2026-08-05T10:15:24.482921+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify endpoint checks that reset.accountKey matches the session's designated recoveryAccountKey."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to a specific account key in the resets map and are rejected if attempted for a different user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating the password hash does not revoke or invalidate other active session entries stored in the server sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application runs on a TLS-enabled Bun server with HSTS and strictly rejects non-HTTPS requests."
+    },
+    "5": {
+      "score": 2,
+      "why": "Secret tokens and passwords rely on hashing algorithms like SHA-256 and bcrypt rather than encryption, and raw recovery tokens exist in session state."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated messages and API responses use generic text that does not reveal private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "User input is validated against strict format regular expressions and safely rendered into the DOM using textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Redirect and navigation handlers only accept relative local paths within the application."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not render user input inside HTML email templates."
+    },
+    "10": {
+      "score": 1,
+      "why": "MFA codes and recovery tokens are explicitly appended to the on-screen activity log and console output."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA security code and a fallback password hash are hardcoded directly into the application source file."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application includes a predefined demo account identifier and a default fallback password hash."
+    },
+    "13": {
+      "score": 5,
+      "why": "The actionAllowed rate-limiting function throttles repeated attempts across endpoints by IP and session."
+    },
+    "14": {
+      "score": 5,
+      "why": "Password recovery and authentication endpoints return identical generic responses regardless of account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Password reset codes are generated using 32 cryptographically random bytes and bound to the specific user session."
+    }
+  },
+  "cost_usd": 0.0476895,
+  "generation_id": "gen-1785924901-RxC26JHRRIvFcB7FNlwW",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

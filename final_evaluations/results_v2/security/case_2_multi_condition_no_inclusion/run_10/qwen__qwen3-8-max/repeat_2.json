@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:54:45.570262+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c2876b4ed426a65417ec33b6fbb9afae2da3d7affeb88cb28b5873f4558bbdcc",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The token is validated against the SHA-256 digest stored in the current session's recovery record, though it is not bound to a separately verified user identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is accepted only if it matches the recovery record in the same session, so the same code does not work for another session/user."
+    },
+    "3": {
+      "score": 4,
+      "why": "The password reset changes only the current session and does not invalidate or delete other in-memory sessions, which remain usable until expiry."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is TLS-only and rejects non-HTTPS requests, but the code does not specify or demonstrate the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords as bcrypt hashes, but MFA codes are plaintext and the statement's encryption claim is not otherwise supported."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email is sent, and the simulated delivery exposes the reset token in the response and visible logs rather than guarding it."
+    },
+    "7": {
+      "score": 4,
+      "why": "The page renders dynamic values with escapeHtml and client-side textContent rather than innerHTML, preventing user-supplied data from being executed as HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "All navigation uses same-page hash links and no external redirect targets or off-site links are present."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the code, so there is no observed email template containing user-controlled scripts or HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error responses are generic, but reset tokens and MFA codes are returned to the client and written to console/visible logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code is a hardcoded plaintext secret stored in the session and returned to the client."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no default username/password, but the fixed MFA code embedded in the code acts as a default secret."
+    },
+    "13": {
+      "score": 5,
+      "why": "Session and trusted-IP throttles limit recovery requests, token verification, password changes, and MFA attempts, returning 429 after excess attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request ignores the supplied contact value and returns the same generic response, so it does not reveal whether an account exists."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset token is random and high-entropy, but it is bound only to an anonymous session rather than a verified user-specific account."
+    }
+  },
+  "cost_usd": 0.054638,
+  "generation_id": "gen-1785923484-ng8FFlZajJ5kciiZfTeG",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

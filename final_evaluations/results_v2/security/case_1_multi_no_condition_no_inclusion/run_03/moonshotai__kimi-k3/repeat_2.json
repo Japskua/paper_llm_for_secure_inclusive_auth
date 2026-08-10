@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:30:01.221182+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset token's SHA-256 digest is stored in the issuing session and verify-reset compares digests with constantTimeEqual, so the code is checked against the session/user that requested it."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are bound to the originating session's stored digest, so the same code presented in any other session fails verification."
+    },
+    "3": {
+      "score": 5,
+      "why": "No session invalidation occurs after a password reset—the same session remains valid, proceeds to /api/privacy, and can even initiate a new recovery."
+    },
+    "4": {
+      "score": 4,
+      "why": "HTTPS is enforced via Bun.serve TLS with a safe 503 fallback when certificates are absent, plus HSTS and a Secure __Host- cookie, but the TLS version is not explicitly pinned to the latest."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 digests and passwords as bcrypt hashes (cost 10)—cryptographically appropriate protection, though hashing rather than encryption."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery message is generic ('If an eligible account exists...') and contains no private user data; the account input is explicitly neither retained nor returned."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are validated (account type/length, token regex ^[a-f0-9]{64}$, server-side password policy) and all dynamic rendering uses textContent/createTextNode rather than HTML injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "The recovery link is built solely from location.pathname plus a fragment, CSP restricts form-action and connect-src to 'self', and no external redirects exist."
+    },
+    "9": {
+      "score": 4,
+      "why": "No user input is ever rendered as HTML or script—the simulated delivery/log output uses text nodes and CSP allows only nonce-tagged scripts—though there are no real email templates, only the simulation."
+    },
+    "10": {
+      "score": 2,
+      "why": "The client-side Logs panel and browser console explicitly display the recovery token and MFA code ('SIMULATED RECOVERY DELIVERY — test code: ' + token), so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and reset tokens digested, but the MFA secret '246810' is hardcoded in the source and returned in the API response as testMfaCode."
+    },
+    "12": {
+      "score": 3,
+      "why": "There are no default usernames or passwords and a strong password policy is enforced, but the static hardcoded MFA code '246810' functions as a default credential for the second factor."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery and password endpoints are throttled to 5 attempts per 10-minute window and MFA locks for 5 minutes after 5 failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the identical generic message regardless of whether the account exists, and the account value is never stored or echoed."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is 32 bytes from crypto.getRandomValues (64 hex chars), expires in 10 minutes, is single-use (tokenConsumed), and is bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.0894042,
+  "generation_id": "gen-1785918553-qI0iNTida5rLJCHHyEPq",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

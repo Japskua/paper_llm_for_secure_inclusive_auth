@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T07:34:18.747428+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server checks that the digest of the submitted token matches the SHA-256 digest stored specifically on the user's session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset token digests are stored individually per session, so a token generated for one session cannot be verified by another user's session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating a password updates `session.passwordHash` for the current session without invalidating or revoking other active sessions in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The application serves traffic over TLS via Bun.serve certificate configuration and enforces HTTPS with Strict-Transport-Security headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are stored as SHA-256 cryptographic digests and passwords are hashed securely using bcrypt with a cost factor of 10."
+    },
+    "6": {
+      "score": 5,
+      "why": "The recovery flow uses generic non-revealing messages and does not include private user data in communications."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are sanitized via strict length/format validation on the backend and safely bound via textContent and value in the frontend DOM."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation links use strict local hash fragments and relative paths, backed by CSP headers restricting form actions to self."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not use email templates or render user-controlled input into outgoing messages."
+    },
+    "10": {
+      "score": 1,
+      "why": "The simulated test recovery token and MFA security code are explicitly printed to console logs and the visible UI log element."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA verification security code '246810' is hardcoded directly inside the backend source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application enforces a custom password policy and does not accept or provide default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "The server implements rate limiting on recovery and password submissions and enforces a 5-minute lockout after 5 incorrect MFA attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint returns the exact same generic message regardless of whether the submitted account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 64-character hex strings generated using crypto.getRandomValues and stored securely on the user's session."
+    }
+  },
+  "cost_usd": 0.0504135,
+  "generation_id": "gen-1785915230-62dTM5AIPZzDTgDHVPHP",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

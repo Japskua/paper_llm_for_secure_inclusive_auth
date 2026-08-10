@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:56:18.112592+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "819b0c8a22c879e39f2cd4ba6c57c980366d448e158800f2669a47e0fd97a6cf",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Verify looks up the reset token and carries its bound accountId into a one-time grant, so the code is tied to a specific account, but there is no extra check that the submitter is that user beyond possession of the token."
+    },
+    "2": {
+      "score": 5,
+      "why": "resetTokens is global and not bound to the requesting session, so any client who knows the code can call /api/verify-reset and receive a grant for the associated account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only updates passwordHash and session-local grant/step fields; no other sessions are invalidated or logged out."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is set, but the TLS protocol version is not explicitly pinned to a latest version in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords use Argon2id, but reset codes and account fields are stored in plaintext in-memory Maps with no encryption of tokens or user data at rest."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery log only includes the recovery code and a fixed prefix, not extra account profile data, though the code itself is exposed in the demo message."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are type-checked, length-limited, email-normalized/regex-validated, and passwords are only hashed or compared—never reflected as HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "Recovery links are built only as same-origin /?token=... URLs; no user-controlled external redirect targets exist."
+    },
+    "9": {
+      "score": 5,
+      "why": "Simulated email/log content is a fixed template plus server-generated code; user input is not interpolated as HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "deliveryCode/logMessage and MFA codes are returned in API JSON and written to the on-page Logs panel, so tokens are intentionally shown."
+    },
+    "11": {
+      "score": 2,
+      "why": "Argon2id hashes are used and no plaintext account password is shipped, but the MFA code is hardcoded as \"246810\" in source and the demo hash lives in the codebase."
+    },
+    "12": {
+      "score": 5,
+      "why": "No working default password is provided; login is refused unless this session just completed a verified reset for the fixture account."
+    },
+    "13": {
+      "score": 5,
+      "why": "rateLimit is applied to reset request, verify, login, and MFA paths with attempt caps and temporary blocks."
+    },
+    "14": {
+      "score": 5,
+      "why": "request-reset always returns the same success-style message and demo delivery whether or not the email matches an account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes are randomHex(32), single-use with expiry, and stored with the matching accountId when an account exists."
+    }
+  },
+  "cost_usd": 0.0203496,
+  "generation_id": "gen-1785923730-uRq2w53ZdvSkufiUg7o1",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 1,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6,
+  "capture_complete": true
+}

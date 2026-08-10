@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:02:16.118307+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Both /api/reset-verify and validOwnedToken compare record.sessionId !== session.id, so a reset code is only accepted for the session/user that requested it."
+    },
+    "2": {
+      "score": 1,
+      "why": "Tokens are bound to the requesting session ID and rejected otherwise, so another user's session cannot use the same reset code."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no session-invalidation logic anywhere after /api/reset-complete — the sessions map is untouched and the existing cookie/session keeps working (it is even promoted to mfaPending/authenticated)."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is started with TLS cert/key and a plain-HTTP listener 308-redirects to HTTPS plus HSTS headers, though no explicit minimum TLS version is configured (relies on Bun defaults, which negotiate TLS 1.3)."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with bcrypt (cost 10), but reset codes are kept as raw plaintext strings in the in-memory resetTokens map with no hashing or encryption."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is actually sent; instead the reset token is returned in the API response as testToken and printed into the browser-visible Logs panel and console, so the secret is not guarded in the delivery channel."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers are normalized and regex-whitelisted (cleanIdentifier), passwords are policy-validated server-side, JSON bodies are type-checked, and no user input is ever interpolated into the HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a hardcoded https://localhost target in the HTTP listener; no user-supplied URL or redirect parameter exists anywhere."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates at all, and the generated HTML page contains no user-supplied HTML or script content (only server-generated nonces and the JSON-escaped CSRF token)."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic, but the reset token and the MFA code are deliberately returned to the client and written to console.log and the on-page Logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is stored only as a bcrypt hash, but the MFA secret \"482913\" is hardcoded in the source and compared literally in /api/mfa-verify."
+    },
+    "12": {
+      "score": 3,
+      "why": "There is no login with credentials, but the app ships a built-in default account identifier (demo-account) advertised in the UI and a fixed default MFA code, while mockAccount.passwordHash starts empty."
+    },
+    "13": {
+      "score": 4,
+      "why": "tooMany() throttles reset requests (3), code verifications (5) and MFA attempts (5) per 15-minute window, plus a per-token verifyAttempts cap, though the limits are keyed only to the session cookie and can be reset by obtaining a new session."
+    },
+    "14": {
+      "score": 2,
+      "why": "Messages are identical for all identifiers, but the successful branch for demo-account additionally returns a testToken field, so the response body still discloses whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "randomValue(32) uses crypto.getRandomValues to produce a 32-byte base64url token that is stored with the requesting sessionId, a 10-minute expiry, and single-use flag."
+    }
+  },
+  "cost_usd": 0.11377,
+  "generation_id": "gen-1785920496-adiEDa2JwrfMlEO5JV0d",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 4,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

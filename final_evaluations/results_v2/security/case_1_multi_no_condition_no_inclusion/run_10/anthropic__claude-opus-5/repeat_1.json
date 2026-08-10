@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:02:10.539147+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Both /api/reset-verify and validOwnedToken check record.sessionId === session.id, so the code must belong to the requesting session/user."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is rejected unless record.sessionId matches the current session, so another user's session cannot use the same reset code."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no session invalidation anywhere after /api/reset-complete — the sessions map entries and cookies remain valid, so prior sessions do keep working."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key, HSTS is set, and plain HTTP is 308-redirected to HTTPS, though no explicit minimum TLS version is pinned (relies on Bun defaults)."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with bcrypt and tokens come from crypto.getRandomValues, but reset tokens themselves are stored raw in the in-memory Map with no hashing or encryption."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is ever generated; instead the reset token is returned in the JSON response as testToken and printed into the visible Logs panel, so no email-level data guarding exists."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifier input is strictly whitelisted by /^[a-z0-9._-]{3,80}$/, passwords are policy-validated server-side, bodies must be JSON objects, and no user data is ever reflected into HTML."
+    },
+    "8": {
+      "score": 4,
+      "why": "The only redirect is a hardcoded https://localhost target in the HTTP listener; no user-controlled host is accepted (only path/query are appended)."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates at all, and the HTML page interpolates only a JSON-escaped CSRF token and nonce — no user input or extra scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "The reset token (result.payload.testToken) and the MFA code are deliberately written to console.log and the on-page log output, exposing secret values."
+    },
+    "11": {
+      "score": 2,
+      "why": "The password is bcrypt-hashed, but the MFA secret \"482913\" is hardcoded in the source and returned to the client in the reset-complete response."
+    },
+    "12": {
+      "score": 2,
+      "why": "A fixed demo identity (\"demo-account\") and a constant MFA code \"482913\" are hardcoded, which function as default credentials in the flow."
+    },
+    "13": {
+      "score": 4,
+      "why": "tooMany() enforces sliding-window limits (3 reset requests, 5 verify, 5 MFA per 15 min) plus per-token verifyAttempts, though limits are keyed only to the session cookie."
+    },
+    "14": {
+      "score": 2,
+      "why": "The message text is generic, but the response includes testToken only when the identifier equals \"demo-account\", so response content discloses account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are 32 bytes from crypto.getRandomValues encoded base64url, bound to the requesting session, single-use, and expire after 10 minutes."
+    }
+  },
+  "cost_usd": 0.106045,
+  "generation_id": "gen-1785920488-n0lsiuzHsJJxUnHbox4J",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

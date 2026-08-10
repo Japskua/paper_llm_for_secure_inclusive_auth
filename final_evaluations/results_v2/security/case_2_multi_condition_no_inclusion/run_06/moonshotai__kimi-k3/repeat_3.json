@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:34:09.135905+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The token is verified only against the hash of the recovery owned by the caller's session — ownedRecovery() rejects any recovery whose sessionId does not match the current session."
+    },
+    "2": {
+      "score": 1,
+      "why": "False: each session gets its own recovery with a distinct tokenHash, so a reset code issued to one session cannot validate against another session's recovery."
+    },
+    "3": {
+      "score": 5,
+      "why": "True: there is no session-invalidation logic after reset-password — the same session proceeds to privacy/confirmation and any other sessions remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server only listens over TLS with cert/key and sets HSTS, but the TLS version is not explicitly pinned and relies on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 hashes and passwords as bcrypt (cost 12) — protected with appropriate one-way algorithms, though technically hashed rather than encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "Responses are generic and contain no account data, but the simulated delivery exposes the recovery token itself in the page and browser console/logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, token, MFA code, password and cookie values are all validated with strict regexes/length caps, bodies are size-limited, and all DOM insertion uses textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses only whitelisted hash routes (safeHashView), no external redirects exist, and CSP sets form-action 'self' and base-uri 'none'."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user input is ever rendered as HTML or script — dynamic values go through textContent and a nonce-based CSP blocks inline/untrusted scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error pages are generic with no stack traces, but the token is explicitly written to the on-page log panel and console ('Test reset token: ...'), so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never stored, but the MFA secret code is hardcoded in the source as const MFA_CODE = \"246810\"."
+    },
+    "12": {
+      "score": 3,
+      "why": "No default account credentials exist (there is no login at all), but the static, hardcoded, UI-displayed MFA code effectively functions as a well-known default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Wrong attempts are throttled via per-recovery counters (5 attempts then a 60-second block) plus independent IP-based rate limits of 8 attempts per minute."
+    },
+    "14": {
+      "score": 5,
+      "why": "The /api/recovery response is deliberately identical regardless of email validity or account existence, and the UI states this explicitly."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset token is a 256-bit CSPRNG hex value bound to the session's recovery, but 'user-specific' holds only at session granularity since no user accounts exist."
+    }
+  },
+  "cost_usd": 0.0701202,
+  "generation_id": "gen-1785922400-ft4yWLSLhcRtdYiz8wn7",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.8667,
+  "capture_complete": true
+}

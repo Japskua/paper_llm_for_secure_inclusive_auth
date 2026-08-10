@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:13:55.986650+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset verification requires the token record's accountKey to match the recoveryAccountKey bound to the requesting session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code cannot be used for another account because it is account-bound, session-flow-bound, and marked used after successful verification."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset does not invalidate other existing sessions because the code has no account-wide session revocation mechanism."
+    },
+    "4": {
+      "score": 3,
+      "why": "The Bun server uses TLS and rejects non-HTTPS requests, but the source does not explicitly require a particular minimum or latest TLS version."
+    },
+    "5": {
+      "score": 3,
+      "why": "Reset records use SHA-256 token hashes and passwords use bcrypt, but the delivery token remains plaintext in the session and no general user-data encryption is implemented."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated recovery delivery contains only a recovery code and relative link and does not include private patient data, although no real email implementation is present."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers, tokens, passwords, and codes receive type, length, character, or policy validation, while displayed values use textContent rather than untrusted HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated recovery link is a server-created relative URL to /recovery-link, and no user-controlled redirect destination is accepted."
+    },
+    "9": {
+      "score": 4,
+      "why": "No actual email template exists, but the simulated delivery uses fixed JSON values and does not interpolate user input into executable HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens and the fixed MFA code are explicitly written to the browser console and visible activity log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are bcrypt-hashed, the MFA code and fallback account password hash are hardcoded in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application includes a hardcoded demonstration account identifier, fallback password hash, and fixed MFA code that function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery, verification, password, login, MFA, and other actions are throttled per session and per source/account over fifteen-minute windows."
+    },
+    "14": {
+      "score": 1,
+      "why": "The approved demonstration email is displayed publicly, and retrieving then verifying the simulated delivery code produces different outcomes for approved and unapproved identifiers."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery codes are generated from 32 cryptographically random bytes and their server records are bound to a specific account."
+    }
+  },
+  "cost_usd": 0.116655,
+  "generation_id": "gen-1785924797-niYe2nIkAC6cM8jQoNWl",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.2667,
+  "capture_complete": true
+}

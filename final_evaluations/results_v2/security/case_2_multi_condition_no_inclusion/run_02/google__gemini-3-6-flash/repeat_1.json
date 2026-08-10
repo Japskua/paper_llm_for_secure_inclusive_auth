@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:14:34.223914+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The verify-token endpoint explicitly checks that the token's sessionId matches the current user's session ID."
+    },
+    "2": {
+      "score": 1,
+      "why": "Recovery tokens are strictly bound to the generating session ID, preventing other users from using them."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset implementation updates the password hash without clearing or invalidating active session tokens."
+    },
+    "4": {
+      "score": 5,
+      "why": "The Bun server is configured with TLS certificates to enforce encrypted HTTPS communication."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset token hashes are computed with SHA-256 and passwords are encrypted using bcrypt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Recovery response messages are standardized and do not reveal private account details."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input values are strictly validated for length, type, and character patterns before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation and links rely on fixed relative paths and internal state without external redirect targets."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application serves static HTML markup without interpolating user input into template strings."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generated recovery tokens and MFA codes are printed directly to the client-side UI log panel and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "The MFA verification code ('482913') is hardcoded directly inside the application source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default accounts or hardcoded administrative credentials are permitted or configured in the system."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate-limiting counters enforce a lock period after 5 failed attempts on sensitive endpoints."
+    },
+    "14": {
+      "score": 5,
+      "why": "The password recovery request returns the same generic status message regardless of whether the contact exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are constructed from 32 cryptographically random bytes and bound to a specific session."
+    }
+  },
+  "cost_usd": 0.038946,
+  "generation_id": "gen-1785921255-v2HyGiSmqH682rjjdrEE",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

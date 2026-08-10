@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:29:10.336279+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are stored with a userId and sessionId, and reset-complete only proceeds when verifiedRecord confirms record.userId matches the session's verifiedUserId."
+    },
+    "2": {
+      "score": 1,
+      "why": "The statement is false: each token is bound to a specific userId and sessionId, and resetRecord rejects any session mismatch, so a code cannot work for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The statement is literally true: reset-complete only marks the token used and clears the current session's verified state, with no invalidation of other existing sessions."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is set, but no explicit minimum/latest TLS version is configured."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes and passwords with Argon2id, which is appropriate protection though strictly hashing rather than encryption."
+    },
+    "6": {
+      "score": 3,
+      "why": "There is no real email; the simulated delivery guards account existence with generic responses but displays the recovery code directly in the browser page."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are validated server-side with strict regexes (validEmail, validCode, validToken, passwordIssue) and user data is only rendered via textContent/input.value, never innerHTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The app performs no external redirects at all, and CSP enforces form-action 'self' and connect-src 'self'."
+    },
+    "9": {
+      "score": 5,
+      "why": "Templates are fully static strings with nonce-based CSP; no user input is ever interpolated into HTML or scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error messages are generic, but the in-browser Activity logs panel deliberately displays the recovery token, delivery code, and MFA code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed, but the delivery authorization code '864200' and MFA code '246810' are hardcoded in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "A demo user is seeded with a hardcoded known password 'Initial-Only-Password!42' plus deterministic mock codes, functioning as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login, MFA, delivery, and reset-request endpoints all enforce attempt counters with lockout after 5 failures (MAX_ATTEMPTS/LOCK_MS)."
+    },
+    "14": {
+      "score": 4,
+      "why": "reset-request and login return identical generic messages regardless of account existence, though a minor timing difference exists since password verification only runs for known users."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is 32 random bytes (256-bit) hex, stored hashed, bound to a specific userId and sessionId, single-use, and expiring after 15 minutes."
+    }
+  },
+  "cost_usd": 0.0664317,
+  "generation_id": "gen-1785925704-wNAb9T8692n7HPO8wSbZ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

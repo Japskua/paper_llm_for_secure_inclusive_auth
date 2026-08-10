@@ -1,0 +1,169 @@
+{
+  "variables": {
+    "email": "helena.patient@hospital.test",
+    "new_password": "ValidPassw0rd!"
+  },
+  "steps": [
+    {
+      "name": "password_reset_start",
+      "actions": []
+    },
+    {
+      "name": "confirm_approved_channel",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#channel"
+        }
+      ]
+    },
+    {
+      "name": "check_recovery_message",
+      "actions": [
+        {
+          "do": "read",
+          "selector": ".logs",
+          "regex": "authorization secret: ([A-Za-z0-9_-]+)",
+          "into": "authorization_secret"
+        },
+        {
+          "do": "fill",
+          "selector": "#channel",
+          "value": "${authorization_secret}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm channel')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Check your recovery message"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "read",
+          "selector": ".logs",
+          "regex": "private reset code: ([A-Za-z0-9_-]+)",
+          "into": "recovery_code"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Enter a code manually')"
+        },
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Check code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#pw"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#pw",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#pw2",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Password changed"
+        }
+      ]
+    },
+    {
+      "name": "sign_in",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Go to sign in')"
+        },
+        {
+          "do": "fill",
+          "selector": "#le",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#lp",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa"
+        }
+      ]
+    },
+    {
+      "name": "complete_second_factor",
+      "actions": [
+        {
+          "do": "read",
+          "selector": ".logs",
+          "regex": "one-time verification code: (\\d{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify and continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Privacy statement"
+        }
+      ]
+    },
+    {
+      "name": "accept_privacy_statement",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept privacy statement')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Privacy statement accepted"
+        }
+      ]
+    }
+  ]
+}

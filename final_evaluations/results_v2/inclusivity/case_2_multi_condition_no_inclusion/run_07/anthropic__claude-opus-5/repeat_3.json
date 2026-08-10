@@ -1,0 +1,117 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:39:45.978825+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "4a6eaf3cfcc73c22842c5c8c14f50a97c9b1281fdf4ac2299c6aa628f1a4e591",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 9,
+  "screenshots": [
+    "step_01_request_password_reset.png",
+    "step_02_recovery_instructions_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_set_new_password.png",
+    "step_05_sign_in.png",
+    "step_06_confirm_sign_in.png",
+    "step_07_updated_privacy_statement.png",
+    "step_08_appointment_booking_confirmation.png",
+    "step_09_appointment_request_confirmed.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All nine screens are static cards with no animation, carousels, or modal pop-ups anywhere in the flow."
+    },
+    "2": {
+      "score": 4,
+      "why": "Bold headings and a single filled teal primary button mark the main action on each screen, though the large dark 'Logs' panel competes visually for attention."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each step has only one field and one main button, but the developer-style 'Logs' block, long random code strings and large empty gaps add noise that slows finding the needed control."
+    },
+    "4": {
+      "score": 2,
+      "why": "The user must carry over a very long recovery code, then a separate six-digit MFA code, plus a five-part password rule across multiple screens, which is a substantial memory load."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager integration, autofill hint, 'show password', or 'remember me' option appears on the sign-in or password screens."
+    },
+    "6": {
+      "score": 3,
+      "why": "The recovery identifier and recovery code appear pre-filled in steps 2–3 so they can be recognised rather than recalled, but there are no saved accounts, avatars, or remembered credentials."
+    },
+    "7": {
+      "score": 4,
+      "why": "Sentences are short and typography is large and high-contrast, though terms like 'recovery identifier', 'MFA code', and 'localhost HTTPS portal' are jargon for a lay user."
+    },
+    "8": {
+      "score": 2,
+      "why": "No error or validation message is shown in any of the nine screenshots; only success/neutral confirmations appear, so problem-plus-fix messaging cannot be observed."
+    },
+    "9": {
+      "score": 2,
+      "why": "Password rules are stated in prose and the MFA code is described as six digits, but no placeholder text, sample value, or worked example is shown in any field."
+    },
+    "10": {
+      "score": 4,
+      "why": "Each authentication input is clearly labelled ('Password', 'MFA code', 'Recovery code'), although no alternatives such as biometric or face login are offered at all."
+    },
+    "11": {
+      "score": 5,
+      "why": "Every screen presents at most one primary and one secondary action, never overwhelming the user with parallel options."
+    },
+    "12": {
+      "score": 4,
+      "why": "Bold status lines ('secure instructions have been prepared', 'Your appointment request has been confirmed') plus cumulative log entries state the result of each action."
+    },
+    "13": {
+      "score": 4,
+      "why": "Each card includes a one-line instruction and a highlighted safety reminder/tip, and the footer repeats guidance about the URL and never sharing codes."
+    },
+    "14": {
+      "score": 3,
+      "why": "'Start over', 'Return to sign in' and 'Forgot password?' allow retries on some screens, but the new-password and MFA steps offer no back, cancel, or resend-code option."
+    },
+    "15": {
+      "score": 5,
+      "why": "All nine steps reuse an identical header, card layout, button styling, reminder banner, and log panel position, making the pattern highly predictable."
+    }
+  },
+  "cost_usd": 0.119165,
+  "generation_id": "gen-1785922751-0VOu4eRSYzYHgmsurE7Q",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 2,
+    "5": 1,
+    "6": 3,
+    "7": 4,
+    "8": 2,
+    "9": 2,
+    "10": 4,
+    "11": 5,
+    "12": 4,
+    "13": 4,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 2.0,
+    "comprehension": 2.6667,
+    "decision_making": 4.3333,
+    "learning": 4.0
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

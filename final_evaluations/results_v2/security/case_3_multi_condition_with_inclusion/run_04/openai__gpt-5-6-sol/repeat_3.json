@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:09:33.500664+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "24a6e1467197c0ef6a9566560dbce218c9ba1da70fee6592759ec6e6f7e54b02",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset-token hash and target user ID are stored in the same server-side session, and the password is changed only for that session's userId."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code is validated against the hash in its originating CSRF-protected session, so it cannot be used from another user's session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset updates the password hash but does not invalidate any other existing sessions in the sessions map."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires HTTPS certificates and enables TLS, but it does not explicitly configure or demonstrate use of the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset secrets are stored as SHA-256 hashes and passwords use Argon2id, but session user data and some secrets such as the MFA code are stored in plaintext memory."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email implementation, and the simulated recovery message exposes the reset token and link directly in browser logs and an API response."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email, token, password, and MFA inputs are type-, length-, format-, and policy-validated, although no general-purpose sanitization library is used."
+    },
+    "8": {
+      "score": 5,
+      "why": "The recovery link is built from location.origin with a fixed same-origin path, and CSP restricts form actions and connections to self."
+    },
+    "9": {
+      "score": 5,
+      "why": "All simulated message content is generated from fixed text, origin, and random tokens and is inserted using text nodes rather than untrusted HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "Authorization secrets, reset tokens, verification links, and the MFA code are deliberately displayed in the Logs panel and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are Argon2id-hashed and reset tokens are hashed, a password hash and the fixed MFA code 246810 are embedded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The application contains a fixed internal account and a hard-coded reusable MFA code, which function as built-in credential material."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery and login attempts are limited to five before a ten-minute lock, while MFA is exhausted after five failures."
+    },
+    "14": {
+      "score": 4,
+      "why": "Recovery and login responses use generic messages independent of account existence, though login password verification may still create a timing difference."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated from 32 cryptographically random bytes, stored only as hashes, expire after 15 minutes, and are bound to the user's recovery session."
+    }
+  },
+  "cost_usd": 0.0473165,
+  "generation_id": "gen-1785924546-F5wPFQXLOhVPVEAwQVcc",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

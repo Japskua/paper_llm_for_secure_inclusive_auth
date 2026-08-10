@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:43:55.721978+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "410e1cc46bbbbc0cb7869109d020fb69db0a302c9f3a7d9f4feb7974c90fbca9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "resetRecordFor requires the token's stored sessionId to match the current session and /api/reset/confirm also requires session.verifiedTokenHash to equal the token hash, so the code is verified as belonging to the requesting user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is rejected unless record.sessionId === session.id (and it is single-use), so the same reset code does not work for any other session or user."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/reset/confirm only updates the current session's flags and the global passwordHash; it never invalidates other entries in the sessions map, so previously authenticated sessions remain usable."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server is TLS-only (Bun.serve with cert/key), sets HSTS and rejects x-forwarded-proto: http, but the TLS version is not explicitly pinned to the latest and relies on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and the registered contact are stored as SHA-256 digests and passwords as bcrypt (cost 10), which are appropriate protections, though these are hashes rather than encryption strictly speaking."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email message exists in this system; the simulated delivery prints the raw reset code into the requesting browser's page and Logs panel, so the claim about an email guarding data is only partially applicable."
+    },
+    "7": {
+      "score": 5,
+      "why": "All user inputs are trimmed, length-capped, type-checked and regex-validated (contact, token, MFA code), and JSON bodies are size-limited to 4096 bytes with shape validation."
+    },
+    "8": {
+      "score": 4,
+      "why": "There are no outbound redirects at all; the only simulated link is a same-page hash route (#verify?token=...) and CSP confines form-action and connect-src to 'self'."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, and all dynamic content including simulated delivery messages is inserted via textContent under a nonce-based CSP, so no user-supplied HTML or scripts are rendered."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic and leak nothing, but the visible Logs panel deliberately displays the reset token and the MFA code, so tokens are in fact shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed at runtime, but the MFA code \"472913\" and the initial password \"Initial-Clinical!2025\" are hardcoded directly in the source code."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system ships with a working preset password (Initial-Clinical!2025) and a fixed MFA code (472913), which function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset requests (3 per 10 min), verify attempts (5 per 10 min), login failures (5 then 10-minute lockout) and MFA failures (5 then lockout) are all throttled with server-side, session-independent state."
+    },
+    "14": {
+      "score": 2,
+      "why": "Although the message text is generic, the /api/reset/request response includes the mockToken field only when the contact matches the registered account, so the response payload reveals whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 256-bit CSPRNG base64url values, stored only as SHA-256 hashes, single-use, 15-minute TTL, and bound to both the account contact digest and the requesting session."
+    }
+  },
+  "cost_usd": 0.1227762,
+  "generation_id": "gen-1785919340-hkRjfEpIzFn2rEhJLewX",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

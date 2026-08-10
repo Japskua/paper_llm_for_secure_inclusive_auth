@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:19:06.147626+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system checks that the reset code belongs to the user by verifying `record.sessionId !== session.id` in `/api/verify-token`."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code cannot work for any other user because it is tied to `sessionId` and `accountBinding`."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated after password reset because `session.passwordChanged` is set, and no explicit session invalidation is shown."
+    },
+    "4": {
+      "score": 5,
+      "why": "The website uses HTTPS with TLS (evidenced by `tls: { cert, key }` in Bun.serve and `Strict-Transport-Security` header)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset codes are hashed with SHA-256 (`digest` function), and user data is not stored in plaintext (e.g., `Bun.password.hash` for passwords)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Email messages (simulated in logs) do not expose private user data; tokens are logged locally but not tied to identifiable info."
+    },
+    "7": {
+      "score": 5,
+      "why": "User-supplied data (e.g., `contact`, `token`, `password`) is validated for length, format, and sanitized (e.g., `validContact`, regex checks)."
+    },
+    "8": {
+      "score": 5,
+      "why": "No redirects or external URLs are allowed; only same-origin paths are handled (`url.pathname.startsWith('/api/')`)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email templates (simulated logs) contain no user input; all dynamic content is controlled by the server."
+    },
+    "10": {
+      "score": 5,
+      "why": "Error pages and logs do not expose private info (e.g., `genericError` returns a generic message, and no stack traces are shown)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Passwords are hashed with bcrypt (`Bun.password.hash`), and no secrets are hardcoded or logged."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials are present; sessions and resets are dynamically generated with random tokens."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiting is enforced (e.g., `rateAllowed` for recovery/verification attempts, and MFA lockout after 5 attempts)."
+    },
+    "14": {
+      "score": 5,
+      "why": "The system does not reveal whether a username/email exists (generic response: 'Enter a valid contact value')."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are random (32-byte tokens), complex (base64url-encoded), and user-specific (tied to `sessionId` and `accountBinding`)."
+    }
+  },
+  "cost_usd": 0.016215,
+  "generation_id": "gen-1785921541-w5T2iHZKOreo2s978i0t",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

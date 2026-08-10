@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:34:13.583138+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "e8e8aca10204c746985ba82e1922651d96e9afa3cff7f743870a5149d08e7cee",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "verify-token uses timingSafeEqual to compare the supplied token only against the recovery object stored on the caller's own session, also requiring real, unconsumed, and unexpired state."
+    },
+    "2": {
+      "score": 1,
+      "why": "The token is bound to the initiating session (c.session.recovery) and is marked tokenConsumed after one use, so it cannot work for any other user or session."
+    },
+    "3": {
+      "score": 5,
+      "why": "password-update only sets recovery.passwordUpdated and never deletes or invalidates other entries in the sessions map, so previously authenticated sessions remain valid until their 24h expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured exclusively with TLS cert/key (HTTPS-only) plus HSTS, but no minimum/latest TLS version is explicitly pinned."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are 32-byte CSPRNG tokens and passwords are hashed with Bun.password bcrypt (cost 10), which is appropriate cryptography, though tokens are random rather than encrypted and data sits in plaintext memory."
+    },
+    "6": {
+      "score": 4,
+      "why": "No real email is sent; the initiate response uses a generic account-neutral message and the simulated delivery contains only the token, not other private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email is regex- and length-validated, passwords and tokens are strictly format-checked, JSON bodies are size/type limited, and the client renders all dynamic values via textContent."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects at all, and CSP (form-action 'self', connect-src 'self', base-uri 'none') confines navigation and requests to the origin."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates; the simulated delivery/verification messages are static strings inserted with textContent, so no user-supplied HTML or scripts can appear."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors are generic, but the client deliberately writes the reset token and MFA code into the on-page Logs list and console.log, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords exist only as bcrypt hashes, but the MFA secret code \"481516\" is hardcoded in the source and an initial password hash is embedded in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "The server ships with a hardcoded initial bcrypt hash (a widely known example hash of \"password\"), meaning a default credential effectively exists."
+    },
+    "13": {
+      "score": 5,
+      "why": "allowed() enforces MAX=5 attempts per 15-minute window followed by a 15-minute block, applied to initiate, token, mfa, password, and login actions."
+    },
+    "14": {
+      "score": 3,
+      "why": "initiate returns a generic message, but since testDeliveryToken is returned for any address and verify-token only succeeds when recovery.real is true, the verify step acts as an oracle revealing whether the email exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is randomBytes(32) rendered as a 64-char hex string, bound to the requesting session's recovery, single-use, and valid for only 15 minutes."
+    }
+  },
+  "cost_usd": 0.1485081,
+  "generation_id": "gen-1785925969-nwK41wW0cX5QzERw1j5N",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

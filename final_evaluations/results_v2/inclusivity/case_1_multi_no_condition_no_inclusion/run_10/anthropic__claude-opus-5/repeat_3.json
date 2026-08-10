@@ -1,0 +1,114 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:05:36.515506+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 6,
+  "screenshots": [
+    "step_01_request_password_reset.png",
+    "step_02_verify_reset_code.png",
+    "step_03_set_new_password.png",
+    "step_04_confirm_identity.png",
+    "step_05_updated_privacy_conditions.png",
+    "step_06_password_recovery_complete.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All six screens are static single-column pages with no animations, carousels, banners, or modal pop-ups — only the header, one card, the logs panel, and a footnote."
+    },
+    "2": {
+      "score": 4,
+      "why": "Each screen has a bold dark heading and a single filled teal primary button, and focused fields are outlined in blue, so key elements stand out — though the large dark 'Logs' panel competes visually and the critical reset/MFA codes are buried in small monospace text."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each step presents only one task, but the item she actually needs (the reset code, e.g. 'UgPhDVWr6PWO1P2ldsXz1sr-NX6O6WxG8bJ_HECsyAU') is hidden in a dark developer log panel that step 2 never explicitly points to ('simulated delivery channel')."
+    },
+    "4": {
+      "score": 2,
+      "why": "The flow requires her to hold in mind or hand-transcribe a long random reset code, a 6-digit MFA code, and a 5-part password rule (12+ chars, upper, lower, number, symbol) across six sequential steps, so this statement is largely false."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager integration, autofill hints, 'remember me' checkbox, show-password toggle, or paste helper appears on any screen, including the two password fields in step 3."
+    },
+    "6": {
+      "score": 1,
+      "why": "Nothing saved or familiar is surfaced — no masked email/phone hint, no account name echo, no progress/step indicator, and no previously used items to recognise rather than recall."
+    },
+    "7": {
+      "score": 4,
+      "why": "Body text is short, plain-language, sans-serif and high-contrast (e.g. 'Use at least 12 characters, with uppercase, lowercase, a number, and a symbol.'), though the logs panel uses tiny monospace strings that are hard to read."
+    },
+    "8": {
+      "score": 2,
+      "why": "No error or validation message is visible in any of the six screenshots — no inline field errors, no wrong-code or mismatched-password feedback — so the claim cannot be observed as true of this system."
+    },
+    "9": {
+      "score": 3,
+      "why": "Step 1 gives a concrete example identifier ('use demo-account') and step 4 tells her where to look ('Check the visible Logs panel'), but step 3 gives only abstract password rules with no sample password and step 2 gives no example code format."
+    },
+    "10": {
+      "score": 3,
+      "why": "The single authentication path shown (password + emailed reset code + six-digit MFA) is clearly labelled, but no alternative choices such as face/biometric login, SMS vs email, or magic link are offered at all."
+    },
+    "11": {
+      "score": 5,
+      "why": "Every screen presents at most one input pair and one or two buttons (e.g. step 2 has only 'Verify code' and 'Request another code'), so she is never faced with many simultaneous choices."
+    },
+    "12": {
+      "score": 4,
+      "why": "The final screen states plainly that the password was updated, identity confirmed and conditions accepted, and the logs append an outcome line for each action, but intermediate steps show no inline success confirmation before advancing."
+    },
+    "13": {
+      "score": 4,
+      "why": "Each new step carries a short explanatory tip or highlighted callout (e.g. 'Codes expire after 10 minutes.', 'Never send passwords or codes to anyone by email or phone.', 'For safety, only sign in through the official portal address.')."
+    },
+    "14": {
+      "score": 3,
+      "why": "Step 2 offers 'Request another code' and step 6 offers 'Return to recovery start', but steps 3–5 provide no back link, cancel, or edit option to undo a mistake mid-flow."
+    },
+    "15": {
+      "score": 5,
+      "why": "All six screens reuse the identical header, teal rule, white rounded card, label-above-field pattern, teal primary button, dark logs panel and footer warning, so the layout is fully consistent."
+    }
+  },
+  "cost_usd": 0.10773,
+  "generation_id": "gen-1785920691-XksPoiFqXSgqvl0Apz4s",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 2,
+    "5": 1,
+    "6": 1,
+    "7": 4,
+    "8": 2,
+    "9": 3,
+    "10": 3,
+    "11": 5,
+    "12": 4,
+    "13": 4,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 1.3333,
+    "comprehension": 3.0,
+    "decision_making": 4.0,
+    "learning": 4.0
+  },
+  "overall": 3.2667,
+  "capture_complete": true
+}

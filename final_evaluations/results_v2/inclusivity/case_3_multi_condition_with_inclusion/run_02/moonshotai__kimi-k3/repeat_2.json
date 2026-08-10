@@ -1,0 +1,120 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "inclusivity",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:06:57.836179+00:00",
+  "rubric_file": "inclusivity_eval_case_3.md",
+  "rubric_sha256": "72f5afbf5ecd676432e29ce4d603db651dc5fd336191b13da1c2e1dfb9ae2914",
+  "app_ts_sha256": "ddac002ec5de2c6804d916807dcff96b0ab89cd19c280ef7f0b2a698d2513172",
+  "screenshot_count": 12,
+  "screenshots": [
+    "step_01_request_recovery.png",
+    "step_02_recovery_instruction_sent.png",
+    "step_03_verify_reset_code.png",
+    "step_04_reset_code_confirmed.png",
+    "step_05_verify_recovery_identity.png",
+    "step_06_recovery_identity_confirmed.png",
+    "step_07_set_new_password.png",
+    "step_08_sign_in.png",
+    "step_09_verify_safety_code.png",
+    "step_10_verify_possession_value.png",
+    "step_11_accept_privacy_conditions.png",
+    "step_12_confirm_appointment_request.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All 12 screens are static with no pop-ups, animations, or moving images, and the layout is uncluttered except for the persistent technical 'Logs' panel at the bottom of every screen."
+    },
+    "2": {
+      "score": 4,
+      "why": "Primary actions are solid blue buttons, the current step is highlighted in the progress bar, and feedback appears in colored banners, though the dark Logs panel competes somewhat for visual attention."
+    },
+    "3": {
+      "score": 4,
+      "why": "Each screen presents exactly one numbered task with a labeled field and one primary button, making the needed element easy to locate, though jargon labels like 'Testing mock reset token' may slow recognition slightly."
+    },
+    "4": {
+      "score": 4,
+      "why": "The 7-step progress bar is always visible, previously entered values are auto-restored into fields with messages saying so, and only the single password rule (12+ chars, upper/lower/number/symbol) must be remembered."
+    },
+    "5": {
+      "score": 2,
+      "why": "No password manager prompt, autofill option, or 'remember me' checkbox appears on any screen, including the sign-in screen (step_08), which shows only account reference and password fields."
+    },
+    "6": {
+      "score": 4,
+      "why": "The system restores prior entries visibly (e.g., 'Your simulated recovery identity value has been restored in the field', pre-filled helena@example.com at sign-in) and shades completed steps green, supporting recognition."
+    },
+    "7": {
+      "score": 3,
+      "why": "Most text is short and plain ('You can pause and return whenever you need'), but repeated mock/technical phrasing like 'testing mock reset token', 'recovery identity value', and 'distinct possession value' is confusing."
+    },
+    "8": {
+      "score": 3,
+      "why": "No error state is shown in any of the 12 screenshots — all feedback banners are success or info messages — so the behavior of error messages cannot be verified."
+    },
+    "9": {
+      "score": 3,
+      "why": "Instructions say what to do ('Paste or type the testing mock reset token here') and restored values appear in fields, but no explicit examples (e.g., a sample password format) are provided."
+    },
+    "10": {
+      "score": 2,
+      "why": "There are no login-method choices at all — no face login or alternatives — only a single fixed sequence of password, six-digit code, and possession value, so the choices the statement lists do not exist."
+    },
+    "11": {
+      "score": 5,
+      "why": "Every screen offers essentially one action — one field and one confirm/continue button — with at most a single secondary link, so the user never faces many simultaneous choices."
+    },
+    "12": {
+      "score": 5,
+      "why": "Each action produces an explicit outcome banner, e.g., 'Testing mock reset token confirmed', 'Your new password is saved', 'Separate possession value confirmed. You are signed in', and 'appointment request is confirmed'."
+    },
+    "13": {
+      "score": 4,
+      "why": "A 'Need help?' button is fixed in the header of every screen and each step carries a short instruction plus next-step tips ('Next, enter the separate recovery identity value'), though the help content itself is not shown."
+    },
+    "14": {
+      "score": 3,
+      "why": "No mistake or retry scenario is demonstrated in the screenshots; the pause-and-restore messages ('Progress remains in this browser session') suggest forgiveness but an actual try-again path is not observed."
+    },
+    "15": {
+      "score": 5,
+      "why": "All 12 screens share an identical header, title, progress bar, card layout, button styling, and feedback-banner pattern, so the design is highly consistent throughout the flow."
+    }
+  },
+  "cost_usd": 0.151629,
+  "generation_id": "gen-1785924211-lrZiMAkQpRLel8LfoQDN",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 2,
+    "6": 4,
+    "7": 3,
+    "8": 3,
+    "9": 3,
+    "10": 2,
+    "11": 5,
+    "12": 5,
+    "13": 4,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 3.3333,
+    "comprehension": 3.0,
+    "decision_making": 4.0,
+    "learning": 4.0
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:46:33.235078+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "f95d50dc39b7f89466db8d3c177f687dfd536bc51a40302d432f5797a865bbd0",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens and verified grants are bound to both the initiating session ID and the internal account ID."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token cannot be used in another session because verification requires the token's session ID to match the current session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Resetting the password does not invalidate other authenticated sessions, which remain valid until their normal expiration."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server uses HTTPS and HSTS, but the TLS configuration does not explicitly require the latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and email addresses are stored as SHA-256 hashes, passwords use bcrypt, and transport is protected by TLS, although general user data encryption at rest is not implemented."
+    },
+    "6": {
+      "score": 3,
+      "why": "No actual email is generated, while the simulated recovery response is generic and does not include private account data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email and password inputs are type-checked, length-limited, validated, and never inserted into HTML as untrusted markup."
+    },
+    "8": {
+      "score": 5,
+      "why": "HTTP redirects use only the fixed configured HTTPS origin after strict Host validation, and the client reset link is same-origin."
+    },
+    "9": {
+      "score": 5,
+      "why": "The HTML shell is static and client-controlled values are inserted through textContent or validated DOM properties rather than untrusted HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client simulation explicitly writes reset tokens and MFA codes into its visible log."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords and reset tokens are hashed, the MFA code is hard-coded as \"246810\" and stored in plaintext session state."
+    },
+    "12": {
+      "score": 2,
+      "why": "The application contains a fixed initial password hash for its mock account and a fixed MFA code, creating default secret material."
+    },
+    "13": {
+      "score": 5,
+      "why": "Recovery verification is locked after five failures, MFA attempts are capped at five, and reset requests are rate-limited."
+    },
+    "14": {
+      "score": 5,
+      "why": "Reset requests return the same generic message and same-shaped random token regardless of whether the submitted email matches the account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated from 32 cryptographically random bytes and are bound server-side to a specific account and session."
+    }
+  },
+  "cost_usd": 0.048584,
+  "generation_id": "gen-1785923161-mK6t3gbaBjBcN23QM2xR",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 2,
+  "judged_at": "2026-08-05T09:08:04.022903+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset-verify and reset-complete checks require the token record's sessionId to match the current session."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is rejected when record.sessionId does not match the requesting session, so it does not work for another user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "After reset-complete the code does not invalidate or delete existing sessions, so prior sessions would remain usable."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server uses TLS certificates and redirects HTTP to HTTPS, but the code does not specify or prove enforcement of the latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "The password is bcrypt-hashed and HTTPS protects transport, but reset tokens are stored and returned as plaintext rather than encrypted."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no real email; the simulated reset channel returns the reset token in JSON and writes it to the visible log, so private data is not hidden."
+    },
+    "7": {
+      "score": 4,
+      "why": "The identifier is allow-listed by regex and passwords are validated before hashing, although the code mainly validates rather than transforms user data."
+    },
+    "8": {
+      "score": 4,
+      "why": "The only redirect is a fixed HTTP-to-HTTPS redirect to localhost with the original path, so it does not create an open redirect to an external site."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present, and the simulated delivery does not embed user-supplied HTML or scripts, but email safety cannot be directly observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "The API responses and client-side logs display testToken and mfaCode, so private tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the fixed MFA code is hardcoded and reset tokens are exposed, so secret codes are not all stored or handled securely."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default username/password login is present, but the deterministic MFA code 482913 acts as a default credential."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limits are applied to reset requests, token verification attempts, and MFA verification attempts."
+    },
+    "14": {
+      "score": 1,
+      "why": "The eligible reset response includes a testToken field that is absent for unknown identifiers, revealing whether the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are generated with crypto.getRandomValues and are validated as bound to the issuing session ID."
+    }
+  },
+  "cost_usd": 0.059778,
+  "generation_id": "gen-1785920678-2Qne0LNvH4EReGeA1tQC",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 4,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.0,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 2.9334,
+  "capture_complete": true
+}

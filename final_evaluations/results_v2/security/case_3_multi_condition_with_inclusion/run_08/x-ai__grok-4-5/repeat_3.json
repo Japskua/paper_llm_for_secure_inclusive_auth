@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:28:21.751350+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset tokens are stored with userId and verifiedRecord/reset-complete only change the password for that bound userId."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is bound to a specific userId and sessionId, so the same reset code does not authorize a password change for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "reset-complete updates the password hash and marks the token used but never invalidates other existing sessions for that user."
+    },
+    "4": {
+      "score": 5,
+      "why": "Bun.serve is configured with TLS cert/key and responses send HSTS, so the site is served over HTTPS."
+    },
+    "5": {
+      "score": 4,
+      "why": "Passwords use argon2id and reset tokens are stored as SHA-256 hashes; data is not otherwise encrypted at rest in the in-memory maps."
+    },
+    "6": {
+      "score": 4,
+      "why": "There is no real email body; API messages are generic and do not echo private fields, though evaluation responses expose mock delivery codes."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are validated via validEmail/validCode/validToken/passwordIssue, body size is limited, and sensitive outputs are not built from raw HTML concatenation of user input."
+    },
+    "8": {
+      "score": 5,
+      "why": "No user-controlled redirect targets exist; navigation stays on same-origin API paths and static app steps."
+    },
+    "9": {
+      "score": 5,
+      "why": "Email is only simulated; no template renders user-supplied HTML or scripts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors are generic, but the client intentionally prints recovery/MFA tokens into the on-page activity logs for the simulation."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hashes use argon2id, but DELIVERY_AUTHORIZATION_CODE and MFA_CODE are hardcoded secrets in source."
+    },
+    "12": {
+      "score": 2,
+      "why": "A demo user is seeded with the known password Initial-Only-Password!42, i.e. default/evaluation credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "loginAttempts, mfaAttempts, deliveryAttempts, and resetRequestAttempts lock out after MAX_ATTEMPTS within the time window."
+    },
+    "14": {
+      "score": 5,
+      "why": "reset-request always returns the same availability message and login failures use a generic We could not sign you in response."
+    },
+    "15": {
+      "score": 5,
+      "why": "Recovery tokens are randomId(32) (64 hex chars), hashed at rest, and stored with a specific userId and sessionId."
+    }
+  },
+  "cost_usd": 0.01788,
+  "generation_id": "gen-1785925663-8kRktNGrQ8cHFYPpnt7o",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

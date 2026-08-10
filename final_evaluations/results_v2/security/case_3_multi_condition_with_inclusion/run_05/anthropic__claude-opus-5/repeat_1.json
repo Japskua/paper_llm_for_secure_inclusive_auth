@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:14:40.771300+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "d320e4bf4ae12b623b125b0cd1c4c1017f170fcd9a28368c182b56f0a146b753",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "/api/verify hashes the supplied token, looks up the reset record and rejects it unless `reset.accountKey === session.recoveryAccountKey`, so the code must belong to the recovering account."
+    },
+    "2": {
+      "score": 2,
+      "why": "Codes are 32-byte random values, hashed, marked `used` immediately on verification and bound to an accountKey, so they cannot be replayed for another user (only a theoretical cross-session reuse exists because the demo has a single approved account)."
+    },
+    "3": {
+      "score": 4,
+      "why": "Sessions live in a global `sessions` map and a password reset only calls `clearAccountAuthority` on the *current* session — no other session records are revoked, so previously established sessions remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is started with `tls: {cert, key}`, HTTPS is enforced (non-https returns 400) and HSTS is set, but no explicit minimum/latest TLS version is configured — it relies on Bun defaults with local dev certs."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes and grants are stored only as SHA-256 hashes and passwords are hashed with bcrypt (cost 10); nothing sensitive is kept in plaintext, though there is no at-rest encryption layer."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email exists; the simulated delivery endpoint (`/api/demo/recovery-code`) is session-gated and carries no patient data, but it returns the raw recovery code in the response body, so 'guarding' is only partial."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated by allow-list regexes (`validIdentifier`, `validToken`), password policy checks and length caps, and all output is rendered with `textContent`/DOM nodes."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect target is the server-generated relative path `/recovery-link?token=...`, and CSP sets `form-action 'self'` / `base-uri 'none'`, so no user-controlled off-site redirect is possible."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no HTML email templates at all; the simulated message is JSON inserted into the DOM via `textContent`, so no user input can inject scripts or markup."
+    },
+    "10": {
+      "score": 2,
+      "why": "The client deliberately logs secrets to the activity log and console: `log(\"Mock hospital MFA code: \"+r.mockMfaCode)` and `log(\"...recovery code \"+rememberedLinkToken)`, so tokens do appear in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "A default bcrypt hash is hardcoded (`accountPasswordHash = process.env... || \"$2b$10$N9qo8u...\"`) and the MFA secret is literal in source (`const MFA_CODE = \"246810\"`), so secret codes are in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system falls back to a hardcoded default password hash and a fixed static MFA code when env vars are absent, which is exactly a default-credential configuration."
+    },
+    "13": {
+      "score": 5,
+      "why": "`actionAllowed`/`rateAllowed` throttle every sensitive endpoint per session and per source+account (5–8 attempts per 15 minutes) and return 429 with a retry hint."
+    },
+    "14": {
+      "score": 4,
+      "why": "Recovery, login, verify and MFA all return identical generic messages regardless of account existence, though the UI itself displays the approved demo identifier `helena.demo@hospital.test`, which discloses a valid account."
+    },
+    "15": {
+      "score": 5,
+      "why": "Codes come from `randomBytes(32).toString(\"base64url\")`, expire in 15 minutes, are single-use, and are stored with an `accountKey` binding them to the specific account."
+    }
+  },
+  "cost_usd": 0.16404,
+  "generation_id": "gen-1785924836-uAOpTdc2d5Sgz4mr5lBZ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.7334,
+  "capture_complete": true
+}

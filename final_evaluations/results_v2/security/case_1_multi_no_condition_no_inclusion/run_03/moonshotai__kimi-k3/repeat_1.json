@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:33:17.222768+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "verify-reset compares the SHA-256 digest of the submitted token against the digest stored in the requesting session via constantTimeEqual, binding the code to the session/user flow, though no real user-account binding exists."
+    },
+    "2": {
+      "score": 1,
+      "why": "The token's digest is stored only in the originating session (session.reset), so any other session has no reset record and is rejected, and tokenConsumed prevents reuse even within the same session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing invalidates sessions after a password reset: sessions remain in the Map with refreshed expiry and the resetting session itself continues working through the privacy step."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server refuses to serve without TLS certificates, sets HSTS, a Secure __Host- cookie, and requires an https Origin, but the TLS version is not pinned to the latest in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 digests and passwords are hashed with bcrypt (cost 10), though the plaintext token is still returned to the client as testToken."
+    },
+    "6": {
+      "score": 2,
+      "why": "No real email message exists; the simulated delivery prints the recovery code directly in the page, the Logs panel, and the browser console rather than guarding it."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are validated (JSON body shape, 1–160 length for account, strict /^[a-f0-9]{64}$/ for the token, server-side password policy) and client rendering uses only textContent/createTextNode under a nonce-based CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "There are no server-side redirects at all; the recovery link is built from location.pathname with only a fragment, and CSP restricts form-action and connect-src to 'self'."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no email templates and all displayed messages are static strings, with user input never inserted as HTML and inline scripts blocked by CSP, so no script injection is possible."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces, but the on-page 'Logs' panel and console explicitly display the recovery token and the MFA security code."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and reset tokens stored only as digests, but the MFA secret '246810' is hardcoded directly in the source code and returned to clients."
+    },
+    "12": {
+      "score": 4,
+      "why": "There are no default accounts or passwords and new passwords must satisfy a strict server-enforced policy, though the universal hardcoded MFA code functions like a static shared credential."
+    },
+    "13": {
+      "score": 4,
+      "why": "MFA locks for 5 minutes after 5 failed attempts and the recovery and password endpoints throttle to 5 tries per 10-minute window, but verify-reset has no attempt limit and counters are per-session so a new session resets them."
+    },
+    "14": {
+      "score": 5,
+      "why": "Every recovery request returns the identical generic 'If an eligible account exists…' message and the account value is never stored or checked, so account existence cannot be inferred."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset code is 256 bits from crypto.getRandomValues (64 hex chars), single-use, and 10-minute-lived, bound to the issuing session rather than to a persistent user account since no accounts exist."
+    }
+  },
+  "cost_usd": 0.137466,
+  "generation_id": "gen-1785918553-pATfRUhKjxNnkM4eu2eY",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 4,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

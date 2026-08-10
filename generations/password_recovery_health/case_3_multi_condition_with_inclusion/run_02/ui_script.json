@@ -1,0 +1,244 @@
+{
+  "variables": {
+    "email": "helena@example.com",
+    "new_password": "Renewed!HospitalPass9"
+  },
+  "steps": [
+    {
+      "name": "request_recovery",
+      "actions": []
+    },
+    {
+      "name": "recovery_instruction_sent",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#id",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "#rf button"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#rnext:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "TESTING MOCK RESET TOKEN: ([A-Za-z0-9_-]+)",
+          "into": "reset_token"
+        },
+        {
+          "do": "click",
+          "selector": "#rnext"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#instruction:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "reset_code_confirmed",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#tf button"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#tnext:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "verify_recovery_identity",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "TESTING MOCK RECOVERY IDENTITY VALUE: ([A-Z0-9_-]+)",
+          "into": "recovery_identity"
+        },
+        {
+          "do": "click",
+          "selector": "#tnext"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#identity:not([hidden])"
+        }
+      ]
+    },
+    {
+      "name": "recovery_identity_confirmed",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#if button"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#inext:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#inext"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password:not([hidden])"
+        },
+        {
+          "do": "fill",
+          "selector": "#pw",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#cpw",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "#pf button"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#pnext:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "sign_in",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#pnext"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#login:not([hidden])"
+        },
+        {
+          "do": "fill",
+          "selector": "#lpw",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "#lf button"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#lnext:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "verify_safety_code",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Demonstration code: ([0-9]{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "click",
+          "selector": "#lnext"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa:not([hidden])"
+        },
+        {
+          "do": "click",
+          "selector": "#mf button"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#vf:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "verify_possession_value",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "DISTINCT TESTING MOCK POSSESSION VALUE: ([A-Z0-9_-]+)",
+          "into": "possession_value"
+        },
+        {
+          "do": "fill",
+          "selector": "#pos",
+          "value": "${possession_value}"
+        },
+        {
+          "do": "click",
+          "selector": "#vf button"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mnext:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "accept_privacy_conditions",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#mnext"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#privacy:not([hidden])"
+        },
+        {
+          "do": "click",
+          "selector": "#accept"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#qnext:not(.hide)"
+        }
+      ]
+    },
+    {
+      "name": "confirm_appointment_request",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#qnext"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#appointment:not([hidden])"
+        },
+        {
+          "do": "click",
+          "selector": "#book"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Your medication review appointment request is confirmed."
+        }
+      ]
+    }
+  ]
+}

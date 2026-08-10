@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:40:31.937805+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "410e1cc46bbbbc0cb7869109d020fb69db0a302c9f3a7d9f4feb7974c90fbca9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Reset records bind each token to a server-side contact digest and originating session ID, both of which are validated before use."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset code cannot be used from another session because resetRecordFor requires record.sessionId to equal the current session ID."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset changes passwordHash but does not invalidate or remove any previously authenticated sessions."
+    },
+    "4": {
+      "score": 4,
+      "why": "The Bun server is configured with TLS and HSTS, although the code does not explicitly restrict TLS to the latest protocol version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens and the registered contact are stored as SHA-256 digests, passwords use bcrypt, and transport is protected by TLS, though no general user-data encryption is shown."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email message is generated or sent, so there is no actual email implementation whose handling of private data can be verified."
+    },
+    "7": {
+      "score": 5,
+      "why": "Contact, token, code, and password inputs receive type, format, length, normalization, or policy validation before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application performs no external redirects and restricts navigation to a fixed list of internal hash routes."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email template exists, although browser output uses textContent and does not render user input as HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The browser-visible Logs panel explicitly displays reset tokens and the static MFA code."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although passwords are stored as bcrypt hashes, the initial plaintext password and MFA code are hardcoded in the source."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application includes a hardcoded initial password and a fixed MFA code that function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset, token-verification, login, and MFA attempts are limited, with login and MFA lockouts applied after five failures."
+    },
+    "14": {
+      "score": 1,
+      "why": "A registered contact receives a mockToken field while an unregistered contact does not, allowing account existence to be inferred."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated from 32 cryptographically random bytes and are bound to the registered contact digest and originating session."
+    }
+  },
+  "cost_usd": 0.08693,
+  "generation_id": "gen-1785919212-exZZFSkHaf5BCfhfFJs9",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.2667,
+  "capture_complete": true
+}

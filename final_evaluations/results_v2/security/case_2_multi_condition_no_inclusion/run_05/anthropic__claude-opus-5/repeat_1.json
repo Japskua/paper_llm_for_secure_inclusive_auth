@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:27:41.477898+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "925feb768881b427ca2a91ec460505138a991961227abd88e2ee1e05f138fadd",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token is stored on the server-side recovery session and compared (with timingSafeEqual) only against that session's own token, so it is bound to the requesting session, though there is no real user account model to bind it to."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each session gets its own 32-byte random token stored in its own `RecoverySession`, so a token from one session cannot verify in another session's `verify-token` check."
+    },
+    "3": {
+      "score": 4,
+      "why": "After `reset-password` the same session id/cookie continues to be used and is merely advanced to the `signin` phase — there is no session rotation or invalidation of prior sessions anywhere in the code."
+    },
+    "4": {
+      "score": 4,
+      "why": "TLS is mandatory (process exits without certs) and HTTP:8080 308-redirects to HTTPS with HSTS set, but no explicit minimum/latest TLS version or cipher policy is configured, relying on Bun defaults."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with bcrypt (cost 10) and tokens are CSPRNG-generated, but reset tokens and MFA codes are kept in plaintext in the in-memory session map rather than hashed/encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all; the 'simulated delivery' instead returns `testToken` and `testMfaCode` in the JSON response and prints them into the visible Logs panel and browser console."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs pass strict allow-list validation (`validAccountInput`, `validToken`, `validMfa`, password policy) and the client builds DOM exclusively via `textContent`/`createElement`, never interpolating input into HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is a hardcoded 308 to `https://localhost:3000/`, with `form-action 'self'` and `base-uri 'none'` in the CSP; no user-controlled redirect parameter exists."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, and the single server-rendered HTML page contains only static markup plus a nonce, so no user input or untrusted script is ever embedded."
+    },
+    "10": {
+      "score": 1,
+      "why": "The reset token and MFA code are explicitly returned in API responses and written to the on-page Logs panel and `console.log`, directly exposing secret recovery values."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the second-factor code is hardcoded in the source as `session.mfaCode = \"482913\"`, i.e. a secret embedded in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "There are no default account credentials, but the constant MFA value `482913` functions as a fixed default secret that is identical for every session."
+    },
+    "13": {
+      "score": 4,
+      "why": "`isBlocked`/`failedAttempt` lock each action for 60 seconds after 5 failures with a generic 429, though the counters live only in the session so clearing the cookie resets them."
+    },
+    "14": {
+      "score": 5,
+      "why": "The `recover` endpoint returns the same neutral 'If the account can be recovered…' message for valid and invalid input, never disclosing account existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "`randomValue(32)` uses `crypto.getRandomValues` to produce a 32-byte base64url token that is unique per session with a 10-minute TTL and single-use flag."
+    }
+  },
+  "cost_usd": 0.117545,
+  "generation_id": "gen-1785922023-sn4vEcayvkDPZWCMvyQs",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.5334,
+  "capture_complete": true
+}

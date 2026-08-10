@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:31:54.120311+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "`ownedRecovery()` requires `recovery.sessionId === session.id` and the submitted token is hashed and compared only against that session's own recovery record."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is only valid against the tokenHash of the recovery owned by the requesting session, so another session's token is rejected — the statement is false."
+    },
+    "3": {
+      "score": 4,
+      "why": "There is no session rotation or invalidation after `/api/reset-password`; the same `sid` cookie/session object remains valid and continues to the next stages."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` is configured with TLS cert/key (server refuses to start without them) and HSTS is set, but no explicit minimum/latest TLS version is pinned — it relies on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes (and cleared after use) and passwords hashed with bcrypt cost 12, though the token itself is returned in plaintext as `mockToken`."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is ever generated; instead the recovery token is returned in the API response, printed into the page as `<code>` and logged to the on-page log and browser console, so no email-side guarding exists."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email is length/regex validated, tokens and cookie values are checked with strict `^[a-f0-9]{64}$` patterns, body size is capped at 4096 bytes, and passwords are policy-checked, though the email validation result is discarded (`void validEmail`)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Navigation uses only same-origin hash routes from an allowlist (`recover|verify|mfa|reset|privacy|confirmation`), CSP sets `form-action 'self'` and `base-uri 'none'`, and no user-controlled redirect target exists."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no email templates at all in the code; the equivalent rendered content is built exclusively with `textContent`/`createElement` so no user HTML or script can be injected."
+    },
+    "10": {
+      "score": 2,
+      "why": "The client explicitly logs the reset token (`\"Test reset token: \" + state.mockToken`) and the MFA code to the visible log panel and console, even though server errors are generic."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never stored plaintext, but the MFA secret is hardcoded in source as `const MFA_CODE = \"246810\"` and echoed to the UI."
+    },
+    "12": {
+      "score": 2,
+      "why": "The hardcoded, deterministic MFA code `246810` functions as a built-in default credential that always passes the second factor for every recovery."
+    },
+    "13": {
+      "score": 5,
+      "why": "Per-recovery attempt counters (`ATTEMPT_LIMIT = 5`) with 60s blocks plus per-IP sliding-window limits (`CLIENT_ATTEMPT_LIMIT`, `CLIENT_RECOVERY_LIMIT`) throttle token, MFA, and password attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/recovery` always returns the same generic \"If an eligible account is available…\" message and creates a recovery regardless of the supplied address, with the validity check deliberately discarded."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from `randomHex(32)` using `crypto.getRandomValues` (256-bit), are single-use, expire in 15 minutes, and are bound to the specific session/recovery record."
+    }
+  },
+  "cost_usd": 0.1277,
+  "generation_id": "gen-1785922284-QVbu2OvWnTOF0t2F3qZL",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

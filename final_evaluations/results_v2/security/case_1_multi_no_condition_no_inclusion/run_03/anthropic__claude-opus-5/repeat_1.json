@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T07:33:40.288154+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset record (digest, expiry, consumption flags) is stored inside the server-side session that requested it, so a code can only be verified by the same session; however there is no real user/account store, so binding is to session rather than a verified user identity."
+    },
+    "2": {
+      "score": 1,
+      "why": "False for this system — each token's SHA-256 digest lives only in the issuing session's `reset` record and is compared with constantTimeEqual, so another session/user's code cannot be used."
+    },
+    "3": {
+      "score": 4,
+      "why": "True — `/api/password` only sets `session.passwordHash` and flags; nothing deletes or rotates session IDs in the `sessions` map, so pre-reset sessions remain valid (session TTL is even refreshed on each request)."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and refuses to serve the app (503) without them, plus HSTS is set, but no explicit minimum TLS version/cipher policy is configured (relies on Bun defaults)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 digests and passwords via `Bun.password.hash` with bcrypt cost 10 — appropriate one-way algorithms — though data is hashed rather than encrypted and only kept in memory."
+    },
+    "6": {
+      "score": 2,
+      "why": "No email is ever composed or sent; the 'delivery' is simulated by returning `testToken` and the MFA code in the JSON response and printing them in the page's Logs panel and console, which is the opposite of guarding private data."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type- and length-checked, the token is regex-constrained to `^[a-f0-9]{64}$`, passwords pass a server-side policy, and all client output uses textContent/createTextNode with no HTML injection sinks."
+    },
+    "8": {
+      "score": 4,
+      "why": "There are no server redirects; the only generated link is `location.pathname + '#token=' + encodeURIComponent(token)`, which cannot leave the origin, and CSP sets `form-action 'self'` and `base-uri 'none'`."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email template exists in the code at all, so while nothing unsafe is templated, the statement cannot be affirmed as implemented."
+    },
+    "10": {
+      "score": 2,
+      "why": "False — the recovery token and MFA code are deliberately echoed to the client and written into the on-page Logs panel and `console.log` ('SIMULATED RECOVERY DELIVERY — test code: ' + token), even though error responses themselves are generic."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never logged, but the MFA secret is a hardcoded literal `code: \"246810\"` in the source, i.e., a secret embedded in code."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no login with default credentials, but the static, hardcoded MFA code '246810' functions as a universal default secret that any user or attacker can supply."
+    },
+    "13": {
+      "score": 4,
+      "why": "True — `tooMany()` caps recovery and password attempts at 5 per 10-minute window with 429 responses, and MFA locks out for 5 minutes after 5 wrong codes, although the counters are per-session-cookie and thus resettable by obtaining a new session."
+    },
+    "14": {
+      "score": 5,
+      "why": "`/api/recovery` never looks up or reflects the account, always returning the identical 'If an eligible account exists, instructions have been prepared.' message, and the UI states the same response is always shown."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset code is 32 bytes from `crypto.getRandomValues` (64 hex chars), short-lived (10 min) and single-use, stored per-session — random and complex, though tied to the session rather than a verified user account."
+    }
+  },
+  "cost_usd": 0.12346,
+  "generation_id": "gen-1785915183-YGLAFz3kP0suq4YUxxeV",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 4,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

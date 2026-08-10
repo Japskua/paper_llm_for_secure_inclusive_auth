@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:41:59.045381+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c4fd046aaec21d61dbcea92c3e7d1830bd59eb3cc9562fc7c9e6a0dc0ee90617",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token hash is stored on and validated only against the issuing session (`active.resetTokenHash` + `safeEqual`), so a code can only be redeemed by the session/user it was issued to, though there is no real user account model to bind to."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is verified only against the hash held in the requesting session, so a code issued in one session fails verification in any other session — the statement is false of this system."
+    },
+    "3": {
+      "score": 4,
+      "why": "No session invalidation or rotation occurs on password change (the same `sid` and session object simply continue, and other sessions are untouched), so prior sessions do remain usable."
+    },
+    "4": {
+      "score": 4,
+      "why": "`Bun.serve` runs with TLS certs, HSTS and `upgrade-insecure-requests` are set, and non-HTTPS `x-forwarded-proto` is rejected, but no explicit minimum/latest TLS version is configured."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset and MFA codes are stored only as SHA-256 hashes and passwords via `Bun.password.hash` bcrypt cost 10, which are appropriate algorithms, though nothing is encrypted at rest (in-memory Map)."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email; the simulated 'delivery' pushes the raw recovery token and the MFA code straight into the page's activity log and browser console, guarding nothing."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs pass strict allowlist regexes (`validAccountInput`, `validToken`, `validPassword`, `/^\\d{6}$/`), JSON body size/content-type is limited, and output uses `textContent` only."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only link produced is the relative `/reset?stage=verify&token=...` combined with `location.origin`, with `form-action 'self'` and `base-uri 'none'` — no user-controlled redirect target exists."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, and the server-rendered HTML interpolates only server-generated CSRF token and nonce values — no user input or scripts from input reach any template."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces, but the recovery token and MFA security code are deliberately written to the on-page 'Secure activity log' and `console.log`."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the shared MFA secret is hardcoded in the source as `const MFA_CODE = \"482915\"`."
+    },
+    "12": {
+      "score": 2,
+      "why": "There is no default username/password, yet the static hardcoded MFA code `482915` functions as a fixed default credential for every session's second factor."
+    },
+    "13": {
+      "score": 5,
+      "why": "Both `/api/verify-token` and `/api/mfa` count failures and impose a 60-second block after 5 wrong attempts, returning HTTP 429."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery endpoint always returns the same neutral 'If the entered account information is eligible...' message regardless of input validity or existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from `crypto.getRandomValues` with 32 bytes encoded base64url, are single-use, expire in 10 minutes, and are bound to the requesting session."
+    }
+  },
+  "cost_usd": 0.124285,
+  "generation_id": "gen-1785922890-SSqTorejxLdy9kyWL70q",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}

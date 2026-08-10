@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:31:45.999155+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "0018d1ea35342313668f4683ad5c9a227ded039dbbb8c3d8066d6f953147dc3e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 1,
+      "why": "The reset token is checked against the current recovery session, but the supplied email is ignored and no user account is bound to the token."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is bound to a recovery owned by one session and cannot be verified from another session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset does not revoke the current session or delete any other existing sessions."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server requires TLS certificates and serves HTTPS with HSTS, but it does not explicitly configure a minimum or latest TLS version."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored as SHA-256 hashes, passwords use bcrypt, and transport uses TLS, although the demonstration returns the plaintext token to the client."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated recovery message is generic and contains no user data, although it exposes the test recovery token."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type-checked, length-limited, format-validated, and never inserted into the interface as HTML, though there is no general sanitization library."
+    },
+    "8": {
+      "score": 5,
+      "why": "The application has no user-controlled redirect destination and its navigation links use fixed same-origin fragment routes."
+    },
+    "9": {
+      "score": 4,
+      "why": "No actual email template is implemented, and the simulated delivery uses fixed text without embedding user input or HTML."
+    },
+    "10": {
+      "score": 1,
+      "why": "The plaintext recovery token is returned by the API and displayed in the page, activity log, URL fragment, and browser console."
+    },
+    "11": {
+      "score": 1,
+      "why": "Passwords are bcrypt-hashed and reset tokens are hashed, but the fixed MFA code is hard-coded as MFA_CODE and exposed to the client."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application defines no default username or password credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Token, MFA, and password failures trigger temporary blocking after five attempts and are additionally subject to client-level rate limits."
+    },
+    "14": {
+      "score": 5,
+      "why": "Recovery initiation returns the same generic response regardless of email validity or account availability."
+    },
+    "15": {
+      "score": 3,
+      "why": "The reset token is a cryptographically random 256-bit value bound to one recovery session, but it is not bound to a validated user account."
+    }
+  },
+  "cost_usd": 0.0485905,
+  "generation_id": "gen-1785922276-tGjQCc464dTFgbMbzTY6",
+  "adjusted_scores": {
+    "1": 1,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

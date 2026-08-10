@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:39:38.739789+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "34be4e068a9c8bef60ff91a52caad6e373d1b9ccd47b8fe0397c3cb80878af2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset record stores an accountId and the password-update step checks that record against the account, although the system only implements one hardcoded account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are bound to an accountId and marked single-use, so the code does not show the same reset code working for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "After a password reset, the code marks the reset record used but does not invalidate other existing session records or clear their authenticated state."
+    },
+    "4": {
+      "score": 3,
+      "why": "Bun.serve is configured with TLS certificate and key files, but no explicit minimum or maximum TLS protocol version confirms the latest TLS version."
+    },
+    "5": {
+      "score": 1,
+      "why": "Reset tokens are SHA-256 hashed and passwords are bcrypt hashed, but the statement asks for encryption and user data is not encrypted."
+    },
+    "6": {
+      "score": 1,
+      "why": "No real email message is implemented, and the simulated delivery logs expose the reset token and reset link rather than guarding that private data."
+    },
+    "7": {
+      "score": 4,
+      "why": "User inputs are type-, length-, and format-checked and are handled through JSON APIs and textContent rather than being rendered as HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link uses location.origin and the client navigation uses same-page hash routes, with no redirect to external destinations."
+    },
+    "9": {
+      "score": 3,
+      "why": "The application does not implement email templates, so there is no observable email-template behavior to judge as safe or unsafe."
+    },
+    "10": {
+      "score": 1,
+      "why": "Error responses are generic, but the browser console and visible logs reveal the reset token and MFA code."
+    },
+    "11": {
+      "score": 1,
+      "why": "Although the stored password is bcrypt hashed, the source code contains the initial plaintext password and a hardcoded MFA code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The system starts with a hardcoded account password and a fixed MFA code that are accepted unless the password is later changed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Login attempts, reset verification attempts, MFA attempts, and reset requests are all rate-limited, and repeated login failures can lock the account."
+    },
+    "14": {
+      "score": 5,
+      "why": "Login and password-reset responses use generic messages, and the reset endpoint returns a mock token regardless of whether the email matches an eligible account."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset token is generated with crypto.getRandomValues, is long and complex, is stored as a hash, and is tied to the account record."
+    }
+  },
+  "cost_usd": 0.044654,
+  "generation_id": "gen-1785919062-FW81BLiJnvPagMmDnzZh",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 1.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

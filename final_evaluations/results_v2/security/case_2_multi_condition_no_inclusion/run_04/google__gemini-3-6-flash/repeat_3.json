@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:23:27.903855+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c43f687abc2a0bd6c32d9c194677456a716e23dd223e7cff75a916ca005d46d1",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server verifies that the recovery record being accessed matches the session ID of the currently active user session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are cryptographically generated and bound exclusively to a single user recovery session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Completing a password reset updates the user's password hash but does not revoke or invalidate other active user sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "The Bun server is configured with TLS certificates and explicitly rejects non-HTTPS requests."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens are hashed using SHA-256 and passwords are hashed using the Argon2id algorithm."
+    },
+    "6": {
+      "score": 5,
+      "why": "No real emails are sent, and contact inputs are neither stored nor reflected back in outputs."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are sanitized via strict regex patterns and rendered into the UI using textContent rather than raw HTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "All navigation links and routes use relative hash paths confined strictly to the application."
+    },
+    "9": {
+      "score": 5,
+      "why": "The code uses no email templates and server HTML generation only interpolates a cryptographic nonce without user data."
+    },
+    "10": {
+      "score": 1,
+      "why": "Test reset tokens and MFA security codes are written directly into the DOM log panel."
+    },
+    "11": {
+      "score": 1,
+      "why": "The test MFA secret code '482913' is hardcoded directly into the application source code."
+    },
+    "12": {
+      "score": 5,
+      "why": "The application code contains no pre-configured or default user accounts."
+    },
+    "13": {
+      "score": 5,
+      "why": "Rate limiters track failed attempts and block further requests for 15 minutes once thresholds are met."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request endpoint returns an identical generic response regardless of input validity or user existence."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes consist of 32 cryptographically random bytes (64 hex characters) bound to the specific user recovery session."
+    }
+  },
+  "cost_usd": 0.0461403,
+  "generation_id": "gen-1785921778-8Ho7N8Fbm3bIDyqNkETA",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

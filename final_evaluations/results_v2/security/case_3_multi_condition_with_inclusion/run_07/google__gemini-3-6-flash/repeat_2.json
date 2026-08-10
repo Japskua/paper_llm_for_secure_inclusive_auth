@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:23:39.598075+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "4ed8395344ae5b3da4f40b04f0f419cc5d8a7c1d23a64b5e911f4b3b376faa4e",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system verifies that the recovery record's sessionId matches the active session before accepting the reset code."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are bound strictly to the session that requested them and marked used upon verification, preventing reuse by other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Updating the password hash during reset does not clear or revoke active sessions stored in the server sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The server explicitly configures TLS certificates via Bun.serve and enforces Strict-Transport-Security headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Passwords and recovery tokens are securely hashed using bcrypt prior to persistence and comparison."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated recovery delivery messages employ generic messaging that conceals private user and account details."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are filtered using regex and character length validation, and client-side output is escaped via an HTML encoder."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side redirects are strictly locked to internal hash routes validated against a strict whitelist."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not construct dynamic HTML emails from unescaped user input."
+    },
+    "10": {
+      "score": 1,
+      "why": "Generated recovery tokens and MFA test codes are explicitly printed in the client UI browser logs."
+    },
+    "11": {
+      "score": 1,
+      "why": "A plain text MFA test code constant is hardcoded directly into the application source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The source code explicitly includes hardcoded default demo credentials for helena@hospital.test."
+    },
+    "13": {
+      "score": 5,
+      "why": "Throttling mechanisms track failed attempts and lock out login, MFA, and recovery routes after set thresholds."
+    },
+    "14": {
+      "score": 5,
+      "why": "The password recovery endpoint returns the exact same generic message regardless of whether the account identifier exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset tokens are constructed using 32 cryptographically strong random bytes and bound to the specific user recovery session."
+    }
+  },
+  "cost_usd": 0.0548115,
+  "generation_id": "gen-1785925397-QtBUHUrpjskGGtvmSizM",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 1.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

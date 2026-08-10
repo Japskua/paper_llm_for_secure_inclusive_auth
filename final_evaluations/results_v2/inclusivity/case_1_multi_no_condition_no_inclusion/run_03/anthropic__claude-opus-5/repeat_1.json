@@ -1,0 +1,114 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:29:50.278064+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "e18e4bc4b2876e72571976612bcd172cd5c892e4e4f4be3dc628bcc378a60a0e",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 6,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_reset_code.png",
+    "step_03_confirm_security_code.png",
+    "step_04_set_new_password.png",
+    "step_05_accept_privacy_conditions.png",
+    "step_06_recovery_complete.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All six screens are static with no animations, carousels, or pop-up dialogs, though the large dark 'Logs' panel with raw hex strings adds visual noise to an otherwise clean card layout."
+    },
+    "2": {
+      "score": 3,
+      "why": "Headings and the solid blue primary buttons are prominent, but the dark high-contrast Logs panel visually dominates each page and the step-04 acceptance checkbox is misrendered as a full-width stretched box, weakening the visual hierarchy."
+    },
+    "3": {
+      "score": 3,
+      "why": "Each screen has one field and one button, which helps, but the user must hunt inside the technical Logs panel to find the MFA security code (246810) on step 03, which is not where a user would look."
+    },
+    "4": {
+      "score": 2,
+      "why": "The flow requires carrying a 6-digit code from the Logs panel into the input, remembering a new strong password with no stated rules, and progressing through five distinct stages with no progress indicator or step summary."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager hint, autofill affordance, 'remember me' checkbox, or show-password toggle appears on any screen."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing familiar is surfaced for recognition — no masked email, no saved account name, no previously used device; only the pre-filled demo recovery code on step 02 offers any recognition support."
+    },
+    "7": {
+      "score": 4,
+      "why": "Instructions are short, plain-language sentences in dark text on light background with good contrast, though the 64-character hex code and log jargon ('SIMULATED MFA DELIVERY', 'Plaintext password was not logged') are unreadable clutter."
+    },
+    "8": {
+      "score": 1,
+      "why": "No error or validation message appears anywhere in the six screenshots — there is no evidence of any message describing a problem or how to fix it."
+    },
+    "9": {
+      "score": 2,
+      "why": "Input fields have no placeholders, format hints, or worked examples; only the step-02 recovery code is pre-populated, and no password composition example is shown."
+    },
+    "10": {
+      "score": 2,
+      "why": "Only a single linear code-based path is offered — no visible choice between password, code, biometric/face login, or alternative delivery channel, so no such choices are presented clearly."
+    },
+    "11": {
+      "score": 5,
+      "why": "Every screen presents exactly one input and one primary action, so the user is never confronted with competing options at the same time."
+    },
+    "12": {
+      "score": 4,
+      "why": "Each step confirms the outcome — the 'If an eligible account exists…' banner, the green 'Recovery complete' message, and cumulative log entries such as 'Recovery code verified' and 'Updated privacy conditions accepted'."
+    },
+    "13": {
+      "score": 3,
+      "why": "A persistent 'Stay safe' card and a one-to-two-sentence intro on each step provide some guidance, but there are no contextual tips for new actions such as where to find the security code or what makes an acceptable password."
+    },
+    "14": {
+      "score": 2,
+      "why": "No back link, 'resend code', 'start over', or retry affordance is visible on any screen; the only navigation is the forward primary button plus a 'Use the recovery link' shortcut."
+    },
+    "15": {
+      "score": 5,
+      "why": "All screens reuse the identical header, card structure, typography, blue primary button style, 'Stay safe' block, and Logs panel in the same positions."
+    }
+  },
+  "cost_usd": 0.109165,
+  "generation_id": "gen-1785918553-0zIK775k6S7lYo0Uz1wy",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 3,
+    "3": 3,
+    "4": 2,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 1,
+    "9": 2,
+    "10": 2,
+    "11": 5,
+    "12": 4,
+    "13": 3,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 3.3333,
+    "memory": 1.6667,
+    "comprehension": 2.3333,
+    "decision_making": 3.6667,
+    "learning": 3.3333
+  },
+  "overall": 2.8667,
+  "capture_complete": true
+}

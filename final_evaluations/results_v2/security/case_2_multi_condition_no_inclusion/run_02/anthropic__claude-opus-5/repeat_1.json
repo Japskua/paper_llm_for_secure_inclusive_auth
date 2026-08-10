@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:13:56.091972+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "a3d693ec80a8f793c14929ffb2ce92a5b3331d320449b26742b79bbe2e8dec2c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Tokens are bound to the issuing session id and a fixed accountBinding, and /api/verify-token rejects tokens whose sessionId doesn't match the caller's session — though with only a single hardcoded 'local-recovery-account' there is effectively one user."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token issued in one session cannot be used in another because verify-token enforces token.sessionId === session.id, so the same code does not work for another user."
+    },
+    "3": {
+      "score": 2,
+      "why": "No session invalidation/rotation occurs in /api/set-password, so the recovery session persists after the reset, but there are no other authenticated login sessions in this demo to remain valid, making the statement only partially true."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with TLS cert/key and HSTS is set, enforcing HTTPS, but no explicit minimum TLS version is pinned so 'latest TLS version' relies on Bun defaults."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are cryptographically random and only stored as SHA-256 hashes, and passwords are bcrypt-hashed; however hashing is not encryption and no other user data is stored/encrypted."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email delivery; the 'mock delivery' returns the raw token and reset link in the JSON API response and prints it to the browser console/on-page Logs panel, which does not guard the secret."
+    },
+    "7": {
+      "score": 4,
+      "why": "Inputs are type/length checked (validShortString), tokens restricted to /^[A-Za-z0-9_-]+$/, JSON body size capped, and passwords validated against a policy; no raw input is ever interpolated into HTML or queries."
+    },
+    "8": {
+      "score": 4,
+      "why": "The only redirect-like navigation is history.replaceState to location.pathname plus a whitelisted hash, and testLink is a relative same-origin path, with CSP form-action 'self' and base-uri 'none'."
+    },
+    "9": {
+      "score": 5,
+      "why": "The HTML page is a static String.raw template with only server-generated nonce and CSRF substitutions; no user input is templated into markup and client updates use textContent."
+    },
+    "10": {
+      "score": 4,
+      "why": "Errors return generic messages via safeError with no stack traces, and there is no server-side logging of secrets — though the client-side Logs panel intentionally displays the test token in the browser."
+    },
+    "11": {
+      "score": 4,
+      "why": "Passwords are stored only as bcrypt hashes and tokens only as SHA-256 hashes with no hardcoded secrets, except the demo MFA code '482913' which is hardcoded in the source."
+    },
+    "12": {
+      "score": 4,
+      "why": "account.passwordHash starts as an empty string and there is no login endpoint accepting default credentials, but the hardcoded static MFA code '482913' functions as a de facto default secret."
+    },
+    "13": {
+      "score": 4,
+      "why": "recordFailure/limitStatus lock each category after 5 failures for 5 minutes (and recovery requests after 3), though counters are stored per-session so an attacker can reset them by dropping the cookie."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery-request always returns the identical 'If an eligible account exists…' message regardless of the contact value, and the UI explicitly states the response is the same either way."
+    },
+    "15": {
+      "score": 4,
+      "why": "Tokens are 32 bytes from crypto.getRandomValues, hashed, 10-minute TTL, single-use, and bound to the session/account — user-specificity is limited only because the demo has a single account."
+    }
+  },
+  "cost_usd": 0.088195,
+  "generation_id": "gen-1785921215-q6NxSv89sE9yrH86vwf7",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 4,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 4,
+    "9": 5,
+    "10": 4,
+    "11": 4,
+    "12": 4,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 4.0666,
+  "capture_complete": true
+}

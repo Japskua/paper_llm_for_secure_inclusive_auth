@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:03:12.281701+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "61249d976a513de3d6c7adfc5d4854316aa95945d4f9694de560ba67f0b7286b",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "reset-verify and validOwnedToken require record.sessionId === session.id, so the code must belong to the requesting session/user flow."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same reset code is rejected for another session because record.sessionId !== session.id fails the ownership check."
+    },
+    "3": {
+      "score": 5,
+      "why": "Password reset only marks the token used and clears verifiedResetToken on the current session; no other sessions are invalidated."
+    },
+    "4": {
+      "score": 4,
+      "why": "Primary server is Bun.serve with TLS and HTTP redirects to HTTPS, but the TLS version is not explicitly pinned in code."
+    },
+    "5": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but reset tokens and MFA material are stored/returned in plaintext, not encrypted at rest."
+    },
+    "6": {
+      "score": 1,
+      "why": "There is no real email channel; the reset token is returned as testToken and written to the client logs panel."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers are validated with cleanIdentifier, bodies are JSON-parsed safely, and passwords must pass a strict policy before hashing."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only redirect is the fixed HTTP→HTTPS localhost redirect; no user-controlled redirect targets exist."
+    },
+    "9": {
+      "score": 5,
+      "why": "No email templates incorporate user input; delivery is simulated without rendering untrusted HTML/scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Reset tokens and the MFA code are returned in API JSON and appended to the visible Logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "Password hashes use bcrypt in memory, but the MFA secret 482913 is hardcoded in source and returned to the client."
+    },
+    "12": {
+      "score": 2,
+      "why": "The training identifier demo-account and fixed MFA code 482913 act as known default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "request/verify/mfa rate limits and record.verifyAttempts > 5 block repeated failed attempts with 429 responses."
+    },
+    "14": {
+      "score": 1,
+      "why": "Successful demo-account requests include testToken while other identifiers do not, enumerating that the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are 32-byte crypto.getRandomValues values (base64url), single-session-bound, short-lived, and marked used after reset."
+    }
+  },
+  "cost_usd": 0.0289844,
+  "generation_id": "gen-1785920548-nPLJ8k3ImuwP9DENULX8",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 2,
+    "6": 1,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 1,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 1.6667,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

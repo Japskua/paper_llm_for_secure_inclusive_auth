@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:27:13.043468+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "35ca57afcb88be27c6b64ad3c61fa1363f30431719f810833edfd206c7cb3240",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "resetRecord() looks up the SHA-256 hash of the submitted token and requires record.sessionId === current session id, and verifiedRecord() re-checks record.userId matches session.verifiedUserId, so the code is bound to the specific user/session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each token hash maps to one stored ResetToken with a fixed userId and sessionId, and reset-complete only updates that record's user, so a code cannot work for another user."
+    },
+    "3": {
+      "score": 4,
+      "why": "reset-complete only calls clearVerified() and marks the token used; it never iterates the global sessions map to invalidate other sessions holding session.userId, so pre-existing signed-in sessions remain valid after a password change."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured with tls cert/key and HSTS max-age=31536000 is sent, so HTTPS is enforced, though no explicit minVersion/TLS 1.3 configuration is set (relying on Bun defaults)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes and passwords use Bun.password.hash with argon2id, though user records (email) sit in plaintext in memory maps."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email/message channel — the recovery token, delivery authorization code and MFA code are returned in API JSON, printed to the on-page 'Activity logs' and rendered in the page, so no message-level guarding of private data exists."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input is validated with strict regexes (validEmail, validCode /^\\d{6}$/, validToken /^[a-f0-9]{64}$/), length caps, an 8KB body limit, JSON-object type checks, and a detailed password policy."
+    },
+    "8": {
+      "score": 4,
+      "why": "The application performs no redirects at all and CSP sets form-action 'self' and base-uri 'none', so no external redirect targets are reachable."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist; the single HTML page interpolates only a server-generated nonce and CSRF token via JSON.stringify, and no user-supplied data is injected into markup."
+    },
+    "10": {
+      "score": 2,
+      "why": "The client deliberately console.logs and displays the 64-hex recovery token, the delivery authorization code and the MFA code in the visible 'Activity logs' panel, so secrets do appear in logs/UI (server error responses, by contrast, are generic)."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are argon2id-hashed, but DELIVERY_AUTHORIZATION_CODE = \"864200\", MFA_CODE = \"246810\" and the demo user's password \"Initial-Only-Password!42\" are hardcoded literals in the source rather than externalized secrets."
+    },
+    "12": {
+      "score": 2,
+      "why": "A seeded demo account (helena@hospital.test with the hardcoded initial password) plus fixed static delivery/MFA codes are effectively default credentials accepted by the system."
+    },
+    "13": {
+      "score": 5,
+      "why": "loginAttempts, mfaAttempts, deliveryAttempts and resetRequestAttempts all enforce MAX_ATTEMPTS = 5 within a 10-minute window with a 10-minute lockout and 429 responses."
+    },
+    "14": {
+      "score": 4,
+      "why": "reset-request always returns the same 'If an account is available...' message and login always returns the generic 'We could not sign you in.', though a subtle oracle remains since delivery only mints a stored token when the account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is randomId(32) — 32 cryptographically random bytes as 64 hex chars — stored hashed with a 15-minute TTL, single-use, and tied to a specific userId and sessionId."
+    }
+  },
+  "cost_usd": 0.140135,
+  "generation_id": "gen-1785925599-M2jto7RHlfRREsdIzE1p",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

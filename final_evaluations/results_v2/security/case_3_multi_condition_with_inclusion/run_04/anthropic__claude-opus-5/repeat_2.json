@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T10:10:07.426203+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "b260b296877868a1c72a1a05fc81a3386ecef2cf418f7bd9e7219cd6e3cada68",
+  "app_ts_sha256": "24a6e1467197c0ef6a9566560dbce218c9ba1da70fee6592759ec6e6f7e54b02",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The reset token hash is stored on the server-side session (session.resetHash) established for that recovery flow, and /api/recovery/verify and /api/recovery/password only compare the submitted token against that session's own hash, so a code cannot be used outside the session it was issued to."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset codes are never global — each is a 32-byte random token whose SHA-256 digest lives only in the issuing session, so submitting it in another session fails the safeEqual(digest(token), session.resetHash) check."
+    },
+    "3": {
+      "score": 4,
+      "why": "The password-reset handler only flips the current session's flags (resetUsed, stage) and never iterates the `sessions` map to delete other sessions or bump a token version, so any other existing session for that account would remain valid after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is started with a TLS cert/key (and refuses to boot without them) plus HSTS `max-age=31536000; includeSubDomains`, though no explicit minimum TLS version is configured, relying on Bun/OpenSSL defaults (TLS 1.2/1.3)."
+    },
+    "5": {
+      "score": 4,
+      "why": "Secrets are generated with crypto.randomBytes, stored only as SHA-256 digests and compared with timingSafeEqual, and the account password is hashed with argon2id — appropriate algorithms, though SHA-256 hashing (not encryption) is what is actually used for tokens."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no real email layer; the simulated 'delivery' writes the raw authorization secret, raw reset token, full verification URL and the MFA code into console.log and an on-page Logs panel, so the message content does not guard the private secrets."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are strictly validated server-side: isAllowedEmail regex with 160-char cap, isToken regex for codes, /^\\d{6}$/ for MFA, passwordProblem policy checks, 10 KB body limit, and the client renders all dynamic values via document.createTextNode/textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only navigation link is the relative /recovery/verify?token=… built with encodeURIComponent, there is no user-controlled redirect parameter, and CSP sets form-action 'self' and base-uri 'none'."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, but the analogous message content (log lines) is inserted only as text nodes with a strict nonce-based CSP (`default-src 'none'`), so no script or user-supplied HTML can be injected into rendered messages."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic and stack traces are suppressed, but tokens are deliberately disclosed: d.authorizationSecret, d.token and d.mfaCode are pushed to console.log and the visible Logs panel."
+    },
+    "11": {
+      "score": 2,
+      "why": "The INTERNAL_ACCOUNT argon2 password hash and the fixed MFA code `MFA_CODE = \"246810\"` are hard-coded literals in the source rather than kept in a secret store or environment configuration."
+    },
+    "12": {
+      "score": 2,
+      "why": "The application ships with a built-in default account (helena.patient@hospital.test with an embedded hash) and a constant default second factor `246810` that is always accepted, which is effectively default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Throttling exists on every guessable step: 5 attempts then a 10-minute lock for the channel secret and reset-token verification, a 5-failure/10-minute per-email login lock via loginFailures, and MFA invalidation after 5 wrong codes."
+    },
+    "14": {
+      "score": 5,
+      "why": "/api/recovery/start always returns the same 'If this account can be recovered…' message after a fixed 125 ms delay regardless of whether the email matches, and login failures return the identical genericError message."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is randomToken() = 32 random bytes base64url-encoded, tied to a single session and user, single-use (resetUsed) and expiring after 15 minutes."
+    }
+  },
+  "cost_usd": 0.146335,
+  "generation_id": "gen-1785924570-7jihwLCjkOVURxnWNGEm",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

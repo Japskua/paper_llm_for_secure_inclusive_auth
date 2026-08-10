@@ -1,0 +1,130 @@
+{
+  "variables": {
+    "email": "helena.recovery@hospital.test",
+    "new_password": "NewSecure!2025"
+  },
+  "steps": [
+    {
+      "name": "recovery_page",
+      "actions": []
+    },
+    {
+      "name": "recovery_code_sent",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send recovery instructions')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Open the secure verification link"
+        }
+      ]
+    },
+    {
+      "name": "verify_reset_code",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#log-list",
+          "regex": "Privacy-neutral test recovery token: ([A-Za-z0-9_-]+)",
+          "into": "reset_token"
+        },
+        {
+          "do": "click",
+          "selector": "text=Open the secure verification link"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#token"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify token')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#password"
+        }
+      ]
+    },
+    {
+      "name": "mfa_code_delivered",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#mfa"
+        }
+      ]
+    },
+    {
+      "name": "privacy_statement",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#log-list",
+          "regex": "Test MFA code: (\\d{6})",
+          "into": "mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#mfa",
+          "value": "${mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm sign-in')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Updated privacy statement"
+        }
+      ]
+    },
+    {
+      "name": "appointment_confirmation",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept privacy statement')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Medication review appointment"
+        }
+      ]
+    },
+    {
+      "name": "appointment_confirmed",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm appointment request')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Your medication review appointment request has been confirmed."
+        }
+      ]
+    }
+  ]
+}

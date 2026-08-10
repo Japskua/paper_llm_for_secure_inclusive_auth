@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 2,
+  "judged_at": "2026-08-05T09:28:30.700591+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "c43f687abc2a0bd6c32d9c194677456a716e23dd223e7cff75a916ca005d46d1",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The reset token is accepted only when its SHA-256 hash matches the recovery record bound to the current session, but there is no persistent account-level user binding."
+    },
+    "2": {
+      "score": 1,
+      "why": "A reset token is accepted only for the recovery object owned by the requesting session, so the same reset code does not work for another session or user."
+    },
+    "3": {
+      "score": 4,
+      "why": "No code revokes existing sessions after password reset, so previously issued session cookies remain usable until their TTL expires."
+    },
+    "4": {
+      "score": 3,
+      "why": "TLS is configured and non-HTTPS requests are rejected, but the source does not specify or enforce a minimum or latest TLS version."
+    },
+    "5": {
+      "score": 2,
+      "why": "Reset tokens are SHA-256 hashed rather than encrypted and contact data is not stored, so encryption of reset codes or user data at rest is not demonstrated."
+    },
+    "6": {
+      "score": 3,
+      "why": "No real email is sent and the API response is generic, but the simulated delivery log exposes the reset token in the browser."
+    },
+    "7": {
+      "score": 4,
+      "why": "User-supplied contact, token, MFA, and password values are strictly validated and rendered using textContent, though no general HTML sanitization is implemented."
+    },
+    "8": {
+      "score": 4,
+      "why": "No server-side redirects or external redirect URLs are present, and navigation is limited to same-page hash routes."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates are present in the source, so safe email templating cannot be directly observed."
+    },
+    "10": {
+      "score": 1,
+      "why": "The client-side simulated log displays the reset token and MFA code, so tokens are shown in logs even though error pages are generic."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are hashed with Argon2id, but the fixed MFA code 482913 is present in the source code."
+    },
+    "12": {
+      "score": 1,
+      "why": "The application accepts a hardcoded default MFA code, so a default secret can be used."
+    },
+    "13": {
+      "score": 4,
+      "why": "The code imposes attempt counters and temporary lockouts for token, password, and MFA verification, although the limits are scoped to session or recovery objects."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery request returns the same generic message regardless of contact validity and does not expose whether an account exists."
+    },
+    "15": {
+      "score": 4,
+      "why": "The reset token is a cryptographically random 64-character hex value bound to the owning recovery session, but it is not tied to a persistent user identity."
+    }
+  },
+  "cost_usd": 0.061382,
+  "generation_id": "gen-1785921897-uJDlaOeOtKkvNYBEXmCX",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 4,
+    "8": 4,
+    "9": 3,
+    "10": 1,
+    "11": 2,
+    "12": 1,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 2.6667,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 1.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.1333,
+  "capture_complete": true
+}

@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:45:39.915574+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The recovery token is stored inside the requester's server-side session (state.recovery with accountRef 'protected-account') and /api/recovery/verify only compares against that session's own token, so a code is bound to the requesting party."
+    },
+    "2": {
+      "score": 1,
+      "why": "A token is only valid within the session that requested it; another session has no state.recovery, so verification fails — the same code does not work for anyone else."
+    },
+    "3": {
+      "score": 5,
+      "why": "reset-password only mutates the current session's flags and never iterates or clears the global `sessions` map, so any other pre-existing session (including already authenticated ones) remains valid after a reset."
+    },
+    "4": {
+      "score": 4,
+      "why": "Bun.serve is configured TLS-only with cert/key, rejects non-https URLs and sets HSTS, though no explicit minimum TLS version is pinned (it relies on Bun/OpenSSL defaults, which include TLS 1.3)."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are hashed with bcrypt (cost 10) and tokens are 32 bytes of CSPRNG output compared in constant time, but recovery tokens and the MFA code are held in plaintext in memory and never hashed/encrypted at rest."
+    },
+    "6": {
+      "score": 2,
+      "why": "There is no email delivery at all; the 'mock delivery' returns the raw recovery token and link directly in the JSON API response, so no message-level guarding of sensitive data exists."
+    },
+    "7": {
+      "score": 5,
+      "why": "Identifiers are regex-validated and length-capped, passwords are policy-checked, JSON bodies are type-checked, tokens are trimmed/length-checked, and the client renders only via textContent with a nonce-based CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "All navigation uses relative same-origin paths through a whitelist (safeView allowed set), there are no user-controlled redirects, and CSP sets form-action 'self' and base-uri 'none'."
+    },
+    "9": {
+      "score": 4,
+      "why": "No email templates exist, and nothing anywhere interpolates user input into HTML (only createElement/textContent), so no script or HTML from user input can appear in any generated message."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces, but the client explicitly logs secrets to the console and the on-page log panel: 'Mock recovery delivery token: ' + token, the recovery link, and 'Mock MFA verification code: ' + mockMfaCode."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed and never logged, but the MFA secret is hardcoded in source (MFA_TEST_CODE = \"246810\") and TLS cert/key paths are static, so secret codes do live in the code."
+    },
+    "12": {
+      "score": 2,
+      "why": "passwordHash starts empty so no default password login exists, but the fixed, source-embedded MFA code \"246810\" functions as a default credential that anyone reading the code can use to complete authentication."
+    },
+    "13": {
+      "score": 4,
+      "why": "Both token verification and MFA verification use registerFailure/blocked with MAX_FAILURES=5 and a 60s block returning HTTP 429, though the counters are per-session and can be bypassed by discarding the cookie."
+    },
+    "14": {
+      "score": 2,
+      "why": "The message text is always identical, but when the identifier equals 'local-recovery-demo' the response additionally contains mockDeliveryToken/mockRecoveryLink, which distinguishes a recoverable account from a non-existent one."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens come from randomValue(32) using crypto.getRandomValues, base64url-encoded, are single-use, expire in 10 minutes, and are stored per-session so they are specific to the requester."
+    }
+  },
+  "cost_usd": 0.13695,
+  "generation_id": "gen-1785912303-UYQpRx1ZToWvn8Pri6Nz",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

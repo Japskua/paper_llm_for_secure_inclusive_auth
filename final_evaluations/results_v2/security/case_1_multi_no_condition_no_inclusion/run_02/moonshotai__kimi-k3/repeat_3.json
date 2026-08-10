@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:48:53.927640+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "8167b386c65d5a5a68a20a2f89f5ec47bdd4e96300d84ac7b79593eb040cf792",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The recovery token is stored in the requesting session's state and /api/recovery/reset-password requires state.recovery.accountRef === 'protected-account', binding the code to that session and account."
+    },
+    "2": {
+      "score": 1,
+      "why": "False — /api/recovery/verify only compares the submitted token against the current session's own state.recovery record, so the same code cannot be used from any other session or user."
+    },
+    "3": {
+      "score": 5,
+      "why": "True — the reset endpoint only flips flags on the current session and nothing revokes other entries in the sessions Map, so previously authenticated sessions remain usable until their 30-minute expiry."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server listens exclusively over TLS, rejects non-https requests, and sets HSTS and upgrade-insecure-requests, though no explicit TLS version (e.g., minVersion) is configured."
+    },
+    "5": {
+      "score": 3,
+      "why": "Passwords are bcrypt-hashed and tokens are generated via crypto.getRandomValues, but reset codes and account data are stored unencrypted in the in-memory session Map rather than encrypted."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email is implemented — delivery is simulated by returning mockDeliveryToken/mockRecoveryLink in the API response — so whether an email guards private data cannot be confirmed."
+    },
+    "7": {
+      "score": 4,
+      "why": "Identifiers must pass a strict regex, JSON bodies are type-checked, tokens are trimmed and length-checked, and the client renders all input via textContent under a nonce-based CSP."
+    },
+    "8": {
+      "score": 5,
+      "why": "All navigation uses history.pushState to same-origin '/?...' URLs with a whitelisted view set, the mock recovery link is same-origin, and no external redirect target exists anywhere."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist in the system; separately, no user input is ever rendered as HTML (textContent only), so the claim is vacuous but not contradicted."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error pages are generic with no stack traces, but the UI deliberately mirrors the working recovery token and MFA code into the on-page log panel and browser console."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are stored only as bcrypt hashes, but the MFA secret '246810' (MFA_TEST_CODE) and the mock recovery identifier are hardcoded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "No default password exists, but the static hardcoded MFA code — which is even returned to the client as mockMfaCode — effectively functions as a default credential."
+    },
+    "13": {
+      "score": 4,
+      "why": "Both /api/recovery/verify and /api/mfa/verify block further attempts for 60 seconds after 5 failures via the registerFailure/blocked mechanism."
+    },
+    "14": {
+      "score": 4,
+      "why": "/api/recovery/request returns the identical generic message for every identifier; only the publicly documented demo value additionally receives mock delivery fields, so real account existence is not exposed."
+    },
+    "15": {
+      "score": 5,
+      "why": "The reset code is 32 bytes from crypto.getRandomValues encoded base64url, single-use, 10-minute TTL, and stored per-session, making it random, complex, and user/session-specific."
+    }
+  },
+  "cost_usd": 0.2543454,
+  "generation_id": "gen-1785912393-bgp1Vu8HpWRlRdsfsGaC",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.4,
+  "capture_complete": true
+}

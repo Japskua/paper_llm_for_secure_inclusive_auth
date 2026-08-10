@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 3,
+  "judged_at": "2026-08-05T07:34:57.907139+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "f5750cc5011511dbdfe5c5457f3dc0ec14e84e57beecc8f6de1aff544c17cb51",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system verifies the submitted reset code against the SHA-256 digest stored within the user's active session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Reset tokens are cryptographically random and matched against individual session digests, preventing a token from working across different user sessions."
+    },
+    "3": {
+      "score": 5,
+      "why": "The password reset flow does not clear or invalidate other active session records stored in the session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "HTTPS is enforced via Bun TLS server configuration and Strict-Transport-Security headers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Reset tokens are stored as SHA-256 digests and passwords are hashed using bcrypt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Simulated recovery messages use generic wording and do not expose private user details."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs are type-checked, length-restricted, pattern-validated, and rendered safely via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "Recovery links use relative paths restricted to the current domain and are governed by strict CSP rules."
+    },
+    "9": {
+      "score": 5,
+      "why": "System templates contain fixed text and do not reflect user input as executable HTML or scripts."
+    },
+    "10": {
+      "score": 1,
+      "why": "Recovery tokens and security codes are explicitly printed and displayed in the client-side log panel."
+    },
+    "11": {
+      "score": 5,
+      "why": "Secrets are not hardcoded, passwords are hashed with bcrypt, and tokens are stored as cryptographic digests."
+    },
+    "12": {
+      "score": 5,
+      "why": "No default credentials or hardcoded administrative accounts exist in the application."
+    },
+    "13": {
+      "score": 5,
+      "why": "The system enforces rate limiting on recovery and password attempts and temporarily locks MFA after five failed attempts."
+    },
+    "14": {
+      "score": 5,
+      "why": "The recovery API yields a non-enumerating generic response regardless of whether the submitted account exists."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are generated using 32 cryptographically random bytes via Web Crypto API and bound to the user session."
+    }
+  },
+  "cost_usd": 0.042135,
+  "generation_id": "gen-1785915270-t48yFI8TqCoV3eZb3Ini",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 1,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

@@ -1,0 +1,130 @@
+{
+  "variables": {
+    "email": "test@example.org",
+    "new_password": "ValidPassword1!"
+  },
+  "steps": [
+    {
+      "name": "recovery_page",
+      "actions": []
+    },
+    {
+      "name": "recovery_instructions_sent",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#contact",
+          "value": "${email}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Request recovery instructions')"
+        }
+      ]
+    },
+    {
+      "name": "verify_recovery_token",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=Academic test: open simulated recovery link"
+        }
+      ]
+    },
+    {
+      "name": "confirm_recovery_security_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify token')"
+        }
+      ]
+    },
+    {
+      "name": "set_new_password",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#log-list",
+          "regex": "deterministic recovery MFA code: ([0-9]{6})",
+          "into": "recovery_mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${recovery_mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm code')"
+        }
+      ]
+    },
+    {
+      "name": "sign_in",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#newPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "fill",
+          "selector": "#confirmPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Save new password')"
+        }
+      ]
+    },
+    {
+      "name": "confirm_sign_in_security_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#loginPassword",
+          "value": "${new_password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in securely')"
+        }
+      ]
+    },
+    {
+      "name": "updated_privacy_statement",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#log-list",
+          "regex": "deterministic sign-in MFA code: ([0-9]{6})",
+          "into": "login_mfa_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#loginCode",
+          "value": "${login_mfa_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Complete secure sign-in')"
+        }
+      ]
+    },
+    {
+      "name": "privacy_statement_accepted",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "input.privacy-checkbox"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Accept and continue')"
+        }
+      ]
+    }
+  ]
+}

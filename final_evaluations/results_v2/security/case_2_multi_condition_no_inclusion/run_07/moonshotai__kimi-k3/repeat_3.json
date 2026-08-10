@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:40:15.668230+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "adba08406b2a13a194f97ab92cdd54dbb11156d50d926f2e7287232ac8fe955f",
+  "app_ts_sha256": "5cf6cfab7ee73af652356079c25f384867969f3d68b0f07dd5c779d227ef3774",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Reset records bind each code hash to an identityScope, and /api/new-password only proceeds for the session whose recoveryIdentity was set from that verified record, so codes are tied to the requesting identity."
+    },
+    "2": {
+      "score": 2,
+      "why": "Codes are single-use (record.used = true) and bound to one identityScope, so a code only ever resets the account it was issued for, though as a bearer token any holder could present it."
+    },
+    "3": {
+      "score": 2,
+      "why": "On password reset the code loops over all sessions and clears authenticated, pendingMfa, privacyAccepted and appointmentBooked, so prior sessions lose all authorized access even though the session objects are not deleted."
+    },
+    "4": {
+      "score": 4,
+      "why": "The server terminates TLS with cert/key, redirects all HTTP traffic to a fixed https://localhost destination with 308, and sets HSTS, but no explicit TLS version (e.g., minVersion) is configured."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored only as SHA-256 hashes and passwords are hashed with bcrypt (cost 10), which are appropriate protections, though these are hashes rather than encryption and session data sits in plaintext in-memory maps."
+    },
+    "6": {
+      "score": 4,
+      "why": "The simulated delivery message contains only the server-generated reset code and never includes the recovery identity or other personal data, and the response message itself is fully generic."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are validated (identifier length-checked and normalized, reset code constrained to /^[A-Za-z0-9_-]{32,128}$/, password policy-enforced) and all variable UI text is rendered via textContent, never innerHTML."
+    },
+    "8": {
+      "score": 5,
+      "why": "The HTTP listener redirects only to the fixed https://localhost origin without using the Host header, and all client-side links and navigation targets are hardcoded internal routes."
+    },
+    "9": {
+      "score": 5,
+      "why": "The simulated email/log lines contain only fixed server-side text plus server-generated codes, and no user input is ever interpolated into HTML or script contexts."
+    },
+    "10": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces, but the on-page 'Simulated delivery logs' panel explicitly displays the reset code and the MFA code, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords and reset codes are stored hashed (bcrypt/SHA-256), but the MFA code '246810' and the initial password 'Initial!DemoPassword2025' are hardcoded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The application ships with a working hardcoded initial password ('Initial!DemoPassword2025') and a static MFA code ('246810'), i.e., default credentials are present and usable."
+    },
+    "13": {
+      "score": 5,
+      "why": "Server-global throttling and lockout exist on every sensitive path: recovery requests (3/10min per identity), code verification (5/10min per scope), and login/MFA lockout after 5 failures for 5 minutes."
+    },
+    "14": {
+      "score": 2,
+      "why": "Although the message text is generic, the /api/recovery-request response includes a 'code' field only for the valid identity, so account existence is observable from the response."
+    },
+    "15": {
+      "score": 5,
+      "why": "Reset codes are 256-bit crypto.getRandomValues output (base64url), SHA-256-hashed at rest, bound to a per-identity scope, single-use, and expire after 10 minutes."
+    }
+  },
+  "cost_usd": 0.1047936,
+  "generation_id": "gen-1785922719-boevJnk2k1A1LcV8Pu7f",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

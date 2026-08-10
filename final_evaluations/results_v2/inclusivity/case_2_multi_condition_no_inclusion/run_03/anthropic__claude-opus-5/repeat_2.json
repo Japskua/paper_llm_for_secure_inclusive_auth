@@ -1,0 +1,115 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T09:21:23.559096+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "4a6eaf3cfcc73c22842c5c8c14f50a97c9b1281fdf4ac2299c6aa628f1a4e591",
+  "app_ts_sha256": "cfe649c8b608b3fcfc230e9e58d49aefb1806143f4ff461f71a58556d32f1bf4",
+  "screenshot_count": 7,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_reset_code.png",
+    "step_03_set_new_password.png",
+    "step_04_confirm_sign_in_code.png",
+    "step_05_sign_in_confirmed.png",
+    "step_06_review_privacy_conditions.png",
+    "step_07_privacy_conditions_accepted.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All seven screens are static, single-column layouts with no animations, carousels, or pop-up overlays — only a fixed advisory box and a Logs panel."
+    },
+    "2": {
+      "score": 4,
+      "why": "Each step has a large dark-blue heading and one prominent filled primary button, though the dark Logs panel competes visually for attention on every screen."
+    },
+    "3": {
+      "score": 4,
+      "why": "Only one task and one field appear per screen (recovery contact, token, password, code, checkbox), so the required action is easy to locate, but no progress indicator shows where she is in the flow."
+    },
+    "4": {
+      "score": 3,
+      "why": "The flow is broken into small steps, but she must carry a long random token and a six-digit code between screens and remember the 12-character password composition rule."
+    },
+    "5": {
+      "score": 1,
+      "why": "No password manager hint, autofill affordance, 'remember me' option, or show-password toggle appears on any screen, including the password creation step."
+    },
+    "6": {
+      "score": 2,
+      "why": "Nothing familiar or saved is surfaced — the recovery contact field is empty with no masked hint, and tokens/codes are opaque random strings shown only in a technical Logs panel."
+    },
+    "7": {
+      "score": 4,
+      "why": "Instructions are one or two short sentences in a clear sans-serif font, though phrases like 'non-identifying contact value', 'recovery token', and 'MOCK MFA DELIVERY' are jargon-heavy for a lay user."
+    },
+    "8": {
+      "score": 1,
+      "why": "No error state is shown in any of the seven screenshots; only a blue focus ring on inputs, so there is no evidence of messages describing a problem and its fix."
+    },
+    "9": {
+      "score": 2,
+      "why": "The password rule states requirements ('12 or more characters with uppercase, lowercase, a number, and a symbol') but no example values, placeholders, or format samples are given for the contact, token, or code fields."
+    },
+    "10": {
+      "score": 2,
+      "why": "Only one authentication path exists — password plus emailed-style six-digit code; no alternatives such as biometric/face login, passkey, or code-vs-link choice are offered or explained."
+    },
+    "11": {
+      "score": 5,
+      "why": "Every screen presents at most one or two inputs and a single primary button, so the user is never confronted with many simultaneous choices."
+    },
+    "12": {
+      "score": 4,
+      "why": "Dedicated confirmation screens ('Sign-in confirmed', 'Privacy conditions accepted') plus timestamped log lines state the outcome of each action, though intermediate steps give no explicit success feedback beyond advancing."
+    },
+    "13": {
+      "score": 2,
+      "why": "The only guidance is the repeated anti-phishing advisory and the password rule line; there are no contextual tips, tooltips, help links, or explanations of what a 'recovery token' is."
+    },
+    "14": {
+      "score": 2,
+      "why": "No 'Resend code', 'Back', 'Start over', or 'Didn't get it?' controls appear anywhere, so recovery from a mistyped token or code is not visibly supported."
+    },
+    "15": {
+      "score": 5,
+      "why": "All seven steps reuse an identical template: same dark header, white card with heading and short intro, same button styling, same advisory box and Logs panel placement."
+    }
+  },
+  "cost_usd": 0.084015,
+  "generation_id": "gen-1785921663-TmHjUNoVvzfttlKEZ79e",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 4,
+    "4": 3,
+    "5": 1,
+    "6": 2,
+    "7": 4,
+    "8": 1,
+    "9": 2,
+    "10": 2,
+    "11": 5,
+    "12": 4,
+    "13": 2,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "attention": 4.3333,
+    "memory": 2.0,
+    "comprehension": 2.3333,
+    "decision_making": 3.6667,
+    "learning": 3.0
+  },
+  "overall": 3.0667,
+  "capture_complete": true
+}

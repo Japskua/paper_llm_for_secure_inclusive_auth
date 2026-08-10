@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-05T08:44:00.900979+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "410e1cc46bbbbc0cb7869109d020fb69db0a302c9f3a7d9f4feb7974c90fbca9",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "resetRecordFor() requires record.sessionId === session.id and /api/reset/confirm additionally requires session.verifiedTokenHash to match the token hash, so the code is verified as belonging to the requesting session/user."
+    },
+    "2": {
+      "score": 1,
+      "why": "False: each reset record is bound to the requesting sessionId and resetRecordFor() returns null for any other session, so the same code cannot be used by another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "True: /api/reset/confirm only mutates the current session (verifiedTokenHash, mfaPending) and never iterates the sessions Map to invalidate other sessions, so previously authenticated sessions remain valid."
+    },
+    "4": {
+      "score": 3,
+      "why": "The server is TLS-only with HSTS and rejects x-forwarded-proto:http, but no TLS version is configured in the code, so use of the latest TLS version cannot be confirmed."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset tokens are stored only as SHA-256 hashes, passwords via bcrypt, and the contact as a SHA-256 digest — hashing rather than encryption, but appropriate algorithms for these data."
+    },
+    "6": {
+      "score": 3,
+      "why": "No email is ever sent by this system; the simulated delivery only exposes the reset code within the requesting browser session, so email-specific data guarding is not assessable."
+    },
+    "7": {
+      "score": 4,
+      "why": "All user inputs are validated and normalized (email regex, token pattern ^[A-Za-z0-9_-]{40,100}$, length caps, 4KB JSON body limit) and the client renders data exclusively via textContent."
+    },
+    "8": {
+      "score": 5,
+      "why": "There are no external redirects or outgoing requests: routing is hash-based on fixed internal views, CSP sets connect-src and form-action to 'self', and the footer states no external services are called."
+    },
+    "9": {
+      "score": 3,
+      "why": "No email templates exist in this system, so the claim is not directly assessable; the UI does insert all dynamic strings via textContent under a nonce-based CSP, never as HTML or script."
+    },
+    "10": {
+      "score": 2,
+      "why": "Server error responses are generic, but the UI Logs panel prints the actual reset token ('SIMULATED DELIVERY...') and the MFA code, so tokens are shown in logs."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are bcrypt-hashed, but the MFA code '472913' and the initial password 'Initial-Clinical!2025' are hardcoded directly in the source code."
+    },
+    "12": {
+      "score": 2,
+      "why": "The account ships with a hardcoded initial password and a fixed MFA code in the source, which function as default credentials."
+    },
+    "13": {
+      "score": 5,
+      "why": "Reset requests (3 per 10 min), verify attempts (5 per 10 min), login (5 failures → 10-min lockout) and MFA (5 failures → 10-min lockout) are all throttled or locked."
+    },
+    "14": {
+      "score": 4,
+      "why": "Reset responses return an identical generic message and login takes no identifier, though the presence of mockToken in the response can hint that a contact is registered."
+    },
+    "15": {
+      "score": 5,
+      "why": "Tokens are 32 bytes from crypto.getRandomValues (base64url), stored only as hashes, bound to sessionId and contactDigest, single-use, and expire after 15 minutes."
+    }
+  },
+  "cost_usd": 0.1083825,
+  "generation_id": "gen-1785919344-OU4xp9UJvGLqK10X8Qin",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 2,
+    "11": 2,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 2.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 3.5333,
+  "capture_complete": true
+}

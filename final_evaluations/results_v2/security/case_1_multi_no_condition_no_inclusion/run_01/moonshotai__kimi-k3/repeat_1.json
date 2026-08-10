@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-05T06:47:07.616117+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "97a599ebfb8b45039837ae6174f0f7f1f5ef0c6a0af8b013f304b66419e50775",
+  "app_ts_sha256": "9c5c8fc71ceb1cd718fc803669051ce55631e7c3cacfe8e20d41d0370b3e3f6c",
+  "screenshot_count": 0,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 2,
+      "why": "The verify step only checks that the token digest exists in `resets` and is unused/unexpired; no user identity is ever bound to or checked against the code."
+    },
+    "2": {
+      "score": 2,
+      "why": "Unknown identifiers receive inert decoy tokens (`actionable:false`) that cannot alter the single mock account, so codes are not interchangeable across accounts, though tokens are bearer-style."
+    },
+    "3": {
+      "score": 2,
+      "why": "After a successful update the code deletes the recovery authorization and clears `session.recoveryAuthKey`; only the privilege-less anonymous sid cookie persists."
+    },
+    "4": {
+      "score": 4,
+      "why": "The Bun listener is TLS-only with HSTS, Secure cookies and rejection of non-https `x-forwarded-proto`, but no specific TLS version is pinned in code."
+    },
+    "5": {
+      "score": 4,
+      "why": "Reset codes are stored as SHA-256 digests and passwords as Argon2id hashes with TLS in transit—appropriate protection, though technically hashing rather than encryption."
+    },
+    "6": {
+      "score": 4,
+      "why": "The response is a generic non-enumerating message and `MOCK_ACCOUNT_IDENTIFIER` is never returned; the simulated delivery contains only the token, no private user data."
+    },
+    "7": {
+      "score": 5,
+      "why": "Strict regex validation for identifiers, tokens and MFA codes, JSON-only body parsing, cookie value filtering, and textContent-only rendering are all implemented."
+    },
+    "8": {
+      "score": 5,
+      "why": "The only generated link is the same-origin `/?reset=...` and CSP enforces `form-action 'self'` and `base-uri 'none'`, with no external redirects present."
+    },
+    "9": {
+      "score": 5,
+      "why": "All dynamic values are inserted via textContent and a nonce-based CSP with `default-src 'none'` blocks inline or untrusted scripts, so no user input becomes HTML/script."
+    },
+    "10": {
+      "score": 3,
+      "why": "Error responses and the server audit log exclude identifiers and tokens, but the demo UI 'Logs' panel deliberately prints the reset token and MFA code as simulated delivery."
+    },
+    "11": {
+      "score": 2,
+      "why": "Passwords are Argon2id-hashed, yet the MFA code `\"246810\"` and the initial demo password literal are hardcoded directly in the source."
+    },
+    "12": {
+      "score": 2,
+      "why": "The system initialises with a hardcoded password (`Initial-Demo-Password-Only!`) and accepts a fixed source-visible MFA code, so default credentials effectively exist."
+    },
+    "13": {
+      "score": 4,
+      "why": "`limited()` throttles request (3), verify (5) and MFA (5) attempts per 10 minutes with 429 responses, though buckets are per-session and reset by obtaining a new cookie."
+    },
+    "14": {
+      "score": 5,
+      "why": "Every identifier returns the identical generic message and a testToken (decoys for unknown IDs) with the same status and shape, so account existence is not revealed."
+    },
+    "15": {
+      "score": 3,
+      "why": "Codes are 256-bit `randomBytes` base64url tokens—random and complex—but they are bearer tokens redeemable by any session, so they are not user-specific."
+    }
+  },
+  "cost_usd": 0.1824426,
+  "generation_id": "gen-1785912286-nHlUf1QTkgk2Wy0YdjVh",
+  "adjusted_scores": {
+    "1": 2,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 3,
+    "11": 2,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.7333,
+  "capture_complete": true
+}
