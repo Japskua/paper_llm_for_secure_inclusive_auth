@@ -12,7 +12,7 @@ Participants evaluate three cases representing different levels of inclusivity s
 
 ⸻
 
-Use-case description:
+User Story:
 
 Marcus is a 54-year-old self-employed contractor with cognitive condition dyslexia who has just opened an account with an online bank. He manages his account through the bank's mobile web application, a responsive website he opens in his phone's browser. Following a regulatory update, the bank requires all customers to enrol in multi-factor authentication (MFA) before authorising payments above a threshold. Marcus signs in, verifies his identity, sets up a time-based one-time passcode (OTP) authenticator, and securely stores a set of backup recovery codes.
 
@@ -30,17 +30,16 @@ Evaluation Criteria (Scale 1–5):
 
 ⸻
 
-Inclusivity Criteria
 
-Readability 1. Text is set in a legible typeface with generous letter and line spacing 2. Instructions avoid italics, all-caps, and dense blocks of text 3. Content is readable and well laid out at a mobile screen size
+Readability 1. Text is set in a legible typeface with generous letter and line spacing  2. Instructions avoid italics, all-caps, and dense blocks of text _  3. Content is readable and well laid out at a mobile screen size _ 
 
-Reading Load 4. Instructions are short and written in plain language 5. An example is shown of what any expected input should look like 6. The user is never required to read a long block of text to proceed
+Reading Load 4. Instructions are short and written in plain language  5. An example is shown of what any expected input should look like _  6. The user is never required to read a long block of text to proceed _ 
 
-Transcription 7. Long codes and secrets can be copied rather than typed by hand 8. A QR code or equivalent is offered as an alternative to manual entry 9. Browser autofill and password managers are supported
+Transcription 7. Long codes and secrets can be copied rather than typed by hand  8. A QR code or equivalent is offered as an alternative to manual entry _  9. Browser autofill and password managers are supported _ 
 
-Orientation 10. The current step and the primary action stand out clearly 11. Only one main action is asked for at a time 12. After each action the system states plainly what happened and what comes next
+Orientation 10. The current step and the primary action stand out clearly  11. Only one main action is asked for at a time _  12. After each action the system states plainly what happened and what comes next _ 
 
-Recovery 13. The user can retry a step, or reveal, hide, and re-request codes, without penalty 14. Error messages state the problem and how to fix it without blaming the user 15. No time limit is imposed on reading, and there is generous time to enter codes
+Recovery 13. The user can retry a step, or reveal, hide, and re-request codes, without penalty  14. Error messages state the problem and how to fix it without blaming the user _  15. No time limit is imposed on reading, and there is generous time to enter codes _ 
 
 ⸻
 

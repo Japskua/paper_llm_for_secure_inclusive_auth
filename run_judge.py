@@ -129,10 +129,8 @@ def load_artifacts(args) -> List[Dict[str, Any]]:
 
 
 def set_software(software: str) -> None:
-    """Point the results, rubric roots and reverse-coding map at one study."""
+    """Point the results and rubric roots at one study."""
     global RESULTS, RUBRICS
-    from app.utils import judge as judge_mod
-    judge_mod.set_software(software)
     RESULTS = RESULTS_ROOT / software
     per_software = RUBRICS_ROOT / software
     # Fall back to the flat layout so the originally published rubric paths

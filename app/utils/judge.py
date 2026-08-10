@@ -63,48 +63,12 @@ CONSTRUCTS: Dict[str, Dict[str, List[int]]] = {
 
 # Statements where agreement indicates a WORSE system; inverted at aggregation.
 #
-# Story 1's security items 2 and 3 are worded so that agreeing means the system
-# is less secure, which split the panel 1-vs-5 on those items alone. Story 2's
-# rubric was written with every item positively worded to avoid repeating that,
-# so it has no reverse-coded items. Kept per study rather than global, since a
-# blanket rule would silently invert the wrong items.
-REVERSE_CODED_BY_SOFTWARE: Dict[str, Dict[str, set]] = {
-    "password_recovery_health": {"security": {2, 3}, "inclusivity": set()},
-    "mfa_enrolment_banking": {"security": set(), "inclusivity": set()},
-}
-DEFAULT_REVERSE_CODED: Dict[str, set] = {"security": set(), "inclusivity": set()}
+# Identical across studies by design. Both rubrics place the reverse-worded
+# statements at items 2 and 3 of A01 ("the same code works for any other user",
+# "previous sessions still work after ..."), so one rule serves both and the
+# construct scores stay comparable between them.
+REVERSE_CODED: Dict[str, set] = {"security": {2, 3}, "inclusivity": set()}
 
-# Module-level view, repointed by set_software(); defaults to study 1 so any
-# existing caller keeps its previous behaviour.
-REVERSE_CODED: Dict[str, set] = REVERSE_CODED_BY_SOFTWARE["password_recovery_health"]
-
-
-def set_software(software: str) -> None:
-    """Select the reverse-coding map for the study being judged."""
-    global REVERSE_CODED
-    REVERSE_CODED = REVERSE_CODED_BY_SOFTWARE.get(software, DEFAULT_REVERSE_CODED)
-
-# Per-provider limits on images in a single request. Mistral rejects more than
-# eight outright ("Total number of images exceeds the maximum allowed of 8"),
-# which would otherwise lose that judge on the 9 of 30 artifacts with longer
-# journeys. Judges absent from this map receive every screenshot.
-MAX_IMAGES: Dict[str, int] = {"mistralai/mistral-medium-3-5": 8}
-
-
-def sample_evenly(items: List[Any], k: int) -> List[Any]:
-    """
-    Take k items spread across the sequence, always keeping the first and last.
-
-    Used only where a provider caps images: dropping the tail of the journey
-    would bias against artifacts with more steps, so the whole arc is preserved
-    at lower density instead.
-    """
-    if k <= 0 or len(items) <= k:
-        return items
-    if k == 1:
-        return [items[0]]
-    idx = sorted({round(i * (len(items) - 1) / (k - 1)) for i in range(k)})
-    return [items[i] for i in idx]
 
 SCORING_PROTOCOL = """\
 

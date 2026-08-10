@@ -50,6 +50,13 @@ stylistically different:
 - Rubrics follow the same layout, and the item-to-construct mapping is identical,
   so the security constructs are directly comparable across studies.
 
-One deliberate difference: study 1's security items 2 and 3 are reverse-worded,
-which split the judge panel on interpretation. Study 2's items are all positively
-worded, and reverse coding is configured per study rather than globally.
+Item coding is identical across the two studies so their scores can be compared
+directly. Both rubrics place the reverse-worded statements at items 2 and 3 of
+A01 — "the same code works for any other user" and "the previous sessions still
+work after ..." — so one reverse-coding rule serves both.
+
+Known issue inherited from study 1: its "Security Criteria" narrative lists SSRF
+and Social Engineering and omits Cryptographic Failures, while its scored items
+cover Cryptographic Failures and not SSRF. Study 2's narrative and scored items
+agree. The scored constructs are identical across both studies regardless, so
+the comparison is unaffected.

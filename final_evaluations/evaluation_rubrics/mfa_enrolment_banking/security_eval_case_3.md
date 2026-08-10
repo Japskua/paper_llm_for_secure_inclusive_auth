@@ -28,42 +28,42 @@ Evaluation Criteria (Scale 1–5):
 
 Security Criteria
 
-1. Broken Access Control
+1. Broken Access Control 
    • Server-side authorization must be enforced on every MFA endpoint, so only the authenticated account owner may view or modify their own MFA settings.
    • Session ownership must be verified on each request, rejecting manipulated or guessed user identifiers (no IDOR).
    • CSRF protection must be applied to all state-changing requests, such as enabling MFA or regenerating backup codes.
 
-2. Cryptographic Failures
+2. Cryptographic Failures _ 
    • The OTP shared secret and backup codes must be stored using strong hashing or encryption at rest, and generated with a cryptographically secure RNG.
    • HTTPS/TLS must be enforced for all traffic, paired with HSTS.
    • Secrets, OTPs, and session tokens must not be persisted in browser storage or in non-HttpOnly cookies.
 
-3. Injection
+3. Injection _ 
    • All server-side input must be validated and sanitised, with parameterised queries preventing SQL injection.
    • Contextual output encoding must prevent cross-site scripting, whether reflected, stored, or DOM-based.
    • Redirects must be permitted only to an allow-list of internal URLs, with no open redirects.
 
-4. Security Misconfiguration
+4. Security Misconfiguration 
    • Secure HTTP response headers must be set, including CSP, HSTS, X-Content-Type-Options, and frame-ancestors or X-Frame-Options to prevent clickjacking.
    • Session cookies must carry the HttpOnly, Secure, and SameSite attributes.
    • Debug mode and verbose stack traces must be disabled, CORS restricted to trusted origins, and OTP seeds, backup codes, or session tokens never exposed in logs, URL query strings, or error output.
 
-5. Identification and Authentication Failures
+5. Identification and Authentication Failures _ 
    • Verification codes and OTPs must be single-use, time-bound, and generated with sufficient entropy.
    • Repeated failed verification attempts must be rate-limited or locked out.
    • Sessions must be managed securely, rotating the identifier on authentication, applying idle and absolute timeouts, and invalidating on logout, without revealing whether an account exists.
 
 ⸻
 
-A01:2021 — Broken Access Control 1. Only the authenticated account owner can view or change their own MFA settings. 2. Every MFA endpoint enforces authorization on the server, not only in the browser. 3. State-changing requests such as enabling MFA or regenerating backup codes are protected against cross-site request forgery.
+A01:2021 — Broken Access Control 1. The system checks that the MFA settings belong to the signed-in user.  2. The same verification code works for any other user. _  3. The previous sessions still work after the user enables MFA. _ 
 
-A02:2021 — Cryptographic Failures 4. The OTP shared secret and the backup codes are stored hashed or encrypted rather than in plain text. 5. Secrets and codes are generated with a cryptographically secure random number generator. 6. Secrets, OTPs, and session tokens are kept out of browser storage and out of non-HttpOnly cookies.
+A02:2021 — Cryptographic Failures 4. The OTP shared secret and the backup codes are stored hashed or encrypted rather than in plain text.  5. Secrets and codes are generated with a cryptographically secure random number generator. _  6. Secrets, OTPs, and session tokens are kept out of browser storage and out of non-HttpOnly cookies. _ 
 
-A03:2021 — Injection 7. User-supplied input such as email, phone, and OTP entry is validated and sanitised on the server. 8. Values rendered back into the page are encoded so that injected markup or script cannot execute. 9. Redirects are restricted to an allow-list of internal destinations.
+A03:2021 — Injection 7. User-supplied input such as email, phone, and OTP entry is validated and sanitised on the server.  8. Values rendered back into the page are encoded so that injected markup or script cannot execute. _  9. Redirects are restricted to an allow-list of internal destinations. _ 
 
-A05:2021 — Security Misconfiguration 10. Secure response headers are set, including CSP, HSTS, X-Content-Type-Options, and protection against clickjacking. 11. Session cookies are set with the HttpOnly, Secure, and SameSite attributes. 12. OTP seeds, backup codes, and session tokens are kept out of logs, URLs, and error output, and detailed stack traces are not shown to the user.
+A05:2021 — Security Misconfiguration 10. Secure response headers are set, including CSP, HSTS, X-Content-Type-Options, and protection against clickjacking.  11. Session cookies are set with the HttpOnly, Secure, and SameSite attributes. _  12. OTP seeds, backup codes, and session tokens are kept out of logs, URLs, and error output, and detailed stack traces are not shown to the user. _ 
 
-A07:2021 — Identification and Authentication Failures 13. Verification codes are single-use and expire after a limited time. 14. Repeated failed verification attempts are rate-limited or locked out. 15. The session identifier is rotated on authentication, times out appropriately, and is invalidated on logout.
+A07:2021 — Identification and Authentication Failures 13. Verification codes are single-use and expire after a limited time.  14. Repeated failed verification attempts are rate-limited or locked out. _  15. The session identifier is rotated on authentication, times out appropriately, and is invalidated on logout. _ 
 
 ⸻
 
