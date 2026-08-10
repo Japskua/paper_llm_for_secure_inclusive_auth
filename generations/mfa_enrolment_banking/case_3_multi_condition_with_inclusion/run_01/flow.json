@@ -2,24 +2,24 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 15,
-  "steps_passed": 13,
-  "happy_path_passed": 11,
-  "happy_path_total": 12,
+  "steps_total": 6,
+  "steps_passed": 4,
+  "happy_path_passed": 2,
+  "happy_path_total": 3,
   "negative_passed": 2,
   "negative_total": 3,
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "load security setup page",
+      "name": "obtain pre-auth CSRF token",
       "method": "GET",
-      "path": "/",
+      "path": "/api/preauth",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
     {
-      "name": "sign in with demo account",
+      "name": "sign in",
       "method": "POST",
       "path": "/api/signin",
       "expect_failure": false,
@@ -27,118 +27,44 @@
       "ok": true
     },
     {
-      "name": "check MFA setup status",
-      "method": "GET",
-      "path": "/api/mfa/status",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "verify identity check code",
+      "name": "start authenticator provisioning",
       "method": "POST",
-      "path": "/api/identity/verify",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "check verified MFA status",
-      "method": "GET",
-      "path": "/api/mfa/status",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "get authenticator setup details",
-      "method": "POST",
-      "path": "/api/authenticator/provision",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "confirm authenticator",
-      "method": "POST",
-      "path": "/api/authenticator/verify",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true,
-      "warnings": [
-        "could not capture 'recovery_code' from 'codes.0'"
-      ]
-    },
-    {
-      "name": "confirm recovery codes saved",
-      "method": "POST",
-      "path": "/api/backup/confirm",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "test a saved recovery code",
-      "method": "POST",
-      "path": "/api/recovery/verify",
+      "path": "/api/provision",
       "expect_failure": false,
       "status_code": 400,
       "ok": false,
-      "response_message": "Enter a recovery code like ABCDE-FGHIJ."
-    },
-    {
-      "name": "regenerate recovery codes",
-      "method": "POST",
-      "path": "/api/recovery/regenerate",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true,
       "warnings": [
-        "could not capture 'replacement_recovery_code' from 'codes.0'"
-      ]
+        "could not capture 'setup_secret' from 'secret'",
+        "could not capture 'setup_uri' from 'uri'"
+      ],
+      "response_message": "Please try setup again."
     },
     {
-      "name": "confirm replacement recovery codes",
-      "method": "POST",
-      "path": "/api/backup/confirm",
-      "expect_failure": false,
+      "name": "obtain CSRF token for rejected sign-in",
+      "method": "GET",
+      "path": "/api/preauth",
+      "expect_failure": true,
       "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "sign out",
-      "method": "POST",
-      "path": "/api/logout",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
+      "ok": false,
+      "response_message": "{'ok': True, 'csrf': '4MxSTfdUltKycoyFq9Ytgcp-y2DXETgL'}"
     },
     {
       "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/signin",
       "expect_failure": true,
-      "status_code": 401,
+      "status_code": 403,
       "ok": true
     },
     {
-      "name": "malformed email rejected",
+      "name": "malformed OTP rejected",
       "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/verify-otp",
       "expect_failure": true,
-      "status_code": 401,
+      "status_code": 403,
       "ok": true
-    },
-    {
-      "name": "cross origin sign in rejected",
-      "method": "POST",
-      "path": "/api/signin",
-      "expect_failure": true,
-      "status_code": 200,
-      "ok": false,
-      "response_message": "{'ok': True, 'csrf': 'SpVYh4U3UZ_EJxtZ8kKOzKv3BfMrdbEJ0VaUfYWVRzc', 'mockCode': '392234'}"
     }
   ],
   "stage": "executed",
-  "spec_steps": 15
+  "spec_steps": 6
 }

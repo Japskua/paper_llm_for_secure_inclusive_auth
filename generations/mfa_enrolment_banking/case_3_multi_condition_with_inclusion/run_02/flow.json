@@ -2,16 +2,16 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 14,
+  "steps_total": 12,
   "steps_passed": 11,
   "happy_path_passed": 7,
-  "happy_path_total": 10,
+  "happy_path_total": 8,
   "negative_passed": 4,
   "negative_total": 4,
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "load MFA setup page",
+      "name": "load MFA enrolment page",
       "method": "GET",
       "path": "/",
       "expect_failure": false,
@@ -19,32 +19,15 @@
       "ok": true
     },
     {
-      "name": "initial session status is signed out",
-      "method": "GET",
-      "path": "/api/status",
-      "expect_failure": false,
-      "status_code": 401,
-      "ok": false,
-      "response_message": "Please sign in to continue."
-    },
-    {
-      "name": "sign in",
+      "name": "confirm Marcus identity and create session",
       "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/login",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
     {
-      "name": "confirm identity code",
-      "method": "POST",
-      "path": "/api/identity",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "create authenticator provisioning",
+      "name": "provision authenticator",
       "method": "POST",
       "path": "/api/mfa/provision",
       "expect_failure": false,
@@ -57,39 +40,38 @@
       "path": "/api/mfa/verify",
       "expect_failure": false,
       "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "create recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/backup-codes",
+      "expect_failure": false,
+      "status_code": 200,
       "ok": true,
       "warnings": [
         "could not capture 'recovery_code' from 'codes.0'"
       ]
     },
     {
-      "name": "use first backup code",
+      "name": "use one recovery code",
       "method": "POST",
-      "path": "/api/recovery/verify",
+      "path": "/api/mfa/recovery/verify",
       "expect_failure": false,
       "status_code": 400,
       "ok": false,
-      "response_message": "Enter a backup code like ABCDE-FGHJK."
+      "response_message": "{'error': 'Enter a recovery code in the example format: ABCD-EFGH-JKLM.'}"
     },
     {
-      "name": "regenerate backup codes",
+      "name": "regenerate recovery codes",
       "method": "POST",
-      "path": "/api/backup/regenerate",
+      "path": "/api/mfa/backup-codes/regenerate",
       "expect_failure": false,
       "status_code": 200,
       "ok": true,
       "warnings": [
         "could not capture 'replacement_recovery_code' from 'codes.0'"
       ]
-    },
-    {
-      "name": "use replacement backup code",
-      "method": "POST",
-      "path": "/api/recovery/verify",
-      "expect_failure": false,
-      "status_code": 400,
-      "ok": false,
-      "response_message": "Enter a backup code like ABCDE-FGHJK."
     },
     {
       "name": "sign out",
@@ -100,38 +82,38 @@
       "ok": true
     },
     {
-      "name": "wrong password rejected",
+      "name": "wrong identity details rejected",
       "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 400,
+      "ok": true
+    },
+    {
+      "name": "provision without CSRF token rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
       "expect_failure": true,
       "status_code": 401,
       "ok": true
     },
     {
-      "name": "invalid identity code rejected",
+      "name": "incorrect authenticator code rejected",
       "method": "POST",
-      "path": "/api/identity",
+      "path": "/api/mfa/verify",
       "expect_failure": true,
       "status_code": 401,
       "ok": true
     },
     {
-      "name": "reused backup code rejected",
+      "name": "malformed recovery code rejected",
       "method": "POST",
-      "path": "/api/recovery/verify",
-      "expect_failure": true,
-      "status_code": 401,
-      "ok": true
-    },
-    {
-      "name": "missing CSRF token rejected",
-      "method": "POST",
-      "path": "/api/backup/regenerate",
+      "path": "/api/mfa/recovery/verify",
       "expect_failure": true,
       "status_code": 401,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 14
+  "spec_steps": 12
 }

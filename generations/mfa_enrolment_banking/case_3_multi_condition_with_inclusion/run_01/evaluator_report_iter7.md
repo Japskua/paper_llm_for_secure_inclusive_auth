@@ -1,94 +1,102 @@
 ## SUMMARY
 
-The artifact is a single-file Bun HTTPS SPA with a generally strong mobile-oriented MFA flow, server-side session ownership checks, CSRF checks, secure cookies, security headers, input validation, rate limiting, recovery-code hashing, and clear dyslexia-conscious UI copy. However, it does not fully meet the MFA/authenticator requirements because the generated QR code is technically invalid, and the scanned/manual authenticator secret cannot produce a code the server will accept. The hard-coded verification codes also fail the stated entropy requirement. Therefore the artifact cannot be accepted as functionally correct and secure.
+The artifact is a well-structured single-file Bun HTTPS application with functioning sign-in, session ownership enforcement, CSRF validation, TOTP verification, recovery-code generation/verification, rate limiting, security headers, and responsive mobile-oriented UI. However, it does not provide a functional scannable QR code despite presenting one as such, and some required accessibility/UX confirmations and code visibility controls are incomplete. These issues prevent acceptance.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file application and zero-build compliance.**  
-  The server, HTML, CSS, and browser JavaScript are contained in `app.ts`. It uses `Bun.serve` directly and does not use frameworks, bundlers, external assets, or external network calls.
+- **Single `app.ts` file containing Bun server, HTML, CSS, and vanilla client JavaScript: PASS**
+  - The complete server and SPA are contained in one file. No bundler, framework, compilation step, or external asset is used.
 
-- **PASS — HTTPS/TLS server configuration.**  
-  `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`, and the server advertises an HTTPS localhost URL.
+- **Bun HTTPS server uses the supplied TLS certificate paths: PASS**
+  - `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`.
+  - Requests are rejected unless they use HTTPS and an approved local host.
 
-- **PASS — Mobile-responsive, semantic SPA UI.**  
-  The UI uses semantic elements including `main`, `header`, `section`, `article`, `form`, `label`, `button`, `aside`, and `details`. Layout sizing and typography are responsive for narrow viewports.
+- **Mobile-responsive, legible, dyslexia-conscious UI: PASS**
+  - The interface uses a constrained mobile layout, sufficiently large controls, generous spacing, clear focus states, short instructions, examples, predictable steps, and no animations/timers.
+  - The UI uses `Verdana, Arial, sans-serif`, increased letter spacing, and avoids instruction text in italics/all caps.
 
-- **PASS — Dyslexia-conscious UX basics.**  
-  The artifact uses generous spacing, readable font sizing, plain wording, examples for expected inputs, visible step labels, short help content, no animated/time-updating UI, and clear success/error messages.
+- **One clear primary action per enrolment step: PASS**
+  - Sign-in, setup request, OTP verification, and code-copy screens each have an identifiable primary action.
 
-- **PASS — Manual/copy options for long secrets and recovery codes.**  
-  The setup screen provides reveal/hide and copy controls for the authenticator secret, while recovery codes can be copied together. OTP inputs use `autocomplete="one-time-code"`.
+- **Help, retry, and non-time-pressured flow: PASS**
+  - Each main screen has a help disclosure and explicitly states that there is no reading timer.
+  - Setup can be re-requested and OTP verification can be retried.
 
-- **FAIL — Authenticator QR provisioning works correctly.**  
-  The in-browser QR generator is not a valid QR Version 8 implementation:
-  - Version 8 QR symbols require version-information bits, but the implementation does not reserve or write them.
-  - The selected best mask is not reflected in the QR format information; the format bits are always hard-coded as `0x77c4`, which represents a specific mask configuration rather than the dynamically selected mask.
-  - As a result, scanners can decode the symbol incorrectly or reject it.
+- **Authenticator provisioning with QR-code and manual-secret options: FAIL**
+  - The displayed “QR setup” area is only a CSS decorative pattern:
+    - `<div class="qr" ...>Authenticator<br>QR setup</div>`
+  - It does not encode `setupUri`, cannot be scanned by an authenticator application, and is therefore not a functional QR code.
+  - Although a manual secret is shown and can be copied, this does not make the claimed QR option functional.
 
-- **FAIL — Scanned/manual authenticator setup can be verified.**  
-  The provisioning URI contains a randomly generated Base32 secret, but the server verification endpoint only accepts the fixed mock value `654321`. An authenticator app that scans the QR code or receives the displayed manual secret will calculate a real TOTP value derived from that secret, not `654321`. Therefore the advertised authenticator setup path cannot actually be completed with the authenticator application.
+- **Manual provisioning and OTP entry: PASS**
+  - The provisioning secret is shown, can be copied, hidden/revealed, and the OTP entry supports numeric input and `autocomplete="one-time-code"`.
+  - The server verifies real TOTP values using the generated secret.
 
-- **PASS — Simulated identity code delivery is available and visible in the browser console.**  
-  The identity code is returned to the UI and logged through `console.log` in the browser via `browserLog`.
+- **Recovery code display, copy, regeneration, and single-use verification: PASS**
+  - Recovery codes are returned after successful OTP verification, displayed in the UI, logged in the browser console as required for the mock, copyable, replaceable through regeneration, and removed after successful use.
 
-- **PARTIAL/FAIL — OTP verification code security.**  
-  Codes are single-use and expire after 30 minutes, but both identity and authenticator codes are hard-coded (`123456` and `654321`). They are predictable and do not meet the requirement that verification codes/OTPs be generated with sufficient entropy.
+- **Required clear visual confirmation after copy actions: FAIL**
+  - Copying a secret or recovery codes only writes feedback to the browser console:
+    - `safeConsole("Authenticator secret copied.")`
+    - `safeConsole("Recovery codes copied.")`
+  - The user receives no on-page confirmation that copying succeeded or failed, despite the requirement to plainly confirm what happened and what to do next.
 
-- **PASS — Recovery codes are securely generated and single-use.**  
-  Recovery codes are generated using `crypto.getRandomValues`, displayed/copyable for the user, stored as hashes, and deleted after successful use.
+- **Reveal/hide controls for sensitive code display: FAIL**
+  - The authenticator secret has a hide/reveal control.
+  - Recovery codes are always visible while on the recovery-code screen and have no hide/reveal control. This does not fully meet the requirement to let users reveal and hide codes without penalty.
 
-- **PASS — Server-side authorization and IDOR resistance.**  
-  Protected MFA endpoints resolve the account exclusively through the `mfa_session` server-side session. The client does not submit user identifiers to select an account, preventing guessed/manipulated account IDs from changing another user’s MFA settings.
+- **Browser mock logging and test values: PASS**
+  - The browser logs the mock provisioning secret, mock OTP, generated recovery codes, and relevant mock flow events using `console.log`.
+  - The OTP and recovery codes are also returned to the client UI flow.
 
-- **PASS — CSRF protection on authenticated state-changing requests.**  
-  Authenticated non-GET API requests require both an allow-listed `Origin` and the per-session `X-CSRF-Token`. Session cookies use `SameSite=Strict`.
+- **Server-side authorization and IDOR prevention: PASS**
+  - MFA state is derived from the authenticated server-side session only.
+  - No client-provided account or user identifier is accepted for MFA modification.
+  - MFA endpoints use `auth.account`, preventing guessed or manipulated IDs from selecting another account.
 
-- **PASS — Secure session cookie configuration.**  
-  The session cookie has `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, and a bounded `Max-Age`.
+- **CSRF protection for state-changing MFA actions: PASS**
+  - MFA state-changing endpoints require both a same-origin HTTPS request and a matching per-session `X-CSRF-Token`.
+  - The session cookie uses `SameSite=Strict`.
 
-- **PASS — Session rotation, expiry, and logout invalidation.**  
-  Sign-in creates a new random session ID and removes prior sessions for the account. Idle and absolute session limits are enforced server-side, and logout deletes the server-side session and expires the cookie.
+- **Security headers and CORS restrictions: PASS**
+  - CSP with per-page nonce, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, no-referrer policy, permissions policy, and no-store caching are implemented.
+  - CORS is only emitted for the same trusted local origin.
 
-- **PASS — Security response headers and restrictive CORS.**  
-  CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, referrer policy, and permissions policy are configured. CORS is restricted to localhost HTTPS origins.
+- **Secure session management: PASS**
+  - Session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
+  - Sessions have idle and absolute expiration, are replaced on sign-in, and are invalidated on logout.
+  - Session identifiers are not placed in browser storage.
 
-- **PASS — Input validation and output escaping.**  
-  Server-side validation exists for email, credential, OTP, and recovery-code formats. Browser-rendered dynamic values are escaped before insertion into HTML.
+- **Secret and recovery-code protection at rest: PASS**
+  - TOTP secrets are AES-GCM encrypted.
+  - Recovery codes are generated with cryptographic randomness and stored only as HMAC verifiers.
+  - Raw recovery codes are removed from server state after generation.
 
-- **PASS — Rate limiting and lockouts.**  
-  Identity, authenticator, and recovery-code failures are limited and trigger temporary lockouts. Identity-code resend is also throttled.
+- **Input validation and XSS/injection protections: PASS**
+  - Email, password, OTP, and recovery-code inputs are validated server-side.
+  - Dynamic UI values are escaped through `esc()` before insertion into HTML.
+  - There are no database queries or redirects accepting attacker-controlled destinations.
 
-- **PASS — Generic sign-in failure messaging and reduced enumeration risk.**  
-  Sign-in returns the same generic error for invalid email/credential combinations and computes a credential hash even when the account is not found.
+- **OTP/recovery-code expiry, single-use behavior, rate limits, and lockouts: PASS**
+  - TOTP validation is time-windowed and accepted counters are stored to prevent replay.
+  - Recovery codes are deleted after use.
+  - Both OTP and recovery verification lock after five failed valid-format attempts and reset after the lock period.
 
-- **PASS — No browser storage of session tokens or secrets.**  
-  The client does not use `localStorage`, `sessionStorage`, or non-HttpOnly cookies for MFA secrets or sessions.
+- **Server error handling without verbose stack traces: PASS**
+  - The top-level fetch handler returns a generic error response and does not expose stack traces.
 
 ## FAILING_ITEMS
 
-- The local QR-code generator does not produce a standards-compliant QR Version 8 code:
-  - It omits Version 8 version-information modules.
-  - It writes format data for a fixed mask rather than the selected mask.
-  - The QR code may be unreadable or decode to invalid data.
-
-- The authenticator provisioning flow is internally inconsistent:
-  - The QR/manual secret represents a real TOTP secret.
-  - The server accepts only the unrelated fixed code `654321`.
-  - A user who scans the QR code into an authenticator app cannot verify MFA successfully.
-
-- Identity and authenticator verification codes are hard-coded predictable values, rather than cryptographically generated values with sufficient entropy as required by the security requirements.
+- The UI presents a decorative CSS block as an “Authenticator QR code,” but it is not a genuine QR code encoding the generated `otpauth://` provisioning URI. Users cannot scan it with an authenticator app.
+- Copy-to-clipboard actions provide feedback only through `console.log`; there is no accessible, visible confirmation or failure message in the interface.
+- Recovery codes do not have a hide/reveal control, despite the accessibility requirement to let users reveal and hide codes without penalty.
 
 ## NEW_TASKS
 
-1. Replace the custom QR implementation with a standards-compliant local QR encoder that correctly supports the chosen QR version, including correct reserved modules, version information, error-correction blocks, mask selection, and matching format bits; alternatively use a simpler correct locally embedded QR implementation with no external network dependency.
-
-2. Make authenticator verification consistent with the provisioned secret:
-   - Implement server-side TOTP verification from the encrypted stored Base32 secret using the provisioning URI parameters, or
-   - If retaining a strictly simulated authenticator, ensure the QR/manual setup material deterministically maps to the same mock code accepted by `/api/authenticator/verify`.
-   The scanned secret must lead to an accepted verification code.
-
-3. Replace hard-coded identity and authenticator verification codes with cryptographically secure generated codes stored as hashes with expiry and single-use state. Return the generated mock values only through the intended demo UI/browser-console mechanism.
+1. Replace the decorative `.qr` element with a real, scannable QR code generated in-browser from `setupUri`, without external libraries or network requests. Ensure it has an accessible label and retains the manual-secret alternative.
+2. Add an on-page, `aria-live` status confirmation for successful and failed clipboard operations for both the authenticator secret and recovery codes.
+3. Add a recovery-code hide/reveal control on the recovery-code display screen, ensuring the code list can be hidden and re-shown without regenerating or losing codes.
 
 ## DECISION
 
-FAIL
+**FAIL**

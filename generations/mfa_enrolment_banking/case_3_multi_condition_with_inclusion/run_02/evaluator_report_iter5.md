@@ -1,124 +1,97 @@
 ## SUMMARY
 
-The artifact is a strong single-file Bun HTTPS MFA demo with functional enrolment, TOTP verification, recovery codes, CSRF checks, secure cookies, CSP/HSTS headers, encrypted OTP-secret storage, hashed recovery codes, input validation, and a mobile-oriented accessible UI. However, it does not fully satisfy the required retry/reveal/hide/re-request UX, and session-expiry handling can leave the user on a protected screen instead of reliably returning them to sign-in. These are functional and UX compliance gaps.
+The artifact is a single-file Bun HTTPS MFA enrolment app with a functional mobile-oriented flow, CSRF/session protections, encrypted OTP secret handling, hashed recovery codes, TOTP verification, rate limiting, and working manual/QR provisioning paths. However, it fails the security and UX requirements because it persistently displays sensitive OTP and recovery-code values in an in-page “Logs” panel, and it does not provide an in-flow way to re-request/restart authenticator provisioning after the setup details have been hidden or a mock code has expired.
 
 ## FUNCTIONAL_CHECK
 
-- **Single `app.ts` file containing Bun server, HTML, CSS, and vanilla browser JavaScript — PASS**
-  - The complete application is contained in one TypeScript file.
-  - It uses `Bun.serve` directly and does not require a bundler, framework, external asset, or compilation pipeline.
+- **Single `app.ts` Bun server with inline HTML, CSS, and vanilla browser JavaScript: PASS**
+  - The supplied artifact contains the Bun server, HTML template, inline CSS, and inline browser JS in one file. It uses no framework, bundler, external asset, or external network call.
 
-- **Bun HTTPS server uses the supplied TLS certificate locations — PASS**
-  - The server is configured with `certs/cert.pem` and `certs/key.pem`.
-  - It serves HTTPS on port 3000.
+- **HTTPS/TLS using the supplied certificate paths: PASS**
+  - The server checks for and uses `certs/cert.pem` and `certs/key.pem` in `Bun.serve({ tls: ... })`.
+  - It fails safely with a generic startup message if the certificate files are unavailable.
 
-- **Responsive, legible mobile UI — PASS**
-  - The HTML includes a mobile viewport meta tag.
-  - CSS constrains the main layout to a narrow mobile-friendly width and includes a small-screen media query.
-  - Typography, contrast, spacing, field sizing, and focus indicators are suitable for mobile use.
+- **Mobile-responsive, dyslexia-conscious UI: PASS**
+  - The app has a narrow mobile layout, readable font sizing, spacing, high-visibility focus states, short plain-language instructions, examples for inputs, icons, and clear step indicators.
+  - There are no moving, flashing, or auto-updating UI elements.
+  - Inputs support appropriate autofill/input modes, including `autocomplete="one-time-code"`.
 
-- **Dyslexia-friendly, low-reading-load UI — PASS**
-  - The interface uses short, plain-language instructions, roomy spacing, a legible font stack, icons, examples, visible hints, and no moving or flashing elements.
-  - It provides copy controls for the OTP secret, provisioning URI, and recovery codes.
-  - It uses browser autofill hints such as `autocomplete="username"`, `current-password`, and `one-time-code`.
+- **Authenticator provisioning by QR code and manual setup key/link: PASS**
+  - The setup flow renders a QR code and provides a manual secret and provisioning URI.
+  - Copy buttons and selectable readonly textareas provide a fallback where clipboard access fails.
+  - The secret is not placed in a URL query parameter.
 
-- **Clear and predictable MFA enrolment flow — PASS**
-  - The flow proceeds through sign-in, identity verification, authenticator setup, OTP verification, and backup-code saving.
-  - Current progress is visibly presented as a step indicator.
-  - Primary actions are prominent and consistently styled.
+- **OTP verification works and supports deterministic browser-test mocking: PASS**
+  - The server validates the deterministic mock OTP and RFC-style TOTP values.
+  - The mock OTP is returned only after authenticated provisioning and is logged in the browser console as required for testing.
+  - TOTP counters are tracked to prevent reuse, and the mock OTP is marked single-use.
 
-- **Authenticator provisioning supports QR and manual setup — PASS**
-  - The application provides a locally generated QR code.
-  - The TOTP secret and `otpauth://` URI can be copied manually.
-  - No external QR service or network call is used.
+- **Recovery-code generation, display, regeneration, and single-use verification: PASS**
+  - Recovery codes are generated with `crypto.getRandomValues`.
+  - They are stored only as PBKDF2-derived values with unique salts.
+  - Used recovery codes are marked consumed.
+  - Regeneration replaces the stored recovery-code set.
+  - The browser console logs returned mock/recovery values as required for testing.
 
-- **Mock OTPs and recovery codes are returned to the UI and logged in the browser console — PASS**
-  - The provisioning response returns the mock TOTP and displays it in the testing UI.
-  - Recovery codes are returned to the UI and logged using browser-side `console.log`.
-  - The server does not log these secrets.
+- **Retry/reveal/hide/re-request support: FAIL**
+  - The UI supports retrying a failed OTP entry and revealing/hiding setup details.
+  - However, after the initial provisioning response, there is no user-facing control to re-request/restart provisioning and obtain a new mock setup code or setup secret. This is particularly problematic if the mock OTP expires or the user wants to restart setup without navigating away and signing in again.
+  - This does not meet the requirement that users can “re-request codes without penalty.”
 
-- **TOTP verification works and is time-bound/single-use — PASS**
-  - OTPs are generated using HMAC-SHA-1 TOTP-style logic.
-  - The current and previous time slots are accepted.
-  - Used time slots are tracked to prevent replay.
-  - The OTP secret is generated using `crypto.getRandomValues`.
+- **Server-side authorization and IDOR protection: PASS**
+  - MFA state is selected only by the authenticated server-side session’s fixed account owner (`marcus-account`).
+  - No endpoint accepts a user ID or account ID from the browser.
+  - Session ownership is checked before MFA routes are processed.
 
-- **Recovery codes work, are single-use, and are protected at rest — PASS**
-  - Recovery codes are cryptographically generated.
-  - Codes are PBKDF2-hashed with unique salts before storage.
-  - Successfully used codes are marked unusable.
-  - Recovery-code regeneration replaces the stored set.
+- **CSRF protection for state-changing MFA endpoints: PASS**
+  - Authenticated state-changing routes require both the trusted origin and the matching `X-CSRF-Token`.
+  - Session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
 
-- **Rate limiting and lockout exist for repeated failures — PASS**
-  - Identity, authenticator OTP, and recovery-code verification have failure counters.
-  - Each locks after five failed attempts for five minutes.
-  - User-facing lockout messages are clear and non-blaming.
+- **Security headers and clickjacking protection: PASS**
+  - Responses include CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, restrictive referrer policy, permissions policy, and no-store caching.
+  - The CSP uses a fresh nonce for inline style and script content.
 
-- **Session management and session fixation protections — PASS**
-  - A fresh cryptographically random session identifier is created at sign-in.
-  - Sessions have idle and absolute expiration checks.
-  - Logout deletes the server-side session and expires the cookie.
-  - Session cookies use `HttpOnly`, `Secure`, and `SameSite=Strict`.
+- **CORS and generic production errors: PASS**
+  - The app does not send permissive CORS headers.
+  - Cross-origin state-changing requests are rejected through exact origin checking.
+  - The Bun error handler returns a generic error response without a stack trace.
 
-- **Server-side authorization / IDOR protection — PASS**
-  - MFA API routes derive the user from the server-side session.
-  - They do not accept a client-supplied account or user ID.
-  - The authenticated session is checked against the account owner before MFA state is accessed or modified.
+- **Secret storage and cryptographic controls: PASS**
+  - OTP secrets are generated with cryptographically secure randomness and encrypted with AES-GCM in server memory.
+  - Recovery codes are stored as salted PBKDF2-derived values rather than plaintext.
+  - Sessions and secrets are not stored in browser storage or non-HttpOnly cookies.
 
-- **CSRF protections on state-changing MFA endpoints — PASS**
-  - State-changing routes require both a trusted `Origin` and a session-bound `X-CSRF-Token`.
-  - The CSRF token is not stored in browser storage.
+- **Input validation and XSS protections: PASS**
+  - OTPs, recovery codes, account-ending digits, and date-of-birth input are validated server-side.
+  - Dynamic browser-rendered values are escaped before insertion into `innerHTML`.
+  - Redirect functionality is not present, so no open redirect is introduced.
 
-- **Security response headers and restricted CORS — PASS**
-  - CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, and `Cache-Control: no-store` are set.
-  - CSP uses a per-page nonce for scripts and styles.
-  - CORS is only emitted for an explicit trusted-origin allow-list.
+- **Rate limiting, lockouts, session rotation, and logout invalidation: PASS**
+  - Login, authenticator OTP, and recovery code attempts are rate-limited and locked after repeated failures.
+  - The session ID is regenerated on successful identity verification.
+  - Idle and absolute session limits are checked on authenticated requests.
+  - Logout deletes the session and expires the cookie.
 
-- **Input validation and XSS mitigation — PASS**
-  - Server-side validation is present for email, password, identity codes, OTPs, and recovery codes.
-  - Dynamic client-side content is inserted using DOM APIs and `textContent`, rather than interpolated as HTML.
-  - Redirect functionality is absent, so no open redirect is introduced.
-
-- **No browser persistence of secrets or session tokens — PASS**
-  - The application does not use `localStorage`, `sessionStorage`, IndexedDB, or non-HttpOnly cookies for session data or secrets.
-
-- **Users can reveal, hide, and re-request codes without penalty — FAIL**
-  - The manual TOTP secret and backup-code lists are always displayed while on their respective screens, but there is no hide/reveal control.
-  - There is no clear re-request action for the identity verification code.
-  - The setup flow can generate a new provisioning secret, but the UI does not explicitly present this as a safe “request a new code/setup value” option.
-  - This does not fully meet the explicit inclusivity requirement to let users reveal, hide, and re-request codes without penalty.
-
-- **Expired sessions reliably return the user to sign-in — FAIL**
-  - `api()` calls `signin()` on HTTP 401, but several calling handlers immediately render their current page again after receiving the failed response.
-  - For example, the identity handler calls `identity(r.message)`, the setup handler calls `setup(r.message)`, and the OTP handler calls `verify(r.message)` after `api()` has already attempted to show sign-in.
-  - A user whose session expires during a POST can remain on a protected step displaying “Please sign in to continue,” rather than being reliably redirected to the sign-in screen.
+- **No exposure of OTPs or recovery codes in application logs/UI logs: FAIL**
+  - The in-page `<section class="logs">` permanently displays the mock OTP and actual recovery codes through the `log()` function.
+  - For example, `log("Mock OTP issued: "+mockOtp)` and `log("Recovery codes issued: "+r.codes.join(", "))` write sensitive values into the visible DOM.
+  - The requirement explicitly prohibits exposing OTPs and backup codes in logs. Browser `console.log` is required for test mocks, but a persistent visible application log panel is not required and unnecessarily exposes secrets after the user moves to later steps.
 
 ## FAILING_ITEMS
 
-- **Missing hide/reveal controls for sensitive displayed values**
-  - The manual TOTP secret is permanently visible on the provisioning screen.
-  - Recovery codes are permanently visible on the backup-code screen.
-  - Add explicit “Show value” / “Hide value” controls, with the hidden state as the default where practical.
+- **Sensitive authentication material is retained and displayed in the visible “Logs” panel.**
+  - Mock OTPs and actual recovery codes are appended to `#logs` and remain visible throughout later screens, including after MFA completion.
+  - This violates the requirement not to expose OTPs or backup codes in logs and weakens the intended “store recovery codes securely” flow.
 
-- **Incomplete code re-request support**
-  - The identity code has no dedicated re-request action.
-  - The authenticator setup flow does not clearly label or expose regeneration as a “get a new setup code” option.
-  - Add a user-visible re-request control that produces/logs a replacement deterministic mock identity code or clearly regenerates setup material with explanatory confirmation.
-
-- **401/session-expiry UI race**
-  - `api()` renders sign-in on 401, but its caller may overwrite that view with a stale protected-step renderer.
-  - This can make the expired-session flow confusing and prevent the intended recovery path.
+- **The authenticator setup flow lacks a user-facing re-request/restart provisioning action.**
+  - A user can reveal/hide the existing setup details and retry verification, but cannot request a replacement setup secret/mock OTP from the current screen.
+  - A replacement setup path is necessary to meet the retry/re-request usability requirement, especially after an expired mock OTP or abandoned setup attempt.
 
 ## NEW_TASKS
 
-1. Update `api()` and all API-call handlers so a 401 result stops the current handler and leaves the user on the sign-in screen; use a dedicated result flag or throw/catch mechanism rather than rendering a protected screen after a 401.
+1. Remove the visible in-page `Logs` panel and ensure `log()` writes required test values only to `console.log`; do not render mock OTPs, recovery codes, provisioning secrets, or provisioning URIs into persistent application log UI.
 
-2. Add accessible show/hide controls for the manual TOTP secret and backup-code list, including clear button labels and status text confirming whether the value is hidden or shown.
-
-3. Add explicit re-request controls for mock verification/setup values:
-   - Add a “Send/check code again” action for the identity-check mock.
-   - Add a clearly labelled “Create a new setup value” action for authenticator provisioning.
-   - Log the relevant replacement mock value in the browser console and confirm the action plainly in the UI.
+2. Add a clearly labelled secondary action in the authenticator setup screen, such as “Start setup again” or “Get new setup details,” which calls `/api/mfa/provision`, replaces the unverified setup secret/URI/mock OTP, resets the setup display safely, and confirms in plain language that previous unverified setup details have been replaced.
 
 ## DECISION
 

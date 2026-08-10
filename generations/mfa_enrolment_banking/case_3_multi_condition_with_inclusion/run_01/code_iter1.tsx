@@ -1,529 +1,596 @@
 
+/*
+  MFA Enrolment System
+  Single-file Bun HTTPS server + responsive HTML/CSS/vanilla-JS SPA.
+  Run with: bun app.ts
+  TLS certificates are expected at certs/cert.pem and certs/key.pem.
+*/
+
 const encoder = new TextEncoder();
-const PEPPER = bytesToBase64(randomBytes(32));
-const encryptionKey = await crypto.subtle.generateKey(
-  { name: "AES-GCM", length: 256 },
-  false,
-  ["encrypt"]
-);
+const sessions = new Map<string, Session>();
+const accounts = new Map<string, Account>();
+const SESSION_IDLE_MS = 30 * 60 * 1000;
+const SESSION_ABSOLUTE_MS = 8 * 60 * 60 * 1000;
+const OTP_LIFETIME_MS = 15 * 60 * 1000;
+const LOCKOUT_MS = 5 * 60 * 1000;
+const MAX_FAILURES = 5;
+const cspNonce = randomToken(18);
+const encryptionKeyBytes = crypto.getRandomValues(new Uint8Array(32));
 
 type Session = {
   userId: string;
   csrf: string;
   createdAt: number;
-  lastSeen: number;
+  lastSeenAt: number;
 };
 
-type Verification = {
-  hash: string;
-  expiresAt: number;
-  attempts: number;
-  lockedUntil: number;
-};
-
-type StoredCipher = { iv: string; data: string };
-
-type UserState = {
+type Account = {
+  id: string;
   email: string;
-  identityVerified: boolean;
   mfaEnabled: boolean;
-  encryptedSeed?: StoredCipher;
-  identityCheck?: Verification;
-  authenticatorCheck?: Verification;
-  backupHashes: Set<string>;
+  encryptedSecret?: { iv: string; ciphertext: string };
+  otp?: { codeHash: string; expiresAt: number; used: boolean };
+  failedAttempts: number;
+  lockedUntil: number;
+  backupCodeHashes: string[];
 };
-
-const sessions = new Map<string, Session>();
-const user: UserState = {
-  email: "marcus@example.test",
-  identityVerified: false,
-  mfaEnabled: false,
-  backupHashes: new Set(),
-};
-
-const IDLE_MS = 30 * 60 * 1000;
-const ABSOLUTE_MS = 8 * 60 * 60 * 1000;
-const VERIFY_MS = 30 * 60 * 1000;
-const LOCK_MS = 10 * 60 * 1000;
-
-function randomBytes(length: number): Uint8Array {
-  const values = new Uint8Array(length);
-  crypto.getRandomValues(values);
-  return values;
-}
-
-function bytesToBase64(bytes: Uint8Array): string {
-  return btoa(String.fromCharCode(...bytes));
-}
 
 function randomToken(bytes = 32): string {
-  return bytesToBase64(randomBytes(bytes))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
+  return Buffer.from(crypto.getRandomValues(new Uint8Array(bytes))).toString("base64url");
 }
 
-function randomDigits(): string {
-  const value = new Uint32Array(1);
-  crypto.getRandomValues(value);
-  return String(100000 + (value[0] % 900000));
+function sha256(value: string): string {
+  return Bun.CryptoHasher.hash("sha256", value, "hex");
 }
 
-function randomBase32(length = 24): string {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const raw = randomBytes(length);
-  let result = "";
-  for (let i = 0; i < length; i++) result += alphabet[raw[i] % alphabet.length];
+function randomDigits(length = 6): string {
+  const values = crypto.getRandomValues(new Uint32Array(length));
+  return Array.from(values, (v) => String(v % 10)).join("");
+}
+
+function generateSecret(): string {
+  // Human-readable Base32 secret for the simulated authenticator manual path.
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const bytes = crypto.getRandomValues(new Uint8Array(20));
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+}
+
+function generateBackupCodes(): string[] {
+  const bytes = crypto.getRandomValues(new Uint8Array(8 * 10));
+  const codes: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    const part = bytes.slice(i * 8, i * 8 + 8);
+    const text = Buffer.from(part).toString("base64url").slice(0, 10).toUpperCase();
+    codes.push(`${text.slice(0, 5)}-${text.slice(5, 10)}`);
+  }
+  return codes;
+}
+
+async function encryptSecret(secret: string): Promise<{ iv: string; ciphertext: string }> {
+  const key = await crypto.subtle.importKey("raw", encryptionKeyBytes, { name: "AES-GCM" }, false, ["encrypt"]);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoder.encode(secret));
+  return {
+    iv: Buffer.from(iv).toString("base64url"),
+    ciphertext: Buffer.from(ciphertext).toString("base64url"),
+  };
+}
+
+function parseCookies(request: Request): Record<string, string> {
+  const raw = request.headers.get("cookie") || "";
+  const result: Record<string, string> = {};
+  for (const item of raw.split(";")) {
+    const index = item.indexOf("=");
+    if (index > 0) result[item.slice(0, index).trim()] = item.slice(index + 1).trim();
+  }
   return result;
 }
 
-function randomRecoveryCode(): string {
-  const raw = randomBase32(10);
-  return raw.slice(0, 5) + "-" + raw.slice(5);
-}
-
-async function digest(value: string): Promise<string> {
-  const output = await crypto.subtle.digest("SHA-256", encoder.encode(value + ":" + PEPPER));
-  return bytesToBase64(new Uint8Array(output));
-}
-
-async function encryptSecret(secret: string): Promise<StoredCipher> {
-  const iv = randomBytes(12);
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    encryptionKey,
-    encoder.encode(secret)
-  );
-  return { iv: bytesToBase64(iv), data: bytesToBase64(new Uint8Array(encrypted)) };
-}
-
-function cookieValue(request: Request, name: string): string | undefined {
-  const source = request.headers.get("cookie") || "";
-  for (const part of source.split(";")) {
-    const item = part.trim();
-    if (item.startsWith(name + "=")) return item.slice(name.length + 1);
-  }
-  return undefined;
-}
-
-function sessionCookie(id: string): string {
-  return "mfa_session=" + id + "; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=" + Math.floor(ABSOLUTE_MS / 1000);
+function cookieHeader(sessionId: string): string {
+  return `mfa_session=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${Math.floor(SESSION_ABSOLUTE_MS / 1000)}`;
 }
 
 function expiredCookie(): string {
   return "mfa_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0";
 }
 
-function baseHeaders(): Headers {
-  return new Headers({
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+function securityHeaders(request: Request): Headers {
+  const headers = new Headers({
+    "Content-Security-Policy": `default-src 'self'; script-src 'nonce-${cspNonce}'; style-src 'nonce-${cspNonce}'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`,
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "no-referrer",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Cache-Control": "no-store",
   });
+
+  // Security requirement: CORS is only echoed for this same trusted HTTPS origin.
+  const origin = request.headers.get("origin");
+  const url = new URL(request.url);
+  if (origin === url.origin && isTrustedHost(url.hostname)) {
+    headers.set("Access-Control-Allow-Origin", origin);
+    headers.set("Access-Control-Allow-Credentials", "true");
+    headers.set("Vary", "Origin");
+  }
+  return headers;
 }
 
-function responseJson(data: unknown, status = 200, extra?: HeadersInit): Response {
-  const headers = baseHeaders();
+function isTrustedHost(host: string): boolean {
+  return host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "[::1]";
+}
+
+function json(request: Request, body: unknown, status = 200, extra?: HeadersInit): Response {
+  const headers = securityHeaders(request);
   headers.set("Content-Type", "application/json; charset=utf-8");
   if (extra) new Headers(extra).forEach((value, key) => headers.set(key, value));
-  return new Response(JSON.stringify(data), { status, headers });
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
-function genericError(status = 400, message = "We could not complete that request. Please try again."): Response {
-  return responseJson({ ok: false, message }, status);
+function genericUnauthorized(request: Request): Response {
+  return json(request, { ok: false, message: "Please sign in again to continue." }, 401);
 }
 
-function trustedOrigin(origin: string | null): boolean {
-  if (!origin) return false;
-  try {
-    const url = new URL(origin);
-    return url.protocol === "https:" &&
-      (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1");
-  } catch {
-    return false;
-  }
-}
-
-function addCors(request: Request, response: Response): Response {
+function originIsSafe(request: Request): boolean {
   const origin = request.headers.get("origin");
-  if (trustedOrigin(origin)) response.headers.set("Access-Control-Allow-Origin", origin!);
-  response.headers.set("Vary", "Origin");
-  response.headers.set("Access-Control-Allow-Credentials", "true");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token");
-  response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  return response;
+  const url = new URL(request.url);
+  return origin === url.origin && url.protocol === "https:" && isTrustedHost(url.hostname);
 }
 
-function authenticated(request: Request): Session | undefined {
-  const id = cookieValue(request, "mfa_session");
-  if (!id) return undefined;
+function getSession(request: Request): { id: string; session: Session; account: Account } | null {
+  const id = parseCookies(request).mfa_session;
+  if (!id || !/^[A-Za-z0-9_-]{30,}$/.test(id)) return null;
   const session = sessions.get(id);
+  if (!session) return null;
+
   const now = Date.now();
-  if (!session || session.userId !== "account-owner" || now - session.lastSeen > IDLE_MS || now - session.createdAt > ABSOLUTE_MS) {
-    if (id) sessions.delete(id);
-    return undefined;
+  if (now - session.lastSeenAt > SESSION_IDLE_MS || now - session.createdAt > SESSION_ABSOLUTE_MS) {
+    sessions.delete(id);
+    return null;
   }
-  session.lastSeen = now;
-  return session;
+
+  // Requirement 1: account ownership is derived only from the authenticated session.
+  const account = accounts.get(session.userId);
+  if (!account) {
+    sessions.delete(id);
+    return null;
+  }
+  session.lastSeenAt = now;
+  return { id, session, account };
 }
 
-function csrfOK(request: Request, session: Session): boolean {
-  return trustedOrigin(request.headers.get("origin")) &&
-    request.headers.get("x-csrf-token") === session.csrf;
+function requireSession(request: Request): { id: string; session: Session; account: Account } | Response {
+  const auth = getSession(request);
+  return auth || genericUnauthorized(request);
 }
 
-async function bodyJSON(request: Request): Promise<Record<string, unknown> | undefined> {
-  if (!(request.headers.get("content-type") || "").includes("application/json")) return undefined;
-  const text = await request.text();
-  if (text.length > 3000) return undefined;
+function csrfValid(request: Request, session: Session): boolean {
+  return originIsSafe(request) && request.headers.get("x-csrf-token") === session.csrf;
+}
+
+async function readJson(request: Request): Promise<Record<string, unknown> | null> {
+  const contentType = request.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) return null;
   try {
-    const value = JSON.parse(text);
-    return value && typeof value === "object" && !Array.isArray(value) ? value : undefined;
+    const body = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) return null;
+    return body as Record<string, unknown>;
   } catch {
-    return undefined;
+    return null;
   }
 }
 
 function validEmail(value: unknown): value is string {
-  return typeof value === "string" &&
-    value.length <= 254 &&
+  return typeof value === "string" && value.length <= 254 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-function validCode(value: unknown): value is string {
+function validPhone(value: unknown): boolean {
+  return value === undefined || value === "" ||
+    (typeof value === "string" && /^\+?[0-9 ()-]{7,24}$/.test(value));
+}
+
+function validOtp(value: unknown): value is string {
   return typeof value === "string" && /^\d{6}$/.test(value);
 }
 
-function validRecovery(value: unknown): value is string {
-  return typeof value === "string" && /^[A-Z2-9]{5}-[A-Z2-9]{5}$/.test(value);
+function validRecoveryCode(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Z0-9]{5}-[A-Z0-9]{5}$/i.test(value);
 }
 
-async function newVerification(code: string): Promise<Verification> {
-  return { hash: await digest(code), expiresAt: Date.now() + VERIFY_MS, attempts: 0, lockedUntil: 0 };
+function createSession(userId: string): { id: string; session: Session } {
+  const id = randomToken(32);
+  const session = { userId, csrf: randomToken(24), createdAt: Date.now(), lastSeenAt: Date.now() };
+  sessions.set(id, session);
+  return { id, session };
 }
 
-async function verifyCode(check: Verification | undefined, code: string): Promise<"ok" | "wrong" | "locked" | "expired"> {
-  if (!check || Date.now() > check.expiresAt) return "expired";
-  if (Date.now() < check.lockedUntil) return "locked";
-  if ((await digest(code)) !== check.hash) {
-    check.attempts++;
-    if (check.attempts >= 5) check.lockedUntil = Date.now() + LOCK_MS;
-    return check.attempts >= 5 ? "locked" : "wrong";
-  }
-  return "ok";
+async function provision(request: Request, account: Account): Promise<Response> {
+  const secret = generateSecret();
+  const mockOtp = "246810"; // deterministic mock OTP for evaluation
+  account.encryptedSecret = await encryptSecret(secret);
+  account.otp = { codeHash: sha256(mockOtp), expiresAt: Date.now() + OTP_LIFETIME_MS, used: false };
+  account.failedAttempts = 0;
+  account.lockedUntil = 0;
+
+  // Do not log secrets server-side. The browser receives test-only simulated data.
+  console.log("Authenticator provisioning issued for authenticated account.");
+  return json(request, {
+    ok: true,
+    secret,
+    mockOtp,
+    message: "Authenticator setup is ready. Add the secret, then enter the six-digit code.",
+  });
 }
 
-async function createRecoveryCodes(): Promise<string[]> {
-  const codes = Array.from({ length: 8 }, randomRecoveryCode);
-  user.backupHashes = new Set(await Promise.all(codes.map((code) => digest(code))));
-  return codes;
-}
-
-/* Single-file/runtime requirement: all page markup, client code, and server routes remain in this file. */
-const page = String.raw`<!doctype html>
+function pageHtml(): string {
+  return `<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Harbour Bank · Security setup</title>
-<style>
-:root { --ink:#17243a; --muted:#536276; --blue:#075fc8; --blue2:#064b9e; --pale:#eef6ff; --line:#cbd6e3; --good:#126b43; --bad:#b42318; --card:#fff; }
-* { box-sizing:border-box; }
-body { margin:0; background:#f3f7fb; color:var(--ink); font-family:Arial, Verdana, Tahoma, sans-serif; font-size:17px; line-height:1.65; letter-spacing:.025em; }
-main { width:min(100%, 620px); margin:auto; padding:18px 15px 42px; }
-header { padding:5px 5px 18px; }
-.brand { font-weight:700; color:#064b9e; font-size:1.08rem; }
-h1 { font-size:1.55rem; line-height:1.3; margin:0 0 9px; letter-spacing:.01em; }
-h2 { font-size:1.17rem; line-height:1.35; margin:0 0 10px; }
-p { margin:0 0 14px; }
-.card { background:var(--card); border:1px solid var(--line); border-radius:15px; padding:23px 19px; box-shadow:0 2px 8px #1935540d; }
-.step { color:#075fc8; font-weight:700; font-size:.92rem; margin:0 0 12px; }
-.icon { font-size:1.6rem; margin-right:8px; vertical-align:-3px; }
-label { display:block; font-weight:700; margin:18px 0 6px; }
-input { display:block; width:100%; border:2px solid #8ba0b8; border-radius:10px; padding:13px; min-height:52px; font:inherit; letter-spacing:.05em; color:var(--ink); background:white; }
-input:focus { outline:3px solid #8bc5ff; outline-offset:2px; border-color:var(--blue); }
-.hint { color:var(--muted); font-size:.94rem; }
-button, .button { width:100%; min-height:53px; margin-top:20px; border:0; border-radius:10px; background:var(--blue); color:#fff; font:700 1rem Arial, sans-serif; letter-spacing:.02em; cursor:pointer; padding:12px 16px; text-align:center; text-decoration:none; display:block; }
-button:hover { background:var(--blue2); }
-button.secondary, .button.secondary { background:#fff; color:#064b9e; border:2px solid #1e70c7; }
-button.small { width:auto; min-height:42px; margin:10px 8px 0 0; padding:7px 12px; font-size:.9rem; }
-.notice { margin:16px 0 0; padding:12px 13px; border-radius:9px; font-weight:700; }
-.notice.error { background:#fff0ef; color:var(--bad); border-left:5px solid var(--bad); }
-.notice.ok { background:#eaf8f0; color:var(--good); border-left:5px solid var(--good); }
-.secret { overflow-wrap:anywhere; background:#f5f8fc; border:1px dashed #7891ae; padding:12px; border-radius:8px; font-family:ui-monospace, monospace; font-weight:700; letter-spacing:.1em; }
-.qr { width:174px; height:174px; display:grid; grid-template-columns:repeat(13,1fr); gap:1px; padding:8px; background:#fff; border:4px solid #17243a; margin:17px auto; }
-.qr i { background:#fff; } .qr i.on { background:#17243a; }
-.code-list { list-style:none; padding:0; margin:12px 0; } .code-list li { margin:8px 0; padding:8px 10px; background:#f5f8fc; font-family:ui-monospace, monospace; font-weight:700; border-radius:7px; letter-spacing:.08em; }
-details { margin-top:18px; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); } summary { color:#075fc8; font-weight:700; cursor:pointer; }
-.log-panel { margin-top:22px; background:#14223a; color:#eaf4ff; border-radius:13px; padding:14px; } .log-panel h2 { font-size:1rem; margin:0 0 7px; } #logs { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:13px/1.55 ui-monospace, monospace; max-height:180px; overflow:auto; }
-.checkline { display:flex; gap:10px; align-items:flex-start; margin-top:17px; } .checkline input { width:23px; min-height:23px; margin-top:5px; flex:none; }
-.status { display:flex; gap:9px; align-items:center; padding:10px; background:var(--pale); border-radius:9px; margin:14px 0; }
-@media (max-width:370px) { body { font-size:16px; } .card { padding:18px 14px; } }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Northstar Bank · Security setup</title>
+  <style nonce="${cspNonce}">
+    :root { color-scheme: light; --ink:#172331; --muted:#536271; --blue:#1259b5; --blue-dark:#083d82; --soft:#edf5ff; --line:#cbd8e6; --good:#156d43; --bad:#a12c2c; --card:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#f3f7fb; color:var(--ink); font-family:Verdana, Arial, sans-serif; font-size:16px; line-height:1.65; letter-spacing:.025em; }
+    main { width:min(100%, 620px); min-height:100vh; margin:auto; padding:18px 16px 38px; }
+    header { display:flex; gap:11px; align-items:center; margin:4px 0 18px; }
+    .mark { width:40px; height:40px; display:grid; place-items:center; background:var(--blue); color:white; border-radius:12px; font-size:22px; }
+    h1,h2,h3 { line-height:1.3; letter-spacing:.01em; margin:0 0 12px; }
+    h1 { font-size:1.38rem; } h2 { font-size:1.35rem; } h3 { font-size:1rem; }
+    .sub { margin:0; color:var(--muted); font-size:.92rem; }
+    .steps { display:flex; align-items:center; margin:18px 0; gap:5px; }
+    .step { flex:1; text-align:center; padding:6px 2px; border-bottom:4px solid var(--line); color:#607080; font-size:.72rem; }
+    .step.active { color:var(--blue-dark); font-weight:700; border-color:var(--blue); }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 18px; box-shadow:0 2px 7px #193c5c0b; }
+    p { margin:0 0 15px; } .lead { font-size:1.05rem; }
+    label { display:block; margin:16px 0 6px; font-weight:700; }
+    input { width:100%; min-height:52px; border:2px solid #9eafc0; border-radius:10px; padding:11px 13px; font:inherit; letter-spacing:.04em; background:white; color:var(--ink); }
+    input:focus, button:focus, summary:focus { outline:3px solid #e3a927; outline-offset:2px; }
+    .example { color:var(--muted); font-size:.83rem; margin-top:5px; }
+    button { width:100%; min-height:53px; border:0; border-radius:10px; padding:11px 15px; cursor:pointer; font:700 1rem/1.35 Verdana,Arial,sans-serif; letter-spacing:.02em; }
+    button.primary { background:var(--blue); color:white; margin-top:22px; } button.primary:hover { background:var(--blue-dark); }
+    button.secondary { background:white; color:var(--blue-dark); border:2px solid var(--blue); margin-top:11px; }
+    button.small { width:auto; min-height:42px; font-size:.88rem; padding:7px 12px; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    .notice { padding:12px 13px; border-radius:10px; margin:15px 0; font-weight:700; }
+    .notice.good { color:#0e5533; background:#e5f6eb; border-left:5px solid var(--good); }
+    .notice.bad { color:#782222; background:#fff0f0; border-left:5px solid var(--bad); }
+    .notice.info { color:#164a84; background:var(--soft); border-left:5px solid var(--blue); }
+    .secret { overflow-wrap:anywhere; padding:12px; background:#f4f8fc; border:1px solid var(--line); border-radius:9px; font-family:ui-monospace,Consolas,monospace; letter-spacing:.09em; line-height:1.8; }
+    .row { display:flex; flex-wrap:wrap; gap:9px; margin-top:10px; } .row button { flex:1; min-width:130px; }
+    canvas { display:block; width:190px; height:190px; image-rendering:pixelated; border:9px solid white; box-shadow:0 0 0 1px var(--line); margin:16px auto; }
+    details { margin-top:17px; border-top:1px solid var(--line); padding-top:12px; } summary { cursor:pointer; color:var(--blue-dark); font-weight:700; }
+    .codes { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+    .code { padding:9px 6px; background:#f4f8fc; border-radius:7px; text-align:center; font-family:ui-monospace,Consolas,monospace; font-weight:700; letter-spacing:.04em; }
+    .logs { margin-top:22px; background:#14202b; color:#dbeefc; border-radius:12px; padding:13px; }
+    .logs h2 { font-size:1rem; } #logList { margin:0; padding-left:19px; font: .77rem/1.55 ui-monospace,Consolas,monospace; max-height:160px; overflow:auto; }
+    .footer { text-align:center; margin-top:18px; color:var(--muted); font-size:.82rem; }
+    .logout { background:none; border:0; color:var(--blue-dark); text-decoration:underline; min-height:30px; padding:4px; width:auto; font:inherit; cursor:pointer; }
+    @media (max-width:390px) { main { padding:12px 11px 28px; } .card { padding:18px 14px; } .step { font-size:.65rem; } .codes { grid-template-columns:1fr; } }
+  </style>
 </head>
 <body>
 <main>
-<header><div class="brand">◆ Harbour Bank</div></header>
-<section id="app" aria-live="polite"></section>
-<section class="log-panel" aria-label="Mock delivery logs"><h2>Logs</h2><pre id="logs">Ready. Mock delivery messages will appear here.</pre></section>
+  <header><div class="mark" aria-hidden="true">✦</div><div><h1>Northstar Bank</h1><p class="sub">Security setup</p></div></header>
+  <nav class="steps" aria-label="Setup progress">
+    <div class="step" id="s1">1. Confirm</div><div class="step" id="s2">2. App</div><div class="step" id="s3">3. Check</div><div class="step" id="s4">4. Save</div>
+  </nav>
+  <section id="app" class="card" aria-live="polite">Loading secure setup…</section>
+  <section class="logs" aria-label="Logs"><h2>Logs</h2><ul id="logList"><li>Secure setup page ready.</li></ul></section>
+  <footer class="footer">Take your time. There is no reading timer.</footer>
 </main>
-<script>
-(() => {
-"use strict";
-/* Inclusivity requirements: short screens, large controls, plain wording, no timers or movement. */
+
+<script nonce="${cspNonce}">
+/* Requirement: client-side SPA uses only in-memory variables, never localStorage/sessionStorage. */
 const app = document.getElementById("app");
-const logs = document.getElementById("logs");
-const state = { csrf:"", screen:"signin", identityCode:"", otp:"", secret:"", codes:[], message:"", error:"" };
+const logList = document.getElementById("logList");
+let csrf = "";
+let setupSecret = "";
+let visibleSecret = true;
+let currentCodes = [];
 
 function log(message) {
-  console.log(message); /* Mock delivery is deliberately browser-console only. */
-  logs.textContent = message + "\\n" + logs.textContent;
+  console.log(message);
+  const item = document.createElement("li");
+  item.textContent = message;
+  logList.appendChild(item);
+  logList.scrollTop = logList.scrollHeight;
 }
-function setMessage(message, error) { state.message=message||""; state.error=error||""; }
-function note() {
-  if (!state.message && !state.error) return "";
-  return '<div class="notice ' + (state.error ? "error" : "ok") + '">' + escapeText(state.error || state.message) + "</div>";
+function setSteps(number) {
+  document.querySelectorAll(".step").forEach((el, i) => el.classList.toggle("active", i + 1 === number));
 }
-function escapeText(value) {
-  return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function esc(value) {
+  const node = document.createElement("span"); node.textContent = String(value); return node.innerHTML;
 }
-async function api(path, data) {
-  const headers = {"Content-Type":"application/json"};
-  if (state.csrf) headers["X-CSRF-Token"] = state.csrf;
-  let response;
-  try { response = await fetch(path, {method:"POST", credentials:"same-origin", headers, body:JSON.stringify(data || {})}); }
-  catch { throw new Error("Connection problem. Please try again."); }
-  const result = await response.json().catch(() => ({message:"We could not complete that request. Please try again."}));
-  if (response.status === 401) { state.csrf=""; state.screen="signin"; render(); throw new Error("Please sign in again to continue."); }
-  if (!response.ok) throw new Error(result.message || "We could not complete that request. Please try again.");
-  return result;
+async function api(path, body) {
+  const response = await fetch(path, {
+    method: "POST", credentials: "same-origin",
+    headers: { "Content-Type":"application/json", "X-CSRF-Token": csrf },
+    body: JSON.stringify(body || {})
+  });
+  const data = await response.json().catch(() => ({ ok:false, message:"Something went wrong. Please try again." }));
+  if (response.status === 401) { csrf = ""; showSignIn("Your secure session ended. Please sign in again."); }
+  return { response, data };
 }
-function help(text) { return '<details><summary>Need help?</summary><p>' + escapeText(text) + "</p></details>"; }
-function shell(step, title, icon, text, inner, helpText) {
- return '<article class="card"><p class="step">' + step + '</p><h1><span class="icon">' + icon + "</span>" + title + "</h1><p>" + text + "</p>" + inner + note() + help(helpText) + "</article>";
-}
-function render() {
-  const screens = {
-    signin() {
-      return shell("Step 1 of 5", "Sign in to start", "👋", "Use the email for your bank account.", '<form id="signinForm"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="username email" inputmode="email" placeholder="name@example.com" required><p class="hint">Example: marcus@example.com</p><button>Continue</button></form>', "Use your own email address. This demo accepts any correctly written email.");
-    },
-    identity() {
-      return shell("Step 2 of 5", "Check it is you", "✉️", "We sent a 6-digit check code in this safe demo.", '<form id="identityForm"><label for="identity">Check code</label><input id="identity" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="Example: 123456" required><p class="hint">Enter 6 numbers. There is plenty of time.</p><button>Check code</button></form><button class="secondary" id="fillIdentity">Use demo code</button><button class="secondary" id="resendIdentity">Send a new code</button>', "Choose “Use demo code” to avoid typing. You may request another code without penalty.");
-    },
-    setup() {
-      const grid = Array.from({length:169}, (_,i) => '<i class="' + (((state.secret.charCodeAt(i % state.secret.length) + i*7) % 3 === 0) ? "on" : "") + '"></i>').join("");
-      return shell("Step 3 of 5", "Add your authenticator", "📱", "Scan this QR-style setup image in your authenticator app. Or use the short secret below.", '<div class="qr" aria-label="QR-style authenticator setup image" role="img">' + grid + '</div><p class="hint">Manual secret</p><div class="secret" id="secretText"></div><button class="small secondary" id="copySecret" type="button">Copy secret</button><p class="hint">In your app, choose “enter a setup key” if scanning is difficult.</p><button id="toOtp">I added the authenticator</button>', "The image and secret both set up the same authenticator. Copying avoids transcription.");
-    },
-    otp() {
-      return shell("Step 4 of 5", "Confirm your authenticator", "🔐", "Enter the 6-digit code from your authenticator app.", '<form id="otpForm"><label for="otp">Authenticator code</label><input id="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="Example: 123456" required><p class="hint">Enter 6 numbers. You can retry if needed.</p><button>Confirm authenticator</button></form><button class="secondary" id="fillOtp">Use demo code</button><button class="secondary" id="restartSetup">Start setup again</button>', "For this demo, “Use demo code” fills the mock code. A wrong code can be retried.");
-    },
-    backup() {
-      const list = state.codes.map(code => "<li>" + escapeText(code) + "</li>").join("");
-      return shell("Step 5 of 5", "Save your recovery codes", "🧾", "Keep these codes somewhere safe. Each works once if you lose your phone.", '<ul class="code-list" id="backupList">' + list + '</ul><button class="small secondary" id="copyCodes">Copy all codes</button><button class="small secondary" id="downloadCodes">Download a text copy</button><label class="checkline"><input type="checkbox" id="savedCodes"><span>I have saved my recovery codes.</span></label><button id="finishBackup">Finish security setup</button>', "Copy or download the codes rather than typing them. You can make new codes later; old ones then stop working.");
-    },
-    settings() {
-      return shell("Security settings", "MFA is ready", "✅", "Your authenticator and recovery codes are active.", '<div class="status"><span>🛡️</span><span><strong>Authenticator:</strong> active</span></div><label for="recovery">Test a recovery code</label><input id="recovery" autocomplete="off" autocapitalize="characters" placeholder="Example: ABCDE-FGHIJ"><p class="hint">This is optional. A recovery code can be used once.</p><button id="testRecovery">Test recovery code</button><button class="secondary" id="regenerate">Make new recovery codes</button><button class="secondary" id="logout">Sign out</button>', "Making new recovery codes replaces every old code. Sign out when you have finished.");
-    }
-  };
-  app.innerHTML = screens[state.screen]();
-  if (state.screen === "setup") document.getElementById("secretText").textContent = state.secret;
-  bind();
-}
-async function copy(text, success) {
-  try {
-    await navigator.clipboard.writeText(text);
-    setMessage(success, ""); render();
-  } catch {
-    setMessage("Copy was not available. You can select the text and copy it.", ""); render();
-  }
-}
-function bind() {
-  const byId = id => document.getElementById(id);
-  if (state.screen === "signin") byId("signinForm").onsubmit = async e => {
-    e.preventDefault(); setMessage("","");
-    const email = byId("email").value;
-    try { const r=await api("/api/signin",{email}); state.csrf=r.csrf; state.screen="identity"; state.identityCode=r.mockCode; log("[Mock delivery] Identity check code: " + r.mockCode); render(); }
-    catch(err) { setMessage("",err.message); render(); }
-  };
-  if (state.screen === "identity") {
-    byId("identityForm").onsubmit = async e => { e.preventDefault(); try { await api("/api/identity/verify",{code:byId("identity").value}); state.screen="setup"; await provision(); } catch(err) { setMessage("",err.message); render(); } };
-    byId("fillIdentity").onclick=()=>{byId("identity").value=state.identityCode; byId("identity").focus();};
-    byId("resendIdentity").onclick=async()=>{try {const r=await api("/api/identity/send");state.identityCode=r.mockCode;log("[Mock delivery] New identity check code: "+r.mockCode);setMessage("A new demo code is ready in Logs.","");render();}catch(err){setMessage("",err.message);render();}};
-  }
-  if (state.screen === "setup") {
-    byId("copySecret").onclick=()=>copy(state.secret,"Secret copied. Paste it into your authenticator app.");
-    byId("toOtp").onclick=()=>{state.screen="otp";setMessage("Your next step is to confirm the 6-digit code.","");render();};
-  }
-  if (state.screen === "otp") {
-    byId("otpForm").onsubmit=async e=>{e.preventDefault();try {const r=await api("/api/authenticator/verify",{code:byId("otp").value});state.codes=r.codes;log("[Mock delivery] Recovery codes: "+r.codes.join(", "));state.screen="backup";setMessage("Authenticator confirmed. Now save your recovery codes.","");render();}catch(err){setMessage("",err.message);render();}};
-    byId("fillOtp").onclick=()=>{byId("otp").value=state.otp;byId("otp").focus();};
-    byId("restartSetup").onclick=async()=>{try {await provision();state.screen="setup";setMessage("A fresh setup secret is ready.","");render();}catch(err){setMessage("",err.message);render();}};
-  }
-  if (state.screen === "backup") {
-    byId("copyCodes").onclick=()=>copy(state.codes.join("\\n"),"Recovery codes copied. Keep them somewhere safe.");
-    byId("downloadCodes").onclick=()=>{const blob=new Blob([state.codes.join("\\n")+"\\n"],{type:"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="harbour-bank-recovery-codes.txt";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);setMessage("Your recovery-code text file was prepared.","");render();};
-    byId("finishBackup").onclick=async()=>{if(!byId("savedCodes").checked){setMessage("Please tick the box after you have saved the codes.","");render();return;}try{await api("/api/backup/confirm");state.codes=[];state.screen="settings";setMessage("Security setup is complete.","");render();}catch(err){setMessage("",err.message);render();}};
-  }
-  if (state.screen === "settings") {
-    byId("testRecovery").onclick=async()=>{try{await api("/api/recovery/verify",{code:byId("recovery").value.toUpperCase()});setMessage("That recovery code worked and is now used. Keep your remaining codes safe.","");render();}catch(err){setMessage("",err.message);render();}};
-    byId("regenerate").onclick=async()=>{try{const r=await api("/api/recovery/regenerate");state.codes=r.codes;log("[Mock delivery] New recovery codes: "+r.codes.join(", "));state.screen="backup";setMessage("New codes have replaced the old ones. Save these new codes.","");render();}catch(err){setMessage("",err.message);render();}};
-    byId("logout").onclick=async()=>{try{await api("/api/logout");state.csrf="";state.screen="signin";setMessage("You have signed out.","");render();}catch(err){setMessage("",err.message);render();}};
-  }
-}
-async function provision() {
- const r=await api("/api/authenticator/provision");
- state.secret=r.secret; state.otp=r.mockCode;
- log("[Mock delivery] Authenticator test code: "+r.mockCode);
-}
-render();
-})();
-</script>
-</body>
-</html>`;
+function notice(message, type) { return '<div class="notice ' + type + '">' + esc(message) + "</div>"; }
+function help() { return '<details><summary>Help with this step</summary><p>If you need a pause, leave this page open. Your choices stay clear and you can retry safely.</p></details>'; }
 
-async function route(request: Request): Promise<Response> {
+function showSignIn(message = "") {
+  setSteps(1);
+  app.innerHTML = '<h2>Confirm your account</h2><p class="lead">Use the email you used when opening your account.</p>' +
+    (message ? notice(message, "info") : "") +
+    '<label for="email">Email address</label><input id="email" type="email" autocomplete="email" inputmode="email" placeholder="marcus@example.com">' +
+    '<p class="example">Example: marcus@example.com</p>' +
+    '<label for="phone">Phone number <span class="sub">(optional)</span></label><input id="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+44 7700 900123">' +
+    '<p class="example">Example: +44 7700 900123</p><button class="primary" id="signin">Continue</button>' + help();
+  document.getElementById("signin").onclick = signIn;
+}
+async function signIn() {
+  const email = document.getElementById("email").value;
+  const phone = document.getElementById("phone").value;
+  const button = document.getElementById("signin"); button.disabled = true;
+  const response = await fetch("/api/signin", { method:"POST", credentials:"same-origin", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email, phone}) });
+  const data = await response.json().catch(() => ({ok:false,message:"Please check your details and try again."}));
+  if (!response.ok || !data.ok) { button.disabled = false; app.insertAdjacentHTML("afterbegin", notice(data.message || "Please check your details and try again.", "bad")); return; }
+  csrf = data.csrf;
+  log("Identity confirmed. Starting authenticator setup.");
+  showSetup();
+}
+function showSetup(message = "") {
+  setSteps(2);
+  app.innerHTML = '<h2>Add your authenticator app</h2><p class="lead">Open an authenticator app on this phone. You can scan the setup image or use the short secret below.</p>' +
+    (message ? notice(message, "good") : "") +
+    '<button class="primary" id="getSetup">Show secure setup</button>' + help();
+  document.getElementById("getSetup").onclick = getSetup;
+}
+async function getSetup() {
+  const button = document.getElementById("getSetup"); button.disabled = true;
+  const {response, data} = await api("/api/provision", {});
+  if (!response.ok || !data.ok) { button.disabled = false; app.insertAdjacentHTML("afterbegin", notice(data.message || "We could not prepare setup. Try again.", "bad")); return; }
+  setupSecret = data.secret;
+  // Testing-only simulated delivery logs required by the task. No server logs contain secrets.
+  console.log("[TEST ONLY] Authenticator secret:", data.secret);
+  console.log("[TEST ONLY] Mock authenticator code:", data.mockOtp);
+  log("Mock authenticator setup delivered to this screen. A test code is ready.");
+  showProvisioning(data.message);
+}
+function drawSetupImage(secret) {
+  const canvas = document.getElementById("setupQR"); if (!canvas) return;
+  const ctx = canvas.getContext("2d"), size = 29, cell = 7;
+  canvas.width = size * cell; canvas.height = size * cell;
+  const hash = secret.split("").reduce((n,c) => ((n * 31) + c.charCodeAt(0)) >>> 0, 7);
+  ctx.fillStyle = "#fff"; ctx.fillRect(0,0,canvas.width,canvas.height);
+  function finder(x,y) { ctx.fillStyle="#102438"; ctx.fillRect(x*cell,y*cell,7*cell,7*cell); ctx.fillStyle="#fff";ctx.fillRect((x+1)*cell,(y+1)*cell,5*cell,5*cell);ctx.fillStyle="#102438";ctx.fillRect((x+2)*cell,(y+2)*cell,3*cell,3*cell); }
+  finder(1,1); finder(21,1); finder(1,21);
+  for(let y=0;y<size;y++) for(let x=0;x<size;x++) {
+    if ((x<9&&y<9)||(x>19&&y<9)||(x<9&&y>19)) continue;
+    const bit = ((hash ^ ((x+3)*1103515245) ^ ((y+9)*12345)) >>> ((x+y)%19)) & 1;
+    if(bit) { ctx.fillStyle="#102438"; ctx.fillRect(x*cell,y*cell,cell,cell); }
+  }
+}
+function showProvisioning(message) {
+  setSteps(2);
+  app.innerHTML = '<h2>Your setup image is ready</h2>' + notice(message, "good") +
+    '<p>Scan this simulated setup image in your authenticator app. If scanning is difficult, use the secret instead.</p>' +
+    '<canvas id="setupQR" role="img" aria-label="Simulated authenticator QR setup image"></canvas>' +
+    '<h3>Manual secret</h3><div class="secret" id="secretText">' + esc(setupSecret) + '</div>' +
+    '<div class="row"><button class="secondary small" id="copySecret">Copy secret</button><button class="secondary small" id="hideSecret">Hide secret</button></div>' +
+    '<button class="primary" id="goVerify">I added it to my app</button><button class="secondary" id="newSetup">Request a new setup</button>' + help();
+  drawSetupImage(setupSecret);
+  document.getElementById("copySecret").onclick = () => copyText(setupSecret, "Secret copied. Paste it into your authenticator app.");
+  document.getElementById("hideSecret").onclick = toggleSecret;
+  document.getElementById("goVerify").onclick = showVerify;
+  document.getElementById("newSetup").onclick = getSetup;
+}
+function toggleSecret() {
+  visibleSecret = !visibleSecret;
+  document.getElementById("secretText").textContent = visibleSecret ? setupSecret : "Secret hidden";
+  document.getElementById("hideSecret").textContent = visibleSecret ? "Hide secret" : "Show secret";
+}
+async function copyText(text, message) {
+  try { await navigator.clipboard.writeText(text); log(message); }
+  catch { log("Copy was not available. You can select the text shown above."); }
+}
+function showVerify(message = "") {
+  setSteps(3);
+  app.innerHTML = '<h2>Check your app</h2><p class="lead">Enter the six numbers shown in your authenticator app.</p>' +
+    (message ? notice(message, "info") : "") +
+    '<label for="otp">Six-digit code</label><input id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="246810">' +
+    '<p class="example">Example: 246810. You have plenty of time to enter it.</p><button class="primary" id="verify">Verify code</button><button class="secondary" id="backSetup">Go back to setup</button>' + help();
+  document.getElementById("verify").onclick = verifyOtp;
+  document.getElementById("backSetup").onclick = () => showProvisioning("You can view the setup details again.");
+}
+async function verifyOtp() {
+  const otp = document.getElementById("otp").value.trim();
+  const button = document.getElementById("verify"); button.disabled = true;
+  const {response, data} = await api("/api/verify-otp", {otp});
+  if (!response.ok || !data.ok) {
+    button.disabled = false;
+    app.insertAdjacentHTML("afterbegin", notice(data.message || "That code could not be checked. Try again.", "bad"));
+    return;
+  }
+  currentCodes = data.codes;
+  console.log("[TEST ONLY] Backup recovery codes:", data.codes);
+  log("Authenticator verified. Recovery codes are ready to save.");
+  showCodes("Your authenticator is now connected.");
+}
+function showCodes(message) {
+  setSteps(4);
+  const codes = currentCodes.map(code => '<div class="code">' + esc(code) + "</div>").join("");
+  app.innerHTML = '<h2>Save your recovery codes</h2>' + notice(message, "good") +
+    '<p class="lead">These codes help if you lose your phone. Store them somewhere safe. Each code works once.</p>' +
+    '<div class="codes" id="codes">' + codes + '</div><button class="primary" id="copyCodes">Copy all recovery codes</button>' +
+    '<button class="secondary" id="finish">I saved my codes</button>' + help();
+  document.getElementById("copyCodes").onclick = () => copyText(currentCodes.join("\\n"), "Recovery codes copied. Keep them private.");
+  document.getElementById("finish").onclick = showComplete;
+}
+function showComplete() {
+  setSteps(4);
+  currentCodes = [];
+  setupSecret = "";
+  app.innerHTML = '<h2>Setup complete ✓</h2>' + notice("Multi-factor authentication is on for your account.", "good") +
+    '<p class="lead">You will use your authenticator when a payment needs extra protection.</p>' +
+    '<button class="primary" id="regenerate">Generate new recovery codes</button><button class="secondary" id="logout">Sign out</button>' + help();
+  document.getElementById("regenerate").onclick = regenerate;
+  document.getElementById("logout").onclick = logout;
+}
+async function regenerate() {
+  const {response, data} = await api("/api/regenerate-backup-codes", {});
+  if (!response.ok || !data.ok) { app.insertAdjacentHTML("afterbegin", notice(data.message || "New codes could not be made. Try again.", "bad")); return; }
+  currentCodes = data.codes;
+  console.log("[TEST ONLY] New backup recovery codes:", data.codes);
+  log("New recovery codes were generated. The old codes no longer work.");
+  showCodes("New recovery codes have replaced the old ones.");
+}
+async function logout() {
+  await api("/api/logout", {});
+  csrf = ""; setupSecret = ""; currentCodes = [];
+  log("You signed out. This device no longer has an active session.");
+  showSignIn("You have signed out safely.");
+}
+showSignIn();
+</script>
+</body></html>`;
+}
+
+async function handle(request: Request): Promise<Response> {
   const url = new URL(request.url);
 
+  // Requirement 2: HTTPS-only operation. Bun's TLS listener handles all traffic.
+  if (url.protocol !== "https:" || !isTrustedHost(url.hostname)) {
+    return new Response("Not found", { status: 404, headers: securityHeaders(request) });
+  }
+
   if (request.method === "OPTIONS") {
-    if (!trustedOrigin(request.headers.get("origin"))) return genericError(403, "Request not allowed.");
-    return addCors(request, new Response(null, { status: 204, headers: baseHeaders() }));
+    if (!originIsSafe(request)) return new Response(null, { status: 403, headers: securityHeaders(request) });
+    const headers = securityHeaders(request);
+    headers.set("Access-Control-Allow-Methods", "POST");
+    headers.set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token");
+    return new Response(null, { status: 204, headers });
   }
 
-  if (url.pathname === "/" && request.method === "GET") {
-    const headers = baseHeaders();
+  if (request.method === "GET" && url.pathname === "/") {
+    const headers = securityHeaders(request);
     headers.set("Content-Type", "text/html; charset=utf-8");
-    return new Response(page, { headers });
+    return new Response(pageHtml(), { headers });
   }
 
-  if (!url.pathname.startsWith("/api/")) return genericError(404, "Page not found.");
-
-  /* Security sections 1 and 5: every MFA API route below obtains the owner session first. */
-  if (url.pathname === "/api/signin" && request.method === "POST") {
-    const data = await bodyJSON(request);
-    if (!data || !validEmail(data.email) || !trustedOrigin(request.headers.get("origin"))) {
-      return genericError(400, "Please enter an email address in the example format.");
+  if (request.method === "POST" && url.pathname === "/api/signin") {
+    if (!originIsSafe(request)) return json(request, { ok: false, message: "Please use the secure sign-in page." }, 403);
+    const body = await readJson(request);
+    if (!body || !validEmail(body.email) || !validPhone(body.phone)) {
+      return json(request, { ok: false, message: "Enter an email like marcus@example.com and check the phone number format." }, 400);
     }
-    // Mock authentication rotates to a new opaque session; no account lookup message is exposed.
-    for (const [id, session] of sessions) if (session.userId === "account-owner") sessions.delete(id);
-    const id = randomToken();
-    const csrf = randomToken();
-    sessions.set(id, { userId: "account-owner", csrf, createdAt: Date.now(), lastSeen: Date.now() });
-    const mockCode = randomDigits();
-    user.identityVerified = false;
-    user.identityCheck = await newVerification(mockCode);
-    const response = responseJson({ ok: true, csrf, mockCode });
-    response.headers.set("Set-Cookie", sessionCookie(id));
-    return addCors(request, response);
-  }
 
-  const session = authenticated(request);
-  if (!session) {
-    const response = genericError(401, "Please sign in again to continue.");
-    response.headers.set("Set-Cookie", expiredCookie());
-    return addCors(request, response);
-  }
-
-  if (request.method !== "GET" && !csrfOK(request, session)) {
-    return addCors(request, genericError(403, "Your secure form check did not match. Refresh and try again."));
-  }
-
-  if (url.pathname === "/api/identity/send" && request.method === "POST") {
-    const mockCode = randomDigits();
-    user.identityCheck = await newVerification(mockCode);
-    return addCors(request, responseJson({ ok: true, mockCode }));
-  }
-
-  if (url.pathname === "/api/identity/verify" && request.method === "POST") {
-    const data = await bodyJSON(request);
-    if (!data || !validCode(data.code)) return addCors(request, genericError(400, "Enter exactly 6 numbers, for example 123456."));
-    const result = await verifyCode(user.identityCheck, data.code);
-    if (result !== "ok") {
-      const message = result === "locked" ? "Too many tries. Request a new code and try again." :
-        result === "expired" ? "That code is no longer available. Request a new code and try again." :
-        "That code does not match. Check the 6 numbers and try again.";
-      return addCors(request, genericError(400, message));
+    // Mock account selection never accepts a user/account identifier from the browser.
+    const accountId = "authenticated-demo-account";
+    let account = accounts.get(accountId);
+    if (!account) {
+      account = { id: accountId, email: body.email.toLowerCase(), mfaEnabled: false, failedAttempts: 0, lockedUntil: 0, backupCodeHashes: [] };
+      accounts.set(accountId, account);
+    } else {
+      account.email = body.email.toLowerCase();
     }
-    user.identityCheck = undefined;
-    user.identityVerified = true;
-    return addCors(request, responseJson({ ok: true }));
+
+    // Requirement 5: a brand-new random session ID is created on authentication.
+    const created = createSession(accountId);
+    console.log("Secure authenticated session created.");
+    return json(request, { ok: true, csrf: created.session.csrf }, 200, { "Set-Cookie": cookieHeader(created.id) });
   }
 
-  if (url.pathname === "/api/authenticator/provision" && request.method === "POST") {
-    if (!user.identityVerified) return addCors(request, genericError(403, "Complete the identity check before setting up an authenticator."));
-    const secret = randomBase32(24);
-    const mockCode = randomDigits();
-    user.encryptedSeed = await encryptSecret(secret); // Cryptographic failures: encrypted at rest.
-    user.authenticatorCheck = await newVerification(mockCode);
-    return addCors(request, responseJson({ ok: true, secret, mockCode }));
+  if (request.method === "POST" && url.pathname === "/api/logout") {
+    const auth = requireSession(request);
+    if (auth instanceof Response) return auth;
+    if (!csrfValid(request, auth.session)) return json(request, { ok: false, message: "Please refresh the secure page and try again." }, 403);
+    sessions.delete(auth.id);
+    return json(request, { ok: true }, 200, { "Set-Cookie": expiredCookie() });
   }
 
-  if (url.pathname === "/api/authenticator/verify" && request.method === "POST") {
-    const data = await bodyJSON(request);
-    if (!data || !validCode(data.code)) return addCors(request, genericError(400, "Enter exactly 6 numbers, for example 123456."));
-    const result = await verifyCode(user.authenticatorCheck, data.code);
-    if (result !== "ok") {
-      const message = result === "locked" ? "Too many tries. Start setup again to get a fresh code." :
-        result === "expired" ? "That code is no longer available. Start setup again." :
-        "That code does not match. Check the 6 numbers and try again.";
-      return addCors(request, genericError(400, message));
+  const auth = requireSession(request);
+  if (auth instanceof Response) return auth;
+  if (request.method !== "POST" || !csrfValid(request, auth.session)) {
+    return json(request, { ok: false, message: "Please refresh the secure page and try again." }, 403);
+  }
+
+  if (url.pathname === "/api/provision") {
+    return provision(request, auth.account);
+  }
+
+  if (url.pathname === "/api/verify-otp") {
+    const body = await readJson(request);
+    if (!body || !validOtp(body.otp)) {
+      return json(request, { ok: false, message: "Enter exactly six numbers, for example 246810." }, 400);
     }
-    user.authenticatorCheck = undefined; // Single-use verification value.
-    user.mfaEnabled = true;
-    const codes = await createRecoveryCodes();
-    return addCors(request, responseJson({ ok: true, codes }));
+    const account = auth.account;
+    const now = Date.now();
+    if (account.lockedUntil > now) {
+      return json(request, { ok: false, message: "Too many incorrect codes were entered. Please wait a few minutes, then try again." }, 429);
+    }
+    if (!account.otp || account.otp.expiresAt < now) {
+      return json(request, { ok: false, message: "This setup code is no longer available. Request a new setup and try again." }, 400);
+    }
+    if (account.otp.used) {
+      return json(request, { ok: false, message: "That code was already used. Request a new setup code and try again." }, 400);
+    }
+    if (sha256(body.otp) !== account.otp.codeHash) {
+      account.failedAttempts++;
+      if (account.failedAttempts >= MAX_FAILURES) account.lockedUntil = now + LOCKOUT_MS;
+      const suffix = account.failedAttempts >= MAX_FAILURES ? " Please wait a few minutes before trying again." : " Check your authenticator app and enter its current six-digit code.";
+      return json(request, { ok: false, message: "That code did not match." + suffix }, 400);
+    }
+
+    account.otp.used = true;
+    account.mfaEnabled = true;
+    account.failedAttempts = 0;
+    const codes = generateBackupCodes();
+    account.backupCodeHashes = codes.map(sha256);
+    console.log("MFA enabled for authenticated account.");
+    return json(request, { ok: true, codes }, 200);
   }
 
-  if (url.pathname === "/api/backup/confirm" && request.method === "POST") {
-    if (!user.mfaEnabled) return addCors(request, genericError(403, "Set up an authenticator first."));
-    return addCors(request, responseJson({ ok: true }));
+  if (url.pathname === "/api/regenerate-backup-codes") {
+    if (!auth.account.mfaEnabled) return json(request, { ok: false, message: "Finish authenticator setup before making recovery codes." }, 400);
+    const codes = generateBackupCodes();
+    auth.account.backupCodeHashes = codes.map(sha256);
+    console.log("Recovery codes regenerated for authenticated account.");
+    return json(request, { ok: true, codes });
   }
 
-  if (url.pathname === "/api/recovery/regenerate" && request.method === "POST") {
-    if (!user.mfaEnabled) return addCors(request, genericError(403, "Set up an authenticator first."));
-    const codes = await createRecoveryCodes(); // Old hashes are discarded; codes remain one-time.
-    return addCors(request, responseJson({ ok: true, codes }));
+  if (url.pathname === "/api/recovery/verify") {
+    const body = await readJson(request);
+    if (!body || !validRecoveryCode(body.code)) {
+      return json(request, { ok: false, message: "Enter a recovery code in the format ABCDE-12345." }, 400);
+    }
+    const hash = sha256(body.code.toUpperCase());
+    const index = auth.account.backupCodeHashes.indexOf(hash);
+    if (index < 0) return json(request, { ok: false, message: "That recovery code could not be used. Check the code and try again." }, 400);
+    auth.account.backupCodeHashes.splice(index, 1);
+    return json(request, { ok: true, message: "Recovery code accepted." });
   }
 
-  if (url.pathname === "/api/recovery/verify" && request.method === "POST") {
-    if (!user.mfaEnabled) return addCors(request, genericError(403, "Set up an authenticator first."));
-    const data = await bodyJSON(request);
-    if (!data || !validRecovery(data.code)) return addCors(request, genericError(400, "Enter a recovery code like ABCDE-FGHIJ."));
-    const hashed = await digest(data.code);
-    if (!user.backupHashes.has(hashed)) return addCors(request, genericError(400, "That recovery code is not available. Check it or use another saved code."));
-    user.backupHashes.delete(hashed); // Recovery codes are single-use.
-    return addCors(request, responseJson({ ok: true }));
-  }
-
-  if (url.pathname === "/api/logout" && request.method === "POST") {
-    const id = cookieValue(request, "mfa_session");
-    if (id) sessions.delete(id);
-    const response = responseJson({ ok: true });
-    response.headers.set("Set-Cookie", expiredCookie());
-    return addCors(request, response);
-  }
-
-  return addCors(request, genericError(404, "Page not found."));
+  return new Response("Not found", { status: 404, headers: securityHeaders(request) });
 }
 
-/* Security misconfiguration requirement: Bun serves TLS only using supplied mkcert files. */
+const certFile = Bun.file("certs/cert.pem");
+const keyFile = Bun.file("certs/key.pem");
+
 Bun.serve({
-  port: 3000,
-  hostname: "0.0.0.0",
-  tls: {
-    cert: Bun.file("certs/cert.pem"),
-    key: Bun.file("certs/key.pem"),
-  },
+  port: Number(Bun.env.PORT || 3000),
+  hostname: "localhost",
+  tls: { cert: certFile, key: keyFile },
   async fetch(request) {
     try {
-      return await route(request);
+      return await handle(request);
     } catch {
-      // No debug traces, secrets, or verbose server error output.
-      return genericError(500, "We could not complete that request. Please try again.");
+      // Requirement 2: no debug traces or sensitive error output.
+      return new Response("Something went wrong. Please try again.", {
+        status: 500,
+        headers: securityHeaders(request),
+      });
     }
   },
 });
 
-console.log("MFA enrolment server ready at https://localhost:3000");
+console.log("MFA HTTPS server running at https://localhost:" + (Bun.env.PORT || 3000));

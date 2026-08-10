@@ -1,18 +1,17 @@
 # TASKER REPORT — Iteration 5 · Step 13
 
 ## SUMMARY
-- Raw tasks from Tasker: 5
-- Effective task_list after retention: 5
+- Raw tasks from Tasker: 4
+- Effective task_list after retention: 4
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Require a server-validated demo credential in addition to the email at sign-in, and create an authenticated MFA session only after both values validate for the account owner.","Process known and unknown email sign-in attempts with equivalent password-hash work and return the same generic failure response to prevent account enumeration by message or timing.","Remove the unreliable handwritten QR option and all claims that a scannable QR contains the provisioning URI; retain the manual secret and provisioning-URI reveal/copy setup path.","Use a deterministic authenticator verification code for the simulated enrolment flow that remains usable without a reading-time deadline, while keeping it single-use and enforcing failed-attempt rate limiting.","Remove the visible on-page log panel and ensure OTPs and recovery codes are written only to the browser console for testing; show recovery codes in the dedicated recovery-code screen only."]}
+{"task_list":["Replace `qrSvg()` with a self-contained standards-compliant QR encoder that encodes the exact `otpauth://` setup URI into a QR image scannable by common authenticator apps, without packages, assets, or network calls.","Make `/api/provision` return the normal mock testing OTP to the browser client without URLs, browser storage, cookies, server logs, or error responses; visibly present the value in the provisioning UI and log its actual value with browser `console.log`.","On successful OTP verification, log the actual generated recovery-code array in the browser console while retaining the existing recovery-code UI and avoiding server-side sensitive logging.","Remove the incomplete `ACADEMIC_TEST_OUTPUT_ENABLED`/`testTotp` conditional path, or make its returned value consistently consumed by the browser flow so the required mock OTP output always works."]}
 ```
 
 ## PARSED_TASKS
-- Require a server-validated demo credential in addition to the email at sign-in, and create an authenticated MFA session only after both values validate for the account owner.
-- Process known and unknown email sign-in attempts with equivalent password-hash work and return the same generic failure response to prevent account enumeration by message or timing.
-- Remove the unreliable handwritten QR option and all claims that a scannable QR contains the provisioning URI; retain the manual secret and provisioning-URI reveal/copy setup path.
-- Use a deterministic authenticator verification code for the simulated enrolment flow that remains usable without a reading-time deadline, while keeping it single-use and enforcing failed-attempt rate limiting.
-- Remove the visible on-page log panel and ensure OTPs and recovery codes are written only to the browser console for testing; show recovery codes in the dedicated recovery-code screen only.
+- Replace qrSvg() with a self-contained standards-compliant QR encoder that encodes the exact otpauth:// setup URI into a QR image scannable by common authenticator apps, without packages, assets, or network calls.
+- Make /api/provision return the normal mock testing OTP to the browser client without URLs, browser storage, cookies, server logs, or error responses; visibly present the value in the provisioning UI and log its actual value with browser console.log.
+- On successful OTP verification, log the actual generated recovery-code array in the browser console while retaining the existing recovery-code UI and avoiding server-side sensitive logging.
+- Remove the incomplete `ACADEMIC_TEST_OUTPUT_ENABLED`/testTotp conditional path, or make its returned value consistently consumed by the browser flow so the required mock OTP output always works.

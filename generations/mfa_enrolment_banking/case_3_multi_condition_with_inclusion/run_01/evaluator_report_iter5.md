@@ -1,114 +1,89 @@
 ## SUMMARY
 
-The artifact is a single-file Bun MFA enrolment application with a functional mobile-oriented flow, server-side sessions, CSRF checks, TLS, secure headers, input validation, encrypted OTP seed storage, hashed recovery codes, and rate limiting. However, it does not fully meet the stated requirements: it lacks a QR-code option, uses a permanent deterministic authenticator code rather than a time-bound OTP, and logs sensitive OTP/recovery values to the browser console despite the security requirement forbidding such logging. There is also an unresolved contradiction between the requested browser-console mock logging and the requirement never to log OTPs or backup codes.
+The artifact is a strong single-file Bun HTTPS MFA SPA with working sign-in, session handling, CSRF checks, TOTP verification, recovery-code generation, responsive dyslexia-aware UI, and restrictive security headers. However, it does not fully meet the deliverable requirements because its custom QR generator does not correctly construct the required Version 9 QR function-module layout, so the offered QR code cannot be considered standards-compliant or reliably scannable. The required comments mapping implementation to all requirement sections are also incomplete.
 
 ## FUNCTIONAL_CHECK
 
-- **Single `app.ts` Bun application with inline HTML, CSS, and JavaScript; no frameworks/build tools/external assets: PASS**
-  - The complete server and client app are contained in one TypeScript file.
-  - It uses `Bun.serve`, inline HTML/CSS/JS, no imports, no framework, and no external network requests.
+- **Single `app.ts` containing Bun server, HTML, CSS, and browser JavaScript — PASS**
+  - The entire application is contained in `app.ts`.
+  - HTML, CSS, and vanilla browser JavaScript are emitted by `pageHtml`.
+  - No framework, build tool, bundler, or external assets are used.
 
-- **Bun serves the application over supplied TLS certificates: PASS**
+- **Bun HTTPS server using the supplied certificate locations — PASS**
   - `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`.
-  - The server announces an HTTPS localhost URL.
+  - Requests are restricted to HTTPS and trusted local hosts.
 
-- **Responsive and mobile-legible UI: PASS**
-  - The page has an appropriate viewport tag, constrained mobile-first layout, large controls, generous input heights, readable font sizing, spacing, and a small-viewport media query.
+- **Mobile-responsive, dyslexia-aware SPA UI — PASS**
+  - The layout has a mobile-first constrained width, responsive media query, generous spacing, legible font stack, non-uppercase instructional text, short plain-language content, icons, examples, help disclosures, and clear primary actions.
+  - The UI contains no timers, animations, flashing elements, or auto-updating content.
+  - OTP input uses `autocomplete="one-time-code"` and numeric input mode.
 
-- **Plain-language, dyslexia-conscious UI and predictable step flow: PASS**
-  - The UI uses short instructions, icons, step numbers, examples for expected inputs, prominent primary actions, help details, clear errors, reveal/hide controls, and no moving or time-pressure UI.
-  - Browser autofill attributes are present for email, credentials, and one-time codes.
+- **Sign-in and server-side session security — PASS**
+  - Sign-in validates credentials server-side and creates a new random session identifier.
+  - Existing sessions for the account are invalidated at login, addressing session fixation.
+  - Session cookies use `HttpOnly`, `Secure`, and `SameSite=Strict`.
+  - Idle and absolute session timeouts are enforced.
+  - Logout invalidates the server-side session and expires the cookie.
 
-- **Authenticator provisioning supports manual secret entry and copy-to-clipboard: PASS**
-  - The setup screen provides a manually copyable/revealable secret and provisioning URI.
-  - It does not require manual transcription of the secret.
+- **Broken access control and IDOR prevention — PASS**
+  - MFA actions are bound to the authenticated server-side session account.
+  - No client-controlled user identifier is accepted by MFA endpoints.
+  - Manipulating a user ID is not possible because account lookup derives solely from the session.
 
-- **Authenticator provisioning includes a QR-code option: FAIL**
-  - The requirements explicitly call for QR-code options.
-  - The setup page explicitly states, “No QR code is needed,” and no QR code is rendered or offered.
+- **CSRF protection for state-changing endpoints — PASS**
+  - MFA provisioning, OTP verification, recovery-code regeneration, and logout require an authenticated session, same-origin HTTPS request, and matching `X-CSRF-Token`.
+  - The sign-in route does not use an existing authenticated cookie session and checks same-origin HTTPS.
 
-- **Identity verification, authenticator verification, recovery-code verification, regeneration, and logout work: PASS**
-  - The application implements all relevant endpoints and client transitions.
-  - Identity verification leads to provisioning; authenticator verification generates recovery codes; recovery codes are single-use; regeneration replaces existing code hashes; logout invalidates the session.
+- **Security headers and CORS restrictions — PASS**
+  - CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, no-referrer policy, permissions policy, and no-store cache policy are set.
+  - CORS is only emitted for matching same-origin trusted local hosts.
 
-- **Mocks are deterministic and surfaced to the UI/browser console for testing: PASS, but conflicts with security requirements**
-  - Identity and authenticator mock codes are deterministic.
-  - Authenticator and recovery-code mock values are returned to the UI and logged in the browser console as requested by the deliverable.
-  - This behavior directly conflicts with the separate “never expose ... in logs” security requirement.
+- **TOTP provisioning, encryption, and verification — PASS**
+  - TOTP secrets are generated with `crypto.getRandomValues`.
+  - The server encrypts TOTP secrets using AES-GCM before retaining them.
+  - TOTP verification is server-side, checks a bounded clock window, rejects reused TOTP counters, and enables MFA only after successful verification.
+  - The mock OTP is returned to the authenticated UI and written to the browser console as explicitly required for testing.
 
-- **Server-side authorization and IDOR protection on MFA endpoints: PASS**
-  - MFA operations derive the account exclusively from the authenticated server-side session.
-  - No user/account identifier is accepted from the client for MFA operations.
-  - Guessed or manipulated account identifiers cannot select another account.
+- **Backup recovery-code generation and protection — PASS**
+  - Recovery codes are generated using cryptographically secure randomness.
+  - Only keyed HMAC verifiers are retained server-side.
+  - Codes are shown once in the UI, can be copied, and regenerating them replaces previous stored verifiers.
+  - The mock recovery codes are logged in the browser console as required by the testing deliverable.
 
-- **CSRF protection on state-changing requests: PASS**
-  - State-changing requests require both an allowed `Origin` and a session-bound `X-CSRF-Token`.
-  - The session cookie is `SameSite=Strict`, providing additional CSRF protection.
+- **Rate limiting and lockout for OTP verification — PASS**
+  - Invalid OTP attempts are counted.
+  - After five failures, verification is locked for five minutes.
+  - Error messages explain the problem and next action without blaming the user.
 
-- **Secure headers and clickjacking protection: PASS**
-  - CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, Referrer Policy, and Permissions Policy are configured.
+- **Manual setup and copy options — PASS**
+  - The authenticator secret is displayed manually in addition to the QR option.
+  - The secret can be copied, hidden, shown again, and regenerated.
+  - Recovery codes can be copied as a group.
 
-- **Secure session-cookie configuration and session lifecycle: PASS**
-  - Cookies use `HttpOnly`, `Secure`, and `SameSite=Strict`.
-  - Sessions have idle and absolute expiry, are rotated on sign-in, and are invalidated on logout.
+- **QR code option is functional and standards-compliant — FAIL**
+  - The custom `qrSvg()` implementation claims to create a Version 9 QR code but does not place all required Version 9 alignment patterns.
+  - Version 9 alignment centers are based on `[6, 26, 46]`; excluding finder-overlap locations, the matrix must include alignment patterns at `(6,26)`, `(26,6)`, `(26,26)`, `(26,46)`, `(46,26)`, and `(46,46)`.
+  - The implementation only places:
+    - `align(46,46)`
+    - `align(26,46)`
+    - `align(46,26)`
+  - It omits `(6,26)`, `(26,6)`, and `(26,26)`. Those cells are incorrectly treated as data cells, making the resulting QR matrix non-compliant and not reliably scannable.
 
-- **CORS restricted to trusted origins: PASS**
-  - CORS is only enabled for explicit localhost TLS origins.
-  - State-changing routes additionally reject requests whose `Origin` is not trusted.
-
-- **OTP seed and recovery-code storage protection: PASS**
-  - OTP seeds are AES-GCM encrypted before being placed in account state.
-  - Recovery codes are stored only as SHA-256 hashes with a random server-side pepper.
-  - Cryptographically secure random generation is used for secrets, sessions, CSRF tokens, and recovery-code values.
-
-- **No sensitive values in logs, URL query strings, or error output: FAIL**
-  - `browserLog("[Mock authenticator test code] " + result.mockCode)` logs the authenticator OTP.
-  - `browserLog("[Mock recovery codes] " + result.codes.join(", "))` logs all recovery codes.
-  - The provisioning URI contains the shared secret as a `secret=` query parameter. Although it is displayed as a string rather than used as the browser page URL, it is still a URI query containing a sensitive OTP seed.
-  - This conflicts with the explicit security requirement prohibiting logging of OTPs and backup codes. It also conflicts with the separate testing requirement asking for browser-console logging; this must be formally reconciled.
-
-- **Validation, output encoding, and redirect safety: PASS**
-  - Server-side validation exists for email, credential, six-digit codes, and recovery-code format.
-  - Dynamic client-rendered data is escaped through `esc`.
-  - There are no redirect parameters or externally controlled redirects.
-
-- **Verification codes are single-use, time-bound, sufficiently protected, and rate-limited: FAIL**
-  - Identity codes are single-use and expire after 30 minutes.
-  - Recovery codes are single-use and attempts are rate-limited/locked.
-  - Authenticator codes are single-use and attempts are rate-limited/locked.
-  - However, the authenticator check is created with `Number.MAX_SAFE_INTEGER` as its expiry:
-    ```ts
-    a.authenticatorCheck = await check(DEMO_AUTHENTICATOR_CODE, Number.MAX_SAFE_INTEGER);
-    ```
-    This means it effectively never expires, violating the requirement that OTPs be time-bound.
-  - The authenticator code is always the static value `654321`, rather than a securely generated verification value. A deterministic mock can still have a generous fixed validity period, but it must expire.
-
-- **Generic production error behavior without verbose stack traces: PASS**
-  - Top-level server exceptions return a generic 500 response.
-  - Stack traces are not returned to clients.
+- **Comments clearly mapping code to all requirement sections — FAIL**
+  - The code has isolated comments such as `Requirement 2` and task comments, but it does not provide clear implementation comments mapping the relevant server/client logic to all stated requirement sections, particularly Security Evaluation Requirements 1, 3, 4, and 5.
 
 ## FAILING_ITEMS
 
-- The authenticator setup screen does not provide a QR-code option, despite the inclusivity requirement to offer QR-code options alongside copy/manual-entry support.
-- The authenticator verification code never expires because its expiry is set to `Number.MAX_SAFE_INTEGER`; this violates the time-bound OTP requirement.
-- The application logs authenticator OTPs and recovery codes through `console.log` in the browser.
-- The provisioning URI exposes the OTP seed in a `secret=` URI query parameter. This is inherent to a standard `otpauth://` provisioning URI, but it conflicts with the requirement not to expose OTP seeds in URL query strings.
-- The requirements themselves conflict: they require OTP/recovery mocks to be shown via browser `console.log`, while also requiring that OTPs and backup codes never be exposed in logs. The implementation follows the mock-delivery instruction but fails the stated security prohibition. This requires an explicit policy decision rather than an implicit exception.
+- The offered authenticator QR code is not reliably valid because `qrSvg()` omits required Version 9 alignment patterns at `(6,26)`, `(26,6)`, and `(26,26)`.
+- The custom QR implementation therefore fails the requirement that a QR-code option be usable; users may be forced to rely on manual secret entry.
+- Requirement-to-code comments are incomplete. The artifact does not clearly map controls for broken access control, cryptographic protections, injection prevention, and authentication controls back to the corresponding requirement sections.
 
 ## NEW_TASKS
 
-1. Add a QR-code provisioning option on the authenticator setup screen, generated entirely locally with inline JavaScript and no external assets or network requests; retain the existing manual secret and copy controls.
-
-2. Replace the effectively permanent authenticator verification expiry with a finite, generous validity period, such as 30 minutes, and return a clear message allowing Marcus to re-open/re-request setup details after expiry without penalty.
-
-3. Make the deterministic authenticator mock code time-bound while preserving testability; for example, keep `654321` as the test value but store it with a finite expiry and regenerate its check record when setup is re-requested.
-
-4. Reconcile the contradictory secret-logging requirements. Either:
-   - remove browser-console logging of OTPs and recovery codes to satisfy the security requirement, or
-   - amend the requirements to explicitly allow browser-only localhost test logging as a narrowly scoped exception, separate from production behavior.
-
-5. Avoid exposing the OTP seed through a displayed provisioning URI query string if strict compliance with the “no secrets in URL query strings” rule is required. Prefer a locally generated QR representation plus the separately revealable/copyable manual secret, or formally document an explicit exception for standard `otpauth://` provisioning URIs.
+1. Correct `qrSvg()` so the Version 9 QR matrix reserves and draws every required alignment pattern: `(6,26)`, `(26,6)`, `(26,26)`, `(26,46)`, `(46,26)`, and `(46,46)`, while excluding only finder-overlap patterns.
+2. Validate the corrected QR output with a standards-compliant QR decoder using the generated `otpauth://` URI, ensuring it scans and yields the exact provisioning URI.
+3. Add concise code comments mapping the implementation to Security Evaluation Requirements 1 through 5, including authorization/CSRF, headers/CORS/cookies, encryption and secure RNG, validation/output encoding, and rate-limit/session controls.
 
 ## DECISION
 
-**FAIL**
+FAIL

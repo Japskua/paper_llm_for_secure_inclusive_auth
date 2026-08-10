@@ -1,119 +1,65 @@
 ## SUMMARY
 
-The artifact is a single-file Bun HTTPS MFA enrolment application with a responsive, accessible mobile UI, simulated browser-console mock values, server-side sessions, CSRF checks, cryptographic generation/storage, secure headers, OTP/recovery-code verification, and rate limits. Most individual controls are implemented correctly. However, the completed MFA state is not recoverable after a reload, logout, or new sign-in: an already-enrolled user is always sent into provisioning, which the server correctly rejects as already active. This prevents access to the settings and backup-code regeneration functions except during the original in-memory client flow.
+The artifact is a well-structured single-file Bun HTTPS application with a responsive, accessible MFA enrolment flow, functional simulated TOTP and recovery codes, strong baseline headers, session cookies, CSRF checks, input validation, and server-derived account ownership. However, it does not fully meet the verification lockout requirement because the provisioning endpoint clears OTP failure/lockout state and can be used to bypass a lockout. It can also overwrite an already-enabled MFA secret before a new factor is verified.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single `app.ts` deliverable with Bun server, HTML, CSS, and browser JavaScript**
-  - The entire application is contained in one TypeScript file.
-  - It uses `Bun.serve`, inline HTML/CSS/JS, and no framework, bundler, compilation pipeline, or external assets.
+- **PASS — Single-file Bun application with no build tooling or external assets.**  
+  The server, HTML, CSS, and browser-side JavaScript are contained in `app.ts`. Bun directly serves the page and uses the specified TLS certificate paths.
 
-- **PASS — HTTPS/TLS server configuration**
-  - The Bun server is configured with `certs/cert.pem` and `certs/key.pem`.
-  - HSTS is set on responses.
+- **PASS — HTTPS/TLS and secure response headers.**  
+  Bun is configured with `certs/cert.pem` and `certs/key.pem`. Responses include CSP with nonces, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, `Permissions-Policy`, and `Cache-Control: no-store`.
 
-- **PASS — Mobile-responsive, dyslexia-conscious UX**
-  - The layout has a mobile viewport meta tag, constrained responsive content width, large controls, generous spacing, readable font sizing, icons, short instructions, examples, and help disclosures.
-  - It avoids animation, flashing content, dense prose, and all-caps instructional text.
+- **PASS — Secure cookie and session handling.**  
+  The session cookie uses `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, and a bounded lifetime. Server-side idle and absolute session timeouts are enforced, sessions are regenerated on sign-in, and logout invalidates the server session and clears the cookie.
 
-- **PASS — Functional sign-in, identity-check, authenticator, OTP, backup-code, settings, and logout interactions during one uninterrupted client session**
-  - Sign-in creates a session and supplies a browser-console demo identity code.
-  - Identity verification gates authenticator provisioning.
-  - Authenticator provisioning provides a QR code, revealable/copyable manual seed, and demo OTP.
-  - OTP verification enables MFA and creates recovery codes.
-  - Recovery codes can be copied, confirmed, tested once, and regenerated.
-  - Logout invalidates the server session and clears the cookie.
+- **PASS — Server-side authorization and IDOR prevention.**  
+  MFA actions derive the account exclusively from the authenticated session. No client-supplied account or user identifier is accepted by MFA endpoints.
 
-- **FAIL — Enrolled-user state is recoverable and settings remain accessible after reload/new sign-in**
-  - After successful OTP verification, `a.mfaEnabled` is set to `true`.
-  - On any later browser refresh, logout/sign-in, expired client state, or new authenticated session, the client always routes to `identity`, then calls `/api/authenticator/provision`.
-  - `/api/authenticator/provision` correctly returns `403 "Your authenticator is already active."` for enrolled users.
-  - There is no endpoint to retrieve MFA status, no settings bootstrap route, and no UI transition to `settings` for an already-enrolled account.
-  - Consequently, recovery-code regeneration and MFA settings are inaccessible after the original client state is lost.
+- **PASS — CSRF protection for state-changing authenticated requests.**  
+  Authenticated state-changing endpoints require a same-origin HTTPS `Origin` and a session-bound `X-CSRF-Token`.
 
-- **FAIL — MFA enrolment completion is persisted as a distinct completed flow**
-  - MFA is activated in `/api/authenticator/verify`, before the user confirms they saved the recovery codes.
-  - `/api/backup/confirm` performs no persisted state change.
-  - If the user reloads or leaves on the recovery-code screen, MFA is active but the user cannot resume the recovery-code confirmation or access settings after signing in again.
+- **PASS — Input validation and safe rendering.**  
+  Email, password, OTP, and recovery-code formats are validated server-side. Dynamic browser-rendered values are escaped before insertion into HTML. There is no database/query surface requiring SQL parameterisation.
 
-- **PASS — Manual alternatives to QR provisioning**
-  - The authenticator secret can be revealed and copied manually.
-  - OTP and recovery code entry fields support manual entry and `autocomplete="one-time-code"` where appropriate.
-  - The QR code is generated locally without external requests.
+- **PASS — TOTP and recovery-code implementation.**  
+  TOTP secrets and backup codes are generated with cryptographically secure randomness. The TOTP implementation uses HMAC-SHA-1 dynamic truncation and six-digit codes. Used TOTP counters are tracked to prevent reuse. Backup codes are stored as keyed HMAC verifiers and removed after successful use.
 
-- **PASS — Browser-console mock values**
-  - Identity codes, authenticator OTP values, and backup recovery codes are emitted through browser-side `console.log`.
-  - Sensitive values are not placed in the visible in-page “Logs” panel.
-  - Server-side code does not log OTPs, seeds, backup codes, or sessions.
+- **FAIL — Failed OTP verification lockout cannot be enforced reliably.**  
+  `/api/verify-otp` tracks failures and locks after five attempts, but `/api/provision` resets both `otpFailedAttempts` and `otpLockedUntil` on every request:
+  ```ts
+  account.otpFailedAttempts = 0;
+  account.otpLockedUntil = 0;
+  ```
+  An authenticated user can therefore make five failed OTP submissions, call `/api/provision`, and immediately resume attempts. This bypasses the required rate-limit/lockout control.
 
-- **PASS — Server-side authorization / IDOR protection**
-  - MFA endpoints derive the account from the authenticated `mfa_session` server-side session.
-  - No client-supplied user/account identifier is accepted by protected MFA endpoints.
-  - Session ownership is checked on each protected request.
+- **FAIL — Provisioning can replace an active MFA secret before new-factor verification.**  
+  `/api/provision` is available even when `account.mfaEnabled` is already `true` and immediately replaces `account.encryptedSecret`. This can invalidate the user’s existing authenticator while the account remains marked as MFA-enabled, even if the replacement authenticator is never verified.
 
-- **PASS — CSRF protection for protected state-changing endpoints**
-  - Protected POST endpoints require a same-origin allow-listed `Origin` and matching `X-CSRF-Token`.
-  - Session cookies are `SameSite=Strict`.
-  - The initial sign-in endpoint also requires an allow-listed Origin.
+- **PASS — Mobile-focused, dyslexia-aware UX.**  
+  The UI is responsive, uses spacious layout, legible type, clear headings, plain language, visible current-step indicators, examples for inputs, focus states, no animations/timers, help content, retries, hide/show controls, and clear error messages.
 
-- **PASS — Secure session-cookie handling**
-  - Cookies use `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, and bounded lifetime.
-  - Sessions have idle and absolute expiration.
-  - Sessions are newly generated on successful authentication and invalidated on logout.
-  - Existing sessions for the account are removed upon a new successful sign-in.
+- **PASS — Manual and QR provisioning support.**  
+  The application provides a QR code, displays the manual TOTP secret, supports copying it, and provides a manual six-digit OTP entry field.
 
-- **PASS — Security headers and restricted CORS**
-  - CSP with nonce-based inline script/style authorization is present.
-  - HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, referrer policy, and permissions policy are configured.
-  - CORS is restricted to explicitly allow-listed local HTTPS origins.
+- **PASS — Simulated mock values are available in the browser UI and console.**  
+  The mock OTP and generated recovery codes are returned to the browser UI and logged with browser-side `console.log`, as required for testing.
 
-- **PASS — Cryptographic handling of secrets and codes**
-  - Random values use `crypto.getRandomValues`.
-  - The OTP seed is AES-GCM encrypted in server memory.
-  - Recovery codes, credentials, OTP challenge codes, and consumed OTP markers are hashed.
-  - TOTP validation uses HMAC-SHA-1 as required by the declared `otpauth` URI and accepts only current/adjacent time windows.
-  - OTPs and recovery codes are single-use where applicable.
-
-- **PASS — Input validation and output encoding**
-  - Inputs have bounded parsing and format validation for email, credential, OTP, and recovery codes.
-  - Client-side dynamic values inserted into HTML are escaped.
-  - There are no SQL queries or redirect parameters, so SQL injection and open redirects are not introduced.
-
-- **PASS — Verification expiry, replay prevention, rate limiting, and lockouts**
-  - Identity codes expire and are single-use.
-  - Provisioning expires.
-  - TOTP values are rejected after use.
-  - Identity, authenticator, recovery, and sign-in failures have lockouts/rate controls.
-  - Error messages provide a problem and corrective action.
-
-- **PASS — No external network dependencies**
-  - QR generation is implemented locally.
-  - All browser calls are same-origin API requests.
-  - No external fonts, scripts, images, APIs, or assets are loaded.
+- **PASS — Internal navigation/actions function in the SPA.**  
+  The sign-in, provisioning, verification, recovery-code verification, regeneration, completion, and logout flows are all implemented with working browser-side event handlers and corresponding server endpoints.
 
 ## FAILING_ITEMS
 
-- The application has no persisted/retrievable MFA status route or post-authentication routing for an account whose `mfaEnabled` is already true.
-  - A refresh, logout, session expiry, or new sign-in after MFA activation leaves the user unable to reach security settings.
-  - The user becomes stuck after the legitimate “already active” provisioning response.
-
-- MFA activation occurs before recovery-code acknowledgement, while `/api/backup/confirm` does not persist a backup-confirmation/enrolment-completion state.
-  - A user who loses client state on the recovery-code screen cannot resume that step.
-  - This breaks the intended secure recovery-code storage stage of the enrolment flow.
+- OTP verification lockout is bypassable because `/api/provision` clears OTP failure counts and lockout timestamps.
+- The provisioning endpoint can overwrite a previously active MFA secret while `mfaEnabled` remains true, before the new authenticator has been verified.
 
 ## NEW_TASKS
 
-1. Add a protected MFA-status endpoint, for example `GET /api/mfa/status`, that returns only the authenticated account’s non-sensitive MFA state, such as `identityVerified`, `mfaEnabled`, and a persisted `backupCodesConfirmed` flag.
+1. Remove OTP failure-counter and lockout resets from `/api/provision`; preserve OTP lockout state until the configured lockout period expires or until a successful OTP verification occurs.
 
-2. Update the client sign-in/identity routing so that an account with active MFA is sent to the security settings screen rather than attempting authenticator provisioning again.
+2. Introduce a separate pending-enrolment secret state so `/api/provision` creates or replaces only a pending secret, and promote it to the active MFA secret only after `/api/verify-otp` succeeds.
 
-3. Add a persisted `backupCodesConfirmed` field to `Account`; set it only in `/api/backup/confirm`.
-
-4. Decide and enforce the intended enrolment state transition:
-   - either defer `mfaEnabled = true` until `/api/backup/confirm`, or
-   - retain MFA activation at OTP verification but provide a protected resumable recovery-code screen until `backupCodesConfirmed` is true.
-
-5. Ensure a user returning after reload/new sign-in can regenerate recovery codes and complete any outstanding recovery-code confirmation without receiving the blocking “authenticator is already active” provisioning error.
+3. When MFA is already enabled, require an explicit authenticated MFA-reset/re-enrolment flow that preserves the currently active authenticator until the replacement authenticator has been successfully verified.
 
 ## DECISION
 

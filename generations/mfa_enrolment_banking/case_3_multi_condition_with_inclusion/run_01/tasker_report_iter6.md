@@ -1,18 +1,16 @@
 # TASKER REPORT — Iteration 6 · Step 16
 
 ## SUMMARY
-- Raw tasks from Tasker: 5
-- Effective task_list after retention: 5
+- Raw tasks from Tasker: 3
+- Effective task_list after retention: 3
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Add a locally generated QR-code provisioning option to the authenticator setup screen with no external assets or network calls, while retaining the revealable manual secret and copy controls.","Store the deterministic authenticator test code with a finite, generous validity period (for example, 30 minutes) instead of a permanent expiry, and reject it after expiry with a plain-language recovery action.","When authenticator setup details are requested again, regenerate the time-bound authenticator verification record so the deterministic test code remains usable during a new setup attempt without penalty.","Remove browser-console logging of authenticator OTPs and recovery codes to comply with the prohibition on logging sensitive authentication values; provide non-sensitive confirmation that mock delivery occurred instead.","Do not display or navigate to a provisioning URI containing the OTP seed in a URL query string; use the local QR option plus separately revealable and copyable manual secret for provisioning."]}
+{"task_list":["Correct `qrSvg()` so the Version 9 QR matrix reserves and draws every required alignment pattern at `(6,26)`, `(26,6)`, `(26,26)`, `(26,46)`, `(46,26)`, and `(46,46)`, excluding only finder-overlap patterns.","Validate the corrected QR output with a standards-compliant QR decoder against a generated `otpauth://` URI; scanning must yield the exact provisioning URI.","Add concise code comments mapping implementation controls to Security Evaluation Requirements 1–5, including authorization/CSRF, headers/CORS/cookies, encryption and secure RNG, validation/output encoding, and rate-limit/session controls."]}
 ```
 
 ## PARSED_TASKS
-- Add a locally generated QR-code provisioning option to the authenticator setup screen with no external assets or network calls, while retaining the revealable manual secret and copy controls.
-- Store the deterministic authenticator test code with a finite, generous validity period (for example, 30 minutes) instead of a permanent expiry, and reject it after expiry with a plain-language recovery action.
-- When authenticator setup details are requested again, regenerate the time-bound authenticator verification record so the deterministic test code remains usable during a new setup attempt without penalty.
-- Remove browser-console logging of authenticator OTPs and recovery codes to comply with the prohibition on logging sensitive authentication values; provide non-sensitive confirmation that mock delivery occurred instead.
-- Do not display or navigate to a provisioning URI containing the OTP seed in a URL query string; use the local QR option plus separately revealable and copyable manual secret for provisioning.
+- Correct qrSvg() so the Version 9 QR matrix reserves and draws every required alignment pattern at (6,26), (26,6), (26,26), (26,46), (46,26), and (46,46), excluding only finder-overlap patterns.
+- Validate the corrected QR output with a standards-compliant QR decoder against a generated otpauth:// URI; scanning must yield the exact provisioning URI.
+- Add concise code comments mapping implementation controls to Security Evaluation Requirements 1–5, including authorization/CSRF, headers/CORS/cookies, encryption and secure RNG, validation/output encoding, and rate-limit/session controls.

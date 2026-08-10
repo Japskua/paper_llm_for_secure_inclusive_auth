@@ -1,110 +1,122 @@
 ## SUMMARY
 
-The artifact is a valid single-file Bun application with a largely usable mobile MFA flow, strong basic session/CSRF handling, TLS configuration, secure cookie attributes, input validation, encrypted seed storage, hashed recovery codes, and accessible dyslexia-conscious UI choices. However, it does not provide a functioning standards-compatible QR/TOTP authenticator flow, its verification lockouts can be bypassed by repeatedly requesting fresh codes or provisioning, and its CSP permits arbitrary inline scripts through `'unsafe-inline'`. These are material functional and security failures.
+The artifact is a well-structured single-file Bun HTTPS SPA with strong mobile usability, clear dyslexia-friendly presentation, CSP/header protections, CSRF checks, and working core enrolment screens. However, it does not meet all security and functional requirements. Most importantly, sign-in does not authenticate a real account owner, the displayed “QR” image is not a scannable provisioning QR code, recovery-code verification is not rate-limited and may reject generated codes, and the OTP is a fixed predictable value rather than securely generated.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file Bun application with no build tools or external assets**
-  - The server, HTML, CSS, and browser JavaScript are all contained in `app.ts`.
-  - It uses `Bun.serve` directly and does not require a bundler, framework, compiler, or network-hosted asset.
+- **Single `app.ts` Bun server with inline HTML, CSS, and vanilla browser JavaScript — PASS**
+  - The server, page template, CSS, and SPA logic are all contained in one file.
+  - No frameworks, external assets, build tools, bundlers, browser storage, or external network calls are used.
 
-- **PASS — TLS is configured using the supplied certificate locations**
-  - Bun is configured with `certs/cert.pem` and `certs/key.pem`.
-  - The server advertises an HTTPS localhost URL.
+- **Bun HTTPS server uses the provided TLS certificate paths — PASS**
+  - `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`.
+  - Requests are rejected unless they use HTTPS and a trusted localhost host.
 
-- **PASS — Responsive, mobile-oriented, dyslexia-conscious UI**
-  - The page includes a mobile viewport meta tag, constrained content width, large input/button controls, generous spacing, readable font fallbacks, plain wording, short instructions, icons, examples, and no animations or countdowns.
-  - Inputs support `autocomplete="one-time-code"` and appropriate mobile `inputmode` values.
+- **Responsive, mobile-legible, dyslexia-considerate UI — PASS**
+  - The layout is constrained to a phone-friendly width, uses generous spacing, clear type sizing, visible focus styles, plain wording, examples, and a stable non-animated interface.
+  - Help is available at every rendered step.
+  - The UI avoids all-caps instructional copy and provides copy controls for long secrets and recovery codes.
 
-- **PASS — Browser-side mock delivery logging and usable mock values**
-  - Identity codes, authenticator test codes, and recovery codes are returned to the UI and written through browser `console.log`.
-  - The visible Logs panel is also helpful for users testing the flow.
+- **Clear and functional enrolment flow — PARTIAL / FAIL**
+  - The email → provision → verify OTP → save recovery codes → completion flow works for the built-in mock value.
+  - However, the alleged QR setup image is a custom canvas pattern, not a valid QR code that an authenticator application can scan. The UI explicitly tells the user to scan it, but this action cannot work.
+  - The manual secret path is displayed and copyable, which is good, but it does not make the non-functional QR option acceptable.
 
-- **FAIL — Authenticator provisioning is not a real QR/TOTP flow**
-  - The “QR-style setup image” is a decorative 13×13 generated grid, not a valid QR code containing an `otpauth://` provisioning URI.
-  - The generated authenticator code is a separate random six-digit value (`randomDigits()`), not a TOTP generated from the displayed/shared secret.
-  - The encrypted seed is never decrypted or used during verification. A real authenticator app configured with the shown secret could not generate a code accepted by `/api/authenticator/verify`.
-  - Therefore, the claimed “scan this QR-style setup image in your authenticator app” flow does not function. Only the special “Use demo code” path works.
+- **Manual secret/code support and browser console mock output — PASS**
+  - The setup secret is displayed and can be copied.
+  - OTP and recovery codes are logged in the browser console as test-only values, consistent with the testing deliverable.
+  - Sensitive values are not logged by the server.
 
-- **FAIL — Mock values are not deterministic as required**
-  - Identity, authenticator, and recovery codes are generated randomly on every issuance.
-  - The requirements specifically call for simulated provisioning/delivery/verification with deterministic mock values. The current values are exposed for testing, but they are not deterministic.
+- **OTP verification is single-use, time-bound, and retryable — PARTIAL / FAIL**
+  - OTP records have an expiry, are marked used after success, and failures are rate-limited/locked after five attempts.
+  - The OTP itself is always the static value `246810`; it is not generated using a cryptographically secure RNG. This fails the requirement that verification codes have sufficient entropy and be securely generated.
+  - The deterministic mock requirement can be met in a dedicated test configuration, but a production security implementation must not use one globally predictable OTP.
 
-- **PASS — Manual secret and recovery-code handling are provided**
-  - A manual authenticator secret is displayed and can be copied.
-  - Recovery codes can be copied or downloaded, and recovery-code verification accepts manually entered values.
+- **Recovery-code generation and use — FAIL**
+  - Recovery codes are generated, shown, copyable, stored only as hashes server-side, and regeneration replaces previous hashes.
+  - `generateBackupCodes()` uses Base64URL characters, which can include `_` and `-`, but `validRecoveryCode()` only permits `[A-Z0-9]{5}-[A-Z0-9]{5}`. Therefore, some generated recovery codes cannot subsequently be submitted to `/api/recovery/verify`.
+  - Recovery-code verification has no failed-attempt counter, rate limit, or lockout. This violates the verification-code brute-force protection requirement.
 
-- **PASS — Server-side authorization and basic IDOR prevention**
-  - Protected API routes require an authenticated session.
-  - No user identifier is accepted from the client for MFA operations.
-  - Sessions are tied to the fixed mock account owner and invalid/expired sessions are rejected.
+- **Server-side authorization and IDOR prevention — FAIL**
+  - MFA endpoints derive the account from the session rather than accepting a browser-provided account ID, which is a positive IDOR control.
+  - However, `/api/signin` accepts any syntactically valid email and always creates a session for the fixed account ID `authenticated-demo-account`.
+  - Any visitor can therefore obtain a valid session for the same account and modify MFA settings, regenerate recovery codes, or consume recovery codes. This is broken access control and does not establish that the requester is the authenticated account owner.
+  - Repeated sign-ins can also overwrite `account.email` for this shared account.
 
-- **PASS — CSRF protection is applied to authenticated state-changing routes**
-  - Authenticated non-GET requests require a matching `X-CSRF-Token`.
-  - The request origin must be a trusted HTTPS localhost origin.
+- **CSRF protection on state-changing authenticated endpoints — PASS**
+  - Authenticated state-changing endpoints require both a same-origin HTTPS `Origin` and the session-bound `X-CSRF-Token`.
+  - The session cookie is `SameSite=Strict`.
+  - Sign-in is protected by strict origin validation, though it needs real authentication as noted above.
+
+- **Secure cookie and session handling — PARTIAL / FAIL**
   - Session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
+  - Session IDs and CSRF tokens are cryptographically random.
+  - Idle and absolute session expiry are implemented, and logout invalidates the server session and clears the cookie.
+  - A new session is created at sign-in, but because sign-in has no actual authentication/ownership validation, session security does not satisfy the account-ownership requirement.
 
-- **FAIL — Verification rate limits and lockouts can be bypassed**
-  - After five failed identity-code attempts, the client can call `/api/identity/send` to obtain a new verification object with attempts reset to zero.
-  - After five failed authenticator attempts, the client can call `/api/authenticator/provision` to obtain a fresh verification object with attempts reset.
-  - Neither code issuance nor provisioning is rate-limited, so an attacker can repeatedly reset the five-attempt limit indefinitely.
-  - This does not satisfy the requirement to rate-limit and lock out repeated failed verification attempts.
+- **Security headers, clickjacking protection, CORS, and generic errors — PASS**
+  - CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, restrictive CORS handling, `Cache-Control: no-store`, and generic catch-all error handling are present.
+  - No verbose error stack traces are returned.
 
-- **PASS — Verification values are time-bound and single-use after success**
-  - Verification objects expire after 30 minutes.
-  - Successfully verified identity and authenticator checks are deleted.
-  - Recovery-code hashes are deleted after successful use.
+- **Sensitive-data storage and logging — PARTIAL / FAIL**
+  - OTP secret storage uses AES-GCM encryption, and recovery codes are stored as hashes.
+  - Secrets, OTPs, recovery codes, and session tokens are not server-logged or put in URLs/browser storage.
+  - However, the fixed OTP is predictable rather than securely generated, which is a cryptographic/authentication failure despite otherwise appropriate storage treatment.
 
-- **PASS — Secure storage and cryptographic generation are mostly implemented**
-  - Random values use `crypto.getRandomValues`.
-  - Authenticator secrets are encrypted at rest with AES-GCM.
-  - Recovery codes are stored as hashes rather than plaintext.
-  - Browser storage APIs and non-HttpOnly cookies are not used for secrets or sessions.
-
-- **PASS — Input validation and output encoding are implemented**
-  - Email, six-digit codes, and recovery-code formats are validated server-side.
-  - JSON body size is bounded.
-  - Dynamic values placed into HTML are escaped with `escapeText`.
-  - No user-controlled redirects are implemented.
-
-- **FAIL — CSP is weakened by unrestricted inline script execution**
-  - The CSP includes `script-src 'self' 'unsafe-inline'`.
-  - `'unsafe-inline'` permits injected inline JavaScript to execute if an XSS flaw is introduced, substantially undermining the intended CSP/XSS defense.
-  - Since the application has a single known inline script, it should use a nonce or a CSP hash instead of allowing all inline scripts.
-
-- **PASS — Required security headers and generic server errors are present**
-  - Responses include CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, and a restrictive Permissions Policy.
-  - The server catches errors and returns a generic message without stack traces or secret logging.
-
-- **PASS — Session management is substantially implemented**
-  - A new opaque session is created on sign-in.
-  - Existing mock-owner sessions are removed on new sign-in.
-  - Idle and absolute session expiry are enforced server-side.
-  - Logout invalidates the server session and expires the cookie.
+- **Input validation, output encoding, XSS, and redirect safety — PASS**
+  - Email, phone, OTP, and recovery-code formats are validated server-side.
+  - User-controlled messages are escaped before insertion into dynamic HTML.
+  - No redirect parameters or external redirects are implemented.
+  - No SQL/database layer exists, so prepared-query requirements are not applicable to this in-memory mock.
 
 ## FAILING_ITEMS
 
-- The displayed “QR-style” image is not a valid QR code and does not encode an authenticator provisioning URI.
-- Authenticator verification is not derived from the provisioned secret and is not TOTP-compatible; real authenticator-app codes will always fail.
-- Mock identity, authenticator, and recovery values are random rather than deterministic as required.
-- Failed-attempt lockout is reset simply by requesting another identity code or restarting authenticator provisioning; issuance/provisioning endpoints are not rate-limited.
-- The CSP allows arbitrary inline JavaScript via `script-src 'unsafe-inline'`, weakening the required XSS/security-header protection.
+- **Any user can sign in to the same shared account.**
+  - `/api/signin` accepts any valid email and creates a session for the fixed ID `authenticated-demo-account`.
+  - This means there is no server-side proof that the requester owns the account whose MFA settings are being changed.
+  - The endpoint also overwrites the account email with the latest submitted email.
+
+- **The QR image is not a valid authenticator provisioning QR code.**
+  - `drawSetupImage()` produces a decorative pseudo-random canvas pattern rather than encoding an `otpauth://` provisioning URI.
+  - A real authenticator app cannot scan it, despite the UI instructing the user to do so.
+
+- **OTP generation is globally predictable.**
+  - Every provision request sets `mockOtp = "246810"`.
+  - This does not meet the requirement for securely generated verification codes with sufficient entropy.
+
+- **Generated recovery codes may fail the endpoint’s own validation.**
+  - Base64URL output can contain `_` and `-`.
+  - `validRecoveryCode()` rejects those characters outside the one formatting separator, so generated codes are not reliably usable.
+
+- **Recovery-code verification lacks rate limiting and lockout.**
+  - `/api/recovery/verify` permits unlimited invalid guesses.
+  - This violates the repeated-failed-verification protection requirement.
 
 ## NEW_TASKS
 
-1. Replace the decorative QR grid with a standards-compatible QR code generated in-browser from an `otpauth://totp/...` URI, and retain the copyable manual secret as the equivalent manual setup option.
+1. **Implement a server-side mock authentication model that binds each session to a specific authenticated account.**
+   - Do not use one fixed `authenticated-demo-account` for all users.
+   - Validate a mock credential or established authenticated identity server-side.
+   - Map the authenticated identity to a stable account record and do not overwrite account ownership/email from arbitrary sign-in input.
+   - Keep sign-in errors generic to avoid account enumeration.
 
-2. Implement TOTP verification tied to the provisioned seed:
-   - Store an encrypted seed that can also be decrypted server-side for verification.
-   - Generate and verify a valid TOTP code from that seed.
-   - Accept an appropriate current/adjacent time-step window without presenting reading-time pressure to the user.
-   - Return/log a valid test mock code in the browser as required.
+2. **Replace the decorative canvas image with a valid QR code containing an `otpauth://totp/...` provisioning URI.**
+   - Generate the URI from the provisioned secret.
+   - Implement QR generation inline in `app.ts` without external assets or libraries.
+   - Retain the visible/copyable manual secret as the accessible alternative.
 
-3. Make the testing mock values deterministic while keeping the verification flow valid, such as deriving predictable test values from the active test secret/session rather than generating unrelated random values.
+3. **Generate OTP values with `crypto.getRandomValues` rather than a fixed global value.**
+   - Preserve browser-console test visibility by logging the generated mock OTP in the browser.
+   - If deterministic testing is required, isolate it to an explicit test-only mode that cannot be used as the production/default security path.
 
-4. Add server-side rate limiting for identity-code issuance and authenticator provisioning, and enforce a lockout that cannot be bypassed merely by requesting a replacement verification object.
+4. **Generate recovery codes from an alphabet accepted by the recovery-code validator.**
+   - Use a secure random alphabet such as uppercase `A-Z` and digits `0-9`, formatted consistently as `ABCDE-12345`.
+   - Ensure every displayed generated code can be successfully submitted to `/api/recovery/verify`.
 
-5. Replace CSP `script-src 'unsafe-inline'` with a nonce- or hash-based CSP for the known inline script. Apply the same nonce strategy to inline styles if `'unsafe-inline'` is removed from `style-src`.
+5. **Add failed-attempt tracking, rate limiting, and temporary lockout to recovery-code verification.**
+   - Reuse or add account-level recovery verification failure counters and a lockout timestamp.
+   - Return clear but non-sensitive retry guidance.
+   - Reset recovery-code failure state on a successful recovery-code verification and, as appropriate, on a new authentication/session.
 
 ## DECISION
 

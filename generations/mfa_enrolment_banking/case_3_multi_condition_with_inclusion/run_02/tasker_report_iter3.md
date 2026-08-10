@@ -7,10 +7,10 @@
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Update `/api/signin` to reject requests whose `Origin` is absent or not in the trusted-origin allow-list, while retaining same-origin browser sign-in functionality.","Add an `identityVerified` authorization check to `/api/mfa/verify` before accepting or validating an OTP; return the existing plain-language instruction to complete identity verification first.","Refactor sign-in credential validation so malformed, unknown-email, and incorrect-password attempts perform equivalent credential-comparison work and return the same response shape, status, and message to minimize account-dependent timing differences."]}
+{"task_list":["Add a server-side failed-attempt rate limiter and temporary lockout for /api/login, keyed using a privacy-preserving server-side key such as a normalized account-proof value plus client IP, with generic failure responses and expiry cleanup.","Add failed-attempt tracking, rate limiting, and temporary lockout to /api/mfa/recovery/verify; increment failures for invalid-format and non-matching recovery codes, reset the counter after a successful recovery-code use, and return a clear 429 response while locked.","Make TOTP lockout non-bypassable by preserving lockedUntil across provisioning attempts and rejecting /api/mfa/provision while the MFA state is locked; do not reset TOTP failure/lock state merely because a new provisioning secret is requested."]}
 ```
 
 ## PARSED_TASKS
-- Update /api/signin to reject requests whose Origin is absent or not in the trusted-origin allow-list, while retaining same-origin browser sign-in functionality.
-- Add an identityVerified authorization check to /api/mfa/verify before accepting or validating an OTP; return the existing plain-language instruction to complete identity verification first.
-- Refactor sign-in credential validation so malformed, unknown-email, and incorrect-password attempts perform equivalent credential-comparison work and return the same response shape, status, and message to minimize account-dependent timing differences.
+- Add a server-side failed-attempt rate limiter and temporary lockout for /api/login, keyed using a privacy-preserving server-side key such as a normalized account-proof value plus client IP, with generic failure responses and expiry cleanup.
+- Add failed-attempt tracking, rate limiting, and temporary lockout to /api/mfa/recovery/verify; increment failures for invalid-format and non-matching recovery codes, reset the counter after a successful recovery-code use, and return a clear 429 response while locked.
+- Make TOTP lockout non-bypassable by preserving lockedUntil across provisioning attempts and rejecting /api/mfa/provision while the MFA state is locked; do not reset TOTP failure/lock state merely because a new provisioning secret is requested.

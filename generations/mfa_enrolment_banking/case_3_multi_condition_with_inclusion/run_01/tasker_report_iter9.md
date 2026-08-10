@@ -1,19 +1,17 @@
 # TASKER REPORT — Iteration 9 · Step 25
 
 ## SUMMARY
-- Raw tasks from Tasker: 6
-- Effective task_list after retention: 6
+- Raw tasks from Tasker: 4
+- Effective task_list after retention: 4
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Correct or replace the QR encoder so provisioning `otpauth://` QR codes use standards-compliant format-information placement and can be decoded by a QR scanner.","Add bounded server-side failed-sign-in tracking for known accounts and safely throttled anonymous state for unknown email attempts.","Apply a temporary sign-in lockout or rate limit after repeated failed credentials, while returning uniform messages and behavior to prevent account enumeration.","Reset sign-in failure state only after a successful sign-in.","Keep mock OTP and recovery-code values in browser `console.log()` only; do not render those values in the visible `#logs` panel.","Replace visible secret-bearing log entries with generic, non-sensitive status messages while retaining clear user feedback."]}
+{"task_list":["Fix `totpForCounter()` so dynamic truncation is treated as an unsigned 31-bit value and always returns a zero-padded six-digit decimal OTP; verify the displayed mock OTP is accepted by MFA verification.","Replace or correct the QR encoder so it produces a standards-compliant, scannable QR symbol for the `otpauth://` provisioning URI, including correct version-specific alignment and version-information handling where required.","Render the server-returned mock OTP in a clearly labelled testing disclosure on the provisioning or verification UI, retain browser-console logging of that OTP, and update the displayed value after re-provisioning.","Remove browser-console logging of the authenticator secret while retaining browser-console logging for mock OTPs and recovery codes."]}
 ```
 
 ## PARSED_TASKS
-- Correct or replace the QR encoder so provisioning otpauth:// QR codes use standards-compliant format-information placement and can be decoded by a QR scanner.
-- Add bounded server-side failed-sign-in tracking for known accounts and safely throttled anonymous state for unknown email attempts.
-- Apply a temporary sign-in lockout or rate limit after repeated failed credentials, while returning uniform messages and behavior to prevent account enumeration.
-- Reset sign-in failure state only after a successful sign-in.
-- Keep mock OTP and recovery-code values in browser console.log() only; do not render those values in the visible #logs panel.
-- Replace visible secret-bearing log entries with generic, non-sensitive status messages while retaining clear user feedback.
+- Fix totpForCounter() so dynamic truncation is treated as an unsigned 31-bit value and always returns a zero-padded six-digit decimal OTP; verify the displayed mock OTP is accepted by MFA verification.
+- Replace or correct the QR encoder so it produces a standards-compliant, scannable QR symbol for the otpauth:// provisioning URI, including correct version-specific alignment and version-information handling where required.
+- Render the server-returned mock OTP in a clearly labelled testing disclosure on the provisioning or verification UI, retain browser-console logging of that OTP, and update the displayed value after re-provisioning.
+- Remove browser-console logging of the authenticator secret while retaining browser-console logging for mock OTPs and recovery codes.

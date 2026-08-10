@@ -1,19 +1,22 @@
 # TASKER REPORT — Iteration 2 · Step 4
 
 ## SUMMARY
-- Raw tasks from Tasker: 6
-- Effective task_list after retention: 6
+- Raw tasks from Tasker: 9
+- Effective task_list after retention: 9
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Update the el() helper to normalize event names, for example: node.addEventListener(k.slice(2).toLowerCase(), v), and verify every primary, secondary, copy, navigation, and logout action works.","Replace drawQR() with a real, standards-compliant QR encoder implemented inline in app.ts, encoding the returned otpauth:// URI.","Implement standard RFC 6238 TOTP verification compatible with the generated otpauth://totp/... URI, including a declared period/digits/algorithm in the URI if non-default values are used.","Correct OTP single-use enforcement by determining the matched time slot (slot or slot - 1) and checking/recording that matched slot, rather than always checking/recording the current slot.","Add server-side failed-attempt counting and a timed lockout for /api/identity, using the same clear non-blaming error style as OTP and recovery-code lockouts.","Remove the rendered logsPanel() diagnostic UI or ensure it never displays OTPs, setup secrets, recovery codes, or session-related values; retain only the explicitly required browser console.log test output."]}
+{"task_list":["Require certs/cert.pem and certs/key.pem at startup, serve only through Bun TLS, and fail closed with a generic startup error when certificates are unavailable.","Replace arbitrary-email login with a mock identity-verification flow that creates a Marcus session only for the verified account owner.","Protect /api/login with CSRF validation or strict server-side Origin validation before creating an authenticated session.","Replace qrSvg() with a self-contained standards-compliant QR encoder that encodes the returned otpauth:// provisioning URI and is scannable by authenticator applications.","Verify authenticator entries using a real TOTP derived from the provisioned secret or a cryptographically random per-provisioning mock OTP; log the test value only in the browser console.","Store each recovery code with a unique salt and slow KDF, and add a CSRF-protected endpoint that atomically verifies and consumes a recovery code once.","Add setup-secret hide/reveal controls and an explicit recovery-code regeneration action that clearly states regenerated codes replace prior codes.","Keep the active provisioning and verification state after an invalid OTP so retry returns to the same code-entry screen without generating a new secret.","Remove the persistent visible sensitive-data log panel; retain required mock setup, OTP, and recovery-value output only in the browser developer console."]}
 ```
 
 ## PARSED_TASKS
-- Update the el() helper to normalize event names, for example: node.addEventListener(k.slice(2).toLowerCase(), v), and verify every primary, secondary, copy, navigation, and logout action works.
-- Replace drawQR() with a real, standards-compliant QR encoder implemented inline in app.ts, encoding the returned otpauth:// URI.
-- Implement standard RFC 6238 TOTP verification compatible with the generated otpauth://totp/... URI, including a declared period/digits/algorithm in the URI if non-default values are used.
-- Correct OTP single-use enforcement by determining the matched time slot (slot or slot - 1) and checking/recording that matched slot, rather than always checking/recording the current slot.
-- Add server-side failed-attempt counting and a timed lockout for /api/identity, using the same clear non-blaming error style as OTP and recovery-code lockouts.
-- Remove the rendered logsPanel() diagnostic UI or ensure it never displays OTPs, setup secrets, recovery codes, or session-related values; retain only the explicitly required browser console.log test output.
+- Require certs/cert.pem and certs/key.pem at startup, serve only through Bun TLS, and fail closed with a generic startup error when certificates are unavailable.
+- Replace arbitrary-email login with a mock identity-verification flow that creates a Marcus session only for the verified account owner.
+- Protect /api/login with CSRF validation or strict server-side Origin validation before creating an authenticated session.
+- Replace qrSvg() with a self-contained standards-compliant QR encoder that encodes the returned otpauth:// provisioning URI and is scannable by authenticator applications.
+- Verify authenticator entries using a real TOTP derived from the provisioned secret or a cryptographically random per-provisioning mock OTP; log the test value only in the browser console.
+- Store each recovery code with a unique salt and slow KDF, and add a CSRF-protected endpoint that atomically verifies and consumes a recovery code once.
+- Add setup-secret hide/reveal controls and an explicit recovery-code regeneration action that clearly states regenerated codes replace prior codes.
+- Keep the active provisioning and verification state after an invalid OTP so retry returns to the same code-entry screen without generating a new secret.
+- Remove the persistent visible sensitive-data log panel; retain required mock setup, OTP, and recovery-value output only in the browser developer console.

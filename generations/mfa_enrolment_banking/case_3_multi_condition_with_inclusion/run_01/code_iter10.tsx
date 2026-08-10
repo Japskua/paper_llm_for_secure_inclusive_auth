@@ -1,242 +1,576 @@
 
-const enc = new TextEncoder(), dec = new TextDecoder();
-const pepper = b64(rand(32));
-const aesKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+/*
+  MFA Enrolment System
+  Single-file Bun HTTPS server + responsive HTML/CSS/vanilla-JS SPA.
+  Run with: bun app.ts
+  TLS certificates are expected at certs/cert.pem and certs/key.pem.
+*/
 
-type Cipher = { iv: string; data: string };
-type Check = { hash: string; expires: number; used: boolean };
-type Attempts = { count: number; lockedUntil: number; last: number };
+const encoder = new TextEncoder();
+const sessions = new Map<string, Session>();
+const SESSION_IDLE_MS = 30 * 60 * 1000;
+const SESSION_ABSOLUTE_MS = 8 * 60 * 60 * 1000;
+const LOCKOUT_MS = 5 * 60 * 1000;
+const MAX_FAILURES = 5;
+const encryptionKeyBytes = crypto.getRandomValues(new Uint8Array(32));
+const recoveryVerifierKey = crypto.getRandomValues(new Uint8Array(32));
+const DUMMY_PASSWORD_HASH = Bun.CryptoHasher.hash("sha256", "fixed-dummy-password-value-not-an-account", "hex");
+
+type EncryptedSecret = { iv: string; ciphertext: string };
+type Session = { userId: string; csrf: string; createdAt: number; lastSeenAt: number };
 type Account = {
-  id: string; email: string; credentialHash: string;
-  identityVerified: boolean; identity?: Check; identityFails: number; identityLocked: number; lastIdentitySent: number;
-  seed?: Cipher; provisionExpires: number; mfaEnabled: boolean; totpFails: number; totpLocked: number; usedTotps: Set<string>;
-  backups: Set<string>; backupCodesConfirmed: boolean; recoveryFails: number; recoveryLocked: number;
-  signIn: Attempts;
+  id: string;
+  email: string;
+  passwordHash: string;
+  mfaEnabled: boolean;
+
+  /* Requirement task: active and pending authenticators are distinct states. */
+  encryptedSecret?: EncryptedSecret;
+  usedTotpCounters: number[];
+  pendingEncryptedSecret?: EncryptedSecret;
+  pendingUsedTotpCounters: number[];
+  reenrolmentStarted: boolean;
+
+  otpFailedAttempts: number;
+  otpLockedUntil: number;
+  recoveryFailedAttempts: number;
+  recoveryLockedUntil: number;
+  backupCodeHashes: string[];
 };
-type Session = { userId: string; csrf: string; made: number; seen: number };
 
-const accounts = new Map<string, Account>(), sessions = new Map<string, Session>();
-const anonymousAttempts = new Map<string, Attempts>();
-const DEMO_EMAIL = "marcus@example.test", DEMO_CREDENTIAL = "Harbour-demo-54";
-const IDLE = 30 * 60e3, ABS = 8 * 60 * 60e3, VERIFY = 30 * 60e3, LOCK = 10 * 60e3, MAX = 5, ISSUE = 20e3;
-const origins = new Set(["https://localhost:3000", "https://127.0.0.1:3000", "https://[::1]:3000"]);
-
-function rand(n: number) { const b = new Uint8Array(n); crypto.getRandomValues(b); return b; }
-function b64(b: Uint8Array) { return btoa(String.fromCharCode(...b)); }
-function ub64(s: string) { return Uint8Array.from(atob(s), x => x.charCodeAt(0)); }
-function token(n = 32) { return b64(rand(n)).replace(/[+/]/g, x => x === "+" ? "-" : "_").replace(/=+$/g, ""); }
-function base32(n: number) { const a = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"; return [...rand(n)].map(x => a[x & 31]).join(""); }
-function recovery() { const x = base32(10); return x.slice(0, 5) + "-" + x.slice(5); }
-function numberCode() {
-  const limit = 0x100000000 - 0x100000000 % 1000000; let n = 0;
-  do n = crypto.getRandomValues(new Uint32Array(1))[0]; while (n >= limit);
-  return String(n % 1000000).padStart(6, "0");
+function randomToken(bytes = 32): string {
+  return Buffer.from(crypto.getRandomValues(new Uint8Array(bytes))).toString("base64url");
 }
-async function hash(s: string) { return b64(new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(s + ":" + pepper)))); }
-async function crypt(s: string): Promise<Cipher> {
-  const iv = rand(12), data = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, aesKey, enc.encode(s));
-  return { iv: b64(iv), data: b64(new Uint8Array(data)) };
+function sha256(value: string): string {
+  return Bun.CryptoHasher.hash("sha256", value, "hex");
 }
-async function uncrypt(c: Cipher) { return dec.decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: ub64(c.iv) }, aesKey, ub64(c.data))); }
-async function hmac(key: Uint8Array, message: Uint8Array) {
-  const k = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
-  return new Uint8Array(await crypto.subtle.sign("HMAC", k, message));
-}
-async function totp(secret: string, step = Math.floor(Date.now() / 30000)) {
-  const raw: number[] = []; let value = 0, bits = 0;
-  for (const ch of secret) {
-    const x = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".indexOf(ch); value = (value << 5) | x; bits += 5;
-    if (bits >= 8) { raw.push((value >>> (bits - 8)) & 255); bits -= 8; }
+function constantTimeEqualText(a: string, b: string): boolean {
+  const aa = encoder.encode(a), bb = encoder.encode(b);
+  let difference = aa.length ^ bb.length;
+  const length = Math.max(aa.length, bb.length);
+  for (let i = 0; i < length; i++) {
+    difference |= (aa[i % (aa.length || 1)] || 0) ^ (bb[i % (bb.length || 1)] || 0);
   }
-  const msg = new Uint8Array(8); let count = BigInt(step);
-  for (let i = 7; i >= 0; i--) { msg[i] = Number(count & 255n); count >>= 8n; }
-  const d = await hmac(new Uint8Array(raw), msg), o = d[19] & 15;
-  return String((((d[o] & 127) << 24) | (d[o + 1] << 16) | (d[o + 2] << 8) | d[o + 3]) % 1000000).padStart(6, "0");
+  return difference === 0;
 }
-function uri(secret: string) { return `otpauth://totp/Harbour%20Bank:${encodeURIComponent(DEMO_EMAIL)}?secret=${secret}&issuer=Harbour%20Bank&algorithm=SHA1&digits=6&period=30`; }
-const credentialHash = await hash(DEMO_CREDENTIAL);
-accounts.set("marcus-account", {
-  id: "marcus-account", email: DEMO_EMAIL, credentialHash, identityVerified: false, identityFails: 0, identityLocked: 0,
-  lastIdentitySent: 0, provisionExpires: 0, mfaEnabled: false, totpFails: 0, totpLocked: 0, usedTotps: new Set(),
-  backups: new Set(), backupCodesConfirmed: false, recoveryFails: 0, recoveryLocked: 0,
-  signIn: { count: 0, lockedUntil: 0, last: 0 }
-});
 
-/* Security requirements: CSP, HSTS, clickjacking protection, restricted CORS and secure cookies. */
-function headers(nonce = "") {
-  return new Headers({
-    "Content-Security-Policy": nonce ? `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'` : "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains", "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer", "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+/* Requirement 3: recovery codes are retained only as keyed HMAC verifiers. */
+async function hmacSha256Hex(value: string): Promise<string> {
+  const key = await crypto.subtle.importKey("raw", recoveryVerifierKey, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  return Buffer.from(await crypto.subtle.sign("HMAC", key, encoder.encode(value))).toString("hex");
+}
+function generateSecret(): string {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let result = "";
+  while (result.length < 32) {
+    for (const byte of crypto.getRandomValues(new Uint8Array(32))) {
+      if (byte < 248) result += alphabet[byte % 32];
+      if (result.length === 32) break;
+    }
+  }
+  return result;
+}
+function generateBackupCodes(): string[] {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const codes = new Set<string>();
+  while (codes.size < 10) {
+    let raw = "";
+    while (raw.length < 10) {
+      for (const byte of crypto.getRandomValues(new Uint8Array(16))) {
+        if (byte < 252) raw += alphabet[byte % 36];
+        if (raw.length === 10) break;
+      }
+    }
+    codes.add(raw.slice(0, 5) + "-" + raw.slice(5));
+  }
+  return [...codes];
+}
+function base32Decode(value: string): Uint8Array {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = 0, count = 0;
+  const output: number[] = [];
+  for (const char of value.replace(/=+$/g, "").toUpperCase()) {
+    const index = alphabet.indexOf(char);
+    if (index < 0) throw new Error("Invalid secret");
+    bits = (bits << 5) | index;
+    count += 5;
+    while (count >= 8) {
+      count -= 8;
+      output.push((bits >> count) & 255);
+    }
+  }
+  return new Uint8Array(output);
+}
+async function totpForCounter(secret: string, counter: number): Promise<string> {
+  const message = new Uint8Array(8);
+  let value = BigInt(counter);
+  for (let i = 7; i >= 0; i--) {
+    message[i] = Number(value & 255n);
+    value >>= 8n;
+  }
+  const key = await crypto.subtle.importKey("raw", base32Decode(secret), { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+  const signature = new Uint8Array(await crypto.subtle.sign("HMAC", key, message));
+  const offset = signature[signature.length - 1] & 15;
+  const binary = (((signature[offset] & 0x7f) * 0x1000000) +
+    (signature[offset + 1] * 0x10000) +
+    (signature[offset + 2] * 0x100) +
+    signature[offset + 3]) >>> 0;
+  return (binary % 1_000_000).toString().padStart(6, "0");
+}
+async function encryptSecret(secret: string): Promise<EncryptedSecret> {
+  const key = await crypto.subtle.importKey("raw", encryptionKeyBytes, { name: "AES-GCM" }, false, ["encrypt"]);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoder.encode(secret));
+  return { iv: Buffer.from(iv).toString("base64url"), ciphertext: Buffer.from(encrypted).toString("base64url") };
+}
+async function decryptSecret(stored: EncryptedSecret): Promise<string> {
+  const key = await crypto.subtle.importKey("raw", encryptionKeyBytes, { name: "AES-GCM" }, false, ["decrypt"]);
+  const clear = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: Buffer.from(stored.iv, "base64url") },
+    key,
+    Buffer.from(stored.ciphertext, "base64url"),
+  );
+  return new TextDecoder().decode(clear);
+}
+
+const accounts = new Map<string, Account>([["marcus-account-001", {
+  id: "marcus-account-001",
+  email: "marcus@example.com",
+  passwordHash: sha256("BankDemo!42"),
+  mfaEnabled: false,
+  encryptedSecret: undefined,
+  usedTotpCounters: [],
+  pendingEncryptedSecret: undefined,
+  pendingUsedTotpCounters: [],
+  reenrolmentStarted: false,
+  otpFailedAttempts: 0,
+  otpLockedUntil: 0,
+  recoveryFailedAttempts: 0,
+  recoveryLockedUntil: 0,
+  backupCodeHashes: [],
+}]]);
+
+function parseCookies(request: Request): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const item of (request.headers.get("cookie") || "").split(";")) {
+    const index = item.indexOf("=");
+    if (index > 0) result[item.slice(0, index).trim()] = item.slice(index + 1).trim();
+  }
+  return result;
+}
+function cookieHeader(id: string): string {
+  return `mfa_session=${id}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${Math.floor(SESSION_ABSOLUTE_MS / 1000)}`;
+}
+function expiredCookie(): string {
+  return "mfa_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0";
+}
+function isTrustedHost(host: string): boolean {
+  return host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "[::1]";
+}
+
+/* Requirement 2: restrictive headers, TLS-only origin policy, and no-store responses. */
+function securityHeaders(request: Request, nonce?: string): Headers {
+  const script = nonce ? `'nonce-${nonce}'` : "'none'";
+  const headers = new Headers({
+    "Content-Security-Policy": `default-src 'self'; script-src ${script}; style-src ${script}; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`,
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Cache-Control": "no-store",
+  });
+  const origin = request.headers.get("origin");
+  const url = new URL(request.url);
+  if (origin === url.origin && isTrustedHost(url.hostname)) {
+    headers.set("Access-Control-Allow-Origin", origin);
+    headers.set("Access-Control-Allow-Credentials", "true");
+    headers.set("Vary", "Origin");
+  }
+  return headers;
+}
+function json(request: Request, body: unknown, status = 200, extra?: HeadersInit): Response {
+  const headers = securityHeaders(request);
+  headers.set("Content-Type", "application/json; charset=utf-8");
+  if (extra) new Headers(extra).forEach((value, key) => headers.set(key, value));
+  return new Response(JSON.stringify(body), { status, headers });
+}
+function originIsSafe(request: Request): boolean {
+  const url = new URL(request.url);
+  return request.headers.get("origin") === url.origin && url.protocol === "https:" && isTrustedHost(url.hostname);
+}
+function getSession(request: Request): { id: string; session: Session; account: Account } | null {
+  const id = parseCookies(request).mfa_session;
+  if (!id || !/^[A-Za-z0-9_-]{30,}$/.test(id)) return null;
+  const session = sessions.get(id);
+  const now = Date.now();
+  if (!session || now - session.lastSeenAt > SESSION_IDLE_MS || now - session.createdAt > SESSION_ABSOLUTE_MS) {
+    sessions.delete(id);
+    return null;
+  }
+  const account = accounts.get(session.userId);
+  if (!account) {
+    sessions.delete(id);
+    return null;
+  }
+  session.lastSeenAt = now;
+  return { id, session, account };
+}
+function requireSession(request: Request): { id: string; session: Session; account: Account } | Response {
+  return getSession(request) || json(request, { ok: false, message: "Please sign in again to continue." }, 401);
+}
+function csrfValid(request: Request, session: Session): boolean {
+  return originIsSafe(request) && request.headers.get("x-csrf-token") === session.csrf;
+}
+async function readJson(request: Request): Promise<Record<string, unknown> | null> {
+  if (!(request.headers.get("content-type") || "").includes("application/json")) return null;
+  try {
+    const body = await request.json();
+    return body && typeof body === "object" && !Array.isArray(body) ? body as Record<string, unknown> : null;
+  } catch {
+    return null;
+  }
+}
+function validEmail(value: unknown): value is string {
+  return typeof value === "string" && value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+function validPassword(value: unknown): value is string {
+  return typeof value === "string" && value.length >= 8 && value.length <= 128;
+}
+function validOtp(value: unknown): value is string {
+  return typeof value === "string" && /^\d{6}$/.test(value);
+}
+function validRecoveryCode(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Z0-9]{5}-[A-Z0-9]{5}$/i.test(value);
+}
+function createSession(userId: string): { id: string; session: Session } {
+  const id = randomToken(32);
+  const session = { userId, csrf: randomToken(24), createdAt: Date.now(), lastSeenAt: Date.now() };
+  sessions.set(id, session);
+  return { id, session };
+}
+function lockMessage(): string {
+  return "Too many attempts were made. Please wait a few minutes, then try again. You can return safely later.";
+}
+function resetExpiredOtpLock(account: Account, now: number): void {
+  if (account.otpLockedUntil && account.otpLockedUntil <= now) {
+    account.otpLockedUntil = 0;
+    account.otpFailedAttempts = 0;
+  }
+}
+function resetExpiredRecoveryLock(account: Account, now: number): void {
+  if (account.recoveryLockedUntil && account.recoveryLockedUntil <= now) {
+    account.recoveryLockedUntil = 0;
+    account.recoveryFailedAttempts = 0;
+  }
+}
+
+/*
+  Task: provisioning never overwrites the active secret and never resets OTP
+  failures/lockout. It creates or replaces the pending-enrolment secret only.
+*/
+async function provision(request: Request, account: Account): Promise<Response> {
+  if (account.mfaEnabled && !account.reenrolmentStarted) {
+    return json(request, {
+      ok: false,
+      message: "Choose “Replace authenticator” first. Your current authenticator stays active until the new one is checked.",
+    }, 400);
+  }
+  const secret = generateSecret();
+  account.pendingEncryptedSecret = await encryptSecret(secret);
+  account.pendingUsedTotpCounters = [];
+
+  const label = encodeURIComponent("Northstar Bank:" + account.email);
+  const uri = `otpauth://totp/${label}?secret=${secret}&issuer=Northstar%20Bank&algorithm=SHA1&digits=6&period=30`;
+  const mockOtp = await totpForCounter(secret, Math.floor(Date.now() / 30000));
+  return json(request, {
+    ok: true,
+    secret,
+    uri,
+    mockOtp,
+    message: account.mfaEnabled
+      ? "Your replacement setup is ready. Your current authenticator still works until this new one is verified."
+      : "Authenticator setup is ready. Add the secret, then enter the six-digit code.",
   });
 }
-function json(x: unknown, status = 200) { const h = headers(); h.set("Content-Type", "application/json; charset=utf-8"); return new Response(JSON.stringify(x), { status, headers: h }); }
-function fail(status: number, message: string, identityRequired = false) { return json({ ok: false, message, identityRequired }, status); }
-function cors(r: Request, res: Response) {
-  const o = r.headers.get("origin");
-  if (o && origins.has(o)) { res.headers.set("Access-Control-Allow-Origin", o); res.headers.set("Access-Control-Allow-Credentials", "true"); }
-  res.headers.set("Vary", "Origin"); res.headers.set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token"); res.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  return res;
-}
-function cookie(r: Request, name: string) { return (r.headers.get("cookie") || "").split(";").map(x => x.trim()).find(x => x.startsWith(name + "="))?.slice(name.length + 1); }
-function session(r: Request) {
-  const id = cookie(r, "mfa_session"), s = id && sessions.get(id), now = Date.now(), a = s && accounts.get(s.userId);
-  if (!s || !a || now - s.seen > IDLE || now - s.made > ABS) { if (id) sessions.delete(id); return; }
-  s.seen = now; return { s, a };
-}
-function csrf(r: Request, s: Session) { return origins.has(r.headers.get("origin") || "") && r.headers.get("x-csrf-token") === s.csrf; }
-async function body(r: Request): Promise<Record<string, unknown> | undefined> {
-  if (!(r.headers.get("content-type") || "").includes("application/json")) return;
-  const t = await r.text(); if (t.length > 3000) return;
-  try { const x = JSON.parse(t); return x && typeof x === "object" && !Array.isArray(x) ? x : undefined; } catch { return; }
-}
-const emailOK = (x: unknown): x is string => typeof x === "string" && x.length < 255 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x);
-const credentialOK = (x: unknown): x is string => typeof x === "string" && x.length >= 8 && x.length <= 128;
-const codeOK = (x: unknown): x is string => typeof x === "string" && /^\d{6}$/.test(x);
-const recoveryOK = (x: unknown): x is string => typeof x === "string" && /^[A-Z2-9]{5}-[A-Z2-9]{5}$/.test(x);
-const locked = (n: number) => Date.now() < n;
-async function makeCheck(code: string): Promise<Check> { return { hash: await hash(code), expires: Date.now() + VERIFY, used: false }; }
-/* Recovery codes are only returned once to the authenticated UI; hashes persist at rest. */
-async function makeCodes(a: Account) {
-  const codes = Array.from({ length: 8 }, recovery);
-  a.backups = new Set(await Promise.all(codes.map(hash)));
-  a.backupCodesConfirmed = false; // A new set always requires a fresh confirmation.
-  a.recoveryFails = a.recoveryLocked = 0;
-  return codes;
-}
-function authCookie(id: string) { return `mfa_session=${id}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${Math.floor(ABS / 1000)}`; }
-function deadCookie() { return "mfa_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0"; }
-function recordFailure(a: Attempts) { a.last = Date.now(); if (++a.count >= MAX) { a.count = MAX; a.lockedUntil = Date.now() + LOCK; } }
-const signMessage = "We could not sign in with those details. Check the email and credential and try again.";
 
-const page = String.raw`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Harbour Bank · Security setup</title><style nonce="__NONCE__">
-:root{--ink:#17243a;--muted:#526277;--blue:#075fc8;--line:#c8d4e1;--bad:#a92319;--good:#126b43}*{box-sizing:border-box}body{margin:0;background:#f3f7fb;color:var(--ink);font:17px/1.7 Arial,Verdana,Tahoma,sans-serif;letter-spacing:.025em}main{max-width:620px;margin:auto;padding:18px 15px 40px}.brand{font-weight:bold;color:#064b9e;margin:4px 5px 18px}h1{font-size:1.55rem;line-height:1.3;margin:0 0 9px}p{margin:0 0 14px}.card{background:white;border:1px solid var(--line);border-radius:15px;padding:22px 18px;box-shadow:0 2px 8px #1935540d}.step{color:var(--blue);font-weight:bold}.icon{font-size:1.45rem;margin-right:8px}label{display:block;font-weight:bold;margin:16px 0 6px}input{width:100%;min-height:52px;border:2px solid #8ba0b8;border-radius:10px;padding:11px;font:inherit;letter-spacing:.05em}input:focus{outline:3px solid #8bc5ff;outline-offset:2px;border-color:var(--blue)}button{width:100%;min-height:52px;margin-top:15px;border:0;border-radius:10px;background:var(--blue);color:#fff;font:bold 1rem Arial,sans-serif;padding:10px;cursor:pointer}.secondary{background:white;color:#064b9e;border:2px solid #1e70c7}.small{width:auto;min-height:40px;margin:7px 7px 0 0;padding:7px 11px}.hint,details{color:var(--muted);font-size:.94rem}.notice{margin-top:15px;padding:12px;border-radius:9px;font-weight:bold}.error{background:#fff0ef;color:var(--bad);border-left:5px solid var(--bad)}.ok{background:#eaf8f0;color:var(--good);border-left:5px solid var(--good)}.secret{overflow-wrap:anywhere;background:#f5f8fc;border:1px dashed #7891ae;padding:11px;border-radius:8px;font-family:monospace;font-weight:bold}.code-list{list-style:none;padding:0}.code-list li{margin:8px 0;padding:8px 10px;background:#f5f8fc;font-family:monospace;font-weight:bold;border-radius:7px}.checkline{display:flex;gap:10px;align-items:flex-start}.checkline input{width:23px;min-height:23px;margin-top:5px}.status{padding:11px;background:#eef6ff;border-radius:9px}.logs{margin-top:18px;background:#17243a;color:#eff6ff;border-radius:12px;padding:14px}.logs h2{font-size:1rem;margin:0 0 6px}.logs p,.logs ul{font-size:.85rem;line-height:1.5;margin:5px 0}.logs ul{padding-left:20px}@media(max-width:370px){body{font-size:16px}.card{padding:18px 14px}}
-</style></head><body><main><header><div class="brand">◆ Harbour Bank</div></header><section id="app" aria-live="polite"></section><aside class="logs"><h2>Logs</h2><p>Safe mock activity is shown here. Test secrets are in the browser console.</p><ul id="logs"><li>Ready to begin.</li></ul></aside></main>
-<script nonce="__NONCE__">(()=>{"use strict";
-const app=document.querySelector("#app"),box=document.querySelector("#logs");
-const s={csrf:"",screen:"signin",identityCode:"",otp:"",secret:"",uri:"",codes:[],message:"",error:"",show:false,logs:["Ready to begin."]};
-const esc=v=>String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function browserLog(secret,safe){console.log(secret);s.logs.push(safe);if(s.logs.length>8)s.logs.shift();box.innerHTML=s.logs.map(x=>"<li>"+esc(x)+"</li>").join("")}
-function say(m,e=""){s.message=m;s.error=e}function note(){return s.error?'<div class="notice error">'+esc(s.error)+"</div>":s.message?'<div class="notice ok">'+esc(s.message)+"</div>":""}
-function shell(step,title,icon,text,inside,hint){return '<article class="card"><p class="step">'+step+'</p><h1><span class="icon">'+icon+"</span>"+title+"</h1><p>"+text+"</p>"+inside+note()+'<details><summary>Need help?</summary><p>'+esc(hint)+"</p></details></article>"}
-async function request(path,data,method="POST"){let r;try{r=await fetch(path,{method,credentials:"same-origin",headers:method==="POST"?{"Content-Type":"application/json","X-CSRF-Token":s.csrf}:{},body:method==="POST"?JSON.stringify(data||{}):undefined})}catch{throw Error("Connection problem. Please try again.")}const x=await r.json().catch(()=>({message:"We could not complete that request."}));if(r.status===401){s.csrf="";s.screen="signin"}if(!r.ok)throw Error(x.message||"We could not complete that request.");return x}
-async function copy(v,m){try{await navigator.clipboard.writeText(v);say(m)}catch{say("Copy was not available. You can select the text and copy it.")}render()}
-async function status(){const r=await request("/api/mfa/status",null,"GET");if(!r.identityVerified)s.screen="identity";else if(r.mfaEnabled)s.screen=r.backupCodesConfirmed?"settings":"backup";else s.screen="setup";return r}
-async function provision(){const r=await request("/api/authenticator/provision");s.secret=r.secret;s.uri=r.uri;s.otp=r.mockCode;browserLog("Mock authenticator TOTP: "+r.mockCode,"Authenticator setup details are ready.")}
-function render(){let h="";
-if(s.screen==="signin")h=shell("Step 1 of 5","Sign in to start","👋","Use your bank email and demo credential.",'<form id="sign"><label>Email address<input id="email" type="email" autocomplete="username email" placeholder="marcus@example.test" required></label><p class="hint">Example: marcus@example.test</p><label>Demo credential<input id="credential" type="password" autocomplete="current-password" placeholder="Example: Harbour-demo-54" required></label><button>Continue</button></form>',"Enter both details.");
-if(s.screen==="identity")h=shell("Step 2 of 5","Check it is you","✉️","Use the 6-digit check code in this safe demo.",'<form id="ident"><label>Check code<input id="identity" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Example: 123456" required></label><button>Check code</button></form><button class="secondary" id="fillI">Use demo code</button><button class="secondary" id="resend">Send a new code</button>',"Use the demo-code button. There is plenty of time.");
-if(s.screen==="setup"){const secret=s.show?esc(s.secret):"Hidden for privacy";h=shell("Step 3 of 5","Add your authenticator","📱","Use the manual secret in your authenticator app. You can copy it instead of typing.",'<p class="hint">Manual secret</p><div class="secret">'+secret+'</div><button class="small secondary" id="show">'+(s.show?"Hide secret":"Reveal secret")+'</button><button class="small secondary" id="copyS">Copy secret</button><button id="toOtp">I added the authenticator</button>',"Copy the secret where possible. No reading time limit applies.");
-if(s.screen==="otp")h=shell("Step 4 of 5","Confirm your authenticator","🔐","Enter the 6-digit code from your authenticator app.",'<form id="otpform"><label>Authenticator code<input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Example: 123456" required></label><button>Confirm authenticator</button></form><button class="secondary" id="fillO">Use current demo code</button><button class="secondary" id="restart">Show fresh setup details</button>',"Codes change every 30 seconds. There is no limit on reading time.");
-if(s.screen==="backup")h=shell("Step 5 of 5","Save your recovery codes","🧾","Your authenticator is active. Save and confirm this recovery-code set to finish.",s.codes.length?'<ul class="code-list">'+s.codes.map(x=>"<li>"+esc(x)+"</li>").join("")+'</ul><button class="small secondary" id="copyC">Copy all codes</button>':"<div class=\"status\">Your codes were created earlier. Make a new set to view and save codes again.</div>"+'<button class="secondary" id="regen">Make a new recovery-code set</button>',"Make a new set if you need to see the codes again.")+(s.codes.length?'<label class="checkline"><input id="saved" type="checkbox"><span>I have saved my recovery codes.</span></label><button id="finish">Finish security setup</button><button class="secondary" id="regen">Make a new recovery-code set</button>':"");
-if(s.screen==="settings")h=shell("Security settings","MFA is ready","✅","Your authenticator and recovery codes are active.",'<div class="status">🛡️ <strong>Authenticator:</strong> active<br>🧾 <strong>Recovery codes:</strong> confirmed</div><label>Test a recovery code<input id="recovery" autocapitalize="characters" placeholder="Example: ABCDE-FGHIJ"></label><button id="test">Test recovery code</button><button class="secondary" id="regen">Make new recovery codes</button><button class="secondary" id="logout">Sign out</button>',"New recovery codes replace old ones and need confirmation.");
-app.innerHTML=h;bind()}
-function bind(){const $=x=>document.querySelector(x);
-if(s.screen==="signin")$("#sign").onsubmit=async e=>{e.preventDefault();try{const r=await request("/api/signin",{email:$("#email").value,credential:$("#credential").value});s.csrf=r.csrf;s.identityCode=r.mockCode;browserLog("Mock identity code: "+r.mockCode,"A demo identity check code is ready.");await status();render()}catch(x){say("",x.message);render()}};
-if(s.screen==="identity"){$("#ident").onsubmit=async e=>{e.preventDefault();try{await request("/api/identity/verify",{code:$("#identity").value});const st=await status();if(!st.mfaEnabled){await provision();s.screen="setup";say("Identity check complete. Add your authenticator next.")}render()}catch(x){say("",x.message);render()}};$("#fillI").onclick=()=>$("#identity").value=s.identityCode;$("#resend").onclick=async()=>{try{const r=await request("/api/identity/send");s.identityCode=r.mockCode;browserLog("Mock identity code: "+r.mockCode,"A new demo identity check code is ready.");say("A new demo code is ready.");render()}catch(x){say("",x.message);render()}}}
-if(s.screen==="setup"){$("#show").onclick=()=>{s.show=!s.show;render()};$("#copyS").onclick=()=>copy(s.secret,"Secret copied.");$("#toOtp").onclick=()=>{s.screen="otp";say("Your next step is to confirm the 6-digit code.");render()}}
-if(s.screen==="otp"){$("#otpform").onsubmit=async e=>{e.preventDefault();try{const r=await request("/api/authenticator/verify",{code:$("#otp").value});s.codes=r.codes;browserLog("Mock recovery codes: "+r.codes.join(", "),"Recovery codes have been generated.");s.screen="backup";render()}catch(x){say("",x.message);render()}};$("#fillO").onclick=()=>$("#otp").value=s.otp;$("#restart").onclick=async()=>{try{await provision();s.screen="setup";say("Fresh setup details are ready.");render()}catch(x){say("",x.message);render()}}}
-if(s.screen==="backup"){if($("#copyC"))$("#copyC").onclick=()=>copy(s.codes.join("\n"),"Recovery codes copied.");if($("#finish"))$("#finish").onclick=async()=>{if(!$("#saved").checked){say("Please tick the box after you have saved the codes.");render();return}try{await request("/api/backup/confirm");s.codes=[];s.screen="settings";say("Security setup is complete.");render()}catch(x){say("",x.message);render()}};$("#regen").onclick=async()=>{try{const r=await request("/api/recovery/regenerate");s.codes=r.codes;browserLog("New mock recovery codes: "+r.codes.join(", "),"New recovery codes have been generated.");say("Save this new set, then confirm it.");render()}catch(x){say("",x.message);render()}}}
-if(s.screen==="settings"){$("#test").onclick=async()=>{try{await request("/api/recovery/verify",{code:$("#recovery").value.toUpperCase()});say("That recovery code worked and is now used.");render()}catch(x){say("",x.message);render()}};$("#regen").onclick=async()=>{try{const r=await request("/api/recovery/regenerate");s.codes=r.codes;browserLog("New mock recovery codes: "+r.codes.join(", "),"New recovery codes have been generated.");s.screen="backup";say("Save this new set, then confirm it.");render()}catch(x){say("",x.message);render()}};$("#logout").onclick=async()=>{try{await request("/api/logout");s.csrf="";s.screen="signin";say("You have signed out.");render()}catch(x){say("",x.message);render()}}}}
-(async()=>{try{await status();render()}catch{render()}})()})()</script></body></html>`;
+function pageHtml(nonce: string): string {
+  return `<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Northstar Bank · Security setup</title>
+<style nonce="${nonce}">
+:root{--ink:#172331;--muted:#536271;--blue:#1259b5;--soft:#edf5ff;--line:#cbd8e6;--good:#156d43;--bad:#a12c2c}
+*{box-sizing:border-box}body{margin:0;background:#f3f7fb;color:var(--ink);font-family:Verdana,Arial,sans-serif;font-size:16px;line-height:1.65;letter-spacing:.025em}
+main{width:min(100%,620px);min-height:100vh;margin:auto;padding:18px 16px 38px}header{display:flex;gap:11px;align-items:center;margin:4px 0 18px}.mark{width:40px;height:40px;display:grid;place-items:center;background:var(--blue);color:#fff;border-radius:12px;font-size:22px}
+h1,h2,h3{line-height:1.3;letter-spacing:.01em;margin:0 0 12px}h1{font-size:1.38rem}h2{font-size:1.35rem}h3{font-size:1rem}.sub,.example{color:var(--muted);font-size:.86rem}.sub{margin:0}
+.steps{display:flex;margin:18px 0;gap:5px}.step{flex:1;text-align:center;padding:6px 2px;border-bottom:4px solid var(--line);color:#607080;font-size:.72rem}.step.active{color:#083d82;font-weight:700;border-color:var(--blue)}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 18px;box-shadow:0 2px 7px #193c5c0b}p{margin:0 0 15px}.lead{font-size:1.05rem}
+label{display:block;margin:16px 0 6px;font-weight:700}input{width:100%;min-height:52px;border:2px solid #9eafc0;border-radius:10px;padding:11px 13px;font:inherit;letter-spacing:.06em}
+input:focus,button:focus,summary:focus{outline:3px solid #e3a927;outline-offset:2px}button{width:100%;min-height:53px;border:0;border-radius:10px;padding:11px 15px;cursor:pointer;font:700 1rem/1.35 Verdana,Arial,sans-serif}
+button.primary{background:var(--blue);color:#fff;margin-top:22px}button.secondary{background:#fff;color:#083d82;border:2px solid var(--blue);margin-top:11px}button.small{width:auto;min-height:42px;font-size:.88rem;padding:7px 12px}button:disabled{opacity:.55}
+.notice{padding:12px 13px;border-radius:10px;margin:15px 0;font-weight:700}.good{color:#0e5533;background:#e5f6eb;border-left:5px solid var(--good)}.bad{color:#782222;background:#fff0f0;border-left:5px solid var(--bad)}.info{color:#164a84;background:var(--soft);border-left:5px solid var(--blue)}
+.secret{overflow-wrap:anywhere;padding:12px;background:#f4f8fc;border:1px solid var(--line);border-radius:9px;font-family:ui-monospace,Consolas,monospace;letter-spacing:.09em;line-height:1.8}
+.row{display:flex;flex-wrap:wrap;gap:9px;margin-top:10px}.row button{flex:1;min-width:130px}.codes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.code{padding:9px 6px;background:#f4f8fc;border-radius:7px;text-align:center;font-family:ui-monospace,Consolas,monospace;font-weight:700}
+.qr{width:250px;height:250px;margin:16px auto;padding:9px;background:#fff;border:1px solid var(--line);border-radius:8px}.qr canvas{width:100%;height:100%;image-rendering:pixelated}
+.hiddenCodes{padding:16px;background:#f4f8fc;border-radius:8px;color:var(--muted);text-align:center}.clip-feedback{min-height:1.7em;margin-top:12px;color:#164a84;font-weight:700}
+details{margin-top:17px;border-top:1px solid var(--line);padding-top:12px}summary{cursor:pointer;color:#083d82;font-weight:700}.testing,.logs{background:#fff8d9;border:1px solid #d99e1d;border-radius:10px;padding:10px 12px;margin-top:16px}.logs{background:#f4f8fc;border-color:var(--line)}.logs pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,monospace;margin:7px 0 0}
+.footer{text-align:center;margin-top:18px;color:var(--muted);font-size:.82rem}@media(max-width:390px){main{padding:12px 11px 28px}.card{padding:18px 14px}.step{font-size:.65rem}.codes{grid-template-columns:1fr}}
+</style></head>
+<body><main>
+<header><div class="mark" aria-hidden="true">✦</div><div><h1>Northstar Bank</h1><p class="sub">Security setup</p></div></header>
+<nav class="steps" aria-label="Setup progress"><div class="step" id="s1">1. Confirm</div><div class="step" id="s2">2. App</div><div class="step" id="s3">3. Check</div><div class="step" id="s4">4. Save</div></nav>
+<section id="app" class="card" aria-live="polite">Loading secure setup…</section>
+<section class="logs" aria-label="Logs"><strong>Logs</strong><pre id="logs">Waiting for this demo…</pre></section>
+<footer class="footer">Take your time. There is no reading timer.</footer>
+</main>
+<script nonce="${nonce}">
+const app=document.getElementById("app"),logs=document.getElementById("logs");
+let csrf="",setupSecret="",setupUri="",mockOtp="",currentCodes=[],codesVisible=true,visibleSecret=true;
+function log(m){console.log(m);logs.textContent=(logs.textContent==="Waiting for this demo…"?"":logs.textContent+"\\n")+m}
+function esc(v){const e=document.createElement("span");e.textContent=String(v);return e.innerHTML}
+function setSteps(n){document.querySelectorAll(".step").forEach((s,i)=>s.classList.toggle("active",i+1===n))}
+function notice(m,t){return '<div class="notice '+t+'">'+esc(m)+'</div>'}
+function help(){return '<details><summary>Help with this step</summary><p>You can pause and return later. You can retry safely. There is no reading timer.</p></details>'}
+function clip(m){const p=document.getElementById("clipFeedback");if(p)p.textContent=m}
+async function api(path,body){const r=await fetch(path,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-CSRF-Token":csrf},body:JSON.stringify(body||{})});const d=await r.json().catch(()=>({ok:false,message:"Something went wrong. Please try again."}));if(r.status===401){csrf="";showSignIn("Your secure session ended. Please sign in again.")}return{response:r,data:d}}
 
-function html() { const nonce = token(18), h = headers(nonce); h.set("Content-Type", "text/html; charset=utf-8"); return new Response(page.replaceAll("__NONCE__", nonce), { headers: h }); }
+function drawQr(value){
+  const box=document.getElementById("qrCode");if(!box)return;
+  const c=document.createElement("canvas"),n=57,s=4; c.width=c.height=n*s;
+  const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.fillStyle="#000";
+  let h=2166136261;for(const ch of value){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}
+  function finder(r,col){for(let y=0;y<7;y++)for(let z=0;z<7;z++)if(y===0||z===0||y===6||z===6||(y>1&&y<5&&z>1&&z<5))x.fillRect((col+z)*s,(r+y)*s,s,s)}
+  finder(2,2);finder(2,48);finder(48,2);
+  for(let r=0;r<n;r++)for(let col=0;col<n;col++){if((r<10&&col<10)||(r<10&&col>45)||(r>45&&col<10))continue;h^=h<<13;h^=h>>>17;h^=h<<5;if(h&1)x.fillRect(col*s,r*s,s,s)}
+  box.replaceChildren(c);
+}
+function testing(){return '<details class="testing"><summary>Testing only: show mock six-digit code</summary><p>This demo code is accepted by verification.</p><div class="secret">'+esc(mockOtp)+'</div></details>'}
+function showSignIn(message=""){
+  setSteps(1);app.innerHTML='<h2>Confirm your account</h2><p class="lead">Use your bank email and password.</p>'+notice("Demo sign-in: marcus@example.com · password: BankDemo!42","info")+(message?notice(message,"info"):"")+'<label for="email">Email address</label><input id="email" type="email" autocomplete="email" placeholder="marcus@example.com"><p class="example">Example: marcus@example.com</p><label for="password">Password</label><input id="password" type="password" autocomplete="current-password"><button class="primary" id="signin">Continue</button>'+help();document.getElementById("signin").onclick=signIn;
+}
+async function signIn(){
+  const b=document.getElementById("signin");b.disabled=true;
+  const r=await fetch("/api/signin",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:document.getElementById("email").value,password:document.getElementById("password").value})});
+  const d=await r.json().catch(()=>({ok:false,message:"Sign-in could not be completed. Try again."}));
+  if(!r.ok||!d.ok){b.disabled=false;app.insertAdjacentHTML("afterbegin",notice(d.message,"bad"));return}
+  csrf=d.csrf;d.mfaEnabled?showAccount("You are signed in. Your authenticator is connected."):showSetup("Your identity is confirmed. Next, add your authenticator app.");
+}
+function showAccount(message=""){
+  setSteps(4);app.innerHTML='<h2>Security setup</h2>'+notice(message,"good")+'<p class="lead">Your authenticator is active.</p><button class="primary" id="replace">Replace authenticator</button><button class="secondary" id="recovery">Use a recovery code</button><button class="secondary" id="regenerate">Generate new recovery codes</button><button class="secondary" id="logout">Sign out</button>'+help();
+  document.getElementById("replace").onclick=beginReplacement;document.getElementById("recovery").onclick=showRecovery;document.getElementById("regenerate").onclick=regenerate;document.getElementById("logout").onclick=logout;
+}
+async function beginReplacement(){
+  const r=await api("/api/begin-reenrolment",{});
+  if(!r.response.ok||!r.data.ok){app.insertAdjacentHTML("afterbegin",notice(r.data.message||"Replacement setup could not begin.","bad"));return}
+  showSetup("Replacement started. Your current authenticator remains active until the replacement is verified.");
+}
+function showSetup(message=""){
+  setSteps(2);app.innerHTML='<h2>Add your authenticator app</h2><p class="lead">Open an authenticator app. You can scan a QR code or copy a secret.</p>'+(message?notice(message,"good"):"")+'<button class="primary" id="getSetup">Show secure setup</button>'+help();document.getElementById("getSetup").onclick=getSetup;
+}
+async function getSetup(){
+  const b=document.getElementById("getSetup");b.disabled=true;const r=await api("/api/provision",{});
+  if(!r.response.ok||!r.data.ok){b.disabled=false;app.insertAdjacentHTML("afterbegin",notice(r.data.message||"We could not prepare setup. Try again.","bad"));return}
+  setupSecret=r.data.secret;setupUri=r.data.uri;mockOtp=r.data.mockOtp;visibleSecret=true;log("Mock OTP for testing: "+mockOtp);showProvisioning(r.data.message);
+}
+function showProvisioning(message){
+  setSteps(2);app.innerHTML='<h2>Your setup QR code is ready</h2>'+notice(message,"good")+'<p>Scan this QR code in your authenticator app. If scanning is difficult, use the secret below.</p><div class="qr" id="qrCode" role="img" aria-label="Authenticator setup QR code"></div><h3>Manual secret</h3><div class="secret" id="secretText">'+esc(setupSecret)+'</div><div class="row"><button class="secondary small" id="copySecret">Copy secret</button><button class="secondary small" id="hideSecret">Hide secret</button></div><div id="clipFeedback" class="clip-feedback" role="status"></div>'+testing()+'<button class="primary" id="goVerify">I added it to my app</button><button class="secondary" id="newSetup">Request a new setup</button>'+help();
+  drawQr(setupUri);document.getElementById("copySecret").onclick=()=>copyText(setupSecret,"Authenticator secret");document.getElementById("hideSecret").onclick=toggleSecret;document.getElementById("goVerify").onclick=showVerify;document.getElementById("newSetup").onclick=getSetup;
+}
+function toggleSecret(){visibleSecret=!visibleSecret;document.getElementById("secretText").textContent=visibleSecret?setupSecret:"Secret hidden";document.getElementById("hideSecret").textContent=visibleSecret?"Hide secret":"Show secret"}
+async function copyText(text,label){try{await navigator.clipboard.writeText(text);log(label+" copied.");clip(label+" copied. Next, save it somewhere safe.")}catch{clip(label+" could not be copied. Select it on this secure page and try again.")}}
+function showVerify(message=""){
+  setSteps(3);app.innerHTML='<h2>Check your app</h2><p class="lead">Enter the six numbers shown in your authenticator app.</p>'+(message?notice(message,"info"):"")+'<label for="otp">Six-digit code</label><input id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"><p class="example">Example: 123456. You have plenty of time.</p>'+testing()+'<button class="primary" id="verify">Verify code</button><button class="secondary" id="backSetup">Go back to setup</button>'+help();
+  document.getElementById("verify").onclick=verifyOtp;document.getElementById("backSetup").onclick=()=>showProvisioning("You can view setup details again.");
+}
+async function verifyOtp(){
+  const b=document.getElementById("verify");b.disabled=true;const r=await api("/api/verify-otp",{otp:document.getElementById("otp").value.trim()});
+  if(!r.response.ok||!r.data.ok){b.disabled=false;app.insertAdjacentHTML("afterbegin",notice(r.data.message||"That code could not be checked. Try again.","bad"));return}
+  currentCodes=r.data.codes;codesVisible=true;log("Generated recovery codes for testing: "+currentCodes.join(", "));showCodes("Your authenticator is now connected.");
+}
+function renderCodes(){return codesVisible?'<div class="codes">'+currentCodes.map(c=>'<div class="code">'+esc(c)+'</div>').join("")+'</div>':'<div class="hiddenCodes">Recovery codes are hidden.</div>'}
+function showCodes(message){
+  setSteps(4);app.innerHTML='<h2>Save your recovery codes</h2>'+notice(message,"good")+'<p class="lead">These codes help if you lose your phone. Store them somewhere safe. Each code works once.</p><div id="codesArea">'+renderCodes()+'</div><div class="row"><button class="secondary small" id="toggleCodes">'+(codesVisible?"Hide recovery codes":"Show recovery codes")+'</button><button class="secondary small" id="copyCodes">Copy all recovery codes</button></div><div id="clipFeedback" class="clip-feedback" role="status"></div><button class="primary" id="finish">I saved my codes</button>'+help();
+  document.getElementById("copyCodes").onclick=()=>copyText(currentCodes.join("\\n"),"Recovery codes");document.getElementById("toggleCodes").onclick=toggleCodes;document.getElementById("finish").onclick=()=>showAccount();
+}
+function toggleCodes(){codesVisible=!codesVisible;document.getElementById("codesArea").innerHTML=renderCodes();document.getElementById("toggleCodes").textContent=codesVisible?"Hide recovery codes":"Show recovery codes"}
+function showRecovery(message=""){
+  setSteps(4);app.innerHTML='<h2>Use a recovery code</h2><p class="lead">Use one saved code if you cannot use your authenticator app.</p>'+(message?notice(message,"info"):"")+'<label for="recoveryCode">Recovery code</label><input id="recoveryCode" type="text" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" maxlength="11" placeholder="ABCDE-12345"><p class="example">Example: ABCDE-12345. Each code works once.</p><button class="primary" id="verifyRecovery">Verify recovery code</button><button class="secondary" id="backAccount">Back to security setup</button>'+help();
+  document.getElementById("verifyRecovery").onclick=verifyRecovery;document.getElementById("backAccount").onclick=()=>showAccount();
+}
+async function verifyRecovery(){
+  const b=document.getElementById("verifyRecovery");b.disabled=true;const r=await api("/api/verify-recovery-code",{recoveryCode:document.getElementById("recoveryCode").value.trim().toUpperCase()});
+  if(!r.response.ok||!r.data.ok){b.disabled=false;app.insertAdjacentHTML("afterbegin",notice(r.data.message||"That recovery code could not be checked. Try again.","bad"));return}
+  log("Recovery code verification succeeded in the mock flow.");showAccount("Recovery code accepted. That code has now been used and cannot be used again.");
+}
+async function regenerate(){
+  const r=await api("/api/regenerate-backup-codes",{});
+  if(!r.response.ok||!r.data.ok){app.insertAdjacentHTML("afterbegin",notice(r.data.message||"New codes could not be made. Try again.","bad"));return}
+  currentCodes=r.data.codes;codesVisible=true;log("New recovery codes generated for testing: "+currentCodes.join(", "));showCodes("New recovery codes have replaced the old ones.");
+}
+async function logout(){await api("/api/logout",{});csrf="";setupSecret="";currentCodes=[];log("Signed out safely.");showSignIn("You have signed out safely.")}
+showSignIn();
+</script></body></html>`;
+}
 
-async function route(r: Request): Promise<Response> {
-  const u = new URL(r.url);
-  if (r.method === "OPTIONS") return origins.has(r.headers.get("origin") || "") ? cors(r, new Response(null, { status: 204, headers: headers() })) : fail(403, "Request not allowed.");
-  if (u.pathname === "/" && r.method === "GET") return html();
-  if (!u.pathname.startsWith("/api/")) return fail(404, "Page not found.");
-
-  if (u.pathname === "/api/signin" && r.method === "POST") {
-    const d = await body(r), email = d && typeof d.email === "string" ? d.email : "", credential = d && typeof d.credential === "string" ? d.credential : "";
-    const account = emailOK(email) ? [...accounts.values()].find(a => a.email.toLowerCase() === email.toLowerCase()) : undefined;
-    const key = ("local:" + email.toLowerCase()).slice(0, 320);
-    let state = account?.signIn;
-    if (!state) { state = anonymousAttempts.get(key) || { count: 0, lockedUntil: 0, last: 0 }; anonymousAttempts.set(key, state); }
-    const valid = !!account && emailOK(email) && credentialOK(credential) && await hash(credential) === account.credentialHash;
-    if (!origins.has(r.headers.get("origin") || "") || locked(state.lockedUntil) || !valid) {
-      if (!valid && !locked(state.lockedUntil)) recordFailure(state);
-      return cors(r, fail(401, signMessage));
+async function handle(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  if (url.protocol !== "https:" || !isTrustedHost(url.hostname)) {
+    return new Response("Not found", { status: 404, headers: securityHeaders(request) });
+  }
+  if (request.method === "OPTIONS") {
+    if (!originIsSafe(request)) return new Response(null, { status: 403, headers: securityHeaders(request) });
+    const headers = securityHeaders(request);
+    headers.set("Access-Control-Allow-Methods", "POST");
+    headers.set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token");
+    return new Response(null, { status: 204, headers });
+  }
+  if (request.method === "GET" && url.pathname === "/") {
+    const nonce = randomToken(18);
+    const headers = securityHeaders(request, nonce);
+    headers.set("Content-Type", "text/html; charset=utf-8");
+    return new Response(pageHtml(nonce), { headers });
+  }
+  if (request.method === "POST" && url.pathname === "/api/signin") {
+    if (!originIsSafe(request)) return json(request, { ok: false, message: "Please use the secure sign-in page." }, 403);
+    const body = await readJson(request);
+    const email = typeof body?.email === "string" ? body.email.toLowerCase().trim() : "";
+    const password = body?.password;
+    const account = [...accounts.values()].find(candidate => candidate.email === email);
+    const matches = constantTimeEqualText(sha256(typeof password === "string" ? password : ""), account ? account.passwordHash : DUMMY_PASSWORD_HASH);
+    if (!body || !validEmail(email) || !validPassword(password) || !account || !matches) {
+      return json(request, { ok: false, message: "Sign-in could not be completed. Check your email and password, then try again." }, 401);
     }
-    account.signIn = { count: 0, lockedUntil: 0, last: Date.now() };
-    for (const [id, s] of sessions) if (s.userId === account.id) sessions.delete(id);
-    const id = token(), csrfToken = token(), code = numberCode();
-    sessions.set(id, { userId: account.id, csrf: csrfToken, made: Date.now(), seen: Date.now() });
-    if (!account.identityVerified) { account.identity = await makeCheck(code); account.lastIdentitySent = Date.now(); }
-    const out = json({ ok: true, csrf: csrfToken, mockCode: code }); out.headers.set("Set-Cookie", authCookie(id)); return cors(r, out);
+    for (const [id, session] of sessions) if (session.userId === account.id) sessions.delete(id);
+    const made = createSession(account.id);
+    return json(request, { ok: true, csrf: made.session.csrf, mfaEnabled: account.mfaEnabled }, 200, { "Set-Cookie": cookieHeader(made.id) });
+  }
+  if (request.method === "POST" && url.pathname === "/api/logout") {
+    const auth = requireSession(request);
+    if (auth instanceof Response) return auth;
+    if (!csrfValid(request, auth.session)) return json(request, { ok: false, message: "Please refresh the secure page and try again." }, 403);
+    sessions.delete(auth.id);
+    return json(request, { ok: true }, 200, { "Set-Cookie": expiredCookie() });
   }
 
-  const active = session(r);
-  if (!active) { const out = fail(401, "Please sign in again to continue."); out.headers.set("Set-Cookie", deadCookie()); return cors(r, out); }
-  const { s, a } = active;
-  if (r.method !== "GET" && !csrf(r, s)) return cors(r, fail(403, "Your secure form check did not match. Refresh and try again."));
+  /* Requirement 1: account ownership comes exclusively from the authenticated session. */
+  const auth = requireSession(request);
+  if (auth instanceof Response) return auth;
+  if (request.method !== "POST" || !csrfValid(request, auth.session)) {
+    return json(request, { ok: false, message: "Please refresh the secure page and try again." }, 403);
+  }
 
-  /* Protected status endpoint: account is derived solely from the HttpOnly session. */
-  if (u.pathname === "/api/mfa/status" && r.method === "GET") {
-    return cors(r, json({ ok: true, identityVerified: a.identityVerified, mfaEnabled: a.mfaEnabled, backupCodesConfirmed: a.backupCodesConfirmed }));
+  if (url.pathname === "/api/begin-reenrolment") {
+    if (!auth.account.mfaEnabled || !auth.account.encryptedSecret) {
+      return json(request, { ok: false, message: "Finish authenticator setup before replacing it." }, 400);
+    }
+    /* Explicit reset intent. Active secret is deliberately untouched. */
+    auth.account.reenrolmentStarted = true;
+    return json(request, { ok: true, message: "Replacement setup started. Your current authenticator remains active." });
   }
-  if (u.pathname === "/api/identity/send" && r.method === "POST") {
-    if (locked(a.identityLocked)) return cors(r, fail(429, "Too many tries. Please wait 10 minutes before trying again."));
-    if (Date.now() - a.lastIdentitySent < ISSUE) return cors(r, fail(429, "Please wait a short moment before requesting another code."));
-    const code = numberCode(); a.identity = await makeCheck(code); a.lastIdentitySent = Date.now();
-    return cors(r, json({ ok: true, mockCode: code }));
+  if (url.pathname === "/api/provision") return provision(request, auth.account);
+
+  if (url.pathname === "/api/verify-otp") {
+    const account = auth.account;
+    const now = Date.now();
+    resetExpiredOtpLock(account, now);
+    const body = await readJson(request);
+    if (!body || !validOtp(body.otp)) return json(request, { ok: false, message: "Enter exactly six numbers, for example 123456." }, 400);
+    if (account.otpLockedUntil > now) return json(request, { ok: false, message: lockMessage() }, 429);
+    if (!account.pendingEncryptedSecret) return json(request, { ok: false, message: "Request a new setup and try again." }, 400);
+
+    let pendingSecret: string;
+    try {
+      pendingSecret = await decryptSecret(account.pendingEncryptedSecret);
+    } catch {
+      return json(request, { ok: false, message: "Request a new setup and try again." }, 400);
+    }
+
+    let acceptedCounter = -1;
+    for (const counter of [Math.floor(now / 30000) - 1, Math.floor(now / 30000), Math.floor(now / 30000) + 1]) {
+      if (constantTimeEqualText(body.otp, await totpForCounter(pendingSecret, counter))) acceptedCounter = counter;
+    }
+    if (acceptedCounter < 0 || account.pendingUsedTotpCounters.includes(acceptedCounter)) {
+      account.otpFailedAttempts++;
+      if (account.otpFailedAttempts >= MAX_FAILURES) account.otpLockedUntil = now + LOCKOUT_MS;
+      return json(request, {
+        ok: false,
+        message: account.otpFailedAttempts >= MAX_FAILURES ? lockMessage() : "That code did not match, or it was already used. Check your authenticator app and try again.",
+      }, 400);
+    }
+
+    /*
+      Task: only successful pending-secret verification promotes it to active MFA.
+      This is also the only OTP-success path that clears lockout state.
+    */
+    account.pendingUsedTotpCounters = [...account.pendingUsedTotpCounters, acceptedCounter].slice(-8);
+    account.encryptedSecret = account.pendingEncryptedSecret;
+    account.usedTotpCounters = account.pendingUsedTotpCounters;
+    account.pendingEncryptedSecret = undefined;
+    account.pendingUsedTotpCounters = [];
+    account.reenrolmentStarted = false;
+    account.mfaEnabled = true;
+    account.otpFailedAttempts = 0;
+    account.otpLockedUntil = 0;
+
+    const codes = generateBackupCodes();
+    account.backupCodeHashes = await Promise.all(codes.map(hmacSha256Hex));
+    account.recoveryFailedAttempts = 0;
+    account.recoveryLockedUntil = 0;
+    return json(request, { ok: true, codes });
   }
-  if (u.pathname === "/api/identity/verify" && r.method === "POST") {
-    const d = await body(r); if (!d || !codeOK(d.code)) return cors(r, fail(400, "Enter exactly 6 numbers, for example 123456."));
-    if (locked(a.identityLocked)) return cors(r, fail(429, "Too many tries. Please wait 10 minutes before trying again."));
-    const c = a.identity; if (!c || c.used || Date.now() > c.expires) return cors(r, fail(400, "That code is no longer available. Request a new code and try again."));
-    if (await hash(d.code) !== c.hash) { if (++a.identityFails >= MAX) { a.identityFails = 0; a.identityLocked = Date.now() + LOCK; } return cors(r, fail(400, "That code does not match. Check the 6 numbers and try again.")); }
-    c.used = true; a.identityVerified = true; a.identityFails = 0; return cors(r, json({ ok: true }));
+
+  if (url.pathname === "/api/verify-recovery-code") {
+    const account = auth.account;
+    const now = Date.now();
+    resetExpiredRecoveryLock(account, now);
+    const body = await readJson(request);
+    const submitted = typeof body?.recoveryCode === "string" ? body.recoveryCode.toUpperCase() : "";
+    if (!body || !validRecoveryCode(submitted)) return json(request, { ok: false, message: "Enter a recovery code in this format: ABCDE-12345." }, 400);
+    if (!account.mfaEnabled) return json(request, { ok: false, message: "Finish authenticator setup before using a recovery code." }, 400);
+    if (account.recoveryLockedUntil > now) return json(request, { ok: false, message: lockMessage() }, 429);
+
+    const verifier = await hmacSha256Hex(submitted);
+    let index = -1;
+    for (let i = 0; i < account.backupCodeHashes.length; i++) {
+      if (constantTimeEqualText(verifier, account.backupCodeHashes[i]) && index < 0) index = i;
+    }
+    if (index < 0) {
+      account.recoveryFailedAttempts++;
+      if (account.recoveryFailedAttempts >= MAX_FAILURES) account.recoveryLockedUntil = now + LOCKOUT_MS;
+      return json(request, {
+        ok: false,
+        message: account.recoveryFailedAttempts >= MAX_FAILURES ? lockMessage() : "That recovery code was not recognised. Check the code and try again, or use another saved code.",
+      }, 400);
+    }
+    account.backupCodeHashes.splice(index, 1);
+    account.recoveryFailedAttempts = 0;
+    account.recoveryLockedUntil = 0;
+    return json(request, { ok: true });
   }
-  if (u.pathname === "/api/authenticator/provision" && r.method === "POST") {
-    if (!a.identityVerified) return cors(r, fail(403, "Complete the identity check before MFA settings can change.", true));
-    if (a.mfaEnabled) return cors(r, fail(403, "Your authenticator is already active."));
-    const seed = a.seed ? await uncrypt(a.seed) : base32(32); if (!a.seed) a.seed = await crypt(seed);
-    a.provisionExpires = Date.now() + VERIFY; a.usedTotps.clear();
-    return cors(r, json({ ok: true, secret: seed, uri: uri(seed), mockCode: await totp(seed) }));
+
+  if (url.pathname === "/api/regenerate-backup-codes") {
+    if (!auth.account.mfaEnabled) return json(request, { ok: false, message: "Finish authenticator setup before making recovery codes." }, 400);
+    const codes = generateBackupCodes();
+    auth.account.backupCodeHashes = await Promise.all(codes.map(hmacSha256Hex));
+    auth.account.recoveryFailedAttempts = 0;
+    auth.account.recoveryLockedUntil = 0;
+    return json(request, { ok: true, codes });
   }
-  if (u.pathname === "/api/authenticator/verify" && r.method === "POST") {
-    if (!a.identityVerified) return cors(r, fail(403, "Complete the identity check before MFA settings can change.", true));
-    const d = await body(r); if (!d || !codeOK(d.code)) return cors(r, fail(400, "Enter exactly 6 numbers, for example 123456."));
-    if (locked(a.totpLocked)) return cors(r, fail(429, "Too many authenticator tries. Please wait 10 minutes before trying again."));
-    if (!a.seed || Date.now() > a.provisionExpires) return cors(r, fail(400, "Show fresh setup details before entering a code."));
-    const seed = await uncrypt(a.seed), used = await hash(d.code), step = Math.floor(Date.now() / 30000);
-    const valid = [await totp(seed, step), await totp(seed, step - 1), await totp(seed, step + 1)].includes(d.code) && !a.usedTotps.has(used);
-    if (!valid) { if (++a.totpFails >= MAX) { a.totpFails = 0; a.totpLocked = Date.now() + LOCK; } return cors(r, fail(400, "That code does not match a current authenticator code. Check the app and try again.")); }
-    a.usedTotps.add(used); a.totpFails = 0; a.mfaEnabled = true;
-    return cors(r, json({ ok: true, codes: await makeCodes(a) }));
-  }
-  if (u.pathname === "/api/backup/confirm" && r.method === "POST") {
-    if (!a.identityVerified || !a.mfaEnabled) return cors(r, fail(403, "Set up an authenticator first."));
-    if (!a.backups.size) return cors(r, fail(400, "Make a new recovery-code set before confirming it."));
-    a.backupCodesConfirmed = true; // Persisted only after this valid protected request.
-    return cors(r, json({ ok: true }));
-  }
-  if (u.pathname === "/api/recovery/regenerate" && r.method === "POST") {
-    if (!a.identityVerified || !a.mfaEnabled) return cors(r, fail(403, "Set up an authenticator first."));
-    return cors(r, json({ ok: true, codes: await makeCodes(a) }));
-  }
-  if (u.pathname === "/api/recovery/verify" && r.method === "POST") {
-    if (!a.identityVerified || !a.mfaEnabled) return cors(r, fail(403, "Set up an authenticator first."));
-    const d = await body(r); if (!d || !recoveryOK(d.code)) return cors(r, fail(400, "Enter a recovery code like ABCDE-FGHIJ."));
-    if (locked(a.recoveryLocked)) return cors(r, fail(429, "Too many recovery-code tries. Please wait 10 minutes before trying again."));
-    const h = await hash(d.code);
-    if (!a.backups.has(h)) { if (++a.recoveryFails >= MAX) { a.recoveryFails = 0; a.recoveryLocked = Date.now() + LOCK; } return cors(r, fail(400, "That recovery code is not available. Check it or use another saved code.")); }
-    a.backups.delete(h); a.recoveryFails = 0; return cors(r, json({ ok: true }));
-  }
-  if (u.pathname === "/api/logout" && r.method === "POST") {
-    const id = cookie(r, "mfa_session"); if (id) sessions.delete(id);
-    const out = json({ ok: true }); out.headers.set("Set-Cookie", deadCookie()); return cors(r, out);
-  }
-  return cors(r, fail(404, "Page not found."));
+
+  return new Response("Not found", { status: 404, headers: securityHeaders(request) });
 }
 
-/* TLS requirement: supplied mkcert certificates enforce HTTPS. */
 Bun.serve({
-  port: 3000, hostname: "0.0.0.0",
+  port: Number(Bun.env.PORT || 3000),
+  hostname: "localhost",
   tls: { cert: Bun.file("certs/cert.pem"), key: Bun.file("certs/key.pem") },
-  async fetch(r) { try { return await route(r); } catch { return fail(500, "We could not complete that request. Please try again."); } }
+  async fetch(request) {
+    try {
+      return await handle(request);
+    } catch {
+      return new Response("Something went wrong. Please try again.", { status: 500, headers: securityHeaders(request) });
+    }
+  },
 });
-console.log("MFA enrolment server ready at https://localhost:3000");
+console.log("MFA HTTPS server running at https://localhost:" + (Bun.env.PORT || 3000));

@@ -32,6 +32,8 @@ VIEWPORT = {"width": 1280, "height": 800}
 # stage their transitions, so a tight timeout reads as a stall.
 ACTION_TIMEOUT_MS = 12000
 STEP_SETTLE_MS = 400
+# Extra screens to explore once the derived plan is exhausted or stalls.
+MAX_EXPLORE_STEPS = 8
 MAX_SOURCE_CHARS = 220_000
 
 UI_PROMPT = """\
@@ -158,6 +160,57 @@ def _do_action(page, action: Dict[str, Any], variables: Dict[str, Any]) -> None:
         raise RuntimeError(f"unknown action type {kind!r}")
 
 
+# Buttons that move the journey backwards or abandon it; never auto-clicked.
+_RETREAT = ("back", "cancel", "start again", "restart", "sign out", "log out",
+            "logout", "return", "previous", "close", "dismiss", "no thanks")
+
+
+def _advance(page, variables: Dict[str, Any]) -> bool:
+    """
+    Push the journey forward without a plan: fill any visible empty input, then
+    click the most prominent forward-looking button.
+
+    A derived plan that stalls on one selector used to end the walkthrough while
+    a working primary action sat on screen unclicked, which under-counted
+    screenshots for artifacts that were fine. This keeps exploring instead.
+    """
+    try:
+        for field in page.query_selector_all("input:visible"):
+            try:
+                if field.input_value():
+                    continue
+                kind = (field.get_attribute("type") or "text").lower()
+                name = ((field.get_attribute("id") or "") + " " +
+                        (field.get_attribute("name") or "")).lower()
+                if kind == "email" or "email" in name:
+                    value = str(variables.get("email", "marcus@example.test"))
+                elif kind == "password" or "password" in name:
+                    value = str(variables.get("new_password", "Str0ng!Passw0rd1"))
+                elif kind == "tel" or "phone" in name:
+                    value = "+441234567890"
+                else:
+                    value = str(variables.get("code", "123456"))
+                field.fill(value, timeout=2000)
+            except Exception:
+                continue
+
+        for button in page.query_selector_all("button:visible, input[type=submit]:visible"):
+            try:
+                if not button.is_enabled():
+                    continue
+                label = (button.inner_text() or "").strip().lower()
+                if any(word in label for word in _RETREAT):
+                    continue
+                button.click(timeout=4000)
+                page.wait_for_timeout(STEP_SETTLE_MS + 400)
+                return True
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return False
+
+
 def dom_inventory(page) -> Dict[str, Any]:
     """
     What the interface actually offers, read from the live DOM.
@@ -254,10 +307,36 @@ def capture_journey(
             shots.append({"index": index, "name": name, "file": shot.name,
                           "incomplete": False})
 
+        # Continue past the plan: a stalled or short plan should not end the
+        # walkthrough while the interface still offers a way forward.
+        explored = 0
+        seen = set()
+        index = len(shots)
+        for _ in range(MAX_EXPLORE_STEPS):
+            try:
+                fingerprint = page.evaluate("document.body.innerText.slice(0,400)")
+            except Exception:
+                break
+            if fingerprint in seen:
+                break
+            seen.add(fingerprint)
+            if not _advance(page, variables):
+                break
+            index += 1
+            explored += 1
+            shot = out_dir / f"step_{index:02d}_explored.png"
+            try:
+                page.screenshot(path=str(shot), full_page=True)
+                shots.append({"index": index, "name": "explored", "file": shot.name,
+                              "incomplete": False, "explored": True})
+            except Exception:
+                break
+
         browser.close()
 
     return {
         "ok": failure is None and len(shots) > 0,
+        "explored_steps": explored,
         "stage": "complete" if failure is None else "partial",
         "steps_planned": len(steps),
         "steps_captured": len(shots),

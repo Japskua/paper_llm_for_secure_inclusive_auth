@@ -1,212 +1,89 @@
 {
   "variables": {
-    "email": "marcus@example.test",
-    "credential": "Harbour-demo-54",
-    "new_password": "NewPass-2025"
+    "email": "marcus@example.com",
+    "password": "BankDemo!42",
+    "new_password": null
   },
   "html_variables": {},
   "csrf": {
     "html_regex": null,
     "field": "X-CSRF-Token",
     "in": "header",
-    "source": "/api/signin",
-    "response_field": "csrf"
+    "source_path": "/api/preauth",
+    "source_field": "csrf",
+    "signin_body_field": "csrf"
   },
   "steps": [
     {
-      "name": "load security setup page",
+      "name": "obtain pre-auth CSRF token",
       "method": "GET",
-      "path": "/"
-    },
-    {
-      "name": "sign in with demo account",
-      "method": "POST",
-      "path": "/api/signin",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
-      },
-      "body": {
-        "email": "${email}",
-        "credential": "${credential}"
-      },
-      "expect_json_true": "ok",
-      "capture": {
-        "csrf": "csrf",
-        "identity_code": "mockCode"
-      }
-    },
-    {
-      "name": "check MFA setup status",
-      "method": "GET",
-      "path": "/api/mfa/status",
+      "path": "/api/preauth",
       "expect_json_true": "ok",
       "capture": {
         "csrf": "csrf"
       }
     },
     {
-      "name": "verify identity check code",
+      "name": "sign in",
       "method": "POST",
-      "path": "/api/identity/verify",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
+      "path": "/api/signin",
       "body": {
-        "code": "${identity_code}"
-      },
-      "expect_json_true": "ok"
-    },
-    {
-      "name": "check verified MFA status",
-      "method": "GET",
-      "path": "/api/mfa/status",
-      "expect_json_true": "ok"
-    },
-    {
-      "name": "get authenticator setup details",
-      "method": "POST",
-      "path": "/api/authenticator/provision",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "refresh": false
+        "email": "${email}",
+        "password": "${password}",
+        "csrf": "${csrf}"
       },
       "expect_json_true": "ok",
       "capture": {
-        "authenticator_code": "mockCode"
+        "csrf": "csrf"
       }
     },
     {
-      "name": "confirm authenticator",
+      "name": "start authenticator provisioning",
       "method": "POST",
-      "path": "/api/authenticator/verify",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "code": "${authenticator_code}"
-      },
-      "expect_json_true": "ok",
-      "capture": {
-        "recovery_code": "codes.0"
-      }
-    },
-    {
-      "name": "confirm recovery codes saved",
-      "method": "POST",
-      "path": "/api/backup/confirm",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {},
-      "expect_json_true": "ok"
-    },
-    {
-      "name": "test a saved recovery code",
-      "method": "POST",
-      "path": "/api/recovery/verify",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "code": "${recovery_code}"
-      },
-      "expect_json_true": "ok"
-    },
-    {
-      "name": "regenerate recovery codes",
-      "method": "POST",
-      "path": "/api/recovery/regenerate",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
+      "path": "/api/provision",
       "body": {},
       "expect_json_true": "ok",
       "capture": {
-        "replacement_recovery_code": "codes.0"
+        "setup_secret": "secret",
+        "setup_uri": "uri"
       }
-    },
-    {
-      "name": "confirm replacement recovery codes",
-      "method": "POST",
-      "path": "/api/backup/confirm",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {},
-      "expect_json_true": "ok"
-    },
-    {
-      "name": "sign out",
-      "method": "POST",
-      "path": "/api/logout",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {},
-      "expect_json_true": "ok"
     }
   ],
   "negative_steps": [
     {
+      "name": "obtain CSRF token for rejected sign-in",
+      "method": "GET",
+      "path": "/api/preauth",
+      "expect_json_true": "ok",
+      "capture": {
+        "wrong_password_csrf": "csrf"
+      }
+    },
+    {
       "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/signin",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
-      },
-      "body": {
-        "email": "wrong-password@example.test",
-        "credential": "Definitely-wrong-54"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "malformed email rejected",
-      "method": "POST",
-      "path": "/api/signin",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
-      },
-      "body": {
-        "email": "not-an-email",
-        "credential": "Harbour-demo-54"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "cross origin sign in rejected",
-      "method": "POST",
-      "path": "/api/signin",
-      "headers": {
-        "Origin": "https://attacker.example",
-        "Content-Type": "application/json"
-      },
       "body": {
         "email": "${email}",
-        "credential": "${credential}"
+        "password": "WrongPassword!42",
+        "csrf": "${wrong_password_csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed OTP rejected",
+      "method": "POST",
+      "path": "/api/verify-otp",
+      "body": {
+        "otp": "12"
       },
       "expect_failure": true
     }
+  ],
+  "blocking_issues": [
+    "GET / does not contain a CSRF token. The initial token is returned only by GET /api/preauth as JSON field csrf; POST /api/signin sends it in JSON field csrf. After sign-in, state-changing requests send the session CSRF token in the X-CSRF-Token header.",
+    "The full happy path cannot be automated under the stated TOTP rule. POST /api/provision and GET /api/setup-view return only the TOTP shared secret in secret and provisioning URI in uri. No route returns a current mock OTP/currentOtp/mockCode-style value, and POST /api/verify-otp requires a six-digit RFC 6238 TOTP derived from that secret.",
+    "Consequently, POST /api/verify-otp cannot be completed by an HTTP test without computing TOTP, which is explicitly disallowed. The subsequent supported routes POST /api/recovery/regenerate and POST /api/recovery/verify cannot be reached on a happy path because account.enabled remains false.",
+    "There is no password-change route and no stated new-password policy; new_password is therefore null."
   ]
 }

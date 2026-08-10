@@ -1,85 +1,145 @@
 ## SUMMARY
 
-The server-side implementation covers many requested security controls and keeps the application in a single `app.ts` file with Bun TLS configuration. However, the browser client contains a fatal JavaScript syntax error in `qrSvg()`: `path` is declared twice in the same scope. Because the entire inline client script cannot parse, the SPA never boots and remains on “Loading securely…”. This prevents all enrolment, verification, recovery-code, and accessibility flows from functioning. The artifact therefore cannot be accepted.
+The artifact is a single `app.ts` Bun/TLS application with a responsive MFA enrolment UI, authenticated session handling, CSRF checks, secure headers, encrypted OTP-secret storage, hashed recovery codes, TOTP verification, and rate limiting. Most core security controls are implemented well. However, it does not fully meet the required mocked/testable MFA flow, and the custom QR encoder contains a concrete encoding defect that makes the QR provisioning path unreliable or invalid. The hide/reveal UX is also ineffective because the secret and provisioning URI remain visibly rendered in manual-copy textareas.
 
 ## FUNCTIONAL_CHECK
 
-- **Single-file Bun application with HTTPS/TLS certificates — PASS**
-  - The server, HTML, CSS, and browser JavaScript are all in `app.ts`.
-  - `Bun.serve()` uses `certs/cert.pem` and `certs/key.pem` and serves on HTTPS port 3000.
-  - No framework, external asset, build tool, or external network request is used.
+- **Single-file Bun application with no frameworks, bundlers, compilation, or external assets — PASS**
+  - The server, HTML, CSS, and browser-side JavaScript are contained in `app.ts`.
+  - It uses `Bun.serve` directly and does not import frameworks, build tooling, or external assets.
 
-- **SPA renders and browser interactivity works directly when served — FAIL**
-  - The inline browser script has a fatal duplicate declaration inside `qrSvg()`:
-    - `let path="";`
-    - later, `const path=document.createElementNS(...)`
-  - Redeclaring `path` in the same function scope is a JavaScript syntax error. The complete inline script fails to parse, so `boot()` never runs and the UI remains at “Loading securely…”.
+- **Use provided TLS certificates and enforce HTTPS — PASS**
+  - The server reads `certs/cert.pem` and `certs/key.pem`.
+  - Startup stops if either certificate is missing.
+  - Bun is configured with `tls: { cert, key }`.
+  - HSTS is sent in responses.
 
-- **Sign-in and identity-verification flow works — FAIL**
-  - The server endpoints and client flow are present, including deterministic identity code `246810`.
-  - However, the client JavaScript parse failure prevents the sign-in screen and identity screen from being rendered or used.
+- **Responsive, mobile-readable, dyslexia-conscious UI — PASS**
+  - The page has a mobile viewport tag, constrained mobile layout, readable font sizing, generous spacing, clear labels, focus styling, short instructions, examples, icons, and no animated or auto-updating elements.
+  - The flow has consistent numbered steps and visible help text.
 
-- **Authenticator provisioning supports QR and manual secret entry/copying — FAIL**
-  - The intended UI includes a QR generator, visible manual secret, copy controls, and a setup URI.
-  - The fatal syntax error is inside the QR function and prevents all client UI code from executing. No provisioning options can be displayed.
+- **Plain-language errors, retry support, and no reading deadline — PASS**
+  - Errors explain what went wrong and what to do next.
+  - The UI provides retry paths and does not impose a reading countdown.
+  - TOTP time windows are verification-related rather than a reading deadline.
 
-- **Authenticator OTP verification is simulated, deterministic, time-bound, single-use, and rate-limited — FAIL**
-  - Server-side logic correctly calculates TOTP-style six-digit codes, accepts current/previous periods, tracks used slots, and locks after repeated failures.
-  - The browser cannot call the verification endpoint because the client script does not load.
+- **One clear primary action per enrolment step — PASS**
+  - The primary actions are visually distinct, such as “Confirm identity,” “Verify code,” and “I have saved them.”
+  - Secondary operations are visually styled as secondary buttons.
 
-- **Backup recovery codes are generated, displayed, copied, verified once, and regenerated — FAIL**
-  - Server-side recovery codes use `crypto.getRandomValues`, per-code salts, PBKDF2 hashes, one-time-use tracking, and failure lockout.
-  - The intended UI and browser console logging cannot run due to the client parse error.
+- **Authenticator provisioning through QR code and manual setup values — FAIL**
+  - The application renders a custom QR code, but its QR byte-mode payload is malformed.
+  - In `qrMatrix`, the first four data bits are appended as `0000`:
+    ```js
+    for(i=0;i<4;i++)bits.push(0);
+    ```
+    Byte-mode QR encoding requires mode indicator `0100`, not `0000`.
+  - This causes the QR payload to be interpreted as a terminator rather than a byte-mode provisioning URI, so authenticator apps may fail to scan or provision from it.
+  - The manual setup key and provisioning URI are displayed, but the broken QR means the offered QR option is not reliable.
 
-- **Dyslexia-friendly, mobile-responsive UX — FAIL**
-  - The CSS and intended component structure show substantial effort toward legible typography, spacing, plain wording, examples, icons, copy buttons, visible help, and responsive mobile layout.
-  - Since the UI does not render beyond its loading text, these UX requirements are not actually delivered to the user.
+- **Manual submission/copy support for setup secrets and recovery codes — PASS, with UX defect**
+  - Setup keys, setup links, and recovery codes can be copied and are rendered in selectable textareas as a clipboard fallback.
+  - OTP and recovery-code inputs support manual entry and relevant browser autofill hints.
+  - However, the setup-key hide/reveal behavior is defective as noted below.
 
-- **Server-side authorization / IDOR protection — PASS**
-  - Protected endpoints derive the authenticated user from the HttpOnly session cookie rather than accepting a user ID from request input.
-  - `auth()` verifies session ownership against the account ID before exposing or modifying MFA state.
+- **Hide/reveal setup key works correctly — FAIL**
+  - Pressing “Hide setup key” only masks the short `.secret` display.
+  - The actual secret remains visibly exposed in the `manual-key` textarea, and the provisioning URI containing the same secret remains visibly exposed in `manual-uri`.
+  - Therefore, the key is not actually hidden after the user chooses to hide it.
 
-- **CSRF protection for state-changing operations — PASS**
-  - State-changing endpoints require both a trusted `Origin` and the session-bound `X-CSRF-Token`.
-  - Session cookies use `SameSite=Strict`, providing additional CSRF mitigation.
+- **Mocks are deterministic, usable without an external authenticator, and logged in the browser as required — FAIL**
+  - The requirements explicitly require simulated OTP/provisioning/verification using deterministic mock values, with OTPs and recovery codes returned to the UI and shown through browser `console.log`.
+  - The artifact generates random TOTP secrets and requires a real current TOTP generated by an authenticator app or separate TOTP tool.
+  - No current valid OTP is returned to the UI or logged in the browser console.
+  - Recovery codes are returned to the UI, but browser logs intentionally omit their actual values:
+    ```js
+    log("Recovery codes were created and shown on screen. Sensitive values are not written to logs.");
+    ```
+  - The same issue occurs for provisioning data. The browser console receives status text rather than the required test/mock values.
 
-- **Security headers, CORS, cookies, and clickjacking protection — PASS**
-  - CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, and `Cache-Control: no-store` are set.
-  - CORS is limited to the declared local HTTPS origins.
-  - Session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
+- **MFA verification works server-side — PASS**
+  - OTP input is validated as six digits.
+  - TOTP uses HMAC-SHA-1 with a 30-second period and allows a small ±1 counter window.
+  - Used TOTP counters are tracked to prevent replay within accepted windows.
+  - Recovery codes are verified against derived values and marked consumed after successful use.
 
-- **Secret handling and cryptographic storage — PASS**
-  - OTP secrets are generated with `crypto.getRandomValues` and encrypted at rest with AES-GCM.
-  - Recovery codes are generated with cryptographically secure randomness and stored as salted PBKDF2 hashes.
-  - No secrets or session tokens are stored in browser storage or client-readable cookies.
-  - The test-only secret/OTP/recovery-code presentation and browser `console.log` behavior is explicitly required by the deliverables.
+- **Recovery-code generation, replacement, and single use — PASS**
+  - Eight recovery codes are generated using `crypto.getRandomValues`.
+  - Codes are stored as PBKDF2-SHA-256 derived values with per-code salts.
+  - Regeneration replaces previous recovery-code records.
+  - Used codes are marked `consumed` and cannot be reused.
 
-- **Input validation, output safety, and redirect safety — PASS**
-  - Request JSON is constrained to object input, strings are length-limited, and email/code formats are validated.
-  - The UI uses DOM APIs and `textContent` rather than interpolating untrusted API values as HTML.
-  - No redirect parameter or external redirect mechanism exists.
+- **Server-side authorization / no IDOR — PASS**
+  - MFA state is selected only from the authenticated server session:
+    ```ts
+    const state = getState(authenticated.session.userId);
+    ```
+  - MFA endpoints do not accept client-provided user IDs.
+  - Manipulated user identifiers cannot select another account’s MFA state.
 
-- **Session handling, generic errors, and attempt lockout — PASS**
-  - New random session IDs are created on successful authentication.
-  - Idle and absolute session expiry are enforced.
-  - Logout invalidates the server-side session and clears the cookie.
-  - Identity, OTP, and recovery-code attempts have lockout behavior.
-  - Route errors are caught and returned as generic responses rather than exposing stack traces.
+- **CSRF protection for state-changing authenticated endpoints — PASS**
+  - State-changing authenticated requests require both the trusted origin and the matching `X-CSRF-Token`.
+  - Session cookies use `SameSite=Strict`.
+
+- **Secure session-cookie configuration — PASS**
+  - Session cookies include `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, and a maximum age.
+  - The session identifier is regenerated on successful login.
+  - A supplied prior session ID is invalidated before a new session is issued.
+  - Logout deletes the server-side session and expires the cookie.
+
+- **Session expiry and logout handling — PASS**
+  - Idle timeout is 30 minutes and absolute timeout is 8 hours.
+  - Expired sessions are deleted server-side.
+  - Logout invalidates the session.
+
+- **Security response headers and clickjacking protection — PASS**
+  - CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, and `Permissions-Policy` are set.
+  - Dynamic CSP nonces are generated for HTML responses.
+
+- **CORS restriction — PASS**
+  - No permissive CORS response headers are supplied.
+  - Protected state-changing routes verify the exact trusted origin.
+
+- **No browser storage or non-HttpOnly secret/session persistence — PASS**
+  - The application does not use `localStorage` or `sessionStorage`.
+  - Session state is held in an HttpOnly cookie and server-side maps.
+
+- **Sensitive values absent from server logs, URLs, and server errors — PASS**
+  - Secrets, OTPs, recovery codes, and session IDs are not placed in URLs.
+  - Server logs do not output these values.
+  - Generic server errors are returned through the Bun `error()` handler.
+  - Note: this security goal conflicts with the separate deliverable requiring test values in browser console logs; the current artifact chooses the security interpretation but fails the explicit testing/mock deliverable.
+
+- **Input validation and XSS protections — PASS**
+  - JSON inputs are type-checked and constrained by server-side regex validation for OTPs and recovery codes.
+  - No database queries are present, so SQL injection is not applicable to this artifact.
+  - Dynamic user-controlled values inserted into HTML are passed through `esc()` before `innerHTML` insertion.
+  - Internal navigation is implemented through controlled client-side functions rather than user-controlled redirects.
+
+- **Rate limiting and lockouts — PASS**
+  - Login, OTP verification, and recovery-code verification all track failures.
+  - Five failed attempts trigger a five-minute lockout.
+  - Login throttling is keyed to server-observed client IP and a fixed protected account target, avoiding attacker-controlled account enumeration keys.
 
 ## FAILING_ITEMS
 
-- The inline client script has a fatal syntax error in `qrSvg()` because `path` is declared twice in the same function scope.
-- The duplicate declaration prevents the complete client script from parsing and running.
-- As a result, the SPA does not boot, sign-in cannot be accessed, and no MFA enrolment or backup-code functionality works in the browser.
-- The QR SVG construction code also contains unnecessary and inconsistent intermediate elements (`title`, a first unused `path`, `window.__qrPath`, and `arguments[0]` usage). Even after resolving the duplicate identifier, this code should be simplified and validated to ensure the generated QR SVG is correct.
+- The QR encoder uses the wrong QR mode indicator (`0000` instead of byte-mode `0100`), so the authenticator provisioning QR code is not reliably valid or scannable.
+- The MFA flow is not a deterministic mock flow. It requires a genuine current TOTP from a compatible authenticator app or independent TOTP generator.
+- A valid mock/test OTP is neither returned to the UI nor written to browser `console.log`, contrary to the explicit deliverable.
+- Actual generated recovery codes are not written to browser `console.log`; only a generic status message is logged.
+- “Hide setup key” does not hide the setup secret because the key and provisioning URI remain shown in the manual-copy textareas.
+- The requirements contain a conflict: the security section says not to expose OTPs/secrets/recovery codes in logs, while the deliverable specifically requires OTP and recovery-code test values in browser console logs. The current implementation follows the former but fails the latter explicit testability requirement.
 
 ## NEW_TASKS
 
-1. In `qrSvg()`, rename or remove the second `const path=document.createElementNS(...)` declaration so it does not conflict with the existing QR path-data variable.
-2. Simplify `qrSvg()` to create one SVG `<path>` whose `d` attribute is set to the generated QR path-data string; remove unused `title`/path creation, `window.__qrPath`, and `arguments[0]` code.
-3. Load the application in a browser and verify that there are no JavaScript syntax or runtime errors in the browser console.
-4. Verify the complete end-to-end flow in the browser: sign in, identity code verification, provisioning display, QR/manual-secret copy controls, OTP verification, backup-code display/copy, recovery-code one-time use, regeneration, and logout.
+1. Correct the QR encoder’s byte-mode indicator in `qrMatrix` from `0000` to `0100`, then verify that a standard authenticator application can scan the generated `otpauth://` URI successfully.
+
+2. Implement an explicit deterministic testing/mock OTP path that provides a valid OTP for the generated provisioning secret without requiring an external authenticator, while keeping normal OTP verification functional.
+
+3. Update browser-side mock logging so the browser `console.log` includes the required test OTP and generated recovery codes, as explicitly required by the deliverable; do not emit these values in server logs, URLs, HTTP errors, cookies, or browser storage.
+
+4. Make the hide/reveal control actually hide sensitive setup material by conditionally removing or masking both the manual setup-key textarea and provisioning-URI textarea when hidden. Preserve accessible copy fallback behavior by asking the user to reveal the value before selecting a fallback field.
 
 ## DECISION
 
-FAIL
+**FAIL**
