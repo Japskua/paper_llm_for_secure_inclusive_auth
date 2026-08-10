@@ -69,6 +69,28 @@ CONSTRUCTS: Dict[str, Dict[str, List[int]]] = {
 # construct scores stay comparable between them.
 REVERSE_CODED: Dict[str, set] = {"security": {2, 3}, "inclusivity": set()}
 
+# Per-provider limits on images in a single request. Mistral rejects more than
+# eight outright ("Total number of images exceeds the maximum allowed of 8"),
+# which would otherwise lose that judge on every artifact with a longer journey.
+# Judges absent from this map receive every screenshot.
+MAX_IMAGES: Dict[str, int] = {"mistralai/mistral-medium-3-5": 8}
+
+
+def sample_evenly(items: List[Any], k: int) -> List[Any]:
+    """
+    Take k items spread across the sequence, always keeping the first and last.
+
+    Used only where a provider caps images: dropping the tail of the journey
+    would bias against artifacts with more steps, so the whole arc is preserved
+    at lower density instead.
+    """
+    if k <= 0 or len(items) <= k:
+        return items
+    if k == 1:
+        return [items[0]]
+    idx = sorted({round(i * (len(items) - 1) / (k - 1)) for i in range(k)})
+    return [items[i] for i in idx]
+
 
 SCORING_PROTOCOL = """\
 

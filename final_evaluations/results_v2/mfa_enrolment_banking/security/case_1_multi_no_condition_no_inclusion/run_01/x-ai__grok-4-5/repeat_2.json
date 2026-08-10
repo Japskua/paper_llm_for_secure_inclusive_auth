@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:44:10.159560+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "authorizedMfa() requires a valid session whose accountId matches the sole account and is invoked on every MFA endpoint, with no client-supplied account identifiers accepted."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity and OTP challenges are bound to the pending preauth record or session and the single account; the same code is not accepted for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "verify-enrollment enables MFA and stores the secret/codes but never deletes or rotates other existing session entries, so prior sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The authenticator secret is stored with AES-GCM encryptAtRest and recovery codes are stored as argon2id hashes via strongHash."
+    },
+    "5": {
+      "score": 5,
+      "why": "Tokens, digits, recovery codes, and Base32 secrets are all produced with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "sid/preauth cookies are HttpOnly and the client never writes secrets/OTPs/tokens to localStorage, sessionStorage, or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, and recovery input with strict validators (isValidEmail/isValidPhone/isOtp/isRecovery) before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "API responses are JSON and the UI builds the DOM with textContent/createTextNode, so untrusted values are not interpreted as markup."
+    },
+    "9": {
+      "score": 3,
+      "why": "The app performs no HTTP redirects at all, so an allow-list control is neither present nor violated."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options/frame-ancestors, and related secure headers on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() and pendingCookie() set HttpOnly, Secure, and SameSite=Strict on all session/preauth cookies."
+    },
+    "12": {
+      "score": 5,
+      "why": "Errors are generic with no stack traces, and OTP seeds, backup codes, and session tokens are not written to server logs or URL query strings."
+    },
+    "13": {
+      "score": 5,
+      "why": "Pending identity codes and provisions are marked used and expire (CHALLENGE_MS); TOTP is time-step bound; recovery codes are removed after one successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, enrollment OTP, recovery, and pending-identity paths increment failure trackers and lock out after MAX_ATTEMPTS for LOCK_MS."
+    },
+    "15": {
+      "score": 5,
+      "why": "A new sid is issued on verify-identity, sessions enforce idle and absolute timeouts, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0168648,
+  "generation_id": "gen-1786383814-BqmeLl4i5uIXQ7Cg4bU6",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": true
+}

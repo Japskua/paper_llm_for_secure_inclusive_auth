@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:45:18.472674+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Every protected route resolves the session server-side via `authenticatedSession` and verifies `session.userId !== account.id`, and MFA state is read only from the server-side account fixture rather than client-supplied identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity verification code is hashed and stored on the individual session object (`session.identityCodeHash`) and deleted on use, so a code cannot be redeemed by any other session/user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Session rotation only occurs at `/api/identity`; `/api/mfa/activate` sets `mfaEnabled = true` without deleting or invalidating any other entries in the `sessions` map, so pre-existing sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored via AES-256-GCM (`encryptSecret`) and backup codes are stored as salted + peppered SHA-256 digests with only a `used` flag, never plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, salts, session IDs, CSRF tokens, nonces and the identity OTP are derived from `node:crypto` `randomBytes`, a CSPRNG."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is set `HttpOnly; Secure; SameSite=Strict` and no localStorage/sessionStorage is used; the CSRF token and provisioning secret only live transiently in a JS closure variable/DOM, not in persistent browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (`validEmail`, `validPhone`, `validOtp`, `validRecovery`, base32 regex) strictly whitelist all inbound fields, JSON body parsing is guarded, and there is no SQL/interpolated query at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (email, phone, codes, error messages, log lines) are inserted with `textContent`; the single `innerHTML` use is a static template with empty `<dd>` elements filled by `textContent`."
+    },
+    "9": {
+      "score": 4,
+      "why": "The only redirect-like parameter is `input.redirect`, which must strictly equal the internal literal `/verify-identity`, and no `Location` header or client navigation is ever driven by user input."
+    },
+    "10": {
+      "score": 5,
+      "why": "`securityHeaders()` sets CSP with `frame-ancestors 'none'` and `base-uri 'none'`, HSTS with includeSubDomains, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and Referrer/Permissions policies on HTML, API and error responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()` and `clearCookie()` both emit `Path=/; HttpOnly; Secure; SameSite=Strict` with a bounded Max-Age."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces, but the client deliberately logs the identity OTP (`log(\"...code delivered...\" + data.testCode)`), the provisioning TOTP secret, and all plaintext backup codes to `console.log` and an on-page logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code has a 5-minute expiry, a `identityCodeUsed` flag and its session is destroyed on success; TOTP counters are rejected if replayed via `lastAcceptedTotpCounter`, and backup codes are marked `used`."
+    },
+    "14": {
+      "score": 5,
+      "why": "`failure()` increments per-session and per-account counters and applies a 10-minute lockout after 5 failures, enforced by `lockActive()` with HTTP 429 on identity, activate, check and recovery endpoints."
+    },
+    "15": {
+      "score": 5,
+      "why": "The identity session is deleted and a fresh session ID issued on successful authentication, `authenticatedSession` enforces 15-minute idle and 8-hour absolute timeouts, and `/api/logout` deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.14392,
+  "generation_id": "gen-1786383882-RqXWspAvJ7YF8MeEyW74",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

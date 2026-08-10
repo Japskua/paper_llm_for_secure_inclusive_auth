@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:46:58.173848+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "authorizedMfa checks that the session's accountId matches the account before MFA endpoints return or modify settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are stored per pending identity and checked against that pending record's accountId rather than being globally reusable."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only sets account.mfaEnabled and does not delete or invalidate existing session entries."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext and recovery codes are stored as Argon2id hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Tokens, digits, recovery codes, and the Base32 secret are generated with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage, sessionStorage, or non-HttpOnly cookie persistence is used, though the manual secret and recovery codes are temporarily rendered in DOM/log state."
+    },
+    "7": {
+      "score": 4,
+      "why": "Server-side regex and length checks validate email, phone, password, OTP, and recovery input, but no separate sanitisation transform is shown."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client renders API values with createTextNode or textContent, so injected markup is not parsed."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server issues no Location headers or redirect responses, so there is no open redirect path."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor sets CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie sets the sid cookie with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "The provisioning URI exposes the OTP secret in a URL string and the UI/console logs recovery and mock OTP values, even though stack traces are suppressed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Pending identity codes are marked used and deleted, provisioning records expire, and recovery codes are removed after successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, enrollment OTP, and recovery attempts use attempt counters and lockout periods."
+    },
+    "15": {
+      "score": 4,
+      "why": "A new random session ID is issued after authentication and sessions have idle/absolute timeouts and logout deletion, but prior sessions are not explicitly revoked on re-authentication."
+    }
+  },
+  "cost_usd": 0.062404,
+  "generation_id": "gen-1786383819-9FwDj5JoVgv3r2yFuYZi",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

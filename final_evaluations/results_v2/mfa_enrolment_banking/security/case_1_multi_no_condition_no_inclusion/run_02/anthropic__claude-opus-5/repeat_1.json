@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:44:46.140215+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint resolves the account solely from the server-side session cookie via authenticatedSession(), which checks session.userId === account.id and the required stage; no client-supplied identifier is ever trusted."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity verification code is hashed and stored on the individual session record (session.identityCodeHash) and matched only against that session, so a code cannot be replayed by another session/user."
+    },
+    "3": {
+      "score": 4,
+      "why": "The /api/mfa/activate handler sets account.mfaEnabled and new backup codes but never iterates the sessions map to revoke other sessions, so any previously created session entries remain valid until idle/absolute timeout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-256-GCM ciphertext (encryptSecret) and backup codes are stored as salted, peppered SHA-256 digests with only a 'used' flag, never plaintext."
+    },
+    "5": {
+      "score": 3,
+      "why": "Identity codes, backup codes, salts, session IDs and CSRF tokens all use node:crypto randomBytes, but the OTP shared secret is a hardcoded constant (EVALUATION_TOTP_SECRET = \"JBSWY3DPEHPK3PXP\") rather than CSPRNG-generated."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and the session cookie is HttpOnly/Secure/SameSite=Strict, though the provisioning secret, test OTP and backup codes are held in JS variables and printed into an in-page log panel."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (validEmail, validPhone, validOtp, validRecovery, base32 regex) strictly constrain all inputs, JSON bodies are type-checked, and there is no SQL/data store to inject into."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are inserted with textContent (log, message, dds[i].textContent); the only innerHTML use is a static, data-free <dt>/<dd> skeleton, and CSP uses nonces with no unsafe-inline."
+    },
+    "9": {
+      "score": 4,
+      "why": "The only redirect-like parameter is validated against a single literal allow-listed value (input.redirect !== \"/verify-identity\" is rejected) and no Location redirect is ever issued from user input."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders() sets nonce-based CSP with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Permissions-Policy on HTML, API and error responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie()/clearCookie() emit 'mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict' with Max-Age matching the absolute session lifetime."
+    },
+    "12": {
+      "score": 2,
+      "why": "Stack traces are suppressed (generic 500/400 messages), but the /api/signin response returns testCode and the client console.logs and DOM-renders the identity code, the provisioning secret and the full list of backup codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code has identityCodeUsed plus a 5-minute expiry, TOTP counters are recorded in lastAcceptedTotpCounter to block reuse within the window, and backup codes are flagged used on acceptance."
+    },
+    "14": {
+      "score": 4,
+      "why": "failure() increments per-session and per-account counters and imposes a 10-minute lockout after 5 failures on identity, activate, check and recovery endpoints, though /api/signin itself is not rate-limited."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful identity verification deletes the old session and issues a brand-new ID via newSession(\"authenticated\"), authenticatedSession() enforces 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.147845,
+  "generation_id": "gen-1786383850-wzBu6W7hdz1sNPJd928L",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

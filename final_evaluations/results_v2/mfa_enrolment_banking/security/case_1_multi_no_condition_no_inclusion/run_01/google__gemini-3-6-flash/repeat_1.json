@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:43:28.195781+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system validates that the session account ID matches the target account in the authorizedMfa function on every MFA request."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are bound to a specific pending identity session and are invalidated upon first use, preventing cross-user reuse."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates account flags but does not revoke or clear existing active sessions in the sessions store."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP shared secret is encrypted at rest using AES-GCM and backup codes are hashed using Argon2id."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, secrets, OTP values, and recovery codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session cookies use HttpOnly flags and no secrets or tokens are stored in browser Web Storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server applies strict regex and format checks to emails, phone numbers, OTPs, and recovery codes."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side rendering relies on textContent and createTextNode rather than innerHTML, preventing XSS."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application contains no HTTP redirect features or unvalidated client redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "All responses set HSTS, X-Content-Type-Options, X-Frame-Options, and CSP headers including frame-ancestors."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session and pre-authentication cookies explicitly set the HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Secrets are omitted from URL parameters and server logs, while global error handling hides full stack traces."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes expire after fixed challenge windows and are consumed immediately after single use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failure trackers enforce a ten-minute lockout after five consecutive invalid attempts across all verification pathways."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session tokens are freshly generated upon authentication, enforce idle and absolute timeouts, and are removed from memory on logout."
+    }
+  },
+  "cost_usd": 0.0434595,
+  "generation_id": "gen-1786383790-dci15YLcI6KFZMQv7ZLC",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

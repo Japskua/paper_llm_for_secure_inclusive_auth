@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:43:39.729845+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "authorizedMfa() derives the account solely from the server-side session (session.value.accountId !== account.id rejects) and never accepts a client-supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are hashed and bound to a per-sign-in HttpOnly `preauth` cookie entry with used/expiry flags, and TOTP codes derive from a per-session encrypted secret, so a code cannot be reused for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "In /api/mfa/verify-enrollment the sessions map is untouched — no session invalidation or rotation occurs when MFA is enabled, so pre-existing sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored via encryptAtRest() (AES-GCM) and recovery codes via Bun.password.hash argon2id; no plaintext secret or code is persisted."
+    },
+    "5": {
+      "score": 5,
+      "why": "randomToken, randomDigits, randomRecoveryCode, randomBase32Secret and the AES key/IV all use crypto.getRandomValues (CSPRNG)."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and all cookies are HttpOnly+Secure+SameSite=Strict; only the CSRF token, manual secret and mock codes live transiently in page JS memory (and the demo console panel)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates every field with strict regexes/length limits (isValidEmail, isValidPhone, isOtp, isRecovery, password length, JSON object shape) and there is no SQL layer to inject into."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client builds DOM exclusively with textContent/createTextNode/setAttribute (no innerHTML), and API responses are JSON with a strict CSP including object-src 'none' and base-uri 'none'."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application contains no redirect logic at all (no Location headers, no returnUrl parameters), so no open redirect is reachable, though no explicit allow-list is implemented either."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor() sets CSP with nonce and frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Permissions-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie(), pendingCookie() and clearCookie() all emit `HttpOnly; Secure; SameSite=Strict`."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server-side errors are generic with no stack traces and nothing sensitive is logged server-side, but the client deliberately console.logs the mock OTP and recovery codes into a Logs panel and displays a provisioning URI containing the TOTP seed in a query string."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity codes have a 5-minute expiry plus used flag and are deleted on success, provisioning entries expire and are single-use, and recovery codes are spliced out after use; TOTP codes are time-bound to ±1 30-second step but are not explicitly marked consumed."
+    },
+    "14": {
+      "score": 5,
+      "why": "recordFailure/isLocked enforce MAX_ATTEMPTS=5 then a 10-minute lockout for sign-in, enrollment OTP and recovery-code paths, with 429/401 generic responses."
+    },
+    "15": {
+      "score": 5,
+      "why": "A fresh sid is minted after identity verification (rotation), sessionFor() enforces 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.13864,
+  "generation_id": "gen-1786383790-tXkdAwz7MxFR2nz2O36E",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}
