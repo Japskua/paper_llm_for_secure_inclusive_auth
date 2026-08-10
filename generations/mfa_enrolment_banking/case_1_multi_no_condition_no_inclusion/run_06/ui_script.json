@@ -1,0 +1,35 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+1 555 123 4567"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "identity_verified",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify and continue')"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_setup",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Set up authenticator app')"
+        }
+      ]
+    },
+    {
+      "name": "verify_authenticator_code",
+      "actions": []
+    }
+  ],
+  "blocking_issue": "No permitted action can obtain the required six-digit OTP. The app writes \"Simulated current TOTP-style verification OTP: <code>\" only with console.log(), not into the live DOM; #logs contains only activity messages. Therefore a read action using a DOM selector cannot capture the OTP, and the journey cannot validly progress to the Code confirmed or recovery-code screens."
+}

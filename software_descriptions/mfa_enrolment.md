@@ -79,3 +79,37 @@ Boot success (28/30) and the screenshot walkthrough are the better evidence that
 these journeys work, since a browser can read an on-page code and type it back
 where an HTTP client cannot. Flow results are artifact metadata and never enter
 the scores or statistics.
+
+## Case 3 produced systematically less complete artifacts
+
+This is a result, not an instrument problem, and it must be stated before any
+inclusivity comparison is read.
+
+    case          converged  boots  mean iterations  screenshots/run
+    1 none            10/10  10/10              5.0              8.7
+    2 named           10/10  10/10              4.6              9.0
+    3 detailed         4/10   8/10             11.2              3.3
+
+Four independent measures agree that case 3's artifacts are less finished: six
+of ten never converged within the twelve-iteration ceiling, two do not boot at
+all, they cost 2.7x as much to produce, and the journeys that do run support
+roughly a third as many steps.
+
+A diagnostic ruled out the screenshot walkthrough as the cause. Re-deriving the
+plans for every case-3 artifact from scratch, DOM-grounded and best-of-three,
+moved the mean from 2.8 to 3.3 screenshots per run — against 8.7 and 9.0 for the
+other cases. The ceiling is the artifact, not the plan.
+
+Consequence for the inclusivity track: case 3 will be judged on about three
+screenshots where the other cases offer about nine. Several inclusivity items
+concern progression across steps — whether each action is confirmed, whether
+layout stays consistent — so fewer steps mechanically depresses the score of the
+very condition predicted to score highest. screenshot_count must be carried as a
+covariate, and any case-3 inclusivity result reported alongside the fact that it
+rests on less evidence.
+
+This contrasts sharply with the password-recovery study, where case 3 converged
+8/10 and captured 8.1 screenshots per run. Detailed inclusivity requirements
+were affordable there and were not here, which is itself worth reporting: the
+same manipulation had opposite effects on artifact completeness in two different
+domains.

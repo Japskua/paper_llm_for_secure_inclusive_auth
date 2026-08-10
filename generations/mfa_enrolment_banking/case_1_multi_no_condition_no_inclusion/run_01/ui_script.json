@@ -1,0 +1,182 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+15551234567",
+    "password": "Marcus!2025"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_identity",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#phone",
+          "value": "${phone}"
+        },
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#code"
+        },
+        {
+          "do": "click",
+          "selector": "summary:has-text('Logs (simulated browser delivery)')"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Identity verification SMS test code: (\\d{6})",
+          "into": "identity_code"
+        }
+      ]
+    },
+    {
+      "name": "set_up_authenticator",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${identity_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify identity')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "button:has-text('Generate authenticator setup')"
+        }
+      ]
+    },
+    {
+      "name": "confirm_authenticator",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Generate authenticator setup')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#otp"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Authenticator test verification code: (\\d{6})",
+          "into": "enrollment_otp"
+        }
+      ]
+    },
+    {
+      "name": "save_recovery_codes",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#otp",
+          "value": "${enrollment_otp}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm and enable MFA')"
+        },
+        {
+          "do": "wait_for",
+          "selector": ".codes li"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "New recovery codes: ([A-Z2-9]{5}-[A-Z2-9]{5})",
+          "into": "recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "mfa_settings",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('I have saved my codes')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=MFA settings"
+        }
+      ]
+    },
+    {
+      "name": "recovery_code_accepted",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#recovery",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Use recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Recovery code accepted and consumed."
+        }
+      ]
+    },
+    {
+      "name": "save_regenerated_recovery_codes",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Regenerate recovery codes')"
+        },
+        {
+          "do": "wait_for",
+          "selector": ".codes li"
+        }
+      ]
+    },
+    {
+      "name": "mfa_settings_after_saving_regenerated_codes",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('I have saved my codes')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=MFA settings"
+        }
+      ]
+    },
+    {
+      "name": "logged_out",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Log out')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=You have been logged out."
+        }
+      ]
+    }
+  ]
+}

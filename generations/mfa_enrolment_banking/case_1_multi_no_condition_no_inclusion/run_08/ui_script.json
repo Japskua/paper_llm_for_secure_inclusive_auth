@@ -1,0 +1,155 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+15551234567",
+    "new_password": null
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "confirm_identity",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name=\"email\"]",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "input[name=\"phone\"]",
+          "value": "${phone}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue securely')"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_setup",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name=\"email\"]",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "input[name=\"phone\"]",
+          "value": "${phone}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm identity')"
+        }
+      ]
+    },
+    {
+      "name": "verify_authenticator",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Generate authenticator setup')"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated current six-digit TOTP code: ([0-9]{6})",
+          "into": "otp"
+        }
+      ]
+    },
+    {
+      "name": "mfa_enabled",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name=\"otp\"]",
+          "value": "${otp}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify and enable MFA')"
+        }
+      ]
+    },
+    {
+      "name": "recovery_codes",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('View recovery codes')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#codes li"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated recovery codes delivered: ([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})",
+          "into": "recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "recovery_code_consumed",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name=\"code\"]",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Use recovery code')"
+        }
+      ]
+    },
+    {
+      "name": "regenerated_recovery_codes",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Regenerate all codes')"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated regenerated recovery codes: ([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})",
+          "into": "regenerated_recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "regenerated_recovery_code_consumed",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name=\"code\"]",
+          "value": "${regenerated_recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Use recovery code')"
+        }
+      ]
+    },
+    {
+      "name": "signed_out",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=Back to MFA confirmation"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign out')"
+        }
+      ]
+    }
+  ]
+}

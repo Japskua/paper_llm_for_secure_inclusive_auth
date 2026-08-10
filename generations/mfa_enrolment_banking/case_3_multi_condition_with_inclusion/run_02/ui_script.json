@@ -1,0 +1,40 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "new_password": "NewRiver!48"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "sign_in",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[type=\"email\"]",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "input[type=\"password\"]",
+          "value": "River!47"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Check it is you"
+        }
+      ]
+    },
+    {
+      "name": "check_identity",
+      "actions": []
+    }
+  ],
+  "blocking_issue": "The required six-digit identity code is only emitted with console.log(\"Testing-only identity code:\", r.testCode) and is not rendered in the DOM. The visible Logs element contains only \"Sign-in completed.\", so none of the permitted browser actions can read the code or complete the identity confirmation step."
+}

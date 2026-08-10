@@ -1,0 +1,56 @@
+{
+  "ok": false,
+  "stage": "partial",
+  "steps_planned": 15,
+  "steps_captured": 3,
+  "screenshots": [
+    {
+      "index": 1,
+      "name": "login_page",
+      "file": "step_01_login_page.png",
+      "incomplete": false
+    },
+    {
+      "index": 2,
+      "name": "identity_check",
+      "file": "step_02_identity_check.png",
+      "incomplete": false
+    },
+    {
+      "index": 3,
+      "name": "verify_identity_code",
+      "file": "step_03_verify_identity_code_INCOMPLETE.png",
+      "incomplete": true
+    }
+  ],
+  "console_errors": [],
+  "failure": {
+    "step": "verify_identity_code",
+    "index": 3,
+    "action": {
+      "do": "click",
+      "selector": "button:has-text('Send my check code')"
+    },
+    "error": "TimeoutError: Page.click: Timeout 12000ms exceeded.\nCall log:\n  - waiting for locator(\"button:has-text('Send my check code')\")\n",
+    "html": "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Northstar Bank · Extra security</title>\n<style nonce=\"\">\n:root{--ink:#162330;--blue:#075cba;--line:#c6d3dd;--pale:#edf6ff;--bad:#8b2020;--good:#12643a}*{box-sizing:border-box}body{margin:0;background:#f3f6f8;color:var(--ink);font:18px/1.65 Arial,Verdana,Tahoma,sans-serif;letter-spacing:.025em}.shell{max-width:600px;min-height:100vh;margin:auto;background:#fff;padding:20px 18px 42px}.brand{font-weight:bold;color:var(--blue)}h1{font-size:1.65rem;line-height:1.25;margin:10px 0 2px}h2{font-size:1.35rem;line-height:1.3;margin:0 0 8px}p{margin:7px 0 14px}.hint{font-size:.92rem;color:#53616c}.steps{display:flex;gap:4px;list-style:none;padding:0;margin:20px 0}.steps li{flex:1;text-align:center;font-size:.75rem;line-height:1.25;border-bottom:5px solid var(--line);padding:5px}.steps .on{border-color:var(--blue);color:var(--blue);font-weight:bold}.steps .done{border-color:var(--good);color:var(--good)}.card,.logs{border:1px solid var(--line);border-radius:14px;padding:19px;margin:12px 0}.icon{font-size:2rem;display:block}label{display:block;font-weight:bold;margin-top:16px}input{width:100%;min-height:52px;border:2px solid #80919f;border-radius:9px;padding:10px;font:inherit}.code{font-size:1.2rem;text-align:center;letter-spacing:.12em}button{width:100%;min-height:53px;border:0;border-radius:9px;margin-top:18px;background:var(--blue);color:#fff;font:inherit;font-weight:bold;cursor:pointer}button.secondary{background:#fff;color:#075cba;border:2px solid #075cba;margin-top:10px}button.small{width:auto;min-height:40px;padding:5px 12px;margin:8px 5px 0 0}.notice{background:var(--pale);border-left:5px solid var(--blue);padding:11px;margin:15px 0;border-radius:5px}.error{background:#fff0f0;border-color:var(--bad);color:#781818}.ok{background:#effbf3;border-color:var(--good);color:#124d2d}.secret{overflow-wrap:anywhere;font-family:monospace;background:#f3f6f8;padding:10px;border-radius:7px}.codes{padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:7px}.codes li{font:.83rem monospace;background:#f3f6f8;text-align:center;padding:9px 3px;border-radius:6px}.qr{display:flex;justify-content:center;margin:13px 0}.qr svg{width:min(100%,280px);height:auto;image-rendering:pixelated;background:#fff}.logs{background:#101820;color:#eaf2f8}.logs h2{font-size:1rem}.logs pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.45 monospace;margin:0;max-height:210px;overflow:auto}details{margin-top:17px}summary{color:var(--blue);font-weight:bold;cursor:pointer}@media print{button,.steps,.logs,details{display:none!important}}\n</style></head><body><main class=\"shell\"><header><div class=\"brand\">◈ Northstar Bank</div><h1>Set up extra security</h1><p class=\"hint\">Take your time. There is no reading timer.</p></header>\n<nav aria-label=\"Progress\"><ol class=\"steps\"><li id=\"s1\" class=\"on\">1<br>Check</li><li id=\"s2\" class=\"\">2<br>App</li><li id=\"s3\" class=\"\">3<br>Save</li></ol></nav>\n<section id=\"screen\" aria-live=\"polite\"><section class=\"card\"><div class=\"notice error\">Those sign-in details did not work. Check them and try again.</div><span class=\"icon\">🔐</span><h2>Sign in to start</h2><p>Use your pre-approved bank sign-in details.</p><label>Email address</label><input type=\"email\" autocomplete=\"username\" placeholder=\"Example: marcus@example.test\" style=\"\"><label>Password</label><input type=\"password\" autocomplete=\"current-password\" placeholder=\"Your password\" style=\"\"><div class=\"notice \">Demo account: marcus@example.test · Password: Northstar-54</div><button type=\"button\">Continue</button><details><summary>Need help?</summary><p>You can retry any step. Nothing has a reading deadline.</p></details></section></section><aside class=\"logs\" aria-label=\"Simulation logs\"><h2>Logs</h2><pre id=\"logs\">Ready. Test values appear here and in the browser console.</pre></aside></main>\n<script nonce=\"\">(()=>{\"use strict\";let csrf=\"\",login=\"\",setup=null,codes=[];const screen=document.querySelector(\"#screen\"),logs=document.querySelector(\"#logs\");\nfunction log(label,value){const line=label+(value===undefined?\"\":\": \"+(typeof value===\"string\"?value:JSON.stringify(value)));console.log(line);logs.textContent+=\"\\n\"+line;logs.scrollTop=logs.scrollHeight}\nfunction step(n){[1,2,3].forEach(x=>document.querySelector(\"#s\"+x).className=x===n?\"on\":x<n?\"done\":\"\")}\nfunction el(tag,txt,cls){const x=document.createElement(tag);if(txt)x.textContent=txt;if(cls)x.className=cls;return x}\nfunction btn(txt,cls=\"\"){const b=el(\"button\",txt,cls);b.type=\"button\";return b}\nfunction note(txt,cls=\"\"){return el(\"div\",txt,\"notice \"+cls)}\nfunction help(){const d=el(\"details\"),s=el(\"summary\",\"Need help?\");d.append(s,el(\"p\",\"You can retry any step. Nothing has a reading deadline.\"));return d}\nfunction err(card,e){card.querySelector(\".error\")?.remove();card.prepend(note(e.message||\"Please try again.\",\"error\"))}\nasync function fetchJson(path,opt={}){const h=Object.assign({\"Content-Type\":\"application/json\"},opt.headers||{});if(opt.method&&opt.method!==\"GET\")h[\"X-CSRF-Token\"]=csrf;const r=await fetch(path,Object.assign({credentials:\"same-origin\",headers:h},opt));const d=await r.json().catch(()=>({error:\"Please try again.\"}));if(!r.ok)throw Error(d.error||\"Please try again.\");return d}\nasync function loginToken(){const r=await fetch(\"/api/login-csrf\",{credentials:\"same-origin\"}),d=await r.json();if(!r.ok)throw Error(\"Refresh the page and try again.\");login=d.token}\n\n/* Standards-compliant QR Model 2 encoder: byte mode, error correction L. */\nfunction qr(uri){\n const caps=[[1,26,19],[2,44,34],[3,70,55],[4,100,80],[5,134,108],[6,172,136],[7,196,156],[8,242,194],[9,292,232],[10,344,272]],align=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50]],bytes=Array.from(uri).map(x=>x.charCodeAt(0));\n let z=caps.find(x=>bytes.length<=x[2]);if(!z)throw Error(\"Setup link is too long.\");let v=z[0],total=z[1],dc=z[2],blocks"
+  },
+  "chosen_attempt": "rederived",
+  "attempts": [
+    {
+      "label": "initial",
+      "ok": false,
+      "captured": 2
+    },
+    {
+      "label": "repaired",
+      "ok": false,
+      "captured": 2
+    },
+    {
+      "label": "rederived",
+      "ok": false,
+      "captured": 3
+    }
+  ],
+  "output_dir": "/Users/japskua/projects/lut/paper_llm_for_secure_inclusive_auth/generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_10/screenshots"
+}

@@ -1,0 +1,159 @@
+{
+  "variables": {
+    "email": "marcus",
+    "new_password": "Northstar!2026"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_identity",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[autocomplete=\"username\"]",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "input[autocomplete=\"current-password\"]",
+          "value": "Northstar!2025"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Verify your identity"
+        }
+      ]
+    },
+    {
+      "name": "set_up_authenticator",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logbox",
+          "regex": "Simulated identity verification code: (\\d{6})",
+          "into": "identity_code"
+        },
+        {
+          "do": "fill",
+          "selector": "input[autocomplete=\"one-time-code\"]",
+          "value": "${identity_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify identity')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Set up an authenticator"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_secret",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Create authenticator secret')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Manual secret (enter this in your authenticator):"
+        }
+      ]
+    },
+    {
+      "name": "mfa_enabled_recovery_codes",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logbox",
+          "regex": "Simulated current authenticator code: (\\d{6})",
+          "into": "authenticator_code"
+        },
+        {
+          "do": "fill",
+          "selector": "input[autocomplete=\"one-time-code\"]",
+          "value": "${authenticator_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Enable MFA and show recovery codes')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=MFA is enabled"
+        }
+      ]
+    },
+    {
+      "name": "recovery_codes_management",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=Manage recovery codes"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Recovery codes"
+        }
+      ]
+    },
+    {
+      "name": "recovery_code_submission_error",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logbox",
+          "regex": "Simulated recovery codes: ([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})",
+          "into": "recovery_code"
+        },
+        {
+          "do": "fill",
+          "selector": "input[placeholder=\"ABCD-EFGH-JKLM\"]",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Use recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Failed to execute 'insertBefore' on 'Node'"
+        }
+      ]
+    },
+    {
+      "name": "replacement_recovery_codes",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Generate replacement recovery codes')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=MFA is enabled"
+        }
+      ]
+    },
+    {
+      "name": "logged_out_login_page",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=Log out"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Sign in"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "ok": false,
+  "stage": "partial",
+  "steps_planned": 8,
+  "steps_captured": 5,
+  "screenshots": [
+    {
+      "index": 1,
+      "name": "login_page",
+      "file": "step_01_login_page.png",
+      "incomplete": false
+    },
+    {
+      "index": 2,
+      "name": "sign_in",
+      "file": "step_02_sign_in.png",
+      "incomplete": false
+    },
+    {
+      "index": 3,
+      "name": "request_identity_code",
+      "file": "step_03_request_identity_code.png",
+      "incomplete": false
+    },
+    {
+      "index": 4,
+      "name": "verify_identity_code",
+      "file": "step_04_verify_identity_code.png",
+      "incomplete": false
+    },
+    {
+      "index": 5,
+      "name": "prepare_authenticator_details",
+      "file": "step_05_prepare_authenticator_details_INCOMPLETE.png",
+      "incomplete": true
+    }
+  ],
+  "console_errors": [],
+  "failure": {
+    "step": "prepare_authenticator_details",
+    "index": 5,
+    "action": {
+      "do": "read",
+      "selector": "#logs",
+      "regex": "Mock current TOTP:\\s*(\\d{6})",
+      "into": "authenticator_code"
+    },
+    "error": "RuntimeError: regex 'Mock current TOTP:\\\\s*(\\\\d{6})' found nothing in '#logs' (text: 'Status messages appear here.Mock identity code: 123456\\n')",
+    "html": "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Northstar Bank · Security setup</title>\n<style nonce=\"\">\n:root{--blue:#075dcc;--ink:#17233b;--soft:#edf5ff;--line:#71839c}*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:var(--ink);font:17px/1.7 Verdana,Arial,sans-serif;letter-spacing:.025em}main{max-width:560px;min-height:100vh;margin:auto;padding:20px;background:#fff}h1{font-size:1.7rem;line-height:1.3}h2{font-size:1.1rem}.bar{height:8px;background:#dce6f4}.bar i{display:block;height:100%;background:var(--blue)}button,input,textarea{font:inherit}input,textarea{width:100%;padding:13px;border:2px solid var(--line);border-radius:8px}textarea{min-height:88px;resize:vertical}button{padding:13px;margin:12px 0;border-radius:8px;font-weight:bold;cursor:pointer}.primary{width:100%;border:0;background:var(--blue);color:#fff}.secondary{background:#fff;border:2px solid var(--blue);color:#064b9b}.notice{padding:12px;margin:15px 0;background:var(--soft);border-left:5px solid var(--blue)}.error{background:#fff1f0;border-color:#b42318}.help{background:#f7f9fc;border-left-color:#71839c}.warning{background:#fff8e6;border-left-color:#a15c00}.hidden{display:none!important}.code,li{font-family:monospace;letter-spacing:.1em;word-break:break-all}.qr{display:block;width:min(72vw,320px);height:min(72vw,320px);margin:14px auto;border:10px solid #fff;outline:1px solid #d9e1ec;image-rendering:pixelated}.example{color:#526177;font-size:.88rem}label{display:block;font-weight:bold;margin-top:16px}.step{font-weight:bold;color:#064b9b}ul{line-height:2;background:#f7f9fc;padding:12px 12px 12px 35px}.copyok{color:#126b30;font-weight:bold;margin:4px 0 12px}.small{font-size:.93rem}.logs{max-height:180px;overflow:auto}.mock{border-color:#7355a5;background:#f5f0ff}\n</style></head><body><main>\n<header><strong>✦ Northstar Bank</strong></header><div class=\"bar\"><i id=\"bar\" style=\"width: 60%;\"></i></div>\n<p class=\"step\" id=\"step\">Step 3 of 5 · Authenticator</p><aside id=\"help\" class=\"notice help\" aria-label=\"Help\">Help: Scan the QR code if you can. You can show or hide existing details without changing them.</aside>\n<section id=\"msg\" aria-live=\"polite\"></section><section id=\"screen\"><h1>Connect your authenticator</h1><p>Scan the QR option with your authenticator app. You can also copy the link or use the manual key.</p><button class=\"primary\" id=\"prepare\">Prepare authenticator details</button><form id=\"auth-form\"><label for=\"otp\">Authenticator code</label><input id=\"otp\" inputmode=\"numeric\" maxlength=\"6\" autocomplete=\"one-time-code\" style=\"\"><span class=\"example\">Example: 123456</span><button class=\"primary\">Confirm authenticator</button></form></section>\n<section><h2>Logs</h2><div id=\"logs\" class=\"notice logs\" aria-live=\"polite\">Status messages appear here.Mock identity code: 123456<br></div></section>\n</main><script nonce=\"\">(()=>{\"use strict\";\nlet csrf=\"Glvn2nM1iZW5MlrZOelCW1Af7STAvsFx\",view=\"sign\",recoveryCodes=[],provisioningUri=\"\",manualSecret=\"\",mockTotpCode=\"\",recoveryVisible=true,detailsVisible=true,recoveryStatus=\"\";\nconst mockMode=true,$=id=>document.getElementById(id);\nconst esc=v=>{const d=document.createElement(\"div\");d.textContent=String(v);return d.innerHTML};\nconst log=t=>{$(\"logs\").innerHTML+=esc(t)+\"<br>\";$(\"logs\").scrollTop=$(\"logs\").scrollHeight};\nconst mockLog=(...items)=>{if(mockMode){console.log(...items);log(items.join(\" \"))}};\nconst message=(text,error=false)=>{$(\"msg\").innerHTML='<div class=\"notice '+(error?\"error\":\"\")+'>'+esc(text)+\"</div>\"};\nconst heading=(n,title,help)=>{$(\"step\").textContent=\"Step \"+n+\" of 5 · \"+title;$(\"bar\").style.width=n*20+\"%\";$(\"help\").textContent=\"Help: \"+help};\nconst call=async(path,data={})=>{const response=await fetch(path,{method:\"POST\",credentials:\"same-origin\",headers:{\"Content-Type\":\"application/json\",\"X-CSRF-Token\":csrf},body:JSON.stringify(data)});const output=await response.json();if(output.csrf)csrf=output.csrf;if(!response.ok)throw Error(output.error||\"Please try again.\");return output};\nasync function copyText(text,label){try{await navigator.clipboard.writeText(text);$(\"copy-note\").textContent=label+\" copied. You can paste it where you need it.\"}catch(_){$(\"copy-note\").textContent=\"Copy was not available. Select the text and use your browser's Copy command.\"}}\n\n/* Standards-compliant QR Code Model 2 encoder: version 10, error correction L, byte mode.\n   The encoded bytes are the exact otpauth provisioning URI shown beside this SVG. */\nfunction qrMatrix(text){\n const bytes=[...new TextEncoder().encode(text)],version=10,size=57,dataCap=274,ecLen=18;\n if(bytes.length>270)throw Error(\"The provisioning link is too long for this QR code.\");\n const bits=[];const put=(v,n)=>{for(let i=n-1;i>=0;i--)bits.push((v>>>i)&1)};\n put(4,4);put(bytes.length,16);bytes.forEach(x=>put(x,8));put(0,Math.min(4,dataCap*8-bits.length));while(bits.length%8)bits.push(0);\n const data=[];for(let i=0;i<bits.length;i+=8)data.push(parseInt(bits.slice(i,i+8).join(\"\"),2));let pad=0;while(data.length<dataCap)data.push([236,17][pad++%2]);\n const exp=[],lg=[];let x=1;for(let i=0;i<255;i++){exp[i]=x;lg[x]=i;x<<=1;if(x&256)x^=285}for(let i=255;i<512;i++)exp[i]=exp[i-255];\n const mul=(a,b)=>a&&b?exp[lg[a]+lg[b]]:0;let gen=[1];for(let i=0;i<ecLen;i++){const next=Array(gen.length+1).fill(0);for(let j=0;j<gen.length;j++){next[j]^=gen[j];next[j+1]^=mul(gen[j],exp[i])}gen=next}\n const blocks=[], lengths=[68,68,69,69];let offset=0;\n for(const len of lengths){const block=data.slice(offset,offset+=len), rem=block.concat(Array(ecLen).fill(0));for(let i=0;i<block.length;i++)if(rem[i])for(let j=0;j<gen.length;j++)rem[i+j]^=mul(gen[j],rem[i]);blocks.push({d:block,e:rem.slice(-ecLen)})}\n const stream=[];for(let i=0;i<69;i++)for(const b of blocks)if(i<b.d.length)stream.push(b.d[i]);for(let i=0;i<ecLen;i++)for(const b of blocks)stream.push(b.e[i]);\n const m=Array.from({length:size},()=>Array(size).fill(null));\n const find"
+  },
+  "chosen_attempt": "initial",
+  "attempts": [
+    {
+      "label": "initial",
+      "ok": false,
+      "captured": 5
+    },
+    {
+      "label": "repaired",
+      "ok": false,
+      "captured": 4
+    },
+    {
+      "label": "rederived",
+      "ok": false,
+      "captured": 4
+    }
+  ],
+  "output_dir": "/Users/japskua/projects/lut/paper_llm_for_secure_inclusive_auth/generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_03/screenshots"
+}

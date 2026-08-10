@@ -1,0 +1,56 @@
+{
+  "ok": false,
+  "stage": "partial",
+  "steps_planned": 10,
+  "steps_captured": 3,
+  "screenshots": [
+    {
+      "index": 1,
+      "name": "login_page",
+      "file": "step_01_login_page.png",
+      "incomplete": false
+    },
+    {
+      "index": 2,
+      "name": "confirm_identity",
+      "file": "step_02_confirm_identity.png",
+      "incomplete": false
+    },
+    {
+      "index": 3,
+      "name": "authenticator_setup",
+      "file": "step_03_authenticator_setup_INCOMPLETE.png",
+      "incomplete": true
+    }
+  ],
+  "console_errors": [],
+  "failure": {
+    "step": "authenticator_setup",
+    "index": 3,
+    "action": {
+      "do": "click",
+      "selector": "button:has-text('Confirm identity')"
+    },
+    "error": "TimeoutError: Page.click: Timeout 12000ms exceeded.\nCall log:\n  - waiting for locator(\"button:has-text('Confirm identity')\")\n",
+    "html": "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\"><title>Northstar Bank · MFA enrolment</title>\n<style nonce=\"\">:root{--ink:#14213d;--blue:#135dd8;--pale:#edf4ff;--line:#cbd5e1;--good:#086b43;--bad:#a31919;--muted:#526277}*{box-sizing:border-box}body{margin:0;background:#f5f8fc;color:var(--ink);font:16px/1.5 system-ui,sans-serif}main{width:min(100%,520px);min-height:100vh;margin:auto;padding:20px 16px 34px;background:#fff}header{border-bottom:1px solid var(--line);padding-bottom:17px;margin-bottom:22px}.brand{margin:0;font-size:1.25rem;font-weight:800}.sub,.small{color:var(--muted)}.sub{margin:3px 0;font-size:.9rem}h1{font-size:1.6rem;line-height:1.2;margin:0 0 9px}h2{font-size:1.1rem}p{margin:0 0 15px}label{display:block;font-weight:700;margin:16px 0 6px}input{width:100%;padding:13px;border:1px solid #8493a9;border-radius:8px;font:inherit}button{width:100%;border:0;border-radius:8px;padding:13px;margin-top:18px;background:var(--blue);color:#fff;font:700 1rem system-ui;cursor:pointer}button.secondary{background:#e7eef9;color:var(--ink)}button.danger{background:var(--bad)}button:disabled{opacity:.6}.notice,.card{padding:13px;margin:15px 0;border-radius:8px}.notice{border-left:4px solid var(--blue);background:#f1f6ff}.notice.error{border-left-color:var(--bad);background:#fff2f2;color:#751313}.notice.success{border-left-color:var(--good);background:#effaf4}.card{background:var(--pale);border:1px solid #cfddf1}.hidden{display:none!important}.code{display:block;overflow-wrap:anywhere;padding:10px;margin-top:7px;background:#fff;border:1px dashed #8493a9;border-radius:6px;font:.88rem ui-monospace,monospace}.codes{list-style:none;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}.codes li{padding:8px;text-align:center;border:1px solid var(--line);border-radius:6px;font:.75rem ui-monospace,monospace}.step{font-size:.85rem;font-weight:700;color:var(--muted)}a{color:#104fae;font-weight:700}.logs{margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}.log-output{display:block;min-height:52px;max-height:190px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:10px;background:#101b30;color:#e9f1ff;border-radius:7px;font:.77rem ui-monospace,monospace}@media(max-width:360px){main{padding:17px 13px}.codes{grid-template-columns:1fr}}</style></head>\n<body><main><header><p class=\"brand\">Northstar Bank</p><p class=\"sub\">Secure mobile banking · MFA enrolment</p></header><section id=\"view\" aria-live=\"polite\"><div class=\"step\">STEP 1 OF 5</div><h1>Sign in to begin MFA enrolment</h1><p>Confirm your bank account details to protect higher-value payments.</p><div id=\"notice\" class=\"notice error\">Unable to sign in with those details.</div><form id=\"f\"><label>Email address<input name=\"email\" type=\"email\" required=\"\" placeholder=\"marcus@example.test\" style=\"\"></label><label>Mobile number<input name=\"phone\" type=\"tel\" required=\"\" placeholder=\"+15551234567\" style=\"\"></label><p class=\"small\">Assessment demo: use the displayed example details.</p><button>Continue securely</button></form></section><section class=\"logs\"><h2>Logs</h2><p class=\"small\">Simulated delivery and verification events.</p><output id=\"logs\" class=\"log-output\" aria-live=\"polite\"></output></section></main>\n<script nonce=\"\">(()=>{\"use strict\";let csrfToken=\"\",delivery={secret:\"\",otp:\"\",codes:[]};const view=document.querySelector(\"#view\"),logs=document.querySelector(\"#logs\");\nfunction log(x){console.log(x);logs.append(document.createTextNode(x+\"\\n\"));logs.scrollTop=logs.scrollHeight}\nasync function api(path,method=\"GET\",body){const h={\"Content-Type\":\"application/json\"};if(csrfToken)h[\"X-CSRF-Token\"]=csrfToken;const r=await fetch(path,{method,headers:h,credentials:\"same-origin\",body:body===undefined?undefined:JSON.stringify(body)});let x;try{x=await r.json()}catch{x={message:\"Unable to process this request.\"}}if(!r.ok)throw Error(x.message);return x}\nfunction notice(t,c=\"error\"){const n=document.querySelector(\"#notice\");if(n){n.textContent=t;n.className=\"notice \"+c}}\nasync function routeStatus(){const s=await api(\"/api/mfa/status\");if(s.mfaEnabled)confirmed();else if(s.identityConfirmed)setup();else identity()}\nfunction signIn(){view.innerHTML='<div class=\"step\">STEP 1 OF 5</div><h1>Sign in to begin MFA enrolment</h1><p>Confirm your bank account details to protect higher-value payments.</p><div id=\"notice\" class=\"notice hidden\"></div><form id=\"f\"><label>Email address<input name=\"email\" type=\"email\" required placeholder=\"marcus@example.test\"></label><label>Mobile number<input name=\"phone\" type=\"tel\" required placeholder=\"+15551234567\"></label><p class=\"small\">Assessment demo: use the displayed example details.</p><button>Continue securely</button></form>';document.querySelector(\"#f\").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{const r=await api(\"/api/auth/signin\",\"POST\",{email:String(f.get(\"email\")).trim(),phone:String(f.get(\"phone\")).trim()});csrfToken=r.csrf;await routeStatus()}catch(x){notice(x.message)}}}\nfunction identity(){view.innerHTML='<div class=\"step\">STEP 2 OF 5</div><h1>Confirm your identity</h1><p>Re-enter your registered contact details before adding an authenticator.</p><div id=\"notice\" class=\"notice hidden\"></div><form id=\"f\"><label>Registered email<input name=\"email\" type=\"email\" required placeholder=\"marcus@example.test\"></label><label>Registered mobile number<input name=\"phone\" type=\"tel\" required placeholder=\"+15551234567\"></label><button>Confirm identity</button></form><p><a href=\"#\" id=\"out\">Cancel and sign out</a></p>';document.querySelector(\"#f\").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{await api(\"/api/mfa/identity\",\"POST\",{email:String(f.get(\"email\")).trim(),phone:String(f.get(\"phone\")).trim()});setup()}catch(x){notice(x.message)}};document.querySelector(\"#out\").onclick=logout}\nfunction setup(){view.innerHTML='<div class=\"step\">"
+  },
+  "chosen_attempt": "rederived",
+  "attempts": [
+    {
+      "label": "initial",
+      "ok": false,
+      "captured": 2
+    },
+    {
+      "label": "repaired",
+      "ok": false,
+      "captured": 2
+    },
+    {
+      "label": "rederived",
+      "ok": false,
+      "captured": 3
+    }
+  ],
+  "output_dir": "/Users/japskua/projects/lut/paper_llm_for_secure_inclusive_auth/generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_08/screenshots"
+}

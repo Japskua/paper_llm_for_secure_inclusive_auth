@@ -1,0 +1,77 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "new_password": "NewPass-54"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "identity_confirmation",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "Marcus-54"
+        },
+        {
+          "do": "click",
+          "selector": "#signin"
+        }
+      ]
+    },
+    {
+      "name": "identity_check_ready",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#start"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_setup",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#complete"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_details",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#create"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_qr_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#qrbutton"
+        }
+      ]
+    },
+    {
+      "name": "verify_authenticator",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#next"
+        }
+      ]
+    }
+  ],
+  "blocker": "A complete UI-only plan cannot be produced with the permitted action types. The required six-digit test OTP is generated randomly by /api/provision and is emitted only through console.log as \"[MFA demo] Test authenticator code: <code>\". It is never rendered in any DOM element, and the allowed read action requires a DOM selector. No valid DOM selector can obtain this value, so the OTP cannot be filled and the recovery-code, completion, recovery-code-use, and sign-out stages cannot be reached."
+}
