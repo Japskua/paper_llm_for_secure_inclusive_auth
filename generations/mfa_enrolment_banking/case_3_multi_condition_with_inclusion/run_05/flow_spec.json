@@ -1,0 +1,130 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "new_password": "NewBankPass1!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "csrf",
+    "in": "body"
+  },
+  "steps": [
+    {
+      "name": "get page CSRF token",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "password": "BankPass1!",
+        "csrf": "${csrf}"
+      },
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request identity code",
+      "method": "POST",
+      "path": "/api/identity/request",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "capture": {
+        "identity_code": "mockCode"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "${identity_code}",
+        "csrf": "${csrf}"
+      }
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/provision",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "capture": {
+        "authenticator_code": "mockCode"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "body": {
+        "code": "${authenticator_code}",
+        "csrf": "${csrf}"
+      },
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "confirm MFA enabled",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_json_true": "mfaEnabled",
+      "capture": {
+        "csrf": "csrf"
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "reject malformed identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "not-a-code",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "reject malformed authenticator code",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "body": {
+        "code": "12345",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "get fresh sign-in CSRF token",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "csrf",
+      "capture": {
+        "signin_csrf": "csrf"
+      }
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "password": "WrongBankPass1!",
+        "csrf": "${signin_csrf}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

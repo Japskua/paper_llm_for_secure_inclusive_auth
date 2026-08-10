@@ -1,0 +1,133 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 12,
+  "steps_passed": 3,
+  "happy_path_passed": 1,
+  "happy_path_total": 9,
+  "negative_passed": 2,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "bootstrap sign-in CSRF",
+      "method": "GET",
+      "path": "/api/csrf-bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with demo account",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "Please refresh the sign-in page and try again."
+    },
+    {
+      "name": "load authenticated session CSRF",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "request identity code",
+      "method": "POST",
+      "path": "/api/identity/request",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'identity_code' from 'simulatedCode'"
+      ],
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "provision authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/provision",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'authenticator_otp' from 'simulatedOtp'"
+      ],
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/confirm",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/generate",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'recovery_code' from 'codes.0'"
+      ],
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "use saved recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "bootstrap CSRF for failed sign-in",
+      "method": "GET",
+      "path": "/api/csrf-bootstrap",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": false,
+      "response_message": "{'ok': True, 'csrf': '_H16htiVXIWxYkVXUvq6wUyOuAhrnospB6x3D5QUXMk'}"
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 12
+}

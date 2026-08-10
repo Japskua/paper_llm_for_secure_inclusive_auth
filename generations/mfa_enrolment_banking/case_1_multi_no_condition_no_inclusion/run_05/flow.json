@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "check anonymous status",
+      "name": "check signed-out status",
       "method": "POST",
       "path": "/api/status",
       "expect_failure": false,
@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "name": "sign in",
+      "name": "sign in with demo account",
       "method": "POST",
       "path": "/api/signin",
       "expect_failure": false,
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "verify identity",
+      "name": "verify identity code",
       "method": "POST",
       "path": "/api/identity/verify",
       "expect_failure": false,
@@ -59,19 +59,19 @@
       "ok": true
     },
     {
-      "name": "identity code rejected",
+      "name": "invalid csrf rejected",
       "method": "POST",
-      "path": "/api/identity/verify",
+      "path": "/api/signin",
       "expect_failure": true,
       "status_code": 400,
       "ok": true
     },
     {
-      "name": "missing csrf rejected",
+      "name": "identity code rejected when invalid",
       "method": "POST",
-      "path": "/api/mfa/provision",
+      "path": "/api/identity/verify",
       "expect_failure": true,
-      "status_code": 403,
+      "status_code": 400,
       "ok": true
     }
   ],

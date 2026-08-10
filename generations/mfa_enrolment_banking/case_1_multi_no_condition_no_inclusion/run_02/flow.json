@@ -2,16 +2,16 @@
   "ok": true,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 6,
-  "steps_passed": 6,
+  "steps_total": 8,
+  "steps_passed": 7,
   "happy_path_passed": 4,
   "happy_path_total": 4,
-  "negative_passed": 2,
-  "negative_total": 2,
+  "negative_passed": 3,
+  "negative_total": 4,
   "negatives_meaningful": true,
   "steps": [
     {
-      "name": "sign in and request identity code",
+      "name": "start identity verification",
       "method": "POST",
       "path": "/api/signin",
       "expect_failure": false,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "verify identity",
+      "name": "verify identity code",
       "method": "POST",
       "path": "/api/identity",
       "expect_failure": false,
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "start authenticator provisioning",
+      "name": "begin authenticator provisioning",
       "method": "POST",
       "path": "/api/mfa/provision",
       "expect_failure": false,
@@ -43,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "wrong registered phone rejected",
+      "name": "incorrect registered phone rejected",
       "method": "POST",
       "path": "/api/signin",
       "expect_failure": true,
@@ -51,14 +51,31 @@
       "ok": true
     },
     {
-      "name": "identity verification without CSRF rejected",
+      "name": "incorrect identity redirect rejected",
       "method": "POST",
-      "path": "/api/identity",
+      "path": "/api/signin",
       "expect_failure": true,
-      "status_code": 401,
+      "status_code": 400,
+      "ok": true
+    },
+    {
+      "name": "MFA settings unavailable without authenticated session",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": false,
+      "response_message": "{'csrf': 'lyB-0IOA6LnBchGycSzy_cOt0aAwbQyB_AcIbDdEYOo', 'email': 'marcus@example.test', 'phone': '+1 ••• ••• 0184', 'mfaEnabled': False, 'backupCodesRemaining':"
+    },
+    {
+      "name": "malformed authenticator code rejected",
+      "method": "POST",
+      "path": "/api/mfa/activate",
+      "expect_failure": true,
+      "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 6
+  "spec_steps": 8
 }

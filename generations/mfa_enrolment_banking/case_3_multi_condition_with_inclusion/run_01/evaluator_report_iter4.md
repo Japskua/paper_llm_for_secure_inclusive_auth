@@ -1,105 +1,85 @@
 ## SUMMARY
 
-The artifact is a strong single-file Bun HTTPS MFA implementation with server-side sessions, CSRF checks, secure cookie attributes, TLS configuration, CSP/HSTS headers, input validation, TOTP verification, recovery-code hashing, lockouts, and a mobile-friendly UI. However, it does not fully meet the required simulated/testing flow: the displayed “QR code” is not a real scannable QR code, and mocked OTP/recovery values are not logged in the browser console as explicitly required. Therefore, the artifact cannot be accepted as complete.
+The artifact is a well-structured single-file Bun/TypeScript MFA demo with TLS, session cookies, CSRF checks, protected MFA endpoints, encrypted OTP secrets, hashed recovery codes, and accessible-looking mobile styling. However, a critical client-side event binding defect prevents all button interactions from working. In addition, the displayed “QR code” is not a valid scannable QR encoding of the provisioning URI, and the recovery-code regeneration flow becomes unusable after codes have been saved. Therefore, the artifact does not meet the functional requirements.
 
 ## FUNCTIONAL_CHECK
 
-- **Single-file Bun server plus HTML, CSS, and vanilla browser JavaScript: PASS**
-  - The entire server and SPA are contained in `app.ts`.
-  - There are no frameworks, external assets, build tools, or network calls.
-  - TLS uses `certs/cert.pem` and `certs/key.pem` as required.
+- **PASS — Single-file Bun application with no frameworks, bundlers, external assets, or compilation step**
+  - The entire server, HTML, CSS, and browser JavaScript are contained in `app.ts`.
+  - It uses Bun APIs directly and imports only Node built-in modules.
+  - No external network requests, package imports, build tools, or frontend frameworks are used.
 
-- **Responsive, mobile-legible, dyslexia-conscious UI: PASS**
-  - The UI has a constrained mobile layout, generous spacing, readable font sizing, clear focus styles, short instructions, examples for expected inputs, and no animated/timed UI.
-  - Step indicators and a single prominent primary action are provided on each main screen.
-  - Help content is present throughout the flow.
+- **PASS — TLS server uses the required certificate paths**
+  - The server verifies the presence of `certs/cert.pem` and `certs/key.pem`.
+  - `Bun.serve` is configured with these certificate files under `tls`.
 
-- **Sign-in, authenticator provisioning, OTP verification, recovery-code generation, regeneration, and logout flow: PASS**
-  - Sign-in creates an authenticated server-side session.
-  - Provisioning generates a TOTP secret and URI.
-  - OTP verification validates standard six-digit TOTP codes and prevents reuse of accepted counters.
-  - Successful verification enables MFA and creates recovery codes.
-  - Regeneration replaces recovery codes, and logout invalidates the session.
+- **PASS — Secure response headers and cookie flags are implemented**
+  - Responses include HSTS, CSP, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, referrer policy, permissions policy, and no-store cache control.
+  - Session cookies are configured with `HttpOnly`, `Secure`, and `SameSite=Strict`.
 
-- **Manual authenticator setup and copy support: PASS**
-  - The setup screen displays a manual Base32 secret and supports copying it.
-  - The verification screen permits manual six-digit OTP entry.
-  - Recovery codes are displayed and can be copied.
+- **PASS — Server-side authorization and IDOR protections are substantially implemented**
+  - Protected MFA routes resolve the account solely from the authenticated server-side session.
+  - There are no client-supplied account or user identifiers on MFA routes.
+  - Session ownership is checked through `owner(request)`.
 
-- **QR-code option functions correctly: FAIL**
-  - `qrSvg()` creates a pseudo-random SVG pattern rather than encoding `setupUri` as a standards-compliant QR code.
-  - Authenticator applications will not be able to scan the displayed image to provision the TOTP secret.
-  - This makes the advertised QR setup path non-functional.
+- **PASS — CSRF protections are implemented for state-changing requests**
+  - State-changing routes require a per-session `X-CSRF-Token`.
+  - The token is checked using `timingSafeEqual`.
+  - Origin validation is also performed through `trusted(request)`.
 
-- **Mocks are logged in the browser console and testing values are exposed as required: FAIL**
-  - The browser logs only generic messages such as `"Mock authenticator setup delivered..."` and `"Authenticator verified..."`.
-  - The generated TOTP value is not normally returned to the client; it is only conditionally added as `testTotp` on the server when an environment variable is enabled.
-  - Even when `testTotp` is returned, the client never logs or displays it.
-  - Recovery codes are displayed in the UI but are not logged with their actual values in the browser console.
-  - This does not meet the explicit requirement that mock OTP and recovery-code values be returned to the UI and shown through browser `console.log`.
+- **PASS — OTP secret and backup codes have appropriate protected storage in the in-memory demo**
+  - OTP secrets are encrypted with AES-256-GCM.
+  - Recovery codes are generated using cryptographic randomness and stored as PBKDF2 hashes with a pepper.
+  - Backup-code verification uses timing-safe comparison.
 
-- **Server-side authorization and IDOR protection: PASS**
-  - MFA endpoints derive the account exclusively from the authenticated server-side session.
-  - No client-controlled account or user ID is accepted by MFA endpoints.
-  - Session ownership is checked on protected requests.
+- **PASS — Verification controls include expiry, single use, and lockout behavior**
+  - Identity codes have a 10-minute expiry and are single-use.
+  - TOTP verification rejects reused TOTP time steps.
+  - Recovery codes are marked used after successful verification.
+  - Identity, authenticator, and recovery verification failures are lockable after repeated failures.
 
-- **CSRF protection: PASS**
-  - State-changing protected endpoints require a same-origin HTTPS `Origin` header and matching `X-CSRF-Token`.
-  - Session cookies use `SameSite=Strict`.
+- **PASS — Session lifecycle protections are present**
+  - The session is rotated after successful identity verification.
+  - Idle and absolute session expiration are enforced.
+  - Logout removes the server-side session and clears the cookie.
 
-- **Secure cookie and session handling: PASS**
-  - Session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
-  - Session IDs are generated cryptographically.
-  - Sessions have idle and absolute expiration.
-  - Existing sessions for the account are removed at sign-in, mitigating session fixation and concurrent stale sessions.
-  - Logout invalidates the server-side session and expires the cookie.
+- **FAIL — Browser interactivity and all primary actions function**
+  - The element helper registers handlers using `n.addEventListener(k.slice(2), v)`.
+  - Button props are passed as `onClick`, so this registers listeners for `"Click"` rather than the required lowercase DOM event type `"click"`.
+  - DOM event types are case-sensitive; user-generated click events use `"click"`.
+  - As a result, buttons such as “Send identity code,” “Check code,” “Set up authenticator,” “Copy setup secret,” logout, and recovery-code actions do not execute.
 
-- **Security response headers and CORS restriction: PASS**
-  - CSP with per-page nonce, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, referrer policy, and cache prevention are set.
-  - CORS is only enabled for same-origin trusted localhost origins.
+- **FAIL — QR-code option is functional and scannable**
+  - The `qr(seed)` function creates a decorative pseudo-random grid based on the URI string.
+  - It does not implement QR encoding, error correction, QR finder patterns correctly, data mode encoding, or serialization of the `otpauth://` URI.
+  - An authenticator application cannot scan this pattern to configure the account.
+  - This does not satisfy the requirement to offer a usable QR-code setup option.
 
-- **Secret and recovery-code protection at rest: PASS**
-  - TOTP secrets are encrypted with AES-GCM.
-  - Recovery codes are generated with cryptographically secure randomness and stored as keyed HMAC verifiers rather than plaintext.
-  - Secrets, backup codes, and session tokens are not stored in browser storage.
+- **FAIL — Recovery-code regeneration/re-request flow works after the user leaves the initial code screen**
+  - After the user selects “I saved my codes,” `S.codes` is cleared.
+  - Returning through “View recovery codes” presents “Create recovery codes.”
+  - The server correctly refuses this request when existing codes are present unless `confirm: true`, but the client does not show the replacement confirmation UI in this state.
+  - The existing confirmation UI is only reachable while `S.codes.length` is nonzero.
+  - Therefore, users cannot regenerate replacement recovery codes after leaving the initial display screen.
 
-- **Sensitive-value logging protection: PASS, with testing-flow caveat**
-  - Server logs do not expose TOTP seeds, OTP values, backup codes, or session tokens.
-  - This is good from the security requirement perspective.
-  - However, the required browser-console mock/testing output remains missing.
-
-- **Validation, XSS defense, redirect safety, and generic error handling: PASS**
-  - Input formats are validated server-side.
-  - No database queries or redirect parameters are present.
-  - Client rendering uses escaping for dynamic values.
-  - The outer server handler returns a generic error response rather than stack traces.
-
-- **Single-use, time-bound codes, rate limiting, and lockouts: PASS**
-  - TOTP verification uses time counters and rejects already-used accepted counters.
-  - OTP and recovery-code failures are locked out after five failures for five minutes.
-  - Recovery codes are removed after successful use.
-
-- **Code validity / runtime viability: PASS, except QR implementation**
-  - The Bun APIs and server structure are coherent for Bun 1.3.0.
-  - No clear TypeScript syntax or routing error is present.
-  - The QR implementation is logically invalid for its intended purpose, even though it will render SVG successfully.
+- **FAIL — MFA enrolment flow is usable in the mobile browser**
+  - Although the UI has responsive CSS, plain-language text, labels, autocomplete attributes, spacing, help text, and simulated console logs, the broken click handlers prevent the user from progressing through the flow.
+  - The core functional UX requirement is therefore not met.
 
 ## FAILING_ITEMS
 
-- The displayed QR code is not a real QR encoding of the `otpauth://` provisioning URI. It is a custom pseudo-random pattern and cannot be scanned by authenticator applications.
-- The required mock OTP is not exposed in the normal browser flow, is not displayed in the UI, and is not written to browser `console.log`.
-- The recovery-code values are not written to browser `console.log`; only a generic message is logged.
-- The conditional `ACADEMIC_TEST_OUTPUT_ENABLED` behavior is server-only and incomplete because the client ignores `data.testTotp`.
+- All browser button event handlers are registered under `"Click"` instead of `"click"`, preventing the interface from responding to clicks.
+- The purported QR code is a visual placeholder rather than a standards-compliant QR code containing the returned `otpauth://totp/...` provisioning URI.
+- The recovery-code screen cannot initiate the required confirmation/replacement flow once previously generated recovery codes have been dismissed from client state.
+- Because of the event-handler defect, copy-to-clipboard, sign-out, retry, setup, verification, code generation, and recovery verification controls are all nonfunctional in practice.
 
 ## NEW_TASKS
 
-1. Replace `qrSvg()` with a standards-compliant, self-contained QR-code encoder that encodes `setupUri` into a QR image scannable by common authenticator applications. Do not use external packages, assets, or network calls.
-
-2. Update `/api/provision` and the browser provisioning flow so the deterministic/mock OTP needed for testing is returned in the normal testing flow and is both visibly available in the UI and logged using browser `console.log`, without placing it in URLs, storage, cookies, server logs, or error responses.
-
-3. Update the successful OTP-verification and recovery-code display flow to log the actual generated recovery codes in the browser console, for example with `console.log("Mock recovery codes:", currentCodes)`, while retaining the existing UI display and avoiding server-side sensitive logging.
-
-4. Remove or complete the unused `ACADEMIC_TEST_OUTPUT_ENABLED` / `testTotp` path so that the returned testing value is consistently consumed by the client and fulfills the stated browser-console testing requirement.
+1. Update the client element helper so event names are normalized to lowercase before registration, for example: `n.addEventListener(k.slice(2).toLowerCase(), v)`.
+2. Verify every interactive control after the event-handler fix, including sign-in, identity-code verification, MFA enrollment, QR reveal, secret reveal/copy, TOTP confirmation, recovery-code generation/copy/replacement, recovery-code verification, help, back navigation, and logout.
+3. Replace the pseudo-random `qr()` renderer with a valid in-browser QR encoder that encodes the exact `S.uri` provisioning URI into a standards-compliant, authenticator-scannable QR code, without introducing external network calls or external assets.
+4. Modify the recovery-code UI so it knows whether recovery codes already exist and can always present a replacement confirmation flow after the user has left the initial code-display state.
+5. Ensure the recovery-code replacement action calls `/api/mfa/backup/regenerate` with `{ confirm: true }` only after an explicit user confirmation, then displays and logs the newly returned codes in the browser.
 
 ## DECISION
 

@@ -1,90 +1,73 @@
 ## SUMMARY
 
-The artifact is a well-structured single-file Bun HTTPS application with a responsive MFA enrolment flow, server-side session ownership checks, CSRF validation, secure cookies, restrictive headers, encrypted TOTP secret storage, hashed recovery-code storage, and OTP/recovery-code lockouts. However, it does not fully meet the stated requirements because the displayed “QR code” is not a valid QR encoding of the provisioning URI, and the mock OTP values are not deterministic as required. These are functional failures in core enrolment/testing behavior.
+The artifact is a strong single-file Bun MFA demo with working server-side sessions, CSRF checks, TLS configuration, MFA enrolment, TOTP/recovery-code verification, rate limiting, secure headers, responsive UI, and browser-side mock logging. However, it does not fully meet the requirements because the displayed “QR setup pattern” is not a valid scannable provisioning QR code, the sign-in request response permits demo-account enumeration, and sensitive mock values remain displayed in an on-page log history after the user has completed a step.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file Bun server and client application**
-  - The server, HTML, CSS, and browser JavaScript are all contained in `app.ts`.
-  - It uses `Bun.serve` directly and does not require a framework, bundler, compiler command, external assets, or external network calls.
+- **PASS — Single-file Bun application with no frameworks, bundlers, external assets, or external network calls.**  
+  The complete HTML, CSS, browser JavaScript, Bun server, TLS setup, and API logic are contained in `app.ts`. There are no imported web frameworks or external HTTP requests.
 
-- **PASS — HTTPS/TLS configuration**
-  - The Bun server is configured with `certs/cert.pem` and `certs/key.pem`.
-  - Requests are rejected unless they use HTTPS and a trusted localhost host name.
+- **PASS — TLS is required and configured using the specified certificate paths.**  
+  The server refuses to start unless `certs/cert.pem` and `certs/key.pem` exist, and configures `Bun.serve` with TLS certificate and key data.
 
-- **PASS — Responsive, mobile-oriented, dyslexia-aware UI**
-  - The page includes a mobile viewport meta tag, a constrained mobile layout, readable font sizing, increased line/letter spacing, clear contrast, generous input/button sizes, short instructions, examples, step indicators, and no animated or time-pressured UI.
-  - Help content is available on each primary screen.
+- **PASS — Mobile-responsive, dyslexia-conscious user interface.**  
+  The UI uses a constrained mobile-width layout, readable font sizing, increased letter spacing, plain-language instructions, visual progress indicators, examples for code fields, spaced controls, and no animations or countdown timers.
 
-- **PASS — Authenticator provisioning supports manual setup and copying**
-  - The provisioning secret is shown manually, can be hidden/revealed, and can be copied with `navigator.clipboard`.
-  - The TOTP verification field supports numeric mobile keyboards and `autocomplete="one-time-code"`.
+- **PASS — MFA enrolment and verification functionality is implemented.**  
+  The flow supports identity verification, authenticator enrolment, authenticator confirmation, MFA sign-in challenge, recovery-code creation, recovery-code use, regeneration, and logout. TOTP and recovery code verification are server-side and work against the generated mock values.
 
-- **FAIL — QR-code option is functional**
-  - `drawQr()` produces a pseudo-random canvas pattern with finder-like squares. It does not implement QR encoding, error correction, format/version data, or encode `setupUri`.
-  - An authenticator application cannot scan this canvas as an `otpauth://` URI, despite the UI telling users to scan it.
-  - This fails the requirement to offer a working QR-code option for authenticator provisioning.
+- **FAIL — QR-code enrolment option is not functional.**  
+  `fakeQr()` creates a pseudo-random grid with finder-like shapes, but it does not encode the provisioning URI as a standards-compliant QR code. An authenticator application cannot scan it to configure the generated TOTP secret. This means the advertised “Show QR setup pattern” option is misleading and unusable.
 
-- **FAIL — Mock OTP values are deterministic**
-  - `mockOtp` is generated from a newly random TOTP secret and the current 30-second counter:
-    - `generateSecret()` uses cryptographically random values.
-    - `totpForCounter(secret, Math.floor(Date.now() / 30000))` changes over time.
-  - Therefore the browser-console mock code is neither fixed nor deterministic across runs, contrary to the requirement for deterministic mock values.
-  - Verification itself works within the allowed TOTP time window, but the testing mock behavior does not satisfy the stated requirement.
+- **PASS — Manual authenticator secret option and clipboard support are provided.**  
+  The enrolment page can reveal the Base32 secret and copy it to the clipboard. Recovery codes can also be copied, with a browser-controls fallback if Clipboard API access fails.
 
-- **PASS — Browser-console mock output and UI test visibility**
-  - The browser code calls `console.log` through `log()`.
-  - Mock OTPs and generated recovery codes are shown in the UI and logged in the browser console as requested for testing.
+- **PASS — Secrets and session tokens are not stored in browser storage or non-HttpOnly cookies.**  
+  Client state is held in JavaScript memory only. The session cookie is configured with `HttpOnly`, `Secure`, and `SameSite=Strict`.
 
-- **PASS — MFA verification and recovery-code behavior**
-  - TOTP values are six digits and accepted only within a limited counter window.
-  - Pending TOTP counters prevent reuse for the enrolment verification flow.
-  - Recovery codes are generated with CSPRNG, stored as keyed HMAC verifiers, removed after successful use, and therefore single-use.
-  - OTP and recovery-code failures are rate limited with lockout behavior.
+- **PASS — Server-side authorization prevents direct IDOR on MFA settings.**  
+  MFA endpoints use `owner()` or `pendingOwner()`, derive the account from the authenticated server-side session, and do not accept user/account identifiers from client requests.
 
-- **PASS — Server-side authorization and IDOR resistance**
-  - Account identity is obtained exclusively from the server-side session (`session.userId`).
-  - MFA endpoints do not accept client-controlled account/user IDs.
-  - Guessed or manipulated identifiers cannot select another account.
+- **PASS — CSRF protection is applied to state-changing API requests.**  
+  State-changing routes validate an `X-CSRF-Token` tied to the server-side session. The server also validates trusted origins for CSRF checks.
 
-- **PASS — CSRF protection for state-changing endpoints**
-  - State-changing endpoints require a same-origin HTTPS request and a matching `X-CSRF-Token`.
-  - The CSRF token is associated with the server-side session.
+- **PASS — Session controls are substantially implemented.**  
+  Sessions are server-side, use cryptographically random IDs, expire on idle and absolute timeouts, rotate after identity verification and MFA challenge completion, and are invalidated at logout.
 
-- **PASS — Secure session handling**
-  - Session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
-  - Sessions have idle and absolute expiry checks.
-  - Sign-in creates a new session and removes existing sessions for the same account.
-  - Logout invalidates the server-side session and expires the cookie.
+- **PASS — Secure response headers and restrictive CORS are implemented.**  
+  The server sets CSP with nonces, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, `Permissions-Policy`, and no-store caching. CORS is only returned for trusted local HTTPS origins.
 
-- **PASS — Security headers and restricted CORS**
-  - CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, and `Permissions-Policy` are set.
-  - CORS only allows a same-origin trusted localhost origin and credentialed requests from that origin.
+- **PASS — OTP secrets and recovery codes have appropriate cryptographic handling for this in-memory demo.**  
+  TOTP shared secrets are AES-256-GCM encrypted in server memory. Recovery codes are generated with `randomBytes` and stored as PBKDF2-SHA-256 hashes with per-code salts and a server-side pepper.
 
-- **PASS — Secret handling at rest and in browser storage**
-  - TOTP secrets are encrypted with AES-GCM before being placed in the server-side account record.
-  - Recovery codes are stored only as keyed HMAC hashes.
-  - No secrets, recovery codes, OTPs, or session tokens are written to `localStorage`, `sessionStorage`, or non-HttpOnly cookies.
+- **PASS — Verification codes are time-bound, single-use where required, and rate-limited.**  
+  Identity codes expire after ten minutes and are marked used. TOTP time steps are tracked to prevent reuse. Recovery codes are marked used after successful verification. Failed attempts trigger lockouts.
 
-- **PASS — Input validation and XSS defenses**
-  - Inputs are validated server-side for email, password, OTP, and recovery-code formats.
-  - Client-rendered dynamic values are escaped via `esc()` before insertion into HTML.
-  - There are no SQL queries; therefore parameterized-query requirements are not applicable to this in-memory mock implementation.
-  - There are no user-controlled redirects.
+- **FAIL — Sign-in request response allows identity/demo-account enumeration.**  
+  `/api/signin/request` returns `mockCode` only when the submitted address matches `marcus@example.com`. A caller can distinguish the supported demo account from any other syntactically valid email by inspecting the response JSON, despite the generic UI messaging. This violates the requirement to avoid account/user enumeration.
+
+- **FAIL — Sensitive values are unnecessarily retained and displayed in the page-level “Logs” panel.**  
+  Browser-console mock logging is explicitly requested for testing, but the app additionally renders its sensitive log history in the UI through `logs(r)`. This retains and exposes mock TOTP values and full recovery-code sets across subsequent screens, including after the user selects “I saved my codes.” This undermines the hide/reveal and secure-storage UX expectations and unnecessarily exposes secrets in the rendered page.
+
+- **PASS — Input validation and DOM output handling are generally safe.**  
+  Email, OTP, and recovery-code inputs are validated server-side. The client creates DOM nodes through `textContent` rather than interpolating untrusted user-controlled strings into HTML, reducing XSS exposure.
+
+- **PASS — Error responses are generic and do not disclose stack traces or secrets.**  
+  The top-level handler catch returns a generic error response, and API responses do not include stack traces, session tokens, encrypted records, or server-side cryptographic data.
 
 ## FAILING_ITEMS
 
-- The visual QR canvas is not a real QR code and does not encode the generated provisioning URI. Users cannot scan it with an authenticator app.
-- Mock OTP behavior is time-dependent and random because it derives from a random secret and the current TOTP time counter. It is not deterministic as explicitly required.
-- The on-page `<section class="logs">` duplicates OTPs and recovery codes in a visible log panel. Although browser-console disclosure is explicitly required for testing, presenting sensitive values in a persistent UI “Logs” panel unnecessarily broadens exposure and conflicts with the security requirement to avoid exposing such values in logs.
+- The QR pattern generated by `fakeQr()` is decorative rather than a valid QR encoding of `S.uri`. Users cannot scan it with an authenticator app.
+- The conditional `...(limit.supported ? { mockCode: code } : {})` in `/api/signin/request` makes `marcus@example.com` distinguishable from other addresses through API response shape.
+- The `logs(r)` UI panel displays and retains sensitive mock OTPs and recovery codes in the document after they should have been hidden or cleared. This is unnecessary because the test requirement only requires browser `console.log`.
 
 ## NEW_TASKS
 
-1. Replace `drawQr()` with a real, self-contained QR-code encoder implemented in `app.ts` that encodes `setupUri` into a standards-compliant, authenticator-scannable QR code; do not import an external asset or make a network request.
+1. Replace `fakeQr()` with a standards-compliant, locally generated QR encoder that encodes the returned `otpauth://` provisioning URI, ensuring authenticator apps can scan it without external assets or network calls.
 
-2. Make testing mock verification values deterministic. Define a deterministic mock enrolment path/value that is accepted by `/api/verify-otp`, log that value in the browser console, and keep it stable across page loads and test runs while preserving the real/simulated provisioning flow.
+2. Make `/api/signin/request` return the same response shape for every syntactically valid email address. Preserve the demo flow by returning a mock code uniformly in this academic demo, while allowing only the configured demo identity to successfully complete identity verification.
 
-3. Remove the visible persistent `Logs` panel or redact OTPs, secrets, and recovery codes from it. Retain the explicitly required browser `console.log` output for testing, and retain the dedicated controlled UI displays for setup secrets, mock OTPs, and recovery codes.
+3. Remove the rendered in-page `Logs` panel and its calls from all views. Keep the required mock values in browser `console.log` only, and clear sensitive in-memory UI values after they are no longer needed.
 
 ## DECISION
 

@@ -2,16 +2,24 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 13,
-  "steps_passed": 11,
-  "happy_path_passed": 9,
-  "happy_path_total": 11,
-  "negative_passed": 2,
-  "negative_total": 2,
+  "steps_total": 15,
+  "steps_passed": 14,
+  "happy_path_passed": 11,
+  "happy_path_total": 12,
+  "negative_passed": 3,
+  "negative_total": 3,
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "sign in",
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with demo account",
       "method": "POST",
       "path": "/api/signin",
       "expect_failure": false,
@@ -19,7 +27,7 @@
       "ok": true
     },
     {
-      "name": "verify identity",
+      "name": "verify registered phone identity",
       "method": "POST",
       "path": "/api/identity",
       "expect_failure": false,
@@ -51,7 +59,7 @@
       "ok": true
     },
     {
-      "name": "activate MFA and issue recovery codes",
+      "name": "activate MFA and receive recovery codes",
       "method": "POST",
       "path": "/api/mfa/activate",
       "expect_failure": false,
@@ -62,7 +70,7 @@
       ]
     },
     {
-      "name": "check active MFA status",
+      "name": "confirm enabled MFA status",
       "method": "GET",
       "path": "/api/mfa/status",
       "expect_failure": false,
@@ -70,7 +78,7 @@
       "ok": true
     },
     {
-      "name": "verify a recovery code",
+      "name": "verify and consume a recovery code",
       "method": "POST",
       "path": "/api/mfa/recover",
       "expect_failure": false,
@@ -90,13 +98,12 @@
       ]
     },
     {
-      "name": "verify replacement recovery code",
-      "method": "POST",
-      "path": "/api/mfa/recover",
+      "name": "confirm replacement recovery codes available",
+      "method": "GET",
+      "path": "/api/mfa/status",
       "expect_failure": false,
-      "status_code": 401,
-      "ok": false,
-      "response_message": "{'error': 'We could not complete that request. Please try again.'}"
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "log out",
@@ -115,14 +122,22 @@
       "ok": true
     },
     {
-      "name": "unauthenticated authenticator provisioning rejected",
+      "name": "identity verification without session rejected",
       "method": "POST",
-      "path": "/api/mfa/provision",
+      "path": "/api/identity",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "MFA status without authenticated session rejected",
+      "method": "GET",
+      "path": "/api/mfa/status",
       "expect_failure": true,
       "status_code": 401,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 13
+  "spec_steps": 15
 }

@@ -2,16 +2,16 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 15,
+  "steps_total": 14,
   "steps_passed": 13,
   "happy_path_passed": 10,
-  "happy_path_total": 12,
+  "happy_path_total": 11,
   "negative_passed": 3,
   "negative_total": 3,
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "start pre-auth session",
+      "name": "bootstrap pre-authentication session",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_failure": false,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "sign in with demo contact details",
+      "name": "sign in with registered contact details",
       "method": "POST",
       "path": "/api/auth/signin",
       "expect_failure": false,
@@ -27,7 +27,7 @@
       "ok": true
     },
     {
-      "name": "check MFA enrolment status",
+      "name": "load MFA enrolment status",
       "method": "GET",
       "path": "/api/mfa/status",
       "expect_failure": false,
@@ -35,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "confirm registered identity",
+      "name": "confirm identity",
       "method": "POST",
       "path": "/api/mfa/identity",
       "expect_failure": false,
@@ -62,7 +62,7 @@
       ]
     },
     {
-      "name": "view generated recovery codes",
+      "name": "load issued recovery codes",
       "method": "GET",
       "path": "/api/mfa/recovery",
       "expect_failure": false,
@@ -73,15 +73,6 @@
       ]
     },
     {
-      "name": "consume a recovery code",
-      "method": "POST",
-      "path": "/api/mfa/recovery/verify",
-      "expect_failure": false,
-      "status_code": 400,
-      "ok": false,
-      "response_message": "Verification could not be completed."
-    },
-    {
       "name": "regenerate recovery codes",
       "method": "POST",
       "path": "/api/mfa/recovery/regenerate",
@@ -90,7 +81,7 @@
       "ok": true
     },
     {
-      "name": "view regenerated recovery codes",
+      "name": "load regenerated recovery codes",
       "method": "GET",
       "path": "/api/mfa/recovery",
       "expect_failure": false,
@@ -101,7 +92,7 @@
       ]
     },
     {
-      "name": "consume regenerated recovery code",
+      "name": "use one regenerated recovery code",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
       "expect_failure": false,
@@ -110,38 +101,38 @@
       "response_message": "Verification could not be completed."
     },
     {
-      "name": "sign out",
-      "method": "POST",
-      "path": "/api/logout",
+      "name": "confirm consumed code is removed",
+      "method": "GET",
+      "path": "/api/mfa/recovery",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
     {
-      "name": "MFA status rejected after sign out",
-      "method": "GET",
-      "path": "/api/mfa/status",
-      "expect_failure": true,
-      "status_code": 401,
-      "ok": true
-    },
-    {
-      "name": "identity confirmation rejected without authenticated session",
+      "name": "malformed recovery code rejected",
       "method": "POST",
-      "path": "/api/mfa/identity",
+      "path": "/api/mfa/recovery/verify",
       "expect_failure": true,
-      "status_code": 401,
+      "status_code": 403,
       "ok": true
     },
     {
-      "name": "unknown route rejected",
-      "method": "GET",
-      "path": "/api/not-a-route",
+      "name": "consumed recovery code cannot be reused",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
       "expect_failure": true,
-      "status_code": 404,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "recovery regeneration without CSRF rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "expect_failure": true,
+      "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 15
+  "spec_steps": 14
 }

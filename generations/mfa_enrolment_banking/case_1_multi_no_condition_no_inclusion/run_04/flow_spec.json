@@ -1,7 +1,8 @@
 {
   "variables": {
     "email": "marcus@example.com",
-    "phone": "15551234567"
+    "phone": "15551234567",
+    "new_password": "CorrectHorseBatteryStaple1!"
   },
   "html_variables": {},
   "csrf": {
@@ -11,7 +12,12 @@
   },
   "steps": [
     {
-      "name": "start sign-in",
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "start sign-in identity flow",
       "method": "POST",
       "path": "/api/sign-in",
       "headers": {
@@ -25,7 +31,7 @@
       "expect_json_true": "ok",
       "capture": {
         "csrf": "csrf",
-        "identityCode": "testIdentityCode"
+        "identity_code": "testIdentityCode"
       }
     },
     {
@@ -37,7 +43,7 @@
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "code": "${identityCode}"
+        "code": "${identity_code}"
       },
       "expect_json_true": "ok",
       "capture": {
@@ -45,10 +51,10 @@
       }
     },
     {
-      "name": "load authenticated session",
+      "name": "check authenticated session",
       "method": "GET",
       "path": "/api/session",
-      "expect_json_true": "ok",
+      "expect_json_true": "signedIn",
       "capture": {
         "csrf": "csrf"
       }
@@ -64,12 +70,12 @@
       "body": {},
       "expect_json_true": "ok",
       "capture": {
-        "manualSecret": "secret",
-        "authenticatorOtp": "testAuthenticatorCode"
+        "manual_secret": "secret",
+        "authenticator_code": "testAuthenticatorCode"
       }
     },
     {
-      "name": "confirm authenticator",
+      "name": "confirm authenticator enrolment",
       "method": "POST",
       "path": "/api/mfa/confirm",
       "headers": {
@@ -77,16 +83,17 @@
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "manualSecret": "${manualSecret}",
-        "otp": "${authenticatorOtp}"
+        "manualSecret": "${manual_secret}",
+        "otp": "${authenticator_code}"
       },
       "expect_json_true": "ok",
       "capture": {
-        "recoveryCode": "recoveryCodes.0"
+        "recovery_code_used": "recoveryCodes.0",
+        "recovery_code_discarded_on_regen": "recoveryCodes.1"
       }
     },
     {
-      "name": "start authenticator verification",
+      "name": "start authenticator verification challenge",
       "method": "POST",
       "path": "/api/mfa/challenge",
       "headers": {
@@ -98,11 +105,11 @@
       },
       "expect_json_true": "ok",
       "capture": {
-        "verifyOtp": "testAuthenticatorCode"
+        "verify_code": "testAuthenticatorCode"
       }
     },
     {
-      "name": "complete authenticator verification",
+      "name": "verify enrolled authenticator",
       "method": "POST",
       "path": "/api/mfa/verify",
       "headers": {
@@ -110,7 +117,7 @@
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "otp": "${verifyOtp}"
+        "otp": "${verify_code}"
       },
       "expect_json_true": "ok"
     },
@@ -123,9 +130,18 @@
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "recoveryCode": "${recoveryCode}"
+        "recoveryCode": "${recovery_code_used}"
       },
       "expect_json_true": "ok"
+    },
+    {
+      "name": "check session before recovery regeneration",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "signedIn",
+      "capture": {
+        "csrf": "csrf"
+      }
     },
     {
       "name": "start recovery-code regeneration challenge",
@@ -140,7 +156,7 @@
       },
       "expect_json_true": "ok",
       "capture": {
-        "regenerateOtp": "testAuthenticatorCode"
+        "regenerate_code": "testAuthenticatorCode"
       }
     },
     {
@@ -152,11 +168,11 @@
         "X-CSRF-Token": "${csrf}"
       },
       "body": {
-        "otp": "${regenerateOtp}"
+        "otp": "${regenerate_code}"
       },
       "expect_json_true": "ok",
       "capture": {
-        "regeneratedRecoveryCode": "recoveryCodes.0"
+        "new_recovery_code": "recoveryCodes.0"
       }
     },
     {
@@ -173,7 +189,7 @@
   ],
   "negative_steps": [
     {
-      "name": "invalid sign-in phone rejected",
+      "name": "malformed sign-in phone rejected",
       "method": "POST",
       "path": "/api/sign-in",
       "headers": {
@@ -187,12 +203,12 @@
       "expect_failure": true
     },
     {
-      "name": "identity verification without pending session rejected",
+      "name": "incorrect identity code rejected",
       "method": "POST",
       "path": "/api/identity-verify",
       "headers": {
         "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "invalid"
+        "X-CSRF-Token": "${csrf}"
       },
       "body": {
         "code": "000000"
@@ -200,14 +216,29 @@
       "expect_failure": true
     },
     {
-      "name": "unauthenticated provisioning rejected",
+      "name": "reused recovery code rejected",
       "method": "POST",
-      "path": "/api/mfa/provision",
+      "path": "/api/mfa/recovery-verify",
       "headers": {
         "Origin": "https://localhost:3000",
-        "X-CSRF-Token": "invalid"
+        "X-CSRF-Token": "${csrf}"
       },
-      "body": {},
+      "body": {
+        "recoveryCode": "${recovery_code_used}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "pre-regeneration recovery code rejected after regeneration",
+      "method": "POST",
+      "path": "/api/mfa/recovery-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "${recovery_code_discarded_on_regen}"
+      },
       "expect_failure": true
     }
   ]

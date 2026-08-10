@@ -1,29 +1,23 @@
 {
   "variables": {
     "email": "marcus@example.test",
-    "new_password": "NewBankPass!9"
+    "new_password": "NewPass!9"
   },
   "html_variables": {},
   "csrf": {
-    "html_regex": null,
+    "html_regex": "(?!)",
     "field": "X-CSRF-Token",
     "in": "header"
   },
   "steps": [
     {
-      "name": "initialize CSRF session",
+      "name": "create pre-auth session and fetch CSRF token",
       "method": "GET",
       "path": "/api/csrf",
       "expect_json_true": "ok",
       "capture": {
         "csrf": "csrf"
       }
-    },
-    {
-      "name": "check unsigned session",
-      "method": "GET",
-      "path": "/api/session",
-      "expect_json_true": "ok"
     },
     {
       "name": "sign in",
@@ -47,7 +41,7 @@
       },
       "expect_json_true": "ok",
       "capture": {
-        "identityCode": "mockCode"
+        "identity_code": "mockCode"
       }
     },
     {
@@ -55,18 +49,19 @@
       "method": "POST",
       "path": "/api/identity/verify",
       "body": {
-        "code": "${identityCode}"
+        "code": "${identity_code}"
       },
       "expect_json_true": "ok"
     },
     {
-      "name": "create authenticator secret",
+      "name": "provision authenticator",
       "method": "POST",
       "path": "/api/mfa/provision",
       "body": {},
       "expect_json_true": "ok",
       "capture": {
-        "authenticatorOtp": "mockOtp"
+        "authenticator_secret": "secret",
+        "authenticator_otp": "mockOtp"
       }
     },
     {
@@ -74,26 +69,26 @@
       "method": "POST",
       "path": "/api/mfa/verify",
       "body": {
-        "otp": "${authenticatorOtp}",
+        "otp": "${authenticator_otp}",
         "manualSecret": ""
       },
       "expect_json_true": "ok",
       "capture": {
-        "recoveryCode": "codes.0"
+        "recovery_code": "codes.0"
       }
     },
     {
-      "name": "confirm MFA status",
+      "name": "check MFA status",
       "method": "GET",
       "path": "/api/mfa/status",
       "expect_json_true": "ok"
     },
     {
-      "name": "use initial recovery code",
+      "name": "use recovery code",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
       "body": {
-        "recoveryCode": "${recoveryCode}"
+        "recoveryCode": "${recovery_code}"
       },
       "expect_json_true": "ok"
     },
@@ -104,15 +99,15 @@
       "body": {},
       "expect_json_true": "ok",
       "capture": {
-        "regeneratedRecoveryCode": "codes.0"
+        "regenerated_recovery_code": "codes.0"
       }
     },
     {
-      "name": "use regenerated recovery code",
+      "name": "verify regenerated recovery code",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
       "body": {
-        "recoveryCode": "${regeneratedRecoveryCode}"
+        "recoveryCode": "${regenerated_recovery_code}"
       },
       "expect_json_true": "ok"
     },
@@ -130,26 +125,27 @@
       "method": "POST",
       "path": "/api/signin",
       "body": {
-        "email": "${email}",
+        "email": "marcus@example.test",
         "password": "WrongPass!9"
       },
       "expect_failure": true
     },
     {
-      "name": "incorrect identity code rejected",
+      "name": "invalid authenticator code rejected",
       "method": "POST",
-      "path": "/api/identity/verify",
+      "path": "/api/mfa/verify",
       "body": {
-        "code": "000000"
+        "otp": "000000",
+        "manualSecret": ""
       },
       "expect_failure": true
     },
     {
-      "name": "invalid recovery code rejected",
+      "name": "malformed recovery code rejected",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
       "body": {
-        "recoveryCode": "AAAA-BBBB-CCCC"
+        "recoveryCode": "INVALID"
       },
       "expect_failure": true
     }

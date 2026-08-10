@@ -80,6 +80,54 @@ these journeys work, since a browser can read an on-page code and type it back
 where an HTTP client cannot. Flow results are artifact metadata and never enter
 the scores or statistics.
 
+## Case 3 produces artifacts that are measurably less likely to work
+
+All thirty artifacts measured with the same instrument, after case 3 was
+regenerated at the same twelve-iteration ceiling as the other cases:
+
+    case                  converged  HTTP 200  client live  iterations  screenshots
+    1 no condition            10/10     10/10        10/10         5.0         11.4
+    2 dyslexia named          10/10     10/10        10/10         4.6         11.1
+    3 detailed guidance        4/10      8/10         6/10        11.0          5.4
+
+"client live" is the honest liveness figure. An artifact can return HTTP 200
+while its client script is dead, because that script lives in a template string
+inside app.ts that Bun never parses; two case-3 artifacts are in exactly that
+state. On the HTTP measure case 3 looks like 8/10, and it is really 6/10.
+
+Case 3 was regenerated once from scratch and the result replicated closely:
+converged 4/10 both times, HTTP 8/10 both times, mean iterations 11.2 and 11.0.
+The difficulty is a stable property of the condition rather than sampling noise.
+
+Raising the ceiling does not help. A two-run pilot at twenty-four iterations
+produced one run that consumed all twenty-four without converging and one that
+converged at six, well inside the old ceiling, with no gain in screenshots.
+Convergence does not predict screenshot count either: in the original ten,
+converged runs averaged 3.0 screenshots and non-converged runs 3.5.
+
+The extra client-side JavaScript the inclusivity requirements call for — QR
+rendering, reveal and hide, copy to clipboard — is where these artifacts break,
+and it is invisible to the pipeline that produced them.
+
+## Flow-test limitation, specific to this study
+
+The HTTP flow test is a weaker instrument here than in the password-recovery
+study, and its pass rate should not be compared across the two.
+
+Story 1's verification codes were mock values returned directly in responses, so
+a plain HTTP client could capture and replay them. This study's journey turns on
+a time-based one-time passcode derived from a shared secret, which an HTTP client
+cannot compute, and on backup codes that several artifacts emit as a
+comma-joined log line rather than structured data. The spec derivation was
+extended to capture the mock OTP fields the artifacts expose, which lifted the
+pass rate from 1/30 to 5/30, and runs that still fail reach 68% of the journey on
+average before stopping — almost always at the point of consuming a backup code.
+
+Boot success (28/30) and the screenshot walkthrough are the better evidence that
+these journeys work, since a browser can read an on-page code and type it back
+where an HTTP client cannot. Flow results are artifact metadata and never enter
+the scores or statistics.
+
 ## Case 3 produced systematically less complete artifacts
 
 This is a result, not an instrument problem, and it must be stated before any

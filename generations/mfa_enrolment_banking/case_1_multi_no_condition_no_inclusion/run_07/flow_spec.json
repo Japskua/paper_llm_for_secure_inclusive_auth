@@ -11,7 +11,7 @@
   },
   "steps": [
     {
-      "name": "sign in for MFA enrolment",
+      "name": "sign in",
       "method": "POST",
       "path": "/api/login",
       "body": {
@@ -24,13 +24,7 @@
       }
     },
     {
-      "name": "load authenticated enrolment state",
-      "method": "GET",
-      "path": "/api/me",
-      "expect_json_true": "authenticated"
-    },
-    {
-      "name": "confirm account identity",
+      "name": "confirm identity",
       "method": "POST",
       "path": "/api/mfa/identity",
       "body": {
@@ -39,40 +33,22 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "load provisioning state",
-      "method": "GET",
-      "path": "/api/me",
-      "expect_json_true": "authenticated"
-    },
-    {
       "name": "create authenticator secret",
       "method": "POST",
       "path": "/api/mfa/provision",
       "body": {},
       "capture": {
-        "test_otp": "testOtp"
+        "otp": "testOtp"
       }
     },
     {
-      "name": "load OTP verification state",
-      "method": "GET",
-      "path": "/api/me",
-      "expect_json_true": "authenticated"
-    },
-    {
-      "name": "verify authenticator and enable MFA",
+      "name": "verify authenticator",
       "method": "POST",
       "path": "/api/mfa/verify",
       "body": {
-        "otp": "${test_otp}"
+        "otp": "${otp}"
       },
       "expect_json_true": "ok"
-    },
-    {
-      "name": "load recovery-code state",
-      "method": "GET",
-      "path": "/api/me",
-      "expect_json_true": "authenticated"
     },
     {
       "name": "generate recovery codes",
@@ -91,15 +67,18 @@
       "expect_json_true": "ok"
     },
     {
-      "name": "load completed MFA state",
-      "method": "GET",
-      "path": "/api/me",
-      "expect_json_true": "authenticated"
-    },
-    {
       "name": "view remaining recovery codes",
       "method": "GET",
       "path": "/api/mfa/recovery"
+    },
+    {
+      "name": "redeem a recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
     },
     {
       "name": "log out",
@@ -121,20 +100,11 @@
       "expect_failure": true
     },
     {
-      "name": "invalid authenticator code rejected",
-      "method": "POST",
-      "path": "/api/mfa/verify",
-      "body": {
-        "otp": "000000"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "malformed recovery code rejected",
+      "name": "used recovery code rejected",
       "method": "POST",
       "path": "/api/mfa/recovery/redeem",
       "body": {
-        "code": "NOT-A-RECOVERY-CODE"
+        "code": "${recovery_code}"
       },
       "expect_failure": true
     }

@@ -1,0 +1,76 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "password": "BankPass!42",
+    "new_password": "NewPass!42"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_identity",
+      "actions": [
+        {
+          "do": "wait_for",
+          "selector": "text=Sign in to start MFA setup"
+        },
+        {
+          "do": "fill",
+          "selector": "input[type='email']",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "input[type='password']",
+          "value": "${password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in')"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Send identity code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#id"
+        }
+      ]
+    },
+    {
+      "name": "set_up_authenticator",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#id",
+          "value": "123456"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Check code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Scan this QR code"
+        }
+      ]
+    },
+    {
+      "name": "check_authenticator",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('I added it to my app')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#otp"
+        }
+      ]
+    }
+  ],
+  "blocking_issue": "The required current authenticator code cannot be obtained with the permitted actions. The server returns simulationCode only in the /api/authenticator/confirm response, and the client writes its value only to console.log. The only DOM log entry is the literal text \"Academic simulation authenticator test code delivered to browser console.\", which contains no six-digit code. The permitted read action can read DOM elements but cannot read browser-console output, and no permitted action can calculate a TOTP from the displayed setup secret. Therefore the authenticator confirmation, recovery-code, and completion stages cannot be reached by a complete valid browser-action plan."
+}

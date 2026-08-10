@@ -1,31 +1,19 @@
 {
   "variables": {
     "email": "marcus@northstar.demo",
-    "phone": "+15550123456",
-    "new_password": "NorthstarDemo!2025"
+    "phone": "+15550123456"
   },
   "html_variables": {},
-  "csrf": null,
+  "csrf": {
+    "html_regex": "let csrf = \"([^\"]*)\"",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
   "steps": [
-    {
-      "name": "load enrolment page",
-      "method": "GET",
-      "path": "/"
-    },
-    {
-      "name": "check signed-out session",
-      "method": "GET",
-      "path": "/api/session",
-      "expect_json_true": "ok"
-    },
     {
       "name": "start identity check",
       "method": "POST",
       "path": "/api/signin",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
-      },
       "body": {
         "email": "${email}",
         "phone": "${phone}"
@@ -40,11 +28,6 @@
       "name": "verify identity",
       "method": "POST",
       "path": "/api/identity/verify",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "${identity_code}"
       },
@@ -57,11 +40,6 @@
       "name": "create authenticator setup",
       "method": "POST",
       "path": "/api/mfa/provision",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok",
       "capture": {
@@ -72,42 +50,27 @@
       "name": "activate authenticator",
       "method": "POST",
       "path": "/api/mfa/activate",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "${totp_code}"
       },
       "expect_json_true": "ok",
       "capture": {
-        "recovery_code": "backupCodes.0"
+        "backup_code": "backupCodes.0"
       }
     },
     {
       "name": "acknowledge initial recovery codes",
       "method": "POST",
       "path": "/api/mfa/backup/acknowledge",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok"
     },
     {
-      "name": "use recovery code",
+      "name": "verify a recovery code",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "code": "${recovery_code}"
+        "code": "${backup_code}"
       },
       "expect_json_true": "ok"
     },
@@ -115,26 +78,16 @@
       "name": "regenerate recovery codes",
       "method": "POST",
       "path": "/api/mfa/backup/regenerate",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok",
       "capture": {
-        "regenerated_recovery_code": "backupCodes.0"
+        "regenerated_backup_code": "backupCodes.0"
       }
     },
     {
       "name": "acknowledge regenerated recovery codes",
       "method": "POST",
       "path": "/api/mfa/backup/acknowledge",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok"
     },
@@ -142,39 +95,25 @@
       "name": "log out",
       "method": "POST",
       "path": "/api/logout",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok"
     }
   ],
   "negative_steps": [
     {
-      "name": "invalid identity details rejected",
+      "name": "invalid sign-in identity rejected",
       "method": "POST",
       "path": "/api/signin",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
-      },
       "body": {
         "email": "not-an-email",
-        "phone": "bad"
+        "phone": "invalid"
       },
       "expect_failure": true
     },
     {
-      "name": "wrong identity code rejected",
+      "name": "incorrect identity code rejected",
       "method": "POST",
       "path": "/api/identity/verify",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "code": "000000"
       },
@@ -184,25 +123,9 @@
       "name": "used recovery code rejected",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "code": "${recovery_code}"
+        "code": "${backup_code}"
       },
-      "expect_failure": true
-    },
-    {
-      "name": "missing csrf token rejected",
-      "method": "POST",
-      "path": "/api/mfa/backup/regenerate",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
-      },
-      "body": {},
       "expect_failure": true
     }
   ]

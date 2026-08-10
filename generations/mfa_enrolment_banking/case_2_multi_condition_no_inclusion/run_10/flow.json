@@ -2,14 +2,22 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": false,
-  "steps_total": 12,
-  "steps_passed": 3,
-  "happy_path_passed": 0,
-  "happy_path_total": 9,
-  "negative_passed": 3,
-  "negative_total": 3,
+  "steps_total": 15,
+  "steps_passed": 5,
+  "happy_path_passed": 1,
+  "happy_path_total": 11,
+  "negative_passed": 4,
+  "negative_total": 4,
   "negatives_meaningful": false,
   "steps": [
+    {
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
     {
       "name": "start identity verification",
       "method": "POST",
@@ -36,7 +44,16 @@
       "response_message": "We could not complete that request. Please try again."
     },
     {
-      "name": "begin authenticator setup",
+      "name": "open security settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "start authenticator setup",
       "method": "POST",
       "path": "/api/mfa/setup",
       "expect_failure": false,
@@ -61,7 +78,7 @@
       "response_message": "We could not complete that request. Please try again."
     },
     {
-      "name": "view security settings",
+      "name": "confirm MFA is active",
       "method": "GET",
       "path": "/api/mfa/settings",
       "expect_failure": false,
@@ -73,6 +90,15 @@
       "name": "use saved recovery code",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "return to security settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
       "expect_failure": false,
       "status_code": 500,
       "ok": false,
@@ -91,15 +117,6 @@
       "response_message": "We could not complete that request. Please try again."
     },
     {
-      "name": "return to security settings",
-      "method": "GET",
-      "path": "/api/mfa/settings",
-      "expect_failure": false,
-      "status_code": 500,
-      "ok": false,
-      "response_message": "We could not complete that request. Please try again."
-    },
-    {
       "name": "sign out",
       "method": "POST",
       "path": "/api/auth/logout",
@@ -109,7 +126,7 @@
       "response_message": "We could not complete that request. Please try again."
     },
     {
-      "name": "malformed identity details rejected",
+      "name": "invalid identity details rejected",
       "method": "POST",
       "path": "/api/auth/start",
       "expect_failure": true,
@@ -117,7 +134,7 @@
       "ok": true
     },
     {
-      "name": "identity verification without csrf rejected",
+      "name": "identity verification without CSRF rejected",
       "method": "POST",
       "path": "/api/auth/verify",
       "expect_failure": true,
@@ -125,14 +142,22 @@
       "ok": true
     },
     {
-      "name": "settings unavailable after sign out",
-      "method": "GET",
-      "path": "/api/mfa/settings",
+      "name": "manipulated MFA setup request rejected",
+      "method": "POST",
+      "path": "/api/mfa/setup",
+      "expect_failure": true,
+      "status_code": 500,
+      "ok": true
+    },
+    {
+      "name": "consumed recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
       "expect_failure": true,
       "status_code": 500,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 12
+  "spec_steps": 15
 }

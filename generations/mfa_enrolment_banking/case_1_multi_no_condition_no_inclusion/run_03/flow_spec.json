@@ -1,16 +1,23 @@
 {
   "variables": {
     "email": "marcus@northstar.test",
-    "phone": "+447700900000"
+    "phone": "+447700900000",
+    "new_password": null
   },
   "html_variables": {},
   "csrf": {
+    "html_regex": null,
     "field": "csrf",
     "in": "body"
   },
   "steps": [
     {
-      "name": "initialize session and obtain CSRF token",
+      "name": "load security setup page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "initialize session and CSRF token",
       "method": "GET",
       "path": "/api/status",
       "capture": {
@@ -18,12 +25,11 @@
       }
     },
     {
-      "name": "sign in with registered email and phone",
+      "name": "sign in with registered identity",
       "method": "POST",
       "path": "/api/signin",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "csrf": "${csrf}",
@@ -41,8 +47,7 @@
       "method": "POST",
       "path": "/api/identity",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "csrf": "${csrf}",
@@ -54,20 +59,19 @@
       }
     },
     {
-      "name": "generate authenticator provisioning secret",
+      "name": "provision authenticator secret",
       "method": "POST",
       "path": "/api/mfa/provision",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "csrf": "${csrf}"
       },
-      "expect_json_true": "authenticated",
+      "expect_json_true": "identityVerified",
       "capture": {
         "csrf": "csrf",
-        "authenticator_otp": "testAuthenticatorCode"
+        "authenticator_code": "testAuthenticatorCode"
       }
     },
     {
@@ -75,26 +79,24 @@
       "method": "POST",
       "path": "/api/mfa/confirm",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "csrf": "${csrf}",
-        "otp": "${authenticator_otp}"
+        "otp": "${authenticator_code}"
       },
       "expect_json_true": "mfaEnabled",
       "capture": {
         "csrf": "csrf",
-        "initial_recovery_code": "recoveryCodes.0"
+        "recovery_code": "recoveryCodes.0"
       }
     },
     {
-      "name": "acknowledge initial recovery codes",
+      "name": "acknowledge saved recovery codes",
       "method": "POST",
       "path": "/api/mfa/acknowledge",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "csrf": "${csrf}"
@@ -105,16 +107,15 @@
       }
     },
     {
-      "name": "verify a recovery code",
+      "name": "verify one recovery code",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "csrf": "${csrf}",
-        "code": "${initial_recovery_code}"
+        "code": "${recovery_code}"
       },
       "expect_json_true": "recoveryCodeAccepted",
       "capture": {
@@ -126,8 +127,7 @@
       "method": "POST",
       "path": "/api/mfa/regenerate",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "csrf": "${csrf}"
@@ -143,8 +143,7 @@
       "method": "POST",
       "path": "/api/mfa/acknowledge",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "csrf": "${csrf}"
@@ -159,8 +158,7 @@
       "method": "POST",
       "path": "/api/logout",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "csrf": "${csrf}"
@@ -170,12 +168,11 @@
   ],
   "negative_steps": [
     {
-      "name": "wrong registered phone is rejected",
+      "name": "wrong phone rejected during sign in",
       "method": "POST",
       "path": "/api/signin",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
         "csrf": "${csrf}",
@@ -186,42 +183,18 @@
       "expect_failure": true
     },
     {
-      "name": "identity verification rejects incorrect code",
+      "name": "forged CSRF rejected during sign in",
       "method": "POST",
-      "path": "/api/identity",
+      "path": "/api/signin",
       "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
+        "Origin": "https://localhost:3000"
       },
       "body": {
-        "csrf": "${csrf}",
-        "code": "000000"
+        "csrf": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "email": "${email}",
+        "phone": "${phone}",
+        "redirect": "/"
       },
-      "expect_failure": true
-    },
-    {
-      "name": "recovery verification rejects malformed code",
-      "method": "POST",
-      "path": "/api/mfa/recovery/verify",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
-      },
-      "body": {
-        "csrf": "${csrf}",
-        "code": "INVALID"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "state change without CSRF is rejected",
-      "method": "POST",
-      "path": "/api/mfa/regenerate",
-      "headers": {
-        "Origin": "https://localhost:3000",
-        "Content-Type": "application/json"
-      },
-      "body": {},
       "expect_failure": true
     }
   ]

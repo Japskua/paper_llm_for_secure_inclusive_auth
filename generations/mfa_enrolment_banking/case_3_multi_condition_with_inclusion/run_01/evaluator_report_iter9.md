@@ -1,65 +1,109 @@
 ## SUMMARY
 
-The artifact is a well-structured single-file Bun HTTPS application with a responsive, accessible MFA enrolment flow, functional simulated TOTP and recovery codes, strong baseline headers, session cookies, CSRF checks, input validation, and server-derived account ownership. However, it does not fully meet the verification lockout requirement because the provisioning endpoint clears OTP failure/lockout state and can be used to bypass a lockout. It can also overwrite an already-enabled MFA secret before a new factor is verified.
+The artifact is a strong single-file Bun implementation with responsive, dyslexia-conscious UI, TLS, CSP/security headers, CSRF protections, encrypted OTP seeds, hashed recovery codes, and working enrolment/recovery verification flows. However, it does not enforce MFA during later sign-ins for accounts that already enabled MFA, and the identity-code rate limit/lockout can be bypassed by creating a new session. The mock identity flow also permits a caller to create and access an account for any submitted email address because the verification code is returned directly to that caller.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file Bun application with no build tooling or external assets.**  
-  The server, HTML, CSS, and browser-side JavaScript are contained in `app.ts`. Bun directly serves the page and uses the specified TLS certificate paths.
+- **Single `app.ts` Bun server with inline HTML, CSS, and vanilla JavaScript: PASS**
+  - The server, full SPA template, client logic, styling, and API handlers are all in one file.
+  - No framework, bundler, compiler, external asset, or external network dependency is used.
 
-- **PASS — HTTPS/TLS and secure response headers.**  
-  Bun is configured with `certs/cert.pem` and `certs/key.pem`. Responses include CSP with nonces, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, `Permissions-Policy`, and `Cache-Control: no-store`.
+- **TLS-only Bun server using `certs/cert.pem` and `certs/key.pem`: PASS**
+  - Startup requires both certificate files.
+  - `Bun.serve` is configured with the TLS certificate and key.
 
-- **PASS — Secure cookie and session handling.**  
-  The session cookie uses `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, and a bounded lifetime. Server-side idle and absolute session timeouts are enforced, sessions are regenerated on sign-in, and logout invalidates the server session and clears the cookie.
+- **Responsive and accessible mobile UI: PASS**
+  - The app includes a mobile viewport tag, constrained mobile-friendly content width, responsive CSS, large controls, visible focus styling, generous spacing, clear labels, and concise plain-language instructions.
+  - The UI avoids animation, countdowns, dense text, and visual clutter.
 
-- **PASS — Server-side authorization and IDOR prevention.**  
-  MFA actions derive the account exclusively from the authenticated session. No client-supplied account or user identifier is accepted by MFA endpoints.
+- **Dyslexia-conscious UX requirements: PASS**
+  - Uses legible typography with additional letter spacing and line height.
+  - Instructions are short, examples are supplied for email and codes, errors state both the issue and corrective action, and help is available on each screen.
+  - QR, manual-secret reveal/copy, recovery-code reveal/copy, retry paths, and code re-request controls are present.
 
-- **PASS — CSRF protection for state-changing authenticated requests.**  
-  Authenticated state-changing endpoints require a same-origin HTTPS `Origin` and a session-bound `X-CSRF-Token`.
+- **Authenticator provisioning and manual alternative: PASS**
+  - The enrolment flow provides a QR code and a manually revealable/copyable Base32 setup secret.
+  - The user can submit an authenticator OTP manually to confirm setup.
 
-- **PASS — Input validation and safe rendering.**  
-  Email, password, OTP, and recovery-code formats are validated server-side. Dynamic browser-rendered values are escaped before insertion into HTML. There is no database/query surface requiring SQL parameterisation.
+- **Verification flows work: PASS**
+  - Identity codes are validated, expire, are single-use after successful verification, and have a lockout after failures.
+  - TOTP confirmation supports the current and adjacent TOTP windows and prevents reuse of a TOTP timestep during enrolment.
+  - Recovery codes are one-time, expire, and are invalidated when regenerated.
 
-- **PASS — TOTP and recovery-code implementation.**  
-  TOTP secrets and backup codes are generated with cryptographically secure randomness. The TOTP implementation uses HMAC-SHA-1 dynamic truncation and six-digit codes. Used TOTP counters are tracked to prevent reuse. Backup codes are stored as keyed HMAC verifiers and removed after successful use.
+- **Browser mock logging and UI test values: PASS**
+  - Identity code, authenticator OTP, and recovery codes are returned to the UI and logged in the browser console as required for the mock/testing flow.
+  - No server-side `console.log` exposes these values.
 
-- **FAIL — Failed OTP verification lockout cannot be enforced reliably.**  
-  `/api/verify-otp` tracks failures and locks after five attempts, but `/api/provision` resets both `otpFailedAttempts` and `otpLockedUntil` on every request:
-  ```ts
-  account.otpFailedAttempts = 0;
-  account.otpLockedUntil = 0;
-  ```
-  An authenticated user can therefore make five failed OTP submissions, call `/api/provision`, and immediately resume attempts. This bypasses the required rate-limit/lockout control.
+- **Server-side authorization / IDOR prevention: FAIL**
+  - MFA management endpoints resolve the account from the server-side authenticated session rather than accepting a user ID, which is good.
+  - However, `/api/signin/request` returns the identity verification code to the same unauthenticated caller for any submitted email, and `/api/signin/verify` then creates/accesses that email’s account. A caller can therefore become the authenticated “owner” of any arbitrary email-address account in this mock implementation.
+  - This does not meaningfully establish that the caller is the real account owner.
 
-- **FAIL — Provisioning can replace an active MFA secret before new-factor verification.**  
-  `/api/provision` is available even when `account.mfaEnabled` is already `true` and immediately replaces `account.encryptedSecret`. This can invalidate the user’s existing authenticator while the account remains marked as MFA-enabled, even if the replacement authenticator is never verified.
+- **CSRF protection for state-changing routes: PASS**
+  - State-changing routes require a session-bound CSRF token.
+  - Requests also undergo trusted-origin validation.
+  - Session cookies are `SameSite=Strict`, reducing cross-site cookie submission risk.
 
-- **PASS — Mobile-focused, dyslexia-aware UX.**  
-  The UI is responsive, uses spacious layout, legible type, clear headings, plain language, visible current-step indicators, examples for inputs, focus states, no animations/timers, help content, retries, hide/show controls, and clear error messages.
+- **Security headers and CORS restrictions: PASS**
+  - CSP with per-page nonce, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, and `Permissions-Policy` are configured.
+  - CORS is limited to approved HTTPS localhost origins and only emitted for trusted origins.
 
-- **PASS — Manual and QR provisioning support.**  
-  The application provides a QR code, displays the manual TOTP secret, supports copying it, and provides a manual six-digit OTP entry field.
+- **Session security: PARTIAL / FAIL**
+  - Session IDs are random, HttpOnly, Secure, and SameSite=Strict.
+  - Sessions have idle and absolute expiration, are invalidated on logout, and rotate when moving from pre-authentication to authenticated state.
+  - However, sign-in for an account with `mfa: true` completes immediately after identity-code verification. The server returns an authenticated session without requiring a TOTP or recovery-code challenge. MFA is therefore not enforced during subsequent authentication.
 
-- **PASS — Simulated mock values are available in the browser UI and console.**  
-  The mock OTP and generated recovery codes are returned to the browser UI and logged with browser-side `console.log`, as required for testing.
+- **Rate limiting and lockout of repeated verification failures: FAIL**
+  - Identity-code failures and request cooldowns are held only in the pre-authentication session.
+  - An attacker can discard/replace the session cookie, obtain a new pre-authentication session, and bypass the five-attempt lockout and request cooldown.
+  - The requirement calls for repeated verification attempts to be rate-limited and locked out; this must survive creation of a new browser/session.
 
-- **PASS — Internal navigation/actions function in the SPA.**  
-  The sign-in, provisioning, verification, recovery-code verification, regeneration, completion, and logout flows are all implemented with working browser-side event handlers and corresponding server endpoints.
+- **Cryptographic storage and generation: PASS**
+  - OTP secrets are AES-256-GCM encrypted in memory.
+  - Recovery codes are generated from cryptographically secure random bytes and stored as PBKDF2 hashes with salts and a pepper.
+  - Timing-safe comparisons are used for secret/code matching.
+  - No secrets or session IDs are persisted to browser storage.
+
+- **Input validation and XSS/injection protections: PASS**
+  - Server-side input format validation is present for email, identity OTPs, authenticator OTPs, and recovery codes.
+  - Client rendering uses `textContent` and DOM APIs instead of injecting untrusted HTML.
+  - No SQL/database query surface exists, and no redirect parameter is accepted.
+
+- **Generic error handling / no stack traces: PASS**
+  - Handler exceptions return a generic error response.
+  - The server does not emit stack traces or debug details in HTTP responses.
 
 ## FAILING_ITEMS
 
-- OTP verification lockout is bypassable because `/api/provision` clears OTP failure counts and lockout timestamps.
-- The provisioning endpoint can overwrite a previously active MFA secret while `mfaEnabled` remains true, before the new authenticator has been verified.
+- **Existing MFA-enabled accounts can sign in without completing MFA.**
+  - After `/api/signin/verify`, the server immediately creates an authenticated session even when `a.mfa` is true.
+  - There is no post-identity authenticator OTP or recovery-code challenge route/page.
+
+- **Identity-verification rate limits and lockouts are bypassable.**
+  - `Session.failures`, `Session.locked`, and `Session.identityRequested` are all reset by obtaining a new pre-authentication session.
+  - Clearing cookies or using a new client bypasses the five-failure lockout and the code-request cooldown.
+
+- **The mock identity process does not establish account ownership.**
+  - Any caller can submit an arbitrary email address, receive that account’s mock identity code in the API response, and use it to authenticate as that account.
+  - This undermines the requirement that only the authenticated account owner can access or modify their MFA settings.
 
 ## NEW_TASKS
 
-1. Remove OTP failure-counter and lockout resets from `/api/provision`; preserve OTP lockout state until the configured lockout period expires or until a successful OTP verification occurs.
+1. **Add a mandatory MFA challenge to sign-in for MFA-enabled accounts.**
+   - After successful identity-code verification, place the session into a pending-MFA phase rather than `auth` when `account.mfa` is enabled.
+   - Add protected post-identity verification endpoints for TOTP and recovery-code authentication.
+   - Only create/rotate into the final authenticated session after successful TOTP or recovery-code verification.
+   - Add the corresponding client screen and ensure recovery-code use remains one-time.
 
-2. Introduce a separate pending-enrolment secret state so `/api/provision` creates or replaces only a pending secret, and promote it to the active MFA secret only after `/api/verify-otp` succeeds.
+2. **Make identity-code request limits and failed-attempt lockouts survive new sessions.**
+   - Track code request cooldowns and failed verification attempts server-side using a stable, privacy-conscious key such as a normalized email hash plus an appropriate source/IP limiter.
+   - Apply the limiter to both `/api/signin/request` and `/api/signin/verify`.
+   - Preserve the generic error wording and do not introduce account enumeration.
 
-3. When MFA is already enabled, require an explicit authenticated MFA-reset/re-enrolment flow that preserves the currently active authenticator until the replacement authenticator has been successfully verified.
+3. **Replace arbitrary-email self-authentication with a safe deterministic demo identity model.**
+   - Do not automatically create/authenticate an account solely because a caller supplied an email and received the mock code.
+   - Use a preconfigured demo account or an explicit server-side test identity mapping, and return generic responses for unsupported identities.
+   - Keep browser-console mock code output for the approved demo identity, as required for testing.
 
 ## DECISION
 

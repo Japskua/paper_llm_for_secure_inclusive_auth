@@ -1,17 +1,16 @@
 # TASKER REPORT — Iteration 9 · Step 25
 
 ## SUMMARY
-- Raw tasks from Tasker: 4
-- Effective task_list after retention: 4
+- Raw tasks from Tasker: 3
+- Effective task_list after retention: 3
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Fix `totpForCounter()` so dynamic truncation is treated as an unsigned 31-bit value and always returns a zero-padded six-digit decimal OTP; verify the displayed mock OTP is accepted by MFA verification.","Replace or correct the QR encoder so it produces a standards-compliant, scannable QR symbol for the `otpauth://` provisioning URI, including correct version-specific alignment and version-information handling where required.","Render the server-returned mock OTP in a clearly labelled testing disclosure on the provisioning or verification UI, retain browser-console logging of that OTP, and update the displayed value after re-provisioning.","Remove browser-console logging of the authenticator secret while retaining browser-console logging for mock OTPs and recovery codes."]}
+{"task_list":["Replace the custom pseudo-random `qr(payload)` renderer with an embedded, dependency-free standards-compliant QR encoder that encodes `S.uri`, produces a scannable QR matrix, and remains entirely within app.ts.","Normalize IPv6 hostnames in `trusted(request)` before allow-list comparison, such as by converting bracketed `[::1]` to `::1`, and verify that same-origin POST requests work from `https://[::1]:PORT`.","Remove the rendered `logs()` panel and its invocation from `render()`, while retaining the required browser-side `console.log` statements for mock identity codes, OTPs, and recovery codes."]}
 ```
 
 ## PARSED_TASKS
-- Fix totpForCounter() so dynamic truncation is treated as an unsigned 31-bit value and always returns a zero-padded six-digit decimal OTP; verify the displayed mock OTP is accepted by MFA verification.
-- Replace or correct the QR encoder so it produces a standards-compliant, scannable QR symbol for the otpauth:// provisioning URI, including correct version-specific alignment and version-information handling where required.
-- Render the server-returned mock OTP in a clearly labelled testing disclosure on the provisioning or verification UI, retain browser-console logging of that OTP, and update the displayed value after re-provisioning.
-- Remove browser-console logging of the authenticator secret while retaining browser-console logging for mock OTPs and recovery codes.
+- Replace the custom pseudo-random qr(payload) renderer with an embedded, dependency-free standards-compliant QR encoder that encodes S.uri, produces a scannable QR matrix, and remains entirely within app.ts.
+- Normalize IPv6 hostnames in trusted(request) before allow-list comparison, such as by converting bracketed [::1] to ::1, and verify that same-origin POST requests work from https://[::1]:PORT.
+- Remove the rendered logs() panel and its invocation from render(), while retaining the required browser-side console.log statements for mock identity codes, OTPs, and recovery codes.

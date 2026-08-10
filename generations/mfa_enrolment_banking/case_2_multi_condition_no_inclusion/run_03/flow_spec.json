@@ -1,14 +1,18 @@
 {
   "variables": {
     "email": "marcus@example.test",
-    "password": "NorthstarDemo!54",
-    "new_password": "NorthstarNew!55"
+    "new_password": "ValidNewPassword!1"
   },
   "html_variables": {},
   "csrf": {
     "html_regex": null,
     "field": "X-CSRF-Token",
-    "in": "header"
+    "in": "header",
+    "source": {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "response_field": "csrf"
+    }
   },
   "steps": [
     {
@@ -26,33 +30,27 @@
       }
     },
     {
-      "name": "sign in with approved account",
+      "name": "submit account ownership proof",
       "method": "POST",
       "path": "/api/auth/signin",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "email": "${email}",
         "phone": "",
-        "password": "${password}",
+        "password": "NorthstarDemo!54",
         "destination": "/"
       },
       "expect_json_true": "ok",
       "capture": {
         "csrf": "csrf",
-        "identityCode": "testCode"
+        "identity_code": "testCode"
       }
     },
     {
       "name": "verify identity code",
       "method": "POST",
       "path": "/api/auth/identity",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "code": "${identityCode}"
+        "code": "${identity_code}"
       },
       "expect_json_true": "ok",
       "capture": {
@@ -63,47 +61,39 @@
       "name": "start authenticator setup",
       "method": "POST",
       "path": "/api/mfa/begin",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok",
       "capture": {
         "csrf": "csrf",
-        "totpCode": "testCode"
+        "manual_secret": "manualSecret",
+        "authenticator_code": "testCode"
       }
     },
     {
       "name": "confirm authenticator",
       "method": "POST",
       "path": "/api/mfa/verify",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "code": "${totpCode}"
+        "code": "${authenticator_code}"
       },
       "expect_json_true": "ok",
       "capture": {
         "csrf": "csrf",
-        "initialRecoveryCode": "codes.0"
+        "backup_code": "codes.0"
       }
     },
     {
-      "name": "check MFA status",
+      "name": "check active MFA status",
       "method": "GET",
       "path": "/api/mfa/status",
       "expect_json_true": "ok"
     },
     {
-      "name": "use initial recovery code",
+      "name": "use a recovery code",
       "method": "POST",
       "path": "/api/backup/verify",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "code": "${initialRecoveryCode}"
+        "code": "${backup_code}"
       },
       "expect_json_true": "ok",
       "capture": {
@@ -111,48 +101,27 @@
       }
     },
     {
-      "name": "generate replacement recovery codes",
+      "name": "regenerate recovery codes",
       "method": "POST",
       "path": "/api/backup/regenerate",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok",
       "capture": {
         "csrf": "csrf",
-        "replacementRecoveryCode": "codes.0"
-      }
-    },
-    {
-      "name": "use replacement recovery code",
-      "method": "POST",
-      "path": "/api/backup/verify",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
-      "body": {
-        "code": "${replacementRecoveryCode}"
-      },
-      "expect_json_true": "ok",
-      "capture": {
-        "csrf": "csrf"
+        "regenerated_backup_code": "codes.0"
       }
     },
     {
       "name": "log out",
       "method": "POST",
       "path": "/api/logout",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {},
       "expect_json_true": "ok"
     }
   ],
   "negative_steps": [
     {
-      "name": "bootstrap fresh negative-test session",
+      "name": "bootstrap session for failed ownership attempt",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_json_true": "ok",
@@ -161,47 +130,34 @@
       }
     },
     {
-      "name": "wrong password still receives nonrevealing challenge",
+      "name": "start identity challenge with wrong password",
       "method": "POST",
       "path": "/api/auth/signin",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
         "email": "${email}",
         "phone": "",
-        "password": "WrongPassword!54",
+        "password": "WrongPass!54",
         "destination": "/"
       },
       "expect_json_true": "ok",
       "capture": {
         "csrf": "csrf",
-        "wrongPasswordIdentityCode": "testCode"
+        "wrong_password_identity_code": "testCode"
       }
     },
     {
       "name": "wrong password cannot complete identity verification",
       "method": "POST",
       "path": "/api/auth/identity",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "body": {
-        "code": "${wrongPasswordIdentityCode}"
+        "code": "${wrong_password_identity_code}"
       },
       "expect_failure": true
     },
     {
-      "name": "missing CSRF token rejected",
-      "method": "POST",
-      "path": "/api/auth/signin",
-      "headers": {},
-      "body": {
-        "email": "${email}",
-        "phone": "",
-        "password": "${password}",
-        "destination": "/"
-      },
+      "name": "MFA status unavailable after logout",
+      "method": "GET",
+      "path": "/api/mfa/status",
       "expect_failure": true
     }
   ]

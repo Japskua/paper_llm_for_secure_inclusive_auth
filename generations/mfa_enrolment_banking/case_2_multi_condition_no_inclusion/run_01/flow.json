@@ -11,7 +11,7 @@
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "request identity check",
+      "name": "start identity sign-in",
       "method": "POST",
       "path": "/api/signin",
       "expect_failure": false,
@@ -22,7 +22,7 @@
       ]
     },
     {
-      "name": "verify identity",
+      "name": "verify identity code",
       "method": "POST",
       "path": "/api/identity/verify",
       "expect_failure": false,
@@ -67,7 +67,7 @@
       "ok": true
     },
     {
-      "name": "invalid identity code rejected",
+      "name": "wrong identity code rejected",
       "method": "POST",
       "path": "/api/identity/verify",
       "expect_failure": true,
@@ -75,7 +75,7 @@
       "ok": true
     },
     {
-      "name": "enrolment without CSRF rejected",
+      "name": "protected enrolment without CSRF rejected",
       "method": "POST",
       "path": "/api/mfa/enrol",
       "expect_failure": true,

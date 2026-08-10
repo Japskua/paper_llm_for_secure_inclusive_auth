@@ -1,17 +1,14 @@
 {
   "variables": {
     "email": "marcus@example.test",
-    "new_password": "ValidPassword123!"
+    "phone": "+15550101954",
+    "new_password": "NotUsed-Password1!"
   },
   "html_variables": {},
-  "csrf": {
-    "html_regex": "let csrf=\"([^\"]*)\"",
-    "field": "csrf",
-    "in": "body"
-  },
+  "csrf": null,
   "steps": [
     {
-      "name": "bootstrap anonymous session",
+      "name": "bootstrap session",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_json_true": "ok",
@@ -20,12 +17,12 @@
       }
     },
     {
-      "name": "start evaluation sign in",
+      "name": "start evaluation sign-in",
       "method": "POST",
       "path": "/api/sign-in",
       "body": {
         "email": "${email}",
-        "phone": "+15550101954",
+        "phone": "${phone}",
         "testMode": true,
         "csrf": "${csrf}"
       },
@@ -57,9 +54,9 @@
       },
       "expect_json_true": "ok",
       "capture": {
-        "csrf": "csrf",
         "manual_secret": "manualSecret",
-        "authenticator_otp": "testOtp"
+        "authenticator_otp": "testOtp",
+        "csrf": "csrf"
       }
     },
     {
@@ -73,8 +70,8 @@
       },
       "expect_json_true": "ok",
       "capture": {
-        "csrf": "csrf",
-        "recovery_code": "recoveryCodes.0"
+        "recovery_code": "recoveryCodes.0",
+        "csrf": "csrf"
       }
     },
     {
@@ -99,20 +96,7 @@
       },
       "expect_json_true": "ok",
       "capture": {
-        "csrf": "csrf",
-        "replacement_recovery_code": "recoveryCodes.0"
-      }
-    },
-    {
-      "name": "verify replacement recovery code",
-      "method": "POST",
-      "path": "/api/recovery/verify",
-      "body": {
-        "code": "${replacement_recovery_code}",
-        "csrf": "${csrf}"
-      },
-      "expect_json_true": "ok",
-      "capture": {
+        "replacement_recovery_code": "recoveryCodes.0",
         "csrf": "csrf"
       }
     },
@@ -128,23 +112,33 @@
   ],
   "negative_steps": [
     {
-      "name": "incorrect sign-in phone rejected",
+      "name": "invalid sign-in phone rejected",
       "method": "POST",
       "path": "/api/sign-in",
       "body": {
         "email": "${email}",
-        "phone": "+15550101955",
+        "phone": "+15550000000",
         "testMode": true,
         "csrf": "${csrf}"
       },
       "expect_failure": true
     },
     {
-      "name": "consumed recovery code rejected",
+      "name": "incorrect identity code rejected",
+      "method": "POST",
+      "path": "/api/identity-verify",
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery code rejected",
       "method": "POST",
       "path": "/api/recovery/verify",
       "body": {
-        "code": "${recovery_code}",
+        "code": "AAAAA-AAAAA",
         "csrf": "${csrf}"
       },
       "expect_failure": true
@@ -152,7 +146,7 @@
     {
       "name": "missing csrf rejected",
       "method": "POST",
-      "path": "/api/logout",
+      "path": "/api/mfa/provision",
       "body": {},
       "expect_failure": true
     }

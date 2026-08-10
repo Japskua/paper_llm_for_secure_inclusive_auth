@@ -1,0 +1,22 @@
+# TASKER REPORT — Iteration 10 · Step 28
+
+## SUMMARY
+- Raw tasks from Tasker: 9
+- Effective task_list after retention: 9
+- Note: Evaluator decides termination; Tasker.done is ignored.
+
+## RAW_OUTPUT
+```
+{"task_list":["Make app.ts syntactically complete and directly runnable with `bun app.ts`; close all handlers and include startup plus generic production-safe error responses.","Serve the single inline HTML application and API routes from app.ts over HTTPS using certs/cert.pem and certs/key.pem, and apply the required CSP, HSTS, nosniff, clickjacking, cache, and trusted-origin CORS protections to HTML and API responses.","Add a semantic, responsive mobile HTML UI with embedded vanilla JavaScript and CSS only; do not use external assets, frameworks, build steps, or additional files.","Implement the end-to-end enrolment navigation: sign-in, identity-code request and verification, authenticator setup and verification, MFA confirmation, recovery-code display and verification, recovery-code regeneration, MFA settings, and logout.","Make every UI step dyslexia-inclusive: readable mobile typography, generous spacing, concise plain-language instructions with input examples, a prominent current step and primary action, static content, and visible help, retry, hide/reveal, and re-request options.","Provide authenticator provisioning with a provisioning URI or QR representation, a visible manual setup key, copy-to-clipboard controls, and manual authenticator-code entry; render all dynamic values with safe DOM APIs such as textContent.","Ensure mock OTPs, provisioning secrets, and recovery codes are returned and browser-console-logged only when explicit test simulation is enabled; in normal operation do not return or log these sensitive values.","Complete every API route with session-derived account ownership checks, CSRF enforcement for state changes, strict input validation, internal-only redirects, rate limiting and lockout for verification failures, single-use time-bound codes, and generic safe errors without sensitive leakage.","Verify that sessions use rotated, HttpOnly, Secure, SameSite cookies with idle and absolute expiry and logout invalidation, while OTP secrets and recovery codes use cryptographically secure generation and protected-at-rest storage without browser persistence."]}
+```
+
+## PARSED_TASKS
+- Make app.ts syntactically complete and directly runnable with bun app.ts; close all handlers and include startup plus generic production-safe error responses.
+- Serve the single inline HTML application and API routes from app.ts over HTTPS using certs/cert.pem and certs/key.pem, and apply the required CSP, HSTS, nosniff, clickjacking, cache, and trusted-origin CORS protections to HTML and API responses.
+- Add a semantic, responsive mobile HTML UI with embedded vanilla JavaScript and CSS only; do not use external assets, frameworks, build steps, or additional files.
+- Implement the end-to-end enrolment navigation: sign-in, identity-code request and verification, authenticator setup and verification, MFA confirmation, recovery-code display and verification, recovery-code regeneration, MFA settings, and logout.
+- Make every UI step dyslexia-inclusive: readable mobile typography, generous spacing, concise plain-language instructions with input examples, a prominent current step and primary action, static content, and visible help, retry, hide/reveal, and re-request options.
+- Provide authenticator provisioning with a provisioning URI or QR representation, a visible manual setup key, copy-to-clipboard controls, and manual authenticator-code entry; render all dynamic values with safe DOM APIs such as textContent.
+- Ensure mock OTPs, provisioning secrets, and recovery codes are returned and browser-console-logged only when explicit test simulation is enabled; in normal operation do not return or log these sensitive values.
+- Complete every API route with session-derived account ownership checks, CSRF enforcement for state changes, strict input validation, internal-only redirects, rate limiting and lockout for verification failures, single-use time-bound codes, and generic safe errors without sensitive leakage.
+- Verify that sessions use rotated, HttpOnly, Secure, SameSite cookies with idle and absolute expiry and logout invalidation, while OTP secrets and recovery codes use cryptographically secure generation and protected-at-rest storage without browser persistence.

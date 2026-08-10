@@ -1,18 +1,17 @@
 # TASKER REPORT — Iteration 2 · Step 4
 
 ## SUMMARY
-- Raw tasks from Tasker: 5
-- Effective task_list after retention: 5
+- Raw tasks from Tasker: 4
+- Effective task_list after retention: 4
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Implement a server-side mock authentication model that binds each session to a specific authenticated account. Validate a mock credential or established identity server-side, never use one shared account or overwrite account ownership/email from submitted input, and return generic sign-in failures.","Replace the decorative setup canvas with an inline, valid QR code encoding the provisioned `otpauth://totp/...` URI. Keep the provisioning secret visibly available and copyable as the accessible manual alternative.","Generate each mock OTP using cryptographically secure randomness instead of a fixed value. Return it only through the intended test UI/browser console path, keep it time-bound and single-use, and isolate any deterministic test mode from the default path.","Generate recovery codes using cryptographically secure uppercase letters and digits in the exact accepted `ABCDE-12345` format. Verify that every displayed generated code passes the recovery verification endpoint.","Add failed-attempt tracking, rate limiting, and temporary lockout for recovery-code verification. Give clear non-sensitive retry guidance and reset recovery failure state after successful verification and appropriate new authentication."]}
+{"task_list":["Implement a deterministic simulated TOTP flow that derives a six-digit code from each enrolment secret and a server-side time step; accept only the current or narrowly adjacent time window and reject expired or reused codes.","Generate and render a standards-compliant QR code encoding the returned otpauth:// provisioning URI, while retaining the manual secret display and copy-to-clipboard alternative.","Associate each verified email with its server-side account and create the authenticated session for that account only; ensure unrelated verified emails cannot access or modify Marcus’s MFA state.","Remove the visible in-page Logs panel and any rendering of sensitive mock values there; retain required browser console.log output and show test values only on the relevant enrolment or recovery step."]}
 ```
 
 ## PARSED_TASKS
-- Implement a server-side mock authentication model that binds each session to a specific authenticated account. Validate a mock credential or established identity server-side, never use one shared account or overwrite account ownership/email from submitted input, and return generic sign-in failures.
-- Replace the decorative setup canvas with an inline, valid QR code encoding the provisioned otpauth://totp/... URI. Keep the provisioning secret visibly available and copyable as the accessible manual alternative.
-- Generate each mock OTP using cryptographically secure randomness instead of a fixed value. Return it only through the intended test UI/browser console path, keep it time-bound and single-use, and isolate any deterministic test mode from the default path.
-- Generate recovery codes using cryptographically secure uppercase letters and digits in the exact accepted ABCDE-12345 format. Verify that every displayed generated code passes the recovery verification endpoint.
-- Add failed-attempt tracking, rate limiting, and temporary lockout for recovery-code verification. Give clear non-sensitive retry guidance and reset recovery failure state after successful verification and appropriate new authentication.
+- Implement a deterministic simulated TOTP flow that derives a six-digit code from each enrolment secret and a server-side time step; accept only the current or narrowly adjacent time window and reject expired or reused codes.
+- Generate and render a standards-compliant QR code encoding the returned otpauth:// provisioning URI, while retaining the manual secret display and copy-to-clipboard alternative.
+- Associate each verified email with its server-side account and create the authenticated session for that account only; ensure unrelated verified emails cannot access or modify Marcus’s MFA state.
+- Remove the visible in-page Logs panel and any rendering of sensitive mock values there; retain required browser console.log output and show test values only on the relevant enrolment or recovery step.

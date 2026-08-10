@@ -1,17 +1,17 @@
 {
-  "ok": true,
+  "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 16,
-  "steps_passed": 16,
-  "happy_path_passed": 13,
-  "happy_path_total": 13,
-  "negative_passed": 3,
-  "negative_total": 3,
-  "negatives_meaningful": true,
+  "steps_total": 11,
+  "steps_passed": 10,
+  "happy_path_passed": 8,
+  "happy_path_total": 9,
+  "negative_passed": 2,
+  "negative_total": 2,
+  "negatives_meaningful": false,
   "steps": [
     {
-      "name": "sign in for MFA enrolment",
+      "name": "sign in",
       "method": "POST",
       "path": "/api/login",
       "expect_failure": false,
@@ -19,25 +19,9 @@
       "ok": true
     },
     {
-      "name": "load authenticated enrolment state",
-      "method": "GET",
-      "path": "/api/me",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "confirm account identity",
+      "name": "confirm identity",
       "method": "POST",
       "path": "/api/mfa/identity",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "load provisioning state",
-      "method": "GET",
-      "path": "/api/me",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -51,25 +35,9 @@
       "ok": true
     },
     {
-      "name": "load OTP verification state",
-      "method": "GET",
-      "path": "/api/me",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "verify authenticator and enable MFA",
+      "name": "verify authenticator",
       "method": "POST",
       "path": "/api/mfa/verify",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "load recovery-code state",
-      "method": "GET",
-      "path": "/api/me",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -94,20 +62,21 @@
       "ok": true
     },
     {
-      "name": "load completed MFA state",
-      "method": "GET",
-      "path": "/api/me",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
       "name": "view remaining recovery codes",
       "method": "GET",
       "path": "/api/mfa/recovery",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
+    },
+    {
+      "name": "redeem a recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "{'error': 'Invalid or already used recovery code.'}"
     },
     {
       "name": "log out",
@@ -126,15 +95,7 @@
       "ok": true
     },
     {
-      "name": "invalid authenticator code rejected",
-      "method": "POST",
-      "path": "/api/mfa/verify",
-      "expect_failure": true,
-      "status_code": 401,
-      "ok": true
-    },
-    {
-      "name": "malformed recovery code rejected",
+      "name": "used recovery code rejected",
       "method": "POST",
       "path": "/api/mfa/recovery/redeem",
       "expect_failure": true,
@@ -143,5 +104,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 16
+  "spec_steps": 11
 }

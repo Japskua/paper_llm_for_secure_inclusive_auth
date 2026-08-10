@@ -2,16 +2,24 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 14,
-  "steps_passed": 13,
-  "happy_path_passed": 10,
-  "happy_path_total": 11,
-  "negative_passed": 3,
-  "negative_total": 3,
+  "steps_total": 17,
+  "steps_passed": 16,
+  "happy_path_passed": 12,
+  "happy_path_total": 13,
+  "negative_passed": 4,
+  "negative_total": 4,
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "start sign-in",
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "start sign-in identity flow",
       "method": "POST",
       "path": "/api/sign-in",
       "expect_failure": false,
@@ -27,7 +35,7 @@
       "ok": true
     },
     {
-      "name": "load authenticated session",
+      "name": "check authenticated session",
       "method": "GET",
       "path": "/api/session",
       "expect_failure": false,
@@ -43,18 +51,19 @@
       "ok": true
     },
     {
-      "name": "confirm authenticator",
+      "name": "confirm authenticator enrolment",
       "method": "POST",
       "path": "/api/mfa/confirm",
       "expect_failure": false,
       "status_code": 200,
       "ok": true,
       "warnings": [
-        "could not capture 'recoveryCode' from 'recoveryCodes.0'"
+        "could not capture 'recovery_code_used' from 'recoveryCodes.0'",
+        "could not capture 'recovery_code_discarded_on_regen' from 'recoveryCodes.1'"
       ]
     },
     {
-      "name": "start authenticator verification",
+      "name": "start authenticator verification challenge",
       "method": "POST",
       "path": "/api/mfa/challenge",
       "expect_failure": false,
@@ -62,7 +71,7 @@
       "ok": true
     },
     {
-      "name": "complete authenticator verification",
+      "name": "verify enrolled authenticator",
       "method": "POST",
       "path": "/api/mfa/verify",
       "expect_failure": false,
@@ -77,6 +86,14 @@
       "status_code": 400,
       "ok": false,
       "response_message": "The request could not be completed."
+    },
+    {
+      "name": "check session before recovery regeneration",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
     },
     {
       "name": "start recovery-code regeneration challenge",
@@ -94,7 +111,7 @@
       "status_code": 200,
       "ok": true,
       "warnings": [
-        "could not capture 'regeneratedRecoveryCode' from 'recoveryCodes.0'"
+        "could not capture 'new_recovery_code' from 'recoveryCodes.0'"
       ]
     },
     {
@@ -106,7 +123,7 @@
       "ok": true
     },
     {
-      "name": "invalid sign-in phone rejected",
+      "name": "malformed sign-in phone rejected",
       "method": "POST",
       "path": "/api/sign-in",
       "expect_failure": true,
@@ -114,7 +131,7 @@
       "ok": true
     },
     {
-      "name": "identity verification without pending session rejected",
+      "name": "incorrect identity code rejected",
       "method": "POST",
       "path": "/api/identity-verify",
       "expect_failure": true,
@@ -122,14 +139,22 @@
       "ok": true
     },
     {
-      "name": "unauthenticated provisioning rejected",
+      "name": "reused recovery code rejected",
       "method": "POST",
-      "path": "/api/mfa/provision",
+      "path": "/api/mfa/recovery-verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "pre-regeneration recovery code rejected after regeneration",
+      "method": "POST",
+      "path": "/api/mfa/recovery-verify",
       "expect_failure": true,
       "status_code": 401,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 14
+  "spec_steps": 17
 }

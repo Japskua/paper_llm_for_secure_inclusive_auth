@@ -2,14 +2,22 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 14,
-  "steps_passed": 13,
-  "happy_path_passed": 10,
-  "happy_path_total": 11,
+  "steps_total": 15,
+  "steps_passed": 14,
+  "happy_path_passed": 11,
+  "happy_path_total": 12,
   "negative_passed": 3,
   "negative_total": 3,
   "negatives_meaningful": false,
   "steps": [
+    {
+      "name": "load enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
     {
       "name": "create bootstrap session",
       "method": "GET",
@@ -35,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "confirm authenticated session",
+      "name": "load authenticated account state",
       "method": "GET",
       "path": "/api/me",
       "expect_failure": false,
@@ -43,7 +51,7 @@
       "ok": true
     },
     {
-      "name": "start authenticator setup",
+      "name": "start authenticator enrolment",
       "method": "POST",
       "path": "/api/authenticator/start",
       "expect_failure": false,
@@ -78,21 +86,24 @@
       "ok": true
     },
     {
-      "name": "redeem a recovery code",
-      "method": "POST",
-      "path": "/api/recovery/redeem",
-      "expect_failure": false,
-      "status_code": 400,
-      "ok": false,
-      "response_message": "{'ok': False, 'error': 'We could not complete that request. Please try again.'}"
-    },
-    {
       "name": "confirm MFA is active",
       "method": "GET",
       "path": "/api/me",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
+    },
+    {
+      "name": "redeem one recovery code",
+      "method": "POST",
+      "path": "/api/recovery/redeem",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'ok': False, 'error': 'We could not complete that request. Please try again.'}"
     },
     {
       "name": "sign out",
@@ -103,7 +114,7 @@
       "ok": true
     },
     {
-      "name": "malformed phone is rejected",
+      "name": "malformed sign-in phone rejected",
       "method": "POST",
       "path": "/api/signin",
       "expect_failure": true,
@@ -111,7 +122,7 @@
       "ok": true
     },
     {
-      "name": "wrong identity code is rejected",
+      "name": "wrong identity code rejected",
       "method": "POST",
       "path": "/api/identity/verify",
       "expect_failure": true,
@@ -119,14 +130,14 @@
       "ok": true
     },
     {
-      "name": "authenticated session is unavailable after logout",
-      "method": "GET",
-      "path": "/api/me",
+      "name": "backup confirmation requires acknowledgement",
+      "method": "POST",
+      "path": "/api/backup/confirm",
       "expect_failure": true,
-      "status_code": 401,
+      "status_code": 403,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 14
+  "spec_steps": 15
 }

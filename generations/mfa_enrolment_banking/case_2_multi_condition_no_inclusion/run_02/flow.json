@@ -2,10 +2,10 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 11,
-  "steps_passed": 10,
-  "happy_path_passed": 7,
-  "happy_path_total": 8,
+  "steps_total": 12,
+  "steps_passed": 11,
+  "happy_path_passed": 8,
+  "happy_path_total": 9,
   "negative_passed": 3,
   "negative_total": 3,
   "negatives_meaningful": false,
@@ -74,6 +74,14 @@
       "response_message": "{'ok': False, 'error': 'We could not complete that request. Please try again.'}"
     },
     {
+      "name": "confirm recovery code count",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
       "name": "sign out",
       "method": "POST",
       "path": "/api/auth/logout",
@@ -90,22 +98,22 @@
       "ok": true
     },
     {
-      "name": "reused recovery code rejected",
+      "name": "identity confirmation without CSRF rejected",
       "method": "POST",
-      "path": "/api/mfa/recovery/redeem",
+      "path": "/api/auth/identity",
       "expect_failure": true,
-      "status_code": 401,
+      "status_code": 403,
       "ok": true
     },
     {
-      "name": "signed out session rejected",
-      "method": "GET",
-      "path": "/api/mfa/settings",
+      "name": "spent recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
       "expect_failure": true,
       "status_code": 401,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 11
+  "spec_steps": 12
 }

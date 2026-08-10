@@ -1,15 +1,19 @@
 # TASKER REPORT — Iteration 4 · Step 10
 
 ## SUMMARY
-- Raw tasks from Tasker: 2
-- Effective task_list after retention: 2
+- Raw tasks from Tasker: 6
+- Effective task_list after retention: 6
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Remove browser console logging of OTP secrets, TOTP values, and backup recovery codes; any academic test-output mode must be server-controlled, disabled by default, and not enableable through client input.","Generate a cryptographically random CSP nonce for each HTML response, pass it to both the CSP header builder and HTML renderer, and remove the process-wide nonce."]}
+{"task_list":["Preserve identity-verification failure counts and lockout state when a new identity code is requested, so re-requesting a code cannot restore attempts.","Add a server-side per-session cooldown or rate limit to repeated identity-code requests and return a clear retry message without exposing sensitive details.","Ensure authenticator enrolment requests cannot replace an active enrolment record to clear failed OTP attempts or an existing OTP-verification lockout.","Add accessible show/hide controls for the manual authenticator secret and for the displayed recovery-code list, with safe default-hidden behavior where appropriate.","Add a recovery-code regeneration action on the displayed-code screen with a confirmation step that clearly states all prior unused recovery codes will stop working.","Add concise requirement-mapping comments in app.ts for authorization/session ownership, CSRF, TLS and security headers, encrypted/hashed secret storage, input validation/output encoding, rate limiting/lockouts, and dyslexia-accessible UI behavior."]}
 ```
 
 ## PARSED_TASKS
-- Remove browser console logging of OTP secrets, TOTP values, and backup recovery codes; any academic test-output mode must be server-controlled, disabled by default, and not enableable through client input.
-- Generate a cryptographically random CSP nonce for each HTML response, pass it to both the CSP header builder and HTML renderer, and remove the process-wide nonce.
+- Preserve identity-verification failure counts and lockout state when a new identity code is requested, so re-requesting a code cannot restore attempts.
+- Add a server-side per-session cooldown or rate limit to repeated identity-code requests and return a clear retry message without exposing sensitive details.
+- Ensure authenticator enrolment requests cannot replace an active enrolment record to clear failed OTP attempts or an existing OTP-verification lockout.
+- Add accessible show/hide controls for the manual authenticator secret and for the displayed recovery-code list, with safe default-hidden behavior where appropriate.
+- Add a recovery-code regeneration action on the displayed-code screen with a confirmation step that clearly states all prior unused recovery codes will stop working.
+- Add concise requirement-mapping comments in app.ts for authorization/session ownership, CSRF, TLS and security headers, encrypted/hashed secret storage, input validation/output encoding, rate limiting/lockouts, and dyslexia-accessible UI behavior.

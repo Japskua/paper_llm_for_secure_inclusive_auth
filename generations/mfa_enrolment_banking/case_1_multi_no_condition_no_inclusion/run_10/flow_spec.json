@@ -1,18 +1,18 @@
 {
   "variables": {
     "email": "marcus@example.test",
-    "phone": "+447700900123"
+    "phone": "+447700900123",
+    "new_password": "CorrectHorseBatteryStaple1!"
   },
   "html_variables": {},
-  "csrf": null,
+  "csrf": {
+    "html_regex": "let csrf=\"([^\"]*)\"",
+    "field": "csrf",
+    "in": "body"
+  },
   "steps": [
     {
-      "name": "load enrolment page",
-      "method": "GET",
-      "path": "/"
-    },
-    {
-      "name": "bootstrap session",
+      "name": "bootstrap session and CSRF",
       "method": "GET",
       "path": "/api/bootstrap",
       "capture": {
@@ -20,7 +20,7 @@
       }
     },
     {
-      "name": "start sign in",
+      "name": "start identity verification",
       "method": "POST",
       "path": "/api/signin",
       "body": {
@@ -34,7 +34,7 @@
       }
     },
     {
-      "name": "verify identity",
+      "name": "verify identity code",
       "method": "POST",
       "path": "/api/identity/verify",
       "body": {
@@ -60,7 +60,7 @@
       }
     },
     {
-      "name": "enable authenticator MFA",
+      "name": "confirm authenticator MFA",
       "method": "POST",
       "path": "/api/authenticator/confirm",
       "body": {
@@ -74,7 +74,7 @@
       }
     },
     {
-      "name": "retrieve initial recovery codes",
+      "name": "display initial recovery codes",
       "method": "GET",
       "path": "/api/recovery-codes",
       "capture": {
@@ -92,7 +92,7 @@
       }
     },
     {
-      "name": "verify recovery code for replacement",
+      "name": "verify recovery code for regeneration",
       "method": "POST",
       "path": "/api/recovery/verify",
       "body": {
@@ -105,7 +105,7 @@
       }
     },
     {
-      "name": "regenerate recovery codes",
+      "name": "generate replacement recovery codes",
       "method": "POST",
       "path": "/api/recovery/regenerate",
       "body": {
@@ -117,7 +117,7 @@
       }
     },
     {
-      "name": "retrieve replacement recovery codes",
+      "name": "display replacement recovery codes",
       "method": "GET",
       "path": "/api/recovery-codes",
       "capture": {
@@ -126,7 +126,7 @@
       }
     },
     {
-      "name": "return to MFA settings",
+      "name": "confirm active MFA settings",
       "method": "GET",
       "path": "/api/mfa/settings",
       "expect_json_true": "enabled",
@@ -146,34 +146,33 @@
   ],
   "negative_steps": [
     {
-      "name": "invalid CSRF rejected",
+      "name": "invalid CSRF token rejected",
       "method": "POST",
       "path": "/api/signin",
       "body": {
-        "csrf": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "csrf": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "email": "${email}",
         "phone": "${phone}"
       },
       "expect_failure": true
     },
     {
-      "name": "malformed identity rejected",
-      "method": "POST",
-      "path": "/api/signin",
-      "body": {
-        "csrf": "${csrf}",
-        "email": "not-an-email",
-        "phone": "${phone}"
-      },
-      "expect_failure": true
-    },
-    {
-      "name": "invalid identity code rejected",
+      "name": "malformed identity code rejected",
       "method": "POST",
       "path": "/api/identity/verify",
       "body": {
         "csrf": "${csrf}",
-        "otp": "ABC"
+        "otp": "12345"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "consumed recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "csrf": "${csrf}",
+        "code": "${recovery_code}"
       },
       "expect_failure": true
     }

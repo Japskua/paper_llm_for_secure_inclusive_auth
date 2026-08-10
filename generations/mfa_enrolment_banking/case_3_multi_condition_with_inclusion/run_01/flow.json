@@ -2,69 +2,115 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 6,
-  "steps_passed": 4,
-  "happy_path_passed": 2,
-  "happy_path_total": 3,
-  "negative_passed": 2,
-  "negative_total": 3,
+  "steps_total": 12,
+  "steps_passed": 11,
+  "happy_path_passed": 7,
+  "happy_path_total": 8,
+  "negative_passed": 4,
+  "negative_total": 4,
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "obtain pre-auth CSRF token",
+      "name": "start session and obtain CSRF token",
       "method": "GET",
-      "path": "/api/preauth",
+      "path": "/api/session",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
     {
-      "name": "sign in",
+      "name": "request demo identity code",
       "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/signin/request",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
     },
     {
-      "name": "start authenticator provisioning",
+      "name": "verify identity code",
       "method": "POST",
-      "path": "/api/provision",
+      "path": "/api/signin/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "start authenticator enrollment",
+      "method": "POST",
+      "path": "/api/mfa/enroll",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm authenticator with current mock OTP",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "create recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/backup/regenerate",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'recovery_code' from 'codes.0'"
+      ]
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
       "expect_failure": false,
       "status_code": 400,
       "ok": false,
-      "warnings": [
-        "could not capture 'setup_secret' from 'secret'",
-        "could not capture 'setup_uri' from 'uri'"
-      ],
-      "response_message": "Please try setup again."
+      "response_message": "That recovery code is unavailable. Try another saved unused code or create new codes."
     },
     {
-      "name": "obtain CSRF token for rejected sign-in",
-      "method": "GET",
-      "path": "/api/preauth",
-      "expect_failure": true,
-      "status_code": 200,
-      "ok": false,
-      "response_message": "{'ok': True, 'csrf': '4MxSTfdUltKycoyFq9Ytgcp-y2DXETgL'}"
-    },
-    {
-      "name": "wrong password rejected",
+      "name": "sign out",
       "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "invalid email is rejected",
+      "method": "POST",
+      "path": "/api/signin/request",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     },
     {
-      "name": "malformed OTP rejected",
+      "name": "non-numeric identity code is rejected",
       "method": "POST",
-      "path": "/api/verify-otp",
+      "path": "/api/signin/verify",
       "expect_failure": true,
       "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid authenticator code is rejected",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "malformed recovery code is rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "expect_failure": true,
+      "status_code": 401,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 6
+  "spec_steps": 12
 }

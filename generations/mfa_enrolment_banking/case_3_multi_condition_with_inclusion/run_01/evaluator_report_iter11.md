@@ -1,70 +1,95 @@
 ## SUMMARY
 
-The artifact is a strong single-file Bun HTTPS MFA enrolment prototype with responsive mobile UI, server-side sessions, CSRF checks, security headers, encrypted TOTP secrets, hashed recovery codes, and accessible enrolment screens. However, it does not fully meet the requirements because the “Request a new setup” retry path is broken in the browser, and the accepted fixed mock OTP is not time-bound or sufficiently unpredictable under the stated security requirements. Requirement-section comments are also incomplete.
+The artifact is a strong single-file Bun MFA application with secure session handling, TLS, CSRF protection, authorization checks, encryption/hashing, rate limiting, accessible mobile-oriented UI, and functioning simulated MFA flows. However, the QR-code setup option is broken under the application’s own CSP: the QR grid column layout is assigned through a runtime inline style, while the CSP only permits nonce-authorized stylesheet rules. This prevents the QR from rendering as a scannable square matrix.
 
 ## FUNCTIONAL_CHECK
 
-- **Single-file Bun server, HTML, CSS, and vanilla JavaScript: PASS**  
-  The entire application is contained in `app.ts`, uses `Bun.serve`, serves inline HTML/CSS/JS, and uses no frameworks, bundlers, compilation step, or external frontend assets.
+- **Single-file Bun server with inline HTML, CSS, and vanilla JavaScript: PASS**
+  - The complete server and SPA are contained in `app.ts`.
+  - No framework, bundler, compiler, external asset, or external network call is used.
 
-- **HTTPS/TLS using supplied certificates: PASS**  
-  The Bun server is configured with `certs/cert.pem` and `certs/key.pem`. Requests are restricted to HTTPS in the request handler.
+- **TLS / HTTPS-only service using provided certificates: PASS**
+  - Bun is configured with `certs/cert.pem` and `certs/key.pem`.
+  - Startup fails safely if certificates are absent.
 
-- **Mobile-responsive, dyslexia-conscious UI: PASS**  
-  The UI uses a constrained mobile layout, large controls, adequate line/letter spacing, plain language, consistent step navigation, examples for inputs, no timers or animated elements, and visible primary actions.
+- **Mobile-responsive, legible, dyslexia-aware UI: PASS**
+  - The page includes a mobile viewport meta tag, constrained mobile layout, generous spacing, readable type sizing, plain-language text, clear headings, examples, visible progress steps, and accessible labels.
+  - The UI has no animations, timers, flashing content, or auto-refreshing elements.
 
-- **Authenticator provisioning with QR, manual secret, and copy support: PASS**  
-  `/api/provision` returns an `otpauth://` URI and secret. The UI draws a QR code, displays the manual Base32 secret, and provides copy/hide/show controls.
+- **Identity verification simulation works: PASS**
+  - Email input is validated.
+  - A six-digit identity code is generated, returned to the UI for the academic mock, logged in the browser console, time-bound, single-use, and rate-limited.
+  - Identity verification rotates the session identifier on successful authentication.
 
-- **Recovery-code display, copy, hide/show, regeneration, and one-time use: PASS**  
-  Recovery codes are cryptographically generated, HMAC-hashed before storage, displayed only following setup/regeneration, can be copied or hidden, can be regenerated, and are deleted after successful use.
+- **Authenticator enrolment and verification work: PASS**
+  - A cryptographically generated Base32 secret is created.
+  - The secret is encrypted in memory at rest.
+  - The user can reveal and copy the manual setup secret.
+  - TOTP codes are verified with a limited clock-skew window and are prevented from being reused for the same time step.
 
-- **Retry/reveal/hide/re-request flow without penalty: FAIL**  
-  The “Request a new setup” button calls `getsetup()`, but `getsetup()` starts with `getSetup.disabled = true`. Once the provision screen has replaced the original setup screen, there is no element with ID `getSetup`; therefore this named global is absent and the request can throw a `ReferenceError`. This breaks the required re-request/retry path.
+- **QR-code setup option works: FAIL**
+  - The application offers a QR setup option, but its grid layout is configured with:
+    - `q.style.gridTemplateColumns = "repeat("+size+",1fr)"`
+  - The CSP is:
+    - `style-src 'nonce-...'`
+  - A nonce authorizes the `<style>` element, not dynamically assigned inline `style` attributes. The browser can block the runtime style mutation under this CSP.
+  - Without `grid-template-columns`, the QR cells are not laid out as a 53×53 matrix, so the offered QR code is not reliably visible or scannable.
 
-- **Server-side authorization and IDOR prevention: PASS**  
-  MFA API operations derive the account exclusively from the authenticated session. There is no user/account identifier accepted from the client for MFA operations, preventing manipulated account IDs from selecting another account.
+- **Manual alternative for provisioning data: PASS**
+  - The manual Base32 setup secret can be shown and copied, satisfying the manual alternative to QR provisioning.
 
-- **CSRF protection for state-changing endpoints: PASS**  
-  State-changing API routes require HTTPS, a same-origin `Origin` header, and the session-bound `X-CSRF-Token`. Session cookies use `SameSite=Strict`.
+- **Recovery-code creation, copy, and verification work: PASS**
+  - Eight cryptographically generated recovery codes are created.
+  - Only salted/peppered hashes are retained server-side.
+  - Codes are single-use, expire, can be copied, and can be verified during MFA sign-in or from the authenticated recovery screen.
+  - Regeneration invalidates prior unused codes.
 
-- **Secure headers and restrictive CORS: PASS**  
-  The application sets CSP with nonces, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, restrictive `Permissions-Policy`, and no-store caching. CORS is only emitted for the same trusted origin.
+- **Authentication and authorization / IDOR prevention: PASS**
+  - MFA mutation endpoints require an authenticated session and derive the account solely from the server-side session.
+  - No client-provided account or user identifier is accepted for MFA operations.
+  - Pending-MFA verification requires the session’s authenticated pending account.
 
-- **Secure session management: PASS**  
-  Sessions use cryptographically random IDs, HttpOnly/Secure/SameSite cookies, are replaced at sign-in, have idle and absolute expirations, and are removed at logout.
+- **CSRF protection for state-changing requests: PASS**
+  - State-changing endpoints require a valid CSRF token.
+  - Requests are additionally restricted to trusted HTTPS localhost origins.
 
-- **Secure storage and generation of MFA material: PASS**  
-  TOTP secrets are AES-GCM encrypted using a random key, recovery codes are generated with `crypto.getRandomValues`, and recovery-code values are stored as HMACs rather than plaintext.
+- **Session security: PASS**
+  - Session cookies are `HttpOnly`, `Secure`, `SameSite=Strict`, and scoped to `/`.
+  - Idle and absolute session timeouts are enforced.
+  - Session identifiers are regenerated after identity verification and MFA completion.
+  - Logout invalidates the server-side session and clears the cookie.
 
-- **OTP/recovery-code time-bound, single-use, entropy, and lockout requirements: FAIL**  
-  Real TOTP validation checks adjacent 30-second time windows and prevents use of a previously accepted pending counter. However, the accepted `MOCK_ENROLMENT_OTP` is globally fixed as `"654321"`, is publicly shown, and has no explicit short expiry. It is therefore not generated with sufficient entropy and is not independently time-bound as required. The OTP is only limited by the much longer pending session lifetime.
+- **Security headers and CORS restrictions: PASS**
+  - CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, and restrictive `Permissions-Policy` are set.
+  - CORS is only returned for approved local HTTPS origins.
 
-- **Recovery-code failed-attempt lockout: PASS**  
-  Validly formatted but incorrect OTP and recovery-code attempts increment counters and lock for five minutes after five failures. Error messages are specific and non-blaming.
+- **Input validation and output safety: PASS**
+  - Email, identity code, OTP, and recovery code formats are validated server-side.
+  - The UI constructs DOM using `textContent` rather than HTML interpolation for server/user content, reducing DOM XSS risk.
+  - There are no database queries, redirects, or external URL navigation paths.
 
-- **Input validation and XSS/injection handling: PASS**  
-  Email, password, OTP, and recovery-code formats are validated server-side. Client-rendered dynamic text is escaped through `esc()`. No database or SQL query layer exists, so prepared-query requirements are not applicable to this artifact.
+- **Verification security controls: PASS**
+  - Identity codes are time-bound and single-use.
+  - TOTP codes are effectively single-use per accepted time step.
+  - Recovery codes are single-use and expire.
+  - Failed attempts are rate-limited and lockouts are applied.
 
-- **Browser-only mock logging: PASS, with specification caveat**  
-  The testing OTP and generated recovery codes are logged in the browser console, as explicitly required by the deliverables. This conflicts literally with the separate prohibition on logging OTPs/recovery codes, but the artifact follows the more specific mock-testing instruction and does not log these values server-side.
-
-- **Clear comments mapping code to all requirement sections: FAIL**  
-  There is one comment for requirements 1 and 2, but there are no clear section-mapping comments for the cryptographic, injection, authentication, accessibility/inclusivity, or mock-handling requirements. This does not fully satisfy the requested deliverable documentation.
+- **Generic production error handling and no server secret logging: PASS**
+  - The server returns generic errors in the outer handler catch.
+  - Server code does not log session IDs, OTP seeds, OTPs, or recovery codes.
+  - Browser console mock logs are explicitly required by the academic deliverable.
 
 ## FAILING_ITEMS
 
-- The **“Request a new setup”** button is broken after the provisioning screen is rendered because `getsetup()` accesses the removed `getSetup` named element/global.
-- The fixed public mock OTP `"654321"` is accepted for enrolment without a short issuance expiry and does not have sufficient entropy. This conflicts with the OTP security requirement for time-bound, sufficiently random verification codes.
-- Code comments do not clearly map implementation sections to all requested requirement sections.
+- **The QR code is not reliably rendered because it depends on a CSP-blocked runtime inline style.**
+  - `qr()` uses `q.style.gridTemplateColumns` to create the 53-column QR matrix.
+  - The CSP permits only nonce-bearing stylesheet rules and does not permit arbitrary inline style attributes.
+  - As a result, the QR setup control can render as a single-column stream of modules instead of a square QR matrix, making the offered QR provisioning option nonfunctional.
 
 ## NEW_TASKS
 
-1. Refactor client event handling to use explicit DOM references rather than implicit named globals. In particular, change `getsetup()` to receive the invoking button or safely query it only when present, so “Request a new setup” successfully calls `/api/provision` after the provision screen is displayed.
-
-2. Replace the globally fixed accepted OTP bypass with a securely generated per-provisioning verification value that has an explicit short expiry and is invalidated after use. If deterministic testing support is mandatory, isolate it behind an explicit non-production test-only mode and do not enable that bypass in the normal production flow.
-
-3. Add concise comments marking the code sections implementing: inclusivity/mobile UX, access control/CSRF, security headers/CORS, encryption and secure generation, input/XSS handling, and authentication/rate-limit/session requirements.
+1. Replace the QR renderer’s runtime inline `gridTemplateColumns` assignment with a nonce-authorized stylesheet class, such as `.qr53 { grid-template-columns: repeat(53, 1fr); }`, and render the QR container with `class="qr qr53"`.
+2. Increase the QR container’s white quiet-zone border to at least four module widths so that the corrected QR output is reliably scannable.
 
 ## DECISION
 

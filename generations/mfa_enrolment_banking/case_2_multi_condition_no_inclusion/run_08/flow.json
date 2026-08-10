@@ -2,26 +2,18 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 15,
-  "steps_passed": 13,
-  "happy_path_passed": 10,
-  "happy_path_total": 12,
+  "steps_total": 14,
+  "steps_passed": 12,
+  "happy_path_passed": 9,
+  "happy_path_total": 11,
   "negative_passed": 3,
   "negative_total": 3,
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "initialize CSRF session",
+      "name": "create pre-auth session and fetch CSRF token",
       "method": "GET",
       "path": "/api/csrf",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "check unsigned session",
-      "method": "GET",
-      "path": "/api/session",
       "expect_failure": false,
       "status_code": 200,
       "ok": true
@@ -51,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "create authenticator secret",
+      "name": "provision authenticator",
       "method": "POST",
       "path": "/api/mfa/provision",
       "expect_failure": false,
@@ -66,11 +58,11 @@
       "status_code": 200,
       "ok": true,
       "warnings": [
-        "could not capture 'recoveryCode' from 'codes.0'"
+        "could not capture 'recovery_code' from 'codes.0'"
       ]
     },
     {
-      "name": "confirm MFA status",
+      "name": "check MFA status",
       "method": "GET",
       "path": "/api/mfa/status",
       "expect_failure": false,
@@ -78,7 +70,7 @@
       "ok": true
     },
     {
-      "name": "use initial recovery code",
+      "name": "use recovery code",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
       "expect_failure": false,
@@ -94,11 +86,11 @@
       "status_code": 200,
       "ok": true,
       "warnings": [
-        "could not capture 'regeneratedRecoveryCode' from 'codes.0'"
+        "could not capture 'regenerated_recovery_code' from 'codes.0'"
       ]
     },
     {
-      "name": "use regenerated recovery code",
+      "name": "verify regenerated recovery code",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
       "expect_failure": false,
@@ -123,15 +115,15 @@
       "ok": true
     },
     {
-      "name": "incorrect identity code rejected",
+      "name": "invalid authenticator code rejected",
       "method": "POST",
-      "path": "/api/identity/verify",
+      "path": "/api/mfa/verify",
       "expect_failure": true,
       "status_code": 403,
       "ok": true
     },
     {
-      "name": "invalid recovery code rejected",
+      "name": "malformed recovery code rejected",
       "method": "POST",
       "path": "/api/mfa/recovery/verify",
       "expect_failure": true,
@@ -140,5 +132,5 @@
     }
   ],
   "stage": "executed",
-  "spec_steps": 15
+  "spec_steps": 14
 }

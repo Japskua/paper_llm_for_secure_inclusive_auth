@@ -5,11 +5,17 @@
   },
   "html_variables": {},
   "csrf": {
-    "html_regex": null,
+    "html_regex": "let csrf=\"([^\"]*)\"",
     "field": "X-CSRF-Token",
     "in": "header"
   },
   "steps": [
+    {
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_status": 200
+    },
     {
       "name": "start identity verification",
       "method": "POST",
@@ -40,7 +46,13 @@
       }
     },
     {
-      "name": "begin authenticator setup",
+      "name": "open security settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "start authenticator setup",
       "method": "POST",
       "path": "/api/mfa/setup",
       "headers": {
@@ -69,12 +81,9 @@
       }
     },
     {
-      "name": "view security settings",
+      "name": "confirm MFA is active",
       "method": "GET",
       "path": "/api/mfa/settings",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
       "expect_json_true": "ok"
     },
     {
@@ -87,6 +96,12 @@
       "body": {
         "code": "${recovery_code}"
       },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "return to security settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
       "expect_json_true": "ok"
     },
     {
@@ -103,15 +118,6 @@
       }
     },
     {
-      "name": "return to security settings",
-      "method": "GET",
-      "path": "/api/mfa/settings",
-      "headers": {
-        "X-CSRF-Token": "${csrf}"
-      },
-      "expect_json_true": "ok"
-    },
-    {
       "name": "sign out",
       "method": "POST",
       "path": "/api/auth/logout",
@@ -124,17 +130,17 @@
   ],
   "negative_steps": [
     {
-      "name": "malformed identity details rejected",
+      "name": "invalid identity details rejected",
       "method": "POST",
       "path": "/api/auth/start",
       "body": {
         "email": "not-an-email",
-        "phone": "+15551234567"
+        "phone": "12345"
       },
       "expect_failure": true
     },
     {
-      "name": "identity verification without csrf rejected",
+      "name": "identity verification without CSRF rejected",
       "method": "POST",
       "path": "/api/auth/verify",
       "body": {
@@ -143,9 +149,27 @@
       "expect_failure": true
     },
     {
-      "name": "settings unavailable after sign out",
-      "method": "GET",
-      "path": "/api/mfa/settings",
+      "name": "manipulated MFA setup request rejected",
+      "method": "POST",
+      "path": "/api/mfa/setup",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "attacker@example.com"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "consumed recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
       "expect_failure": true
     }
   ]

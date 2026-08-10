@@ -1,0 +1,247 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "new_password": "NewDemoPass!9"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_identity",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue securely')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#identityCode"
+        },
+        {
+          "do": "click",
+          "selector": "text=Logs (test delivery simulation)"
+        },
+        {
+          "do": "read",
+          "selector": "pre",
+          "regex": "Simulated identity verification code delivered: (\\d{6})",
+          "into": "identity_code"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_setup",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#identityCode",
+          "value": "${identity_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify identity')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#provision"
+        },
+        {
+          "do": "click",
+          "selector": "#provision"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#toOtp"
+        }
+      ]
+    },
+    {
+      "name": "save_recovery_codes",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#toOtp"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#otp"
+        },
+        {
+          "do": "click",
+          "selector": "text=Logs (test delivery simulation)"
+        },
+        {
+          "do": "read",
+          "selector": "pre",
+          "regex": "Simulated current authenticator OTP delivered: (\\d{6})",
+          "into": "authenticator_otp"
+        },
+        {
+          "do": "fill",
+          "selector": "#otp",
+          "value": "${authenticator_otp}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify authenticator')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "ul.codes"
+        },
+        {
+          "do": "read",
+          "selector": "ul.codes",
+          "regex": "([A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4})",
+          "into": "recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "mfa_settings",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#saved"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=8 unused recovery codes available."
+        }
+      ]
+    },
+    {
+      "name": "recovery_verification",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#recover"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#recovery"
+        },
+        {
+          "do": "fill",
+          "selector": "#recovery",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Recovery code accepted."
+        }
+      ]
+    },
+    {
+      "name": "regenerate_recovery_codes_confirmation",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#backSettings"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=7 unused recovery codes available."
+        },
+        {
+          "do": "click",
+          "selector": "#regen"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#confirmRegen"
+        }
+      ]
+    },
+    {
+      "name": "replacement_recovery_codes",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#confirmRegen"
+        },
+        {
+          "do": "wait_for",
+          "selector": "ul.codes"
+        },
+        {
+          "do": "read",
+          "selector": "ul.codes",
+          "regex": "([A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4})",
+          "into": "replacement_recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "replacement_codes_saved",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#saved"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=8 unused recovery codes available."
+        }
+      ]
+    },
+    {
+      "name": "replacement_recovery_verification",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#recover"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#recovery"
+        },
+        {
+          "do": "fill",
+          "selector": "#recovery",
+          "value": "${replacement_recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Recovery code accepted."
+        }
+      ]
+    },
+    {
+      "name": "return_to_mfa_settings",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#backSettings"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=7 unused recovery codes available."
+        }
+      ]
+    },
+    {
+      "name": "signed_out",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#logout"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#again"
+        }
+      ]
+    }
+  ]
+}

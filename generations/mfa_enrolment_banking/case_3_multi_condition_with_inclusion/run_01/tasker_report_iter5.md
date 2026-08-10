@@ -1,17 +1,19 @@
 # TASKER REPORT — Iteration 5 · Step 13
 
 ## SUMMARY
-- Raw tasks from Tasker: 4
-- Effective task_list after retention: 4
+- Raw tasks from Tasker: 6
+- Effective task_list after retention: 6
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Replace `qrSvg()` with a self-contained standards-compliant QR encoder that encodes the exact `otpauth://` setup URI into a QR image scannable by common authenticator apps, without packages, assets, or network calls.","Make `/api/provision` return the normal mock testing OTP to the browser client without URLs, browser storage, cookies, server logs, or error responses; visibly present the value in the provisioning UI and log its actual value with browser `console.log`.","On successful OTP verification, log the actual generated recovery-code array in the browser console while retaining the existing recovery-code UI and avoiding server-side sensitive logging.","Remove the incomplete `ACADEMIC_TEST_OUTPUT_ENABLED`/`testTotp` conditional path, or make its returned value consistently consumed by the browser flow so the required mock OTP output always works."]}
+{"task_list":["Normalize client event names to lowercase when registering `on...` handlers so `onClick` subscribes to the DOM `click` event.","Test each client control after fixing event binding: sign-in, identity-code send/check, authenticator setup, secret and QR reveal, copy actions, TOTP confirmation, recovery-code actions, help, back navigation, and logout.","Replace the decorative QR renderer with an in-browser standards-compliant QR encoder whose encoded payload exactly matches the returned `otpauth://` provisioning URI, without external assets or network calls.","Track whether recovery codes already exist independently of whether newly issued codes are currently displayed in client state.","When recovery codes already exist, present an explicit replacement confirmation before calling `/api/mfa/backup/regenerate` with `{ \"confirm\": true }`.","After confirmed recovery-code replacement, display the newly returned codes and log those mock codes in the browser console."]}
 ```
 
 ## PARSED_TASKS
-- Replace qrSvg() with a self-contained standards-compliant QR encoder that encodes the exact otpauth:// setup URI into a QR image scannable by common authenticator apps, without packages, assets, or network calls.
-- Make /api/provision return the normal mock testing OTP to the browser client without URLs, browser storage, cookies, server logs, or error responses; visibly present the value in the provisioning UI and log its actual value with browser console.log.
-- On successful OTP verification, log the actual generated recovery-code array in the browser console while retaining the existing recovery-code UI and avoiding server-side sensitive logging.
-- Remove the incomplete `ACADEMIC_TEST_OUTPUT_ENABLED`/testTotp conditional path, or make its returned value consistently consumed by the browser flow so the required mock OTP output always works.
+- Normalize client event names to lowercase when registering on... handlers so onClick subscribes to the DOM click event.
+- Test each client control after fixing event binding: sign-in, identity-code send/check, authenticator setup, secret and QR reveal, copy actions, TOTP confirmation, recovery-code actions, help, back navigation, and logout.
+- Replace the decorative QR renderer with an in-browser standards-compliant QR encoder whose encoded payload exactly matches the returned otpauth:// provisioning URI, without external assets or network calls.
+- Track whether recovery codes already exist independently of whether newly issued codes are currently displayed in client state.
+- When recovery codes already exist, present an explicit replacement confirmation before calling /api/mfa/backup/regenerate with { "confirm": true }.
+- After confirmed recovery-code replacement, display the newly returned codes and log those mock codes in the browser console.

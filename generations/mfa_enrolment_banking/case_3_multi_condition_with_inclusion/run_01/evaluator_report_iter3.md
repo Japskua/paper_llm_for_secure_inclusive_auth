@@ -1,80 +1,91 @@
 ## SUMMARY
 
-The artifact is a single-file Bun HTTPS SPA with a functional sign-in, authenticator provisioning, QR/manual-secret setup, TOTP verification, backup-code generation, regeneration, logout, CSRF checks, session handling, encrypted OTP-secret storage, and rate limiting for OTP/recovery-code failures. The mobile UI is generally accessible and aligned with the dyslexia-focused UX requirements. However, it does not fully meet the security requirements because it deliberately writes OTP secrets, TOTP values, and recovery codes to browser console logs, and its CSP nonce is generated once per server process rather than per response.
+The artifact is a substantial single-file Bun/TLS MFA enrolment application with functional client-side screens, server-side sessions, CSRF checks, ownership checks, encrypted OTP secrets, hashed recovery codes, secure headers, and deterministic browser-console mocks. However, it does not fully meet the security and inclusivity requirements because verification lockouts can be bypassed by starting a new challenge/enrolment, and code visibility/re-request controls are incomplete. Therefore it cannot be accepted as-is.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file application and zero-build operation**
-  - All server code, HTML, CSS, and browser JavaScript are contained in `app.ts`.
-  - It uses `Bun.serve` directly and does not require a bundler, framework, external asset, or compilation pipeline beyond Bun executing the TypeScript file.
+- **PASS — Single-file Bun application with no framework, bundler, compiler, or external assets.**  
+  The HTML, CSS, browser JavaScript, and Bun server are all contained in `app.ts`. It uses built-in Node/Bun-compatible modules only.
 
-- **PASS — HTTPS/TLS configuration**
-  - The Bun server is configured with `certs/cert.pem` and `certs/key.pem`.
-  - Requests are rejected unless they use HTTPS and a trusted localhost host.
+- **PASS — Uses provided TLS certificates and serves HTTPS.**  
+  The server reads `certs/cert.pem` and `certs/key.pem` and configures `Bun.serve` with `tls`. It intentionally refuses to start when certificates are absent.
 
-- **PASS — Responsive, mobile-focused UI**
-  - The page includes a mobile viewport meta tag, constrained content width, mobile breakpoints, large form controls, and readable spacing.
-  - The flow remains usable at small viewport widths.
+- **PASS — Responsive mobile-oriented UI.**  
+  The layout has a constrained mobile width, viewport metadata, legible font sizing, spacing, large full-width primary controls, and a small-screen media query.
 
-- **PASS — Dyslexia/inclusivity UX**
-  - The UI uses a legible sans-serif typeface, increased line/letter spacing, short instructions, examples for expected input, prominent steps, focus styling, and no animated or timed reading elements.
-  - Help content is available at each main step.
-  - The user can retry OTP entry, revisit setup, hide/show the secret, request a new setup secret, and regenerate backup codes.
+- **PASS — Dyslexia-oriented visual and content design is mostly implemented.**  
+  Instructions are short, plain-language, spaced, and accompanied by simple symbols/visual treatment. The UI avoids animated, flashing, or time-driven visual content. Inputs include examples and suitable `autocomplete`/`inputmode` attributes.
 
-- **PASS — Authenticator setup and manual fallback**
-  - The provisioning endpoint creates a secure Base32 secret, encrypts it with AES-GCM at rest, and returns an `otpauth://` URI.
-  - The UI provides both a QR code and a manual secret, including copy-to-clipboard support.
-  - The user can manually submit a six-digit TOTP code.
+- **PARTIAL/FAIL — Required retry, reveal/hide, and re-request support is incomplete.**  
+  The QR code can be shown or hidden, and the identity-code screen can return to sign-in to request another code. However, recovery codes cannot be hidden once displayed, and there is no direct “create new recovery codes”/re-request action while the existing code list is visible. The manual setup secret also has no hide/reveal control.
 
-- **PASS — TOTP verification behavior**
-  - TOTP uses RFC 6238-compatible HMAC-SHA-1, a 30-second period, and six-digit output.
-  - The server accepts a small clock-skew window and prevents reuse of accepted TOTP counters.
-  - Invalid OTPs are rate-limited and locked after five failures.
+- **PASS — Provisioning and manual authenticator setup are supported.**  
+  The app provides a QR code, displays the TOTP secret, provides copy-to-clipboard, returns a provisioning URI, and allows manual submission of a six-digit authenticator code.
 
-- **PASS — Recovery-code generation and protection**
-  - Recovery codes are generated using cryptographically secure randomness.
-  - They are stored as keyed HMAC verifiers rather than plaintext.
-  - Regenerating codes replaces the existing code set.
-  - The recovery verification endpoint validates format, performs constant-time comparisons, consumes matching codes once, and rate-limits failures.
+- **PASS — Mock identity code, authenticator OTP, and recovery codes are available to the UI and browser console.**  
+  The client logs mock values using browser-side `console.log`, as requested for the academic mock environment. The identity code, setup OTP, and generated recovery codes can be used to complete the flow.
 
-- **PASS — Server-side authorization and IDOR protections**
-  - MFA endpoints use the authenticated server-side session to determine the account.
-  - No client-supplied account or user identifier is trusted for MFA changes.
-  - Manipulating identifiers cannot select another account.
+- **PASS — MFA confirmation and recovery-code verification work.**  
+  The server generates TOTP codes from a Base32 secret, accepts a bounded time window, prevents re-use of accepted TOTP time steps, generates recovery codes with cryptographic randomness, stores only PBKDF2 hashes, and marks recovery codes as used after successful verification.
 
-- **PASS — CSRF and session-cookie protections**
-  - State-changing authenticated endpoints require an origin check and `X-CSRF-Token`.
-  - The session cookie is `HttpOnly`, `Secure`, and `SameSite=Strict`.
-  - Sessions have idle and absolute expiration and are invalidated on logout.
-  - Existing sessions for the account are removed when a new session is created.
+- **PASS — Server-side authorization and IDOR protection are implemented for MFA operations.**  
+  MFA routes derive the account solely from the authenticated server-side session via `owner(r)`. No user/account identifier is accepted from the client for MFA changes, preventing manipulated-user-ID access.
 
-- **PASS — Secure response headers and CORS restrictions**
-  - Responses include CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, and `Cache-Control: no-store`.
-  - CORS is only enabled for the request's same trusted localhost origin.
+- **PASS — CSRF protection is implemented on state-changing requests.**  
+  State-changing API calls require `X-CSRF-Token`, compare it with a server-side token using `timingSafeEqual`, and enforce trusted origins. The session cookie is also `SameSite=Strict`.
 
-- **FAIL — Sensitive secrets are exposed in browser console logs**
-  - The browser code logs the OTP shared secret, test TOTP, initial recovery codes, and regenerated recovery codes:
-    - `console.log("[TEST ONLY] Authenticator secret:", data.secret)`
-    - `console.log("[TEST ONLY] RFC 6238 test TOTP:", data.testTotp)`
-    - `console.log("[TEST ONLY] Backup recovery codes:", data.codes)`
-    - `console.log("[TEST ONLY] New backup recovery codes:", data.codes)`
-  - This conflicts with the security requirement that OTP seeds, OTPs, and backup codes must never be exposed in logs.
-  - The requirements also request test values in the browser console, creating a conflict; the artifact does not isolate this behavior to a strictly controlled test-only mode.
+- **PASS — Secure cookie and session controls are mostly implemented.**  
+  Session cookies include `HttpOnly`, `Secure`, and `SameSite=Strict`. Sessions have idle and absolute expirations, are rotated after identity verification, and are invalidated on logout.
 
-- **FAIL — CSP nonce is reused for the lifetime of the server**
-  - `const cspNonce = randomToken(18);` is created once at process startup and reused in every HTML response and every CSP header.
-  - CSP nonces must be generated per response. A static nonce can be obtained from any page response and reused by an attacker in an injection scenario, weakening the intended CSP protection.
+- **PASS — Secure response headers and restrictive CORS are implemented.**  
+  The server sends CSP with a nonce, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, `Referrer-Policy`, `Permissions-Policy`, and `Cache-Control: no-store`. CORS only reflects explicitly trusted local HTTPS origins.
+
+- **PASS — Secrets and recovery codes are protected at rest.**  
+  OTP secrets are AES-256-GCM encrypted in server memory. Recovery codes are generated with `randomBytes` and stored with PBKDF2-SHA-256 hashes plus a server-side pepper.
+
+- **PASS — Inputs are validated and DOM output is safely constructed.**  
+  Email, identity code, OTP, and recovery-code formats are validated server-side. Client rendering uses `textContent` and DOM APIs rather than unsafe HTML insertion, substantially mitigating DOM XSS.
+
+- **FAIL — Identity verification rate limiting/lockout can be bypassed.**  
+  `/api/signin/verify` locks a session after five failures, but `/api/signin/request` resets both `s.failures` and `s.locked` every time a new identity code is requested:
+  ```ts
+  s.failures = 0; 
+  s.locked = undefined;
+  ```
+  An attacker can immediately request a new code after five failures and receive five more attempts. There is also no rate limit on repeated identity-code requests.
+
+- **FAIL — Authenticator-verification lockout can be bypassed.**  
+  `/api/mfa/confirm` locks the current `Enrollment` after five failures, but `/api/mfa/enroll` always replaces the entire enrollment object:
+  ```ts
+  o.s.enrollment = { secret: enc(x), failures: 0, used: new Set() };
+  ```
+  A user can bypass the lockout simply by calling `/api/mfa/enroll` again and receiving a new secret with zero failures. This fails the requirement to rate-limit and lock out repeated failed verification attempts.
+
+- **PASS — Errors are specific and non-blaming.**  
+  User-facing validation and verification errors generally explain the problem and give a concrete next action, such as checking six digits, requesting a new code, or trying an unused recovery code.
+
+- **PARTIAL/FAIL — Clear requirement-mapping comments are insufficient.**  
+  The file contains a broad top-level security comment and a QR comment, but it does not provide clear comments mapping the major implementation areas back to the stated requirement sections as requested by the deliverables.
 
 ## FAILING_ITEMS
 
-- Sensitive MFA material is written to browser console logs, including the OTP seed, a valid TOTP value, and backup recovery codes. This violates the stated prohibition on logging OTP seeds, OTPs, and backup codes.
-- CSP uses one process-wide nonce instead of a new cryptographically random nonce for each HTML response. This weakens CSP as an XSS mitigation.
+- Identity-code lockout is reset by every successful call to `/api/signin/request`, allowing unlimited groups of failed identity-verification attempts.
+- There is no explicit server-side throttling/rate limit for repeated identity-code requests.
+- Authenticator OTP lockout is bypassable because calling `/api/mfa/enroll` creates a replacement enrollment object with reset failure and lock state.
+- The UI does not consistently provide reveal/hide/re-request options for sensitive codes/secrets:
+  - setup secret has no hide/reveal control;
+  - recovery codes cannot be hidden while displayed;
+  - recovery codes cannot be regenerated directly from the displayed-code state.
+- Requirement-to-code comments are not sufficiently clear or comprehensive for the stated deliverable.
 
 ## NEW_TASKS
 
-1. Remove sensitive secrets, OTP values, and recovery codes from normal browser console logging. If academic testing output is required, implement an explicitly controlled test-only mode that is disabled by default and cannot be enabled by an untrusted client request.
-2. Generate a fresh CSP nonce for every request/HTML response, pass that nonce into both `securityHeaders(...)` and `pageHtml(...)`, and remove the global `cspNonce` constant.
+1. Preserve identity-verification failure and lockout state across identity-code re-requests, and add a server-side cooldown/rate limit for repeated `/api/signin/request` calls.
+2. Prevent `/api/mfa/enroll` from resetting an active authenticator-verification lockout; retain lock/failure state for the authenticated session or enforce a server-side enrolment-request cooldown.
+3. Add accessible hide/reveal controls for the manual setup secret and displayed recovery codes.
+4. Add a clear “Create new recovery codes” action from the recovery-code display state, with a confirmation step warning that existing unused codes will stop working.
+5. Add concise comments throughout `app.ts` mapping the session/authorization, CSRF, headers/TLS, cryptographic storage, validation, rate-limit, and UI accessibility sections to the requirement categories.
 
 ## DECISION
 
-FAIL
+**FAIL**

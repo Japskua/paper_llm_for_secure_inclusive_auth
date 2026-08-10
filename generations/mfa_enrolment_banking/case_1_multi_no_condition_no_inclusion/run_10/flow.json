@@ -2,24 +2,16 @@
   "ok": false,
   "landing_status": 200,
   "csrf_found": true,
-  "steps_total": 16,
-  "steps_passed": 13,
-  "happy_path_passed": 10,
-  "happy_path_total": 13,
+  "steps_total": 15,
+  "steps_passed": 12,
+  "happy_path_passed": 9,
+  "happy_path_total": 12,
   "negative_passed": 3,
   "negative_total": 3,
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "load enrolment page",
-      "method": "GET",
-      "path": "/",
-      "expect_failure": false,
-      "status_code": 200,
-      "ok": true
-    },
-    {
-      "name": "bootstrap session",
+      "name": "bootstrap session and CSRF",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_failure": false,
@@ -27,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "start sign in",
+      "name": "start identity verification",
       "method": "POST",
       "path": "/api/signin",
       "expect_failure": false,
@@ -35,7 +27,7 @@
       "ok": true
     },
     {
-      "name": "verify identity",
+      "name": "verify identity code",
       "method": "POST",
       "path": "/api/identity/verify",
       "expect_failure": false,
@@ -51,7 +43,7 @@
       "ok": true
     },
     {
-      "name": "enable authenticator MFA",
+      "name": "confirm authenticator MFA",
       "method": "POST",
       "path": "/api/authenticator/confirm",
       "expect_failure": false,
@@ -59,7 +51,7 @@
       "ok": true
     },
     {
-      "name": "retrieve initial recovery codes",
+      "name": "display initial recovery codes",
       "method": "GET",
       "path": "/api/recovery-codes",
       "expect_failure": false,
@@ -78,7 +70,7 @@
       "ok": true
     },
     {
-      "name": "verify recovery code for replacement",
+      "name": "verify recovery code for regeneration",
       "method": "POST",
       "path": "/api/recovery/verify",
       "expect_failure": false,
@@ -90,7 +82,7 @@
       "response_message": "{'error': 'Unable to complete this request. Please try again.'}"
     },
     {
-      "name": "regenerate recovery codes",
+      "name": "generate replacement recovery codes",
       "method": "POST",
       "path": "/api/recovery/regenerate",
       "expect_failure": false,
@@ -102,7 +94,7 @@
       "response_message": "{'error': 'Unable to complete this request. Please try again.'}"
     },
     {
-      "name": "retrieve replacement recovery codes",
+      "name": "display replacement recovery codes",
       "method": "GET",
       "path": "/api/recovery-codes",
       "expect_failure": false,
@@ -115,7 +107,7 @@
       "response_message": "{'error': 'Recovery codes are unavailable. Return to MFA settings.'}"
     },
     {
-      "name": "return to MFA settings",
+      "name": "confirm active MFA settings",
       "method": "GET",
       "path": "/api/mfa/settings",
       "expect_failure": false,
@@ -131,7 +123,7 @@
       "ok": true
     },
     {
-      "name": "invalid CSRF rejected",
+      "name": "invalid CSRF token rejected",
       "method": "POST",
       "path": "/api/signin",
       "expect_failure": true,
@@ -139,22 +131,22 @@
       "ok": true
     },
     {
-      "name": "malformed identity rejected",
-      "method": "POST",
-      "path": "/api/signin",
-      "expect_failure": true,
-      "status_code": 401,
-      "ok": true
-    },
-    {
-      "name": "invalid identity code rejected",
+      "name": "malformed identity code rejected",
       "method": "POST",
       "path": "/api/identity/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "consumed recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
       "expect_failure": true,
       "status_code": 401,
       "ok": true
     }
   ],
   "stage": "executed",
-  "spec_steps": 16
+  "spec_steps": 15
 }

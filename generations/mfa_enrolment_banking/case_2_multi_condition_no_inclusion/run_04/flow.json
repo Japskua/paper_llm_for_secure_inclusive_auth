@@ -3,15 +3,15 @@
   "landing_status": 200,
   "csrf_found": true,
   "steps_total": 12,
-  "steps_passed": 6,
+  "steps_passed": 7,
   "happy_path_passed": 3,
-  "happy_path_total": 9,
-  "negative_passed": 3,
-  "negative_total": 3,
+  "happy_path_total": 8,
+  "negative_passed": 4,
+  "negative_total": 4,
   "negatives_meaningful": false,
   "steps": [
     {
-      "name": "bootstrap anonymous session",
+      "name": "bootstrap session",
       "method": "GET",
       "path": "/api/bootstrap",
       "expect_failure": false,
@@ -19,7 +19,7 @@
       "ok": true
     },
     {
-      "name": "start evaluation sign in",
+      "name": "start evaluation sign-in",
       "method": "POST",
       "path": "/api/sign-in",
       "expect_failure": false,
@@ -49,9 +49,9 @@
       "status_code": 403,
       "ok": false,
       "warnings": [
-        "could not capture 'csrf' from 'csrf'",
         "could not capture 'manual_secret' from 'manualSecret'",
-        "could not capture 'authenticator_otp' from 'testOtp'"
+        "could not capture 'authenticator_otp' from 'testOtp'",
+        "could not capture 'csrf' from 'csrf'"
       ],
       "response_message": "We could not complete that request. Please try again."
     },
@@ -63,8 +63,8 @@
       "status_code": 403,
       "ok": false,
       "warnings": [
-        "could not capture 'csrf' from 'csrf'",
-        "could not capture 'recovery_code' from 'recoveryCodes.0'"
+        "could not capture 'recovery_code' from 'recoveryCodes.0'",
+        "could not capture 'csrf' from 'csrf'"
       ],
       "response_message": "We could not complete that request. Please try again."
     },
@@ -88,19 +88,7 @@
       "status_code": 403,
       "ok": false,
       "warnings": [
-        "could not capture 'csrf' from 'csrf'",
-        "could not capture 'replacement_recovery_code' from 'recoveryCodes.0'"
-      ],
-      "response_message": "We could not complete that request. Please try again."
-    },
-    {
-      "name": "verify replacement recovery code",
-      "method": "POST",
-      "path": "/api/recovery/verify",
-      "expect_failure": false,
-      "status_code": 403,
-      "ok": false,
-      "warnings": [
+        "could not capture 'replacement_recovery_code' from 'recoveryCodes.0'",
         "could not capture 'csrf' from 'csrf'"
       ],
       "response_message": "We could not complete that request. Please try again."
@@ -114,7 +102,7 @@
       "ok": true
     },
     {
-      "name": "incorrect sign-in phone rejected",
+      "name": "invalid sign-in phone rejected",
       "method": "POST",
       "path": "/api/sign-in",
       "expect_failure": true,
@@ -122,7 +110,15 @@
       "ok": true
     },
     {
-      "name": "consumed recovery code rejected",
+      "name": "incorrect identity code rejected",
+      "method": "POST",
+      "path": "/api/identity-verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid recovery code rejected",
       "method": "POST",
       "path": "/api/recovery/verify",
       "expect_failure": true,
@@ -132,7 +128,7 @@
     {
       "name": "missing csrf rejected",
       "method": "POST",
-      "path": "/api/logout",
+      "path": "/api/mfa/provision",
       "expect_failure": true,
       "status_code": 403,
       "ok": true

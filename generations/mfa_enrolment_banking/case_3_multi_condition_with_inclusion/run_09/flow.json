@@ -1,0 +1,157 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 14,
+  "steps_passed": 8,
+  "happy_path_passed": 4,
+  "happy_path_total": 10,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "bootstrap session and CSRF token",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request identity code",
+      "method": "POST",
+      "path": "/api/identity/request",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'identity_code' from 'demoCode'"
+      ]
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'error': 'Enter the 6-number code. Example: 123456.'}"
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/authenticator/start",
+      "expect_failure": false,
+      "status_code": 409,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'authenticator_code' from 'demoCode'"
+      ],
+      "response_message": "{'error': 'Please complete the earlier step first.'}"
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'error': 'Enter the 6-number code from your authenticator.'}"
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/backup/generate",
+      "expect_failure": false,
+      "status_code": 409,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'recovery_code' from 'codes.0'"
+      ],
+      "response_message": "{'error': 'Please confirm your authenticator first.'}"
+    },
+    {
+      "name": "confirm recovery codes saved",
+      "method": "POST",
+      "path": "/api/backup/confirm",
+      "expect_failure": false,
+      "status_code": 409,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'error': 'Prepare and save recovery codes before continuing.'}"
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'error': 'Enter a recovery code in this format: ABCDE-2345.'}"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "malformed recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "invalid CSRF token rejected",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 14
+}

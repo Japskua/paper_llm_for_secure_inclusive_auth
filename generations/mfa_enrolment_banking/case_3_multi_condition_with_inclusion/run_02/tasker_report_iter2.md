@@ -1,22 +1,23 @@
 # TASKER REPORT — Iteration 2 · Step 4
 
 ## SUMMARY
-- Raw tasks from Tasker: 9
-- Effective task_list after retention: 9
+- Raw tasks from Tasker: 10
+- Effective task_list after retention: 10
 - Note: Evaluator decides termination; Tasker.done is ignored.
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Require certs/cert.pem and certs/key.pem at startup, serve only through Bun TLS, and fail closed with a generic startup error when certificates are unavailable.","Replace arbitrary-email login with a mock identity-verification flow that creates a Marcus session only for the verified account owner.","Protect /api/login with CSRF validation or strict server-side Origin validation before creating an authenticated session.","Replace qrSvg() with a self-contained standards-compliant QR encoder that encodes the returned otpauth:// provisioning URI and is scannable by authenticator applications.","Verify authenticator entries using a real TOTP derived from the provisioned secret or a cryptographically random per-provisioning mock OTP; log the test value only in the browser console.","Store each recovery code with a unique salt and slow KDF, and add a CSRF-protected endpoint that atomically verifies and consumes a recovery code once.","Add setup-secret hide/reveal controls and an explicit recovery-code regeneration action that clearly states regenerated codes replace prior codes.","Keep the active provisioning and verification state after an invalid OTP so retry returns to the same code-entry screen without generating a new secret.","Remove the persistent visible sensitive-data log panel; retain required mock setup, OTP, and recovery-value output only in the browser developer console."]}
+{"task_list":["Replace the pseudo-QR canvas with an inline, standards-compliant QR encoder that encodes the authenticated user's `otpauth://totp/...` provisioning URI and is scannable by authenticator applications without external assets.","Implement RFC 6238 server-side TOTP generation and verification from the encrypted provisioned secret, accepting a small clock-skew window and returning plain retry guidance for invalid codes.","Create an explicitly isolated evaluator/demo mode for deterministic mock identity OTPs, TOTP fixtures, and recovery codes; keep normal mode cryptographically random and ensure production mode never logs or displays secrets outside their intended protected UI.","Remove the visible in-page secret log panel and ensure production browser/server logs never contain OTP seeds, OTPs, recovery codes, or session tokens.","Preserve pending authenticator enrolment server-side and provide an authenticated, CSRF-protected endpoint that returns the existing provisioning state without generating or replacing its secret.","Update client state restoration so a refresh in pending setup re-renders the existing setup and a refresh in the `backup` state re-renders the recovery-code acknowledgement step.","Show the setup secret and full provisioning URI in the setup UI through clear reveal/hide and copy controls, so manual authenticator provisioning works without clipboard access or QR scanning.","Add an authenticated, CSRF-protected recovery-code regeneration action that invalidates the prior set, issues a replacement set, and plainly confirms that the old codes no longer work.","Hash each recovery code with a unique salt using a deliberately slow KDF such as PBKDF2, scrypt, or Argon2, and verify submitted codes against that stored KDF output.","Add a protected post-enrolment MFA verification endpoint and UI that accepts a current TOTP or consumes one single-use recovery code, with validation, rate limiting, and temporary lockout on repeated failures."]}
 ```
 
 ## PARSED_TASKS
-- Require certs/cert.pem and certs/key.pem at startup, serve only through Bun TLS, and fail closed with a generic startup error when certificates are unavailable.
-- Replace arbitrary-email login with a mock identity-verification flow that creates a Marcus session only for the verified account owner.
-- Protect /api/login with CSRF validation or strict server-side Origin validation before creating an authenticated session.
-- Replace qrSvg() with a self-contained standards-compliant QR encoder that encodes the returned otpauth:// provisioning URI and is scannable by authenticator applications.
-- Verify authenticator entries using a real TOTP derived from the provisioned secret or a cryptographically random per-provisioning mock OTP; log the test value only in the browser console.
-- Store each recovery code with a unique salt and slow KDF, and add a CSRF-protected endpoint that atomically verifies and consumes a recovery code once.
-- Add setup-secret hide/reveal controls and an explicit recovery-code regeneration action that clearly states regenerated codes replace prior codes.
-- Keep the active provisioning and verification state after an invalid OTP so retry returns to the same code-entry screen without generating a new secret.
-- Remove the persistent visible sensitive-data log panel; retain required mock setup, OTP, and recovery-value output only in the browser developer console.
+- Replace the pseudo-QR canvas with an inline, standards-compliant QR encoder that encodes the authenticated user's otpauth://totp/... provisioning URI and is scannable by authenticator applications without external assets.
+- Implement RFC 6238 server-side TOTP generation and verification from the encrypted provisioned secret, accepting a small clock-skew window and returning plain retry guidance for invalid codes.
+- Create an explicitly isolated evaluator/demo mode for deterministic mock identity OTPs, TOTP fixtures, and recovery codes; keep normal mode cryptographically random and ensure production mode never logs or displays secrets outside their intended protected UI.
+- Remove the visible in-page secret log panel and ensure production browser/server logs never contain OTP seeds, OTPs, recovery codes, or session tokens.
+- Preserve pending authenticator enrolment server-side and provide an authenticated, CSRF-protected endpoint that returns the existing provisioning state without generating or replacing its secret.
+- Update client state restoration so a refresh in pending setup re-renders the existing setup and a refresh in the backup state re-renders the recovery-code acknowledgement step.
+- Show the setup secret and full provisioning URI in the setup UI through clear reveal/hide and copy controls, so manual authenticator provisioning works without clipboard access or QR scanning.
+- Add an authenticated, CSRF-protected recovery-code regeneration action that invalidates the prior set, issues a replacement set, and plainly confirms that the old codes no longer work.
+- Hash each recovery code with a unique salt using a deliberately slow KDF such as PBKDF2, scrypt, or Argon2, and verify submitted codes against that stored KDF output.
+- Add a protected post-enrolment MFA verification endpoint and UI that accepts a current TOTP or consumes one single-use recovery code, with validation, rate limiting, and temporary lockout on repeated failures.

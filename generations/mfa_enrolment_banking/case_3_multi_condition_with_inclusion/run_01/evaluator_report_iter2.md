@@ -1,114 +1,79 @@
 ## SUMMARY
 
-The artifact is a single `app.ts` Bun HTTPS SPA with strong coverage of the enrolment UX, session handling, CSRF checks, headers, secure cookies, server-side authorization, and accessible mobile styling. However, it fails key MFA functionality and security requirements: the provisioning QR implementation is not reliable, the server verifies a separately generated mock code rather than a TOTP generated from the provisioned authenticator secret, backup-code hashes are not strong at-rest protection, and sign-in behavior has an account-enumeration timing difference. These issues prevent acceptance.
+The artifact is a single-file Bun HTTPS MFA SPA with substantial security and accessibility work implemented correctly. However, it has two concrete functional defects: identity verification always fails because the request body is consumed twice, and the custom QR encoder truncates typical provisioning URIs, producing an unusable QR code. These defects prevent completion of the required enrolment flow and make the QR option non-functional.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file, zero-compilation delivery**
-  - The server, HTML, CSS, and browser JavaScript are all contained in `app.ts`.
-  - It uses Bun directly and does not require frameworks, bundlers, external assets, or external network calls.
+- **Single `app.ts` containing Bun server, HTML, CSS, and vanilla client JavaScript — PASS**  
+  The provided artifact is one TypeScript file and embeds the server, page template, CSS, and browser-side JavaScript. It uses Bun directly and has no framework, bundler, compiler step, or external assets.
 
-- **PASS — HTTPS/TLS server setup**
-  - `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`.
-  - Requests are rejected unless they are HTTPS and use an allowed local host.
+- **HTTPS/TLS using `certs/cert.pem` and `certs/key.pem` — PASS**  
+  The server refuses startup when either certificate is absent and configures `Bun.serve()` with both files.
 
-- **PASS — Responsive mobile SPA and inclusive UX**
-  - The layout is responsive and constrained to a mobile-friendly width.
-  - It uses readable fonts, increased line/letter spacing, clear cards, visible progress steps, short instructions, examples, large input controls, and no moving content.
-  - Help is present at each stage and explicitly states there is no reading timer.
+- **Mobile-responsive, legible, dyslexia-aware UI — PASS**  
+  The UI uses a constrained mobile layout, responsive media query, large controls, readable line spacing, plain-language copy, progress indication, generous whitespace, input examples, help actions, and no animations or timers.
 
-- **PASS — Sign-in flow and browser autofill support**
-  - Email and password fields use appropriate `autocomplete` values.
-  - Client-side UX has clear error notices and prevents duplicate button actions while requests are in progress.
-  - The server validates email and password input.
+- **Sign-in and identity verification flow works — FAIL**  
+  `/api/signin/verify` reads `await body(request)` twice in one expression. The first read consumes the request body; the second read returns `undefined`, so `code` becomes `undefined`. The regular-expression check then always fails, making successful identity verification impossible.
 
-- **PASS — Server-side authorization / IDOR protection**
-  - MFA endpoints use the authenticated session’s `userId`; they do not accept user/account identifiers from the client.
-  - Manipulating a user identifier is not possible through the exposed endpoints.
+- **Authenticator enrolment and TOTP verification work — FAIL**  
+  The server-side TOTP implementation and enrolment state are generally sound, but the user cannot reach this stage through the intended sign-in flow because identity verification is broken.
 
-- **PASS — CSRF protection for state-changing MFA actions**
-  - Authenticated state-changing endpoints require a CSRF token and same-origin HTTPS origin validation.
-  - The session CSRF token is generated server-side and sent only after successful sign-in.
+- **QR-code provisioning option works — FAIL**  
+  The QR encoder is hard-coded as QR Model 2 Version 6-L with 136 data codewords, while a normal generated `otpauth://` URI is approximately 150 bytes for the demonstrated email address. The encoder only places the first 136 data bytes into its blocks, silently truncating the provisioning URI. The displayed QR code therefore does not reliably contain a valid full provisioning URI.
 
-- **PASS — Secure session cookie attributes and session lifecycle**
-  - The session cookie uses `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, and a bounded lifetime.
-  - Sessions have idle and absolute expirations.
-  - Sessions are rotated on authentication, old sessions for the account are invalidated, and logout invalidates the session.
+- **Manual authenticator setup, copy-to-clipboard, and manual code submission — PASS**  
+  The setup secret is displayed, can be copied, and the user can manually enter an authenticator code. OTP input has numeric keyboard and one-time-code autofill hints.
 
-- **PASS — Security headers and CORS restriction**
-  - CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, referrer policy, permissions policy, and `Cache-Control: no-store` are configured.
-  - CORS is only enabled for the same trusted HTTPS origin.
+- **Backup recovery codes can be generated, copied, downloaded, and verified — PASS, conditional on completing enrolment**  
+  Recovery codes are securely generated server-side, returned once to the UI, copied/downloaded from the client, stored as PBKDF2 hashes with salt and pepper, expire, and become single-use after successful verification. The flow is currently unreachable from normal sign-in due to the identity-verification defect.
 
-- **FAIL — Authenticator provisioning and verification work correctly**
-  - `/api/provision` generates a secret and an `otpauth://` URI, but `/api/verify-otp` does **not** validate a TOTP derived from that secret.
-  - Instead, it generates an unrelated random `mockOtp`, hashes it, and accepts only that unrelated value.
-  - A user who scans the QR code or manually enters the shown secret into a real authenticator app will receive a valid TOTP that the server rejects.
-  - This fails the required time-based OTP authenticator flow and means the QR/manual-secret provisioning path does not actually work.
+- **Browser-side mock logging for academic testing — PASS**  
+  Mock identity codes, authenticator setup details/OTP, and recovery codes are logged in the browser through `console.log`, as explicitly required for the academic mock flow. No server-side logging is present.
 
-- **FAIL — QR-code option is valid and functional**
-  - The custom `qrSvg` implementation writes data into format-information cells before overwriting those cells with format bits.
-  - Because those cells were not reserved before data placement, the data stream becomes misaligned and the final matrix is not a standards-compliant QR encoding of the provisioning URI.
-  - The offered QR option therefore cannot be relied upon to scan successfully.
+- **Server-side ownership enforcement / IDOR prevention — PASS**  
+  MFA endpoints resolve the account exclusively through the authenticated session’s `userId`; no caller-controlled user identifier is accepted by MFA routes.
 
-- **PASS — Manual secret and copy-to-clipboard options**
-  - The provisioning secret is displayed manually, can be copied, and can be hidden/revealed.
-  - Recovery codes can be copied.
-  - Browser clipboard failure is handled with a clear fallback message.
+- **CSRF protection for state-changing actions — PASS**  
+  State-changing API routes require an `X-CSRF-Token`, validate it with timing-safe comparison, and check trusted origin. The session cookie is `SameSite=Strict`.
 
-- **PASS — OTP validation, expiry, single-use behavior, and rate limiting**
-  - OTP input format is validated.
-  - OTPs are time-bound, marked single-use after successful verification, and failed attempts lock verification after five failures.
-  - Recovery-code verification similarly validates format and applies a lockout.
+- **Session security — PASS**  
+  Sessions are server-side, use cryptographically random identifiers, rotate after authentication, have idle and absolute expiry, and are invalidated on logout. Cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
 
-- **PASS — Backup-code generation, display, replacement, and single-use server handling**
-  - Ten recovery codes are generated, returned to the UI for the required test display/logging behavior, and only hashes are retained in the account object.
-  - Regeneration replaces the prior hashes.
-  - `/api/recovery/verify` removes a successfully used recovery-code hash.
+- **Security headers, CSP, clickjacking protection, and CORS restriction — PASS**  
+  The application provides CSP with per-page nonce, HSTS, `nosniff`, `X-Frame-Options: DENY`, CSP `frame-ancestors 'none'`, restrictive referrer/permissions policy, and origin-restricted credentialed CORS behavior.
 
-- **FAIL — Strong at-rest protection for backup recovery codes**
-  - Recovery codes are stored as unsalted plain SHA-256 hashes: `codes.map(sha256)`.
-  - The code format has a bounded, enumerable search space, and unsalted SHA-256 is vulnerable to efficient offline guessing/precomputation if the in-memory data is exposed.
-  - Use a keyed hash/HMAC with a server-side secret (or an appropriate password-hashing/KDF strategy with per-code salt) rather than raw SHA-256.
+- **Secret handling at rest and secure randomness — PASS**  
+  TOTP secrets are AES-256-GCM encrypted in server memory, recovery codes are PBKDF2-hashed with random salts and a server-side pepper, and generation uses Node cryptographic RNG APIs.
 
-- **FAIL — No account/user enumeration in response timing**
-  - The sign-in condition short-circuits when `account` is absent:
-    ```ts
-    !account || sha256(password) !== account.passwordHash
-    ```
-  - For a valid-looking password and a nonexistent email, password hashing is skipped; for an existing account, password hashing occurs.
-  - This creates a measurable response-time distinction despite the generic message, contrary to the no-enumeration-in-timing requirement.
+- **Input validation, output safety, generic server errors, and redirect safety — PASS**  
+  Inputs are format-validated server-side, no user-controlled values are rendered through unsafe HTML APIs, there are no redirects based on untrusted input, and the outer handler returns generic errors rather than stack traces.
 
-- **PASS — Input validation, output encoding, and redirect handling**
-  - Server-side validation exists for email, password, OTP, and recovery-code input.
-  - Dynamic values inserted through browser HTML rendering are escaped via `esc`.
-  - No redirect parameter or open redirect mechanism is present.
-
-- **PASS — No secret persistence in browser storage**
-  - The code does not use `localStorage`, `sessionStorage`, or client-readable cookies for MFA secrets, OTPs, recovery codes, or sessions.
-  - Temporary browser variables are cleared on completion/logout.
-
-- **PASS — Generic production error handling**
-  - The outer server handler catches unexpected errors and returns a generic error message rather than a stack trace.
+- **OTP/recovery-code expiry, single-use behavior, rate limiting, and lockout — PASS**  
+  Identity challenges expire and become single-use; TOTP confirmation tracks used steps; recovery codes become used after success; repeated identity, enrolment OTP, and recovery failures are rate-limited with lockout periods.
 
 ## FAILING_ITEMS
 
-- The provisioned authenticator secret is not used for OTP verification. The server accepts only a separate random `mockOtp`, so a real authenticator app configured from the QR code or manual secret cannot complete enrolment.
-- The hand-written QR encoder is invalid because format-information modules are not reserved before data placement, corrupting the encoded data stream.
-- Backup recovery codes are protected with unsalted raw SHA-256 rather than a strong keyed/salted at-rest verifier.
-- Sign-in has an account-enumeration timing difference because password hashing is skipped for nonexistent accounts.
+- **Identity verification is permanently broken.**  
+  In `/api/signin/verify`, this code consumes the body twice:
+  ```ts
+  const code = typeof (await body(request))?.code === "string"
+    ? (await body(request))?.code
+    : "";
+  ```
+  `Request.json()` may only be read once. The second `body(request)` call cannot retrieve the submitted code, so no valid identity code can be accepted.
+
+- **The QR provisioning code cannot encode the generated provisioning URI.**  
+  `qrMatrix()` is explicitly fixed to Version 6-L and creates 136 data codewords, but normal generated provisioning URIs exceed its byte-mode capacity. Extra URI bytes are ignored when the code creates two 68-byte data blocks, resulting in a truncated QR payload and an unusable authenticator QR scan.
 
 ## NEW_TASKS
 
-1. Replace the independent `mockOtp` verification design with RFC 6238 TOTP validation based on the generated provisioning secret; decrypt the stored secret server-side, calculate the expected TOTP using HMAC-SHA-1, enforce a short permitted clock window, and retain single-use/rate-limit behavior as appropriate for the simulated enrolment flow.
+1. **Fix identity-code request parsing in `/api/signin/verify`.**  
+   Read the JSON body exactly once into a local variable, then safely extract and validate `data.code` from that one parsed object.
 
-2. Keep the required browser test logging by returning/logging a test TOTP derived from the same provisioned secret, rather than returning an unrelated random six-digit code.
-
-3. Replace `qrSvg` with a standards-compliant embedded QR encoder that correctly reserves all functional modules, applies valid error correction and masking, supports the provisioning URI capacity, and produces a scannable QR code for the exact returned `otpauth://` URI.
-
-4. Replace raw `sha256` backup-code storage with a strong verifier, such as HMAC-SHA-256 using a server-only pepper/key, and use constant-time comparison when checking a submitted recovery code.
-
-5. Make sign-in password verification timing-independent of account existence by always computing a password hash/KDF comparison using either the account hash or a fixed dummy hash, while retaining the same generic sign-in response.
+2. **Replace or correct the QR encoder so it supports the full provisioning URI length.**  
+   Implement a standards-compliant QR generator with version selection and correct capacity/error-correction handling, or use a correctly implemented larger fixed QR version that safely supports the maximum permitted email-derived provisioning URI length. Verify that scanning the QR produces the exact `provisioningUri` returned by `/api/mfa/enroll`.
 
 ## DECISION
 
-FAIL
+**FAIL**

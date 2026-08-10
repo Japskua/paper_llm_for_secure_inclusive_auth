@@ -1,22 +1,27 @@
 {
   "variables": {
     "email": "marcus@example.test",
+    "password": "BankingDemo!54",
     "new_password": "NewPassword!54"
   },
   "html_variables": {},
   "csrf": {
-    "html_regex": null,
     "field": "X-CSRF-Token",
-    "in": "header"
+    "in": "header",
+    "source_step": "sign in",
+    "source_field": "csrf"
   },
   "steps": [
     {
       "name": "sign in",
       "method": "POST",
       "path": "/api/auth/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
       "body": {
         "email": "${email}",
-        "password": "BankingDemo!54"
+        "password": "${password}"
       },
       "expect_json_true": "ok",
       "capture": {
@@ -28,6 +33,10 @@
       "name": "confirm identity",
       "method": "POST",
       "path": "/api/auth/identity",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "phone": "+44 7700 900000",
         "code": "${identity_code}"
@@ -38,6 +47,10 @@
       "name": "start authenticator enrolment",
       "method": "POST",
       "path": "/api/mfa/enrol/start",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {},
       "expect_json_true": "ok",
       "capture": {
@@ -48,6 +61,10 @@
       "name": "verify authenticator",
       "method": "POST",
       "path": "/api/mfa/enrol/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "otp": "${authenticator_otp}"
       },
@@ -66,6 +83,10 @@
       "name": "regenerate recovery codes",
       "method": "POST",
       "path": "/api/mfa/recovery/regenerate",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {},
       "expect_json_true": "ok",
       "capture": {
@@ -76,15 +97,29 @@
       "name": "redeem recovery code",
       "method": "POST",
       "path": "/api/mfa/recovery/redeem",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {
         "recoveryCode": "${recovery_code}"
       },
       "expect_json_true": "ok"
     },
     {
+      "name": "confirm recovery code count",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "ok"
+    },
+    {
       "name": "sign out",
       "method": "POST",
       "path": "/api/auth/logout",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
       "body": {},
       "expect_json_true": "ok"
     }
@@ -94,6 +129,9 @@
       "name": "wrong password rejected",
       "method": "POST",
       "path": "/api/auth/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
       "body": {
         "email": "${email}",
         "password": "WrongPassword!54"
@@ -101,18 +139,29 @@
       "expect_failure": true
     },
     {
-      "name": "reused recovery code rejected",
+      "name": "identity confirmation without CSRF rejected",
       "method": "POST",
-      "path": "/api/mfa/recovery/redeem",
+      "path": "/api/auth/identity",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
       "body": {
-        "recoveryCode": "${recovery_code}"
+        "phone": "+44 7700 900000",
+        "code": "000000"
       },
       "expect_failure": true
     },
     {
-      "name": "signed out session rejected",
-      "method": "GET",
-      "path": "/api/mfa/settings",
+      "name": "spent recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "${recovery_code}"
+      },
       "expect_failure": true
     }
   ]

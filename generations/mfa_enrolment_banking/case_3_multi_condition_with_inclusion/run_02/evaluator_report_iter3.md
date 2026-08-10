@@ -1,83 +1,108 @@
 ## SUMMARY
 
-The artifact is a single-file Bun HTTPS SPA with a mostly functional MFA flow, secure-cookie sessions, CSRF checks, server-side MFA ownership enforcement, encrypted TOTP secrets, hashed recovery codes, and mobile-oriented UI. However, it does not fully meet the requirements because the displayed “QR” is not a scannable QR code, session rotation leaves old sessions valid, login rate limiting is bypassable, browser logs expose MFA secrets, CSP permits unsafe inline execution, and a few accessibility/copy-flow requirements are incomplete.
+The artifact is a single `app.ts` Bun application with inline HTML, CSS, and vanilla browser JavaScript. It implements most of the MFA flow and many server-side security controls well, including authenticated sessions, CSRF checks, encrypted TOTP secrets, hashed recovery codes, secure headers, input validation, and single-use verification protections. However, it does not provide a real scannable QR code, allows identity-verification rate limiting to be bypassed through resend, and does not fully meet the deterministic browser-side mock and reveal/hide UX requirements. These issues prevent acceptance.
 
 ## FUNCTIONAL_CHECK
 
-- **PASS — Single-file Bun application with no framework, bundler, compiler, or external assets.**  
-  The server, HTML, CSS, and browser JavaScript are all contained in `app.ts`. It uses `Bun.serve` directly and does not make external network calls.
+- **Single-file Bun server with inline HTML, CSS, and JavaScript: PASS**
+  - The entire application is contained in `app.ts`.
+  - Bun directly serves the generated HTML and runs the server code without bundlers, frameworks, external assets, or a separate compilation/build step.
 
-- **PASS — HTTPS/TLS server uses the required certificate files.**  
-  The server loads `certs/cert.pem` and `certs/key.pem`, refuses to start without them, and configures Bun TLS.
+- **HTTPS/TLS server using the supplied certificate paths: PASS**
+  - `Bun.serve` is configured with `certs/cert.pem` and `certs/key.pem`.
+  - The server does not expose a plaintext HTTP listener in this artifact.
 
-- **PASS — Mobile-responsive, low-clutter MFA enrolment UI.**  
-  The layout has a constrained mobile width, readable spacing, large inputs/buttons, plain language, step markers, icons, examples, retry messaging, and no animated or time-pressure UI.
+- **Responsive, mobile-oriented, readable UI: PASS**
+  - The page includes a mobile viewport meta tag, a narrow `main` content width, responsive padding, accessible input sizing, generous spacing, and legible font sizing.
+  - The flow uses short instructions, icons, examples, help text, and a clear primary action per main step.
 
-- **PASS — Simulated identity confirmation and MFA enrolment work end to end.**  
-  The mocked identity details create a session; provisioning returns a TOTP secret and mock OTP; valid OTP verification enables recovery-code generation; recovery codes can be verified as single-use; logout works.
+- **Dyslexia-inclusive reveal, hide, retry, and re-request support: FAIL**
+  - Identity codes can be re-requested.
+  - Setup details can be revealed, but cannot be hidden again after selecting “Show setup details.”
+  - The recovery-code screen also has no mechanism to hide sensitive codes after viewing them.
+  - The requirement explicitly calls for users to be able to “reveal, hide and re-request codes without penalty.”
 
-- **FAIL — QR-code option is not functional.**  
-  `fakeQr()` produces a deterministic decorative grid, not a standards-compliant QR code encoding the `otpauth://` provisioning URI. An authenticator app cannot scan it. This does not satisfy the requirement to offer a QR-code setup option.
+- **Authenticator provisioning with QR and manual setup support: FAIL**
+  - Manual setup is supported: the setup secret and provisioning URI are displayed and can be copied.
+  - However, the rendered “QR code” is not a standards-compliant QR code and does not encode `setup.provisioningUri`.
+  - The `qr()` function creates a decorative 15×15 pattern based only on row/column arithmetic. Authenticator apps cannot scan it to provision the account.
+  - Additionally, its per-cell inline `style="opacity:..."` is blocked by the configured CSP because `style-src` only permits nonce-bearing `<style>` elements, not style attributes. This makes the displayed graphic even less valid as a QR representation.
 
-- **PASS — Manual authenticator setup path exists.**  
-  The setup secret can be revealed/hidden and copied, and the provisioning URI can be copied. The user can manually enter the authenticator-generated six-digit code.
+- **Identity OTP delivery, verification, resend, and browser simulation logging: PARTIAL / FAIL**
+  - Identity OTPs are generated, returned to the authenticated browser client, shown in the UI’s Logs panel, and passed to `console.log`.
+  - Codes are time-bound and single-use.
+  - However, identity OTPs are random by default. Deterministic mock behavior only occurs when the undeclared optional environment setting `EVALUATOR_DEMO=true` is provided, and even then identity OTPs remain random.
+  - The requirements call for deterministic mock values and browser-console simulation behavior for testing.
 
-- **PARTIAL/FAIL — Copy-to-clipboard support is not reliable or accessible enough.**  
-  Copy buttons exist, but `copy()` silently does nothing when Clipboard API support is unavailable or permission is denied. There is no fallback selection/copy field and no clear failure feedback.
+- **Authenticator OTP verification and replay prevention: PASS**
+  - TOTP uses RFC 6238-style HMAC-SHA1 with six digits and 30-second intervals.
+  - The server tracks accepted counters in `acceptedTotpCounters`, preventing reuse of a TOTP counter.
+  - Verification accepts a limited clock-skew window and rejects already-used codes.
 
-- **FAIL — Sensitive MFA values are written to browser logs.**  
-  The client logs the setup secret, mock OTP, recovery codes, and replacement recovery codes through `console.log`. This violates the security requirement prohibiting OTP seeds, OTPs, and backup codes in logs. The deliverable also explicitly asks for browser-console mock values, creating a requirement conflict that must be resolved explicitly.
+- **Recovery-code generation, display, copying, regeneration, and single use: PASS**
+  - Recovery codes are shown after authenticator confirmation and can be copied.
+  - Codes are hashed with PBKDF2 before storage.
+  - Pending visible recovery codes are encrypted at rest.
+  - Regeneration invalidates prior recovery-code hashes.
+  - Successful recovery-code use marks the matched code as used.
 
-- **PASS — Server-side MFA authorization prevents user-ID manipulation / IDOR.**  
-  MFA routes do not accept user identifiers. State is selected only from the authenticated session’s fixed account owner (`marcus-account`).
+- **Server-side authorization and IDOR prevention: PASS**
+  - MFA endpoints require a valid `mfa_session`.
+  - The session’s `userId` is checked against the internal authenticated account owner.
+  - Client-supplied user identifiers are not accepted by MFA endpoints, preventing manipulated account identifiers and straightforward IDOR.
 
-- **PASS — State-changing MFA endpoints enforce CSRF and origin validation.**  
-  Authenticated non-GET requests require the exact trusted origin and a per-session `X-CSRF-Token`.
+- **CSRF protection on state-changing MFA actions: PASS**
+  - State-changing requests require the `X-CSRF-Token` header to match the token stored in the authenticated server session.
+  - Session cookies use `SameSite=Strict`, which provides additional CSRF defense.
 
-- **PASS — Session cookie attributes and core security headers are present.**  
-  The session cookie uses `HttpOnly`, `Secure`, and `SameSite=Strict`. CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and restrictive cache headers are set.
+- **Secure cookie and session management: PASS**
+  - Session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
+  - Sessions have 30-minute idle expiration and 8-hour absolute expiration.
+  - A fresh random session identifier is created at sign-in.
+  - Logout deletes the server-side session and clears the cookie.
 
-- **FAIL — Session rotation is incomplete and permits prior sessions to remain valid.**  
-  On `/api/login`, a new session ID is created, but an existing session supplied by the browser is not invalidated. A stolen/pre-login session ID remains usable until timeout, contrary to the session-rotation requirement intended to mitigate session fixation.
+- **Rate limiting and lockout for repeated verification failures: FAIL**
+  - The identity verification endpoint locks after five failed attempts.
+  - However, `/api/identity/resend` calls `successAttempt(session)`, resetting `session.failures` to zero without a successful identity verification.
+  - An attacker can submit failed identity codes, request a resend, and repeat indefinitely, bypassing the intended lockout.
+  - This violates the requirement to rate-limit and lock out repeated failed verification attempts.
 
-- **FAIL — Login failure lockout can be trivially bypassed.**  
-  Login failures are keyed using the supplied DOB/account-ending proof plus IP. An attacker can change any invalid character in the submitted proof on every attempt, obtain a new key, and avoid the five-attempt lockout. Rate limiting must include a stable server-observed dimension, such as IP and/or protected account target.
+- **Security headers, clickjacking protections, CORS restriction, and generic errors: PASS**
+  - CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, no-referrer policy, and a restrictive permissions policy are present.
+  - No permissive CORS response headers are emitted.
+  - Exceptions are caught and converted into generic responses rather than verbose stack traces.
 
-- **PASS — TOTP and recovery-code verification have server-side rate limiting and lockout.**  
-  Both MFA OTP and recovery-code verification lock after five failures for five minutes. Recovery codes are consumed after successful use. TOTP counters are recorded to prevent code reuse.
+- **Cryptographic storage and random generation controls: PASS**
+  - TOTP secrets are encrypted using AES-GCM.
+  - Recovery codes are stored using PBKDF2 hashes with unique salts.
+  - Random production secrets, sessions, CSRF tokens, IVs, and codes use `crypto.getRandomValues`.
+  - Browser storage APIs and non-HttpOnly cookies are not used for sensitive state.
 
-- **PASS — TOTP secret and recovery codes are generated and protected appropriately for the mock implementation.**  
-  The TOTP secret uses cryptographic randomness and AES-GCM encryption in server memory. Recovery codes use cryptographic randomness and per-code PBKDF2-SHA-256 derived values with salts.
+- **Input validation, output encoding, and redirect safety: PASS**
+  - Server input is constrained with explicit regular expressions for OTP and recovery-code formats.
+  - Credentials are bounded before PBKDF2 processing.
+  - Dynamic browser-rendered values are escaped through `esc()`.
+  - There is no user-controlled redirect mechanism or external redirect target.
 
-- **FAIL — CSP is present but weakened by `'unsafe-inline'`.**  
-  `script-src 'self' 'unsafe-inline'` and `style-src 'self' 'unsafe-inline'` allow injected inline script/style to execute if an XSS flaw is introduced. The app can use nonces or hashes while remaining single-file.
-
-- **FAIL — Input labels are not programmatically associated with their inputs.**  
-  Most `<label>` elements do not have a `for` attribute and are not wrapping their corresponding input. This harms screen-reader usability and does not fully support the stated accessibility/inclusivity goals.
-
-- **PASS — Server errors are generic and no permissive CORS policy is configured.**  
-  The server error handler returns a generic message, no stack trace is sent to clients, and no `Access-Control-Allow-Origin: *` policy exists.
+- **No external network calls or external assets: PASS**
+  - The browser only calls same-origin `/api/...` endpoints.
+  - No third-party scripts, stylesheets, APIs, images, or QR libraries are used.
 
 ## FAILING_ITEMS
 
-- The rendered QR-style grid is decorative and cannot be scanned by an authenticator app.
-- Clipboard actions fail silently when Clipboard API access is unavailable or denied, with no fallback or useful feedback.
-- Browser `console.log` exposes the authenticator secret, mock OTP, and recovery codes.
-- The requirements conflict: testing instructions demand browser console logging of sensitive mock values, while security requirements prohibit sensitive values in logs.
-- Login creates a new session but does not invalidate an existing session, so prior session IDs remain valid.
-- Login lockout is keyed by attacker-controlled submitted credentials and can be bypassed by changing invalid input values.
-- CSP contains `'unsafe-inline'` for scripts and styles, weakening XSS protection.
-- Form labels are visually present but not associated with input controls for assistive technologies.
+- The displayed QR graphic is decorative rather than a valid QR code encoding the `otpauth://` provisioning URI. It cannot be scanned by an authenticator app.
+- The CSP blocks the QR generator’s inline `style="opacity:..."` declarations because `style-src` does not allow inline style attributes.
+- Identity verification lockout can be bypassed because `/api/identity/resend` resets failed-attempt state through `successAttempt(session)`.
+- The default application behavior does not provide deterministic simulated OTP/mock values as required. The optional `EVALUATOR_DEMO` mode is not enabled by default, and identity OTPs remain random even in that mode.
+- Sensitive setup details can be revealed but not hidden again, and recovery codes cannot be hidden after display, contrary to the reveal/hide requirement.
 
 ## NEW_TASKS
 
-1. Replace `fakeQr()` with a real, standards-compliant QR-code generator implemented in `app.ts`, encoding the returned `otpauth://` provisioning URI and scannable by common authenticator applications.
-2. Improve the copy helper to report Clipboard API success/failure and provide an accessible fallback for selecting/copying the setup key, provisioning URI, and recovery codes.
-3. Resolve the explicit conflict between mock-console requirements and the no-sensitive-logs security requirement; once resolved, remove sensitive `console.log` output or isolate it behind an explicitly approved test-only mechanism that cannot run in production.
-4. On successful login, read any existing `sid` cookie and delete its server-side session record before issuing the new authenticated session ID.
-5. Replace login lockout keying with a stable rate-limit strategy that cannot be bypassed by changing submitted invalid credentials, such as a server-observed IP-based limit combined with an account-target/proof limit.
-6. Replace CSP `'unsafe-inline'` directives with request-generated nonces or content hashes for the inline `<style>` and `<script>` blocks.
-7. Add matching `for` and `id` attributes to every form label and input, or wrap each input inside its corresponding label.
+1. Replace the decorative `qr()` output with a real standards-compliant QR encoder implemented within `app.ts`, and encode the exact `setup.provisioningUri` into the QR code.
+2. Update QR rendering so it remains CSP-compliant, such as by using CSS classes/generated markup rather than blocked inline `style` attributes, or by changing CSP only in a secure, narrowly scoped way.
+3. Remove the `successAttempt(session)` call from `/api/identity/resend`; preserve the existing failure count and reject resend requests while `lockedUntil` is active.
+4. Make the evaluator/demo flow deterministic by default or through an explicit documented launch configuration that is guaranteed for evaluation, including deterministic identity OTP and authenticator test-code behavior while retaining cryptographically secure production mode.
+5. Add explicit Show/Hide toggles for authenticator setup details and recovery codes, ensuring hidden secrets are removed or obscured from the visible UI while retaining safe retry and re-request actions.
 
 ## DECISION
 

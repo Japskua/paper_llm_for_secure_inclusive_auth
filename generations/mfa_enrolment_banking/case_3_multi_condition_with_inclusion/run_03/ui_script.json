@@ -1,0 +1,65 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "phone": "07123456789",
+    "password": "MarcusDemo!54",
+    "new_password": "NewPassword!54"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "confirm_identity",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#phone",
+          "value": "${phone}"
+        },
+        {
+          "do": "fill",
+          "selector": "#password",
+          "value": "${password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign in and continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#identity.active"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_provisioning_error",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#identityEmail",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#identityPhone",
+          "value": "${phone}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm my identity')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#message:has-text('Invalid array length')"
+        }
+      ]
+    }
+  ]
+}

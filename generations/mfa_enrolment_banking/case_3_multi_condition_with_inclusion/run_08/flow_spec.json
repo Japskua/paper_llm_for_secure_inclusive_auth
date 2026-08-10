@@ -1,0 +1,160 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "new_password": "NewDemo!2025"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "bootstrap_path": "/api/session",
+    "response_field": "csrf"
+  },
+  "steps": [
+    {
+      "name": "bootstrap sign-in CSRF",
+      "method": "GET",
+      "path": "/api/csrf-bootstrap",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign in with demo account",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-Login-CSRF": "${csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "MarcusDemo!2025"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "load authenticated session CSRF",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request identity code",
+      "method": "POST",
+      "path": "/api/identity/request",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "identity_code": "simulatedCode"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "provision authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/provision",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "authenticator_otp": "simulatedOtp"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/confirm",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${authenticator_otp}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/generate",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "use saved recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "bootstrap CSRF for failed sign-in",
+      "method": "GET",
+      "path": "/api/csrf-bootstrap",
+      "expect_json_true": "ok",
+      "capture": {
+        "bad_login_csrf": "csrf"
+      }
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-Login-CSRF": "${bad_login_csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "WrongPassword"
+      },
+      "expect_failure": true
+    }
+  ]
+}

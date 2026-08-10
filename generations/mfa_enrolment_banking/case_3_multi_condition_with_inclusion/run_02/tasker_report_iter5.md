@@ -7,11 +7,11 @@
 
 ## RAW_OUTPUT
 ```
-{"task_list":["Correct `qrMatrix` to emit the QR byte-mode indicator `0100` (not `0000`) and verify the generated QR decodes to the exact displayed `otpauth://` provisioning URI.","Provide a deterministic mock OTP that the server accepts for the generated enrolment, while preserving normal authenticator/TOTP verification; return this test value to the UI without placing it in URLs, cookies, browser storage, HTTP errors, or server logs.","Log the returned mock OTP and generated recovery-code values with browser `console.log` when they are issued, while continuing to exclude them from server logs, URLs, cookies, browser storage, and error responses.","Make the setup-key hide/reveal control hide or remove every visible setup-secret representation, including manual setup-key and provisioning-URI textareas; require revealing the material again before copy fallback controls expose it."]}
+{"task_list":["Add a server-side helper that removes every session for a specified authenticated user, with an optional session ID to preserve.","On successful sign-in, invalidate all existing sessions for the account before storing the newly generated session ID.","On logout, invalidate every active session belonging to the authenticated account and clear the current session cookie.","Verify that a previously issued session cookie is rejected by `/api/state`, `/api/mfa/verify`, and all MFA-changing endpoints after either a new sign-in or logout."]}
 ```
 
 ## PARSED_TASKS
-- Correct qrMatrix to emit the QR byte-mode indicator 0100 (not 0000) and verify the generated QR decodes to the exact displayed otpauth:// provisioning URI.
-- Provide a deterministic mock OTP that the server accepts for the generated enrolment, while preserving normal authenticator/TOTP verification; return this test value to the UI without placing it in URLs, cookies, browser storage, HTTP errors, or server logs.
-- Log the returned mock OTP and generated recovery-code values with browser console.log when they are issued, while continuing to exclude them from server logs, URLs, cookies, browser storage, and error responses.
-- Make the setup-key hide/reveal control hide or remove every visible setup-secret representation, including manual setup-key and provisioning-URI textareas; require revealing the material again before copy fallback controls expose it.
+- Add a server-side helper that removes every session for a specified authenticated user, with an optional session ID to preserve.
+- On successful sign-in, invalidate all existing sessions for the account before storing the newly generated session ID.
+- On logout, invalidate every active session belonging to the authenticated account and clear the current session cookie.
+- Verify that a previously issued session cookie is rejected by /api/state, /api/mfa/verify, and all MFA-changing endpoints after either a new sign-in or logout.

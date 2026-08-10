@@ -1,0 +1,188 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 16,
+  "steps_passed": 6,
+  "happy_path_passed": 3,
+  "happy_path_total": 13,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "create browser session and obtain CSRF token",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with seeded account",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'identity_otp' from 'testIdentityOtp'"
+      ]
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "Use exactly 6 digits, like 123456."
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/authenticator/start",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'authenticator_code' from 'testAuthenticatorCode'"
+      ],
+      "response_message": "Please sign in again to manage MFA."
+    },
+    {
+      "name": "retrieve active authenticator setup details",
+      "method": "GET",
+      "path": "/api/authenticator/details",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'authenticator_code' from 'testAuthenticatorCode'"
+      ],
+      "response_message": "Please sign in again to manage MFA."
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "Please sign in again to manage MFA."
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/backup/generate",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'recovery_code' from 'codes.0'"
+      ],
+      "response_message": "Please sign in again to manage MFA."
+    },
+    {
+      "name": "view completed MFA status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "Please sign in again to manage MFA."
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "Please sign in again to manage MFA."
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/backup/regenerate",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'replacement_recovery_code' from 'codes.0'"
+      ],
+      "response_message": "Please sign in again to manage MFA."
+    },
+    {
+      "name": "use replacement recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "Please sign in again to manage MFA."
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "Please sign in again to manage MFA."
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 16
+}

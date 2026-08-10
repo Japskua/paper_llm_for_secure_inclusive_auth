@@ -1,54 +1,9 @@
 {
   "ok": false,
-  "explored_steps": 0,
-  "stage": "partial",
-  "steps_planned": 13,
-  "steps_captured": 2,
-  "screenshots": [
-    {
-      "index": 1,
-      "name": "confirm_identity",
-      "file": "step_01_confirm_identity.png",
-      "incomplete": false
-    },
-    {
-      "index": 2,
-      "name": "authenticator_setup_hidden",
-      "file": "step_02_authenticator_setup_hidden_INCOMPLETE.png",
-      "incomplete": true
-    }
-  ],
-  "console_errors": [
-    "Unexpected identifier 'secondary'"
-  ],
-  "failure": {
-    "step": "authenticator_setup_hidden",
-    "index": 2,
-    "action": {
-      "do": "fill",
-      "selector": "#dob",
-      "value": "${date_of_birth}"
-    },
-    "error": "TimeoutError: Page.fill: Timeout 12000ms exceeded.\nCall log:\n  - waiting for locator(\"#dob\")\n",
-    "html": "<!DOCTYPE html><html lang=\"en\"><head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>SecureBank MFA</title>\n<style nonce=\"\">\n:root{font-family:Verdana,Arial,sans-serif;color:#14213d;background:#f3f7fb;letter-spacing:.035em;line-height:1.65}*{box-sizing:border-box}body{margin:0}.wrap{max-width:540px;margin:auto;padding:18px}.brand{font-weight:bold;color:#174c88}.card{background:#fff;border-radius:16px;padding:22px;box-shadow:0 2px 13px #14213d1a;margin:13px 0}h1{font-size:1.55rem;line-height:1.3;margin:0 0 9px}p{margin:9px 0}.step{font-weight:bold;color:#315b96}.icon{font-size:2rem}label{display:block;font-weight:bold;margin-top:15px}small{display:block;color:#405169;font-weight:normal;font-size:.88rem}input,textarea{width:100%;min-height:51px;border:2px solid #62748b;border-radius:9px;padding:10px;font:inherit;font-size:1rem;margin-top:5px}textarea{resize:vertical;line-height:1.5}.code{letter-spacing:.16em;font-size:1.16rem}button{width:100%;min-height:51px;border:0;border-radius:9px;background:#075bb5;color:#fff;font:inherit;font-weight:bold;margin-top:16px;padding:10px;cursor:pointer}button.secondary{background:#fff;color:#075bb5;border:2px solid #075bb5;margin-top:9px}button:focus,input:focus,textarea:focus{outline:3px solid #e49b24;outline-offset:2px}.hint,.error,.notice{padding:12px;border-radius:9px;margin-top:16px}.hint{background:#edf4ff}.error{background:#ffe9e9;color:#761b1b}.notice{background:#e7f7ed}.secret,.codes{background:#f1f5f9;border-radius:9px;padding:13px;overflow-wrap:anywhere;line-height:1.9}.qr{width:294px;height:294px;max-width:100%;display:block;margin:12px auto;image-rendering:pixelated;background:#fff}.manual{margin-top:13px}@media(max-width:390px){.wrap{padding:12px}.card{padding:18px}h1{font-size:1.38rem}}\n</style>\n</head>\n<body>\n<main class=\"wrap\">\n<p class=\"brand\">SecureBank · account protection</p>\n<section class=\"card\" id=\"app\" aria-live=\"polite\"></section>\n</main>\n<script nonce=\"\">\n(function(){\nvar csrf=\"\",secret=\"\",uri=\"\",mockOtp=\"\",visible=false;\nvar app=document.getElementById(\"app\");\nfunction esc(v){return String(v).replace(/[&<>\"']/g,function(c){return({\"&\":\"&amp;\",\"<\":\"&lt;\",\">\":\"&gt;\",'\"':\"&quot;\",\"'\":\"&#39;\"})[c]})}\n/* Test values are intentionally written only to the browser console, never to a page log. */\nfunction log(message){console.log(message)}\nasync function api(path,method,data){var r=await fetch(path,{method:method||\"GET\",headers:{\"Content-Type\":\"application/json\",\"X-CSRF-Token\":csrf},body:data===undefined?undefined:JSON.stringify(data)});var p;try{p=await r.json()}catch(_){throw Error(\"Something went wrong. Please try again.\")}if(!r.ok)throw Error(p.error||\"Something went wrong. Please try again.\");return p}\nfunction hint(){return '<aside class=\"hint\"><strong>💡 Need help?</strong><br>You can retry safely. There is no reading deadline.</aside>'}\nfunction announce(message){var x=document.getElementById(\"copy-msg\");if(x)x.textContent=message}\nfunction selectFallback(id,message){var field=document.getElementById(id);if(field){field.focus();field.select();if(field.setSelectionRange)field.setSelectionRange(0,field.value.length)}announce(message)}\nfunction copy(text,fallbackId,label){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){announce(label+\" copied. You can paste it where you need it.\")}).catch(function(){selectFallback(fallbackId,\"Copy was not available. The \"+label.toLowerCase()+\" is selected below. Use your browser copy control.\")})}else selectFallback(fallbackId,\"Copy was not available. The \"+label.toLowerCase()+\" is selected below. Use your browser copy control.\")}\nfunction hintManual(label,id,value,rows){return '<div class=\"manual\"><label for=\"'+id+'\">'+label+' <small>Select this text and use your browser copy control if the Copy button does not work.</small></label><textarea id=\"'+id+'\" readonly spellcheck=\"false\" rows=\"'+(rows||2)+'\">'+esc(value)+'</textarea></div>'}\n\n/* QR Model 2 version 7-L byte encoder. The byte mode indicator is explicitly 0100.\n   qrDecode verifies the rendered module matrix round-trips to the exact provisioning URI. */\nfunction qrBytes(text){var a=[];for(var i=0;i<text.length;i++)a.push(text.charCodeAt(i));return a}\nfunction gfMul(a,b){var z=0;while(b){if(b&1)z^=a;a=a&128?(a<<1)^285:a<<1;b>>=1}return z}\nfunction rs(data,n){var gen=[1],i,j;for(i=0;i<n;i++){var next=Array(gen.length+1).fill(0),p=1;for(j=0;j<i;j++)p=gfMul(p,2);for(j=0;j<gen.length;j++){next[j]^=gen[j];next[j+1]^=gfMul(gen[j],p)}gen=next}var out=Array(n).fill(0);for(i=0;i<data.length;i++){var f=data[i]^out.shift();out.push(0);for(j=0;j<n;j++)out[j]^=gfMul(gen[j+1],f)}return out}\nfunction bch(v,g){function len(n){var q=0;while(n){q++;n>>=1}return q}var d=len(g);v<<=d-1;while(len(v)>=d)v^=g<<(len(v)-d);return v}\nfunction qrMatrix(text){\n var n=45,m=Array.from({length:n},function(){return Array(n).fill(null)}),reserved=Array.from({length:n},function(){return Array(n).fill(false)}),bits=[],raw=qrBytes(text),i,j,x,y;\n function put(x,y,v){if(x>=0&&y>=0&&x<n&&y<n){m[y][x]=v;reserved[y][x]=true}}\n function finder(x,y){for(var yy=-1;yy<=7;yy++)for(var xx=-1;xx<=7;xx++)put(x+xx,y+yy,xx>=0&&xx<=6&&yy>=0&&yy<=6&&(xx===0||xx===6||yy===0||yy===6||(xx>=2&&xx<=4&&yy>=2&&yy<=4)))}\n function align(x,y){for(var yy=-2;yy<=2;yy++)for(var xx=-2;xx<=2;xx++)put(x+xx,y+yy,Math.max(Math.abs(xx),Math.abs(yy))!==1)}\n finder(0,0);finder(n-7,0);finder(0,n-7);\n for(i=8;i<n-8;i++){put(i,6,i%2===0);put(6,i,i%2===0)}\n [6,22,38].forEach(function(a){[6,22,38].forEach(function(c){if(!((a===6&&c===6)||(a===6&&c===38)||(a===38&&c===6)))align(a,c)})});\n put(8,n-8,true);\n var vd=(7<<12)|bch(7,0x1f25);for(i=0;i<18;i++){var vb=((vd>>i)&1)===1;put(n-11+i%3,Math.floor(i/3),vb);put(Math.floor(i/3),n-11+i%3,vb)}\n bits.push(0,1,0,0);\n for(i=7;i>=0;i--)bits.push((raw.length>>i)&1);\n raw.forEach(function(v){for(var q=7;q>=0;q--)bits.push((v>>q)&1)});\n for(i=0;i<4;i++)bits.push(0);wh"
-  },
-  "chosen_attempt": "initial",
-  "attempts": [
-    {
-      "label": "initial",
-      "ok": false,
-      "captured": 2
-    },
-    {
-      "label": "repaired",
-      "ok": false,
-      "captured": 1
-    },
-    {
-      "label": "rederived",
-      "ok": false,
-      "captured": 2
-    }
-  ],
+  "stage": "server_exited_early",
+  "error": "process exited with code 1 during boot",
+  "screenshots": [],
+  "chosen_attempt": null,
+  "attempts": null,
   "output_dir": "/Users/japskua/projects/lut/paper_llm_for_secure_inclusive_auth/generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_02/screenshots"
 }

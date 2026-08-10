@@ -1,36 +1,37 @@
 {
   "variables": {
-    "email": "marcus@example.com",
-    "password": "BankDemo!42",
-    "new_password": null
+    "email": "marcus@example.com"
   },
   "html_variables": {},
-  "csrf": {
-    "html_regex": null,
-    "field": "X-CSRF-Token",
-    "in": "header",
-    "source_path": "/api/preauth",
-    "source_field": "csrf",
-    "signin_body_field": "csrf"
-  },
+  "csrf": null,
   "steps": [
     {
-      "name": "obtain pre-auth CSRF token",
+      "name": "start session and obtain CSRF token",
       "method": "GET",
-      "path": "/api/preauth",
+      "path": "/api/session",
       "expect_json_true": "ok",
       "capture": {
         "csrf": "csrf"
       }
     },
     {
-      "name": "sign in",
+      "name": "request demo identity code",
       "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/signin/request",
       "body": {
-        "email": "${email}",
-        "password": "${password}",
-        "csrf": "${csrf}"
+        "email": "${email}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "identity_code": "mockCode"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/signin/verify",
+      "body": {
+        "code": "${identity_code}"
       },
       "expect_json_true": "ok",
       "capture": {
@@ -38,52 +39,89 @@
       }
     },
     {
-      "name": "start authenticator provisioning",
+      "name": "start authenticator enrollment",
       "method": "POST",
-      "path": "/api/provision",
+      "path": "/api/mfa/enroll",
       "body": {},
       "expect_json_true": "ok",
       "capture": {
-        "setup_secret": "secret",
-        "setup_uri": "uri"
+        "enrollment_otp": "mockOtp"
       }
+    },
+    {
+      "name": "confirm authenticator with current mock OTP",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "body": {
+        "otp": "${enrollment_otp}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "create recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/backup/regenerate",
+      "body": {
+        "confirm": false
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
     }
   ],
   "negative_steps": [
     {
-      "name": "obtain CSRF token for rejected sign-in",
-      "method": "GET",
-      "path": "/api/preauth",
-      "expect_json_true": "ok",
-      "capture": {
-        "wrong_password_csrf": "csrf"
-      }
-    },
-    {
-      "name": "wrong password rejected",
+      "name": "invalid email is rejected",
       "method": "POST",
-      "path": "/api/signin",
+      "path": "/api/signin/request",
       "body": {
-        "email": "${email}",
-        "password": "WrongPassword!42",
-        "csrf": "${wrong_password_csrf}"
+        "email": "not-an-email"
       },
       "expect_failure": true
     },
     {
-      "name": "malformed OTP rejected",
+      "name": "non-numeric identity code is rejected",
       "method": "POST",
-      "path": "/api/verify-otp",
+      "path": "/api/signin/verify",
       "body": {
-        "otp": "12"
+        "code": "ABCDEF"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid authenticator code is rejected",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "body": {
+        "otp": "ABCDEF"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed recovery code is rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "body": {
+        "code": "BAD"
       },
       "expect_failure": true
     }
-  ],
-  "blocking_issues": [
-    "GET / does not contain a CSRF token. The initial token is returned only by GET /api/preauth as JSON field csrf; POST /api/signin sends it in JSON field csrf. After sign-in, state-changing requests send the session CSRF token in the X-CSRF-Token header.",
-    "The full happy path cannot be automated under the stated TOTP rule. POST /api/provision and GET /api/setup-view return only the TOTP shared secret in secret and provisioning URI in uri. No route returns a current mock OTP/currentOtp/mockCode-style value, and POST /api/verify-otp requires a six-digit RFC 6238 TOTP derived from that secret.",
-    "Consequently, POST /api/verify-otp cannot be completed by an HTTP test without computing TOTP, which is explicitly disallowed. The subsequent supported routes POST /api/recovery/regenerate and POST /api/recovery/verify cannot be reached on a happy path because account.enabled remains false.",
-    "There is no password-change route and no stated new-password policy; new_password is therefore null."
   ]
 }
