@@ -1,0 +1,142 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+15551234567"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "sign in for MFA enrolment",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "load authenticated enrolment state",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_json_true": "authenticated"
+    },
+    {
+      "name": "confirm account identity",
+      "method": "POST",
+      "path": "/api/mfa/identity",
+      "body": {
+        "confirmation": "confirm"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "load provisioning state",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_json_true": "authenticated"
+    },
+    {
+      "name": "create authenticator secret",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {},
+      "capture": {
+        "test_otp": "testOtp"
+      }
+    },
+    {
+      "name": "load OTP verification state",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_json_true": "authenticated"
+    },
+    {
+      "name": "verify authenticator and enable MFA",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "body": {
+        "otp": "${test_otp}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "load recovery-code state",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_json_true": "authenticated"
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/generate",
+      "body": {},
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "confirm recovery codes saved",
+      "method": "POST",
+      "path": "/api/mfa/recovery/confirm-saved",
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "load completed MFA state",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_json_true": "authenticated"
+    },
+    {
+      "name": "view remaining recovery codes",
+      "method": "GET",
+      "path": "/api/mfa/recovery"
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong phone rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "email": "${email}",
+        "phone": "+15550000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid authenticator code rejected",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "body": {
+        "otp": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "body": {
+        "code": "NOT-A-RECOVERY-CODE"
+      },
+      "expect_failure": true
+    }
+  ]
+}

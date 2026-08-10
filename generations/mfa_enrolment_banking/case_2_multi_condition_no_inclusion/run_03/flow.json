@@ -1,0 +1,151 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 15,
+  "steps_passed": 12,
+  "happy_path_passed": 9,
+  "happy_path_total": 11,
+  "negative_passed": 3,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "bootstrap anonymous session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with approved account",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/auth/identity",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/begin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'initialRecoveryCode' from 'codes.0'"
+      ]
+    },
+    {
+      "name": "check MFA status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "use initial recovery code",
+      "method": "POST",
+      "path": "/api/backup/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "generate replacement recovery codes",
+      "method": "POST",
+      "path": "/api/backup/regenerate",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'replacementRecoveryCode' from 'codes.0'"
+      ]
+    },
+    {
+      "name": "use replacement recovery code",
+      "method": "POST",
+      "path": "/api/backup/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "bootstrap fresh negative-test session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": false,
+      "response_message": "{'ok': True, 'csrf': '1EWSSk0hX2_F_7QE2dgiMzXNV3autTJDjqoWUXIekcY', 'authenticated': False, 'stage': 'anonymous', 'email': '', 'mfaEnabled': False}"
+    },
+    {
+      "name": "wrong password still receives nonrevealing challenge",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong password cannot complete identity verification",
+      "method": "POST",
+      "path": "/api/auth/identity",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 15
+}

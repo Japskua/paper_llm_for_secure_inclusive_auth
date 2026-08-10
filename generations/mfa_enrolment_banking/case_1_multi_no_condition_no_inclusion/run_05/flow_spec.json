@@ -1,0 +1,117 @@
+{
+  "variables": {
+    "email": "marcus",
+    "new_password": "Northstar!2026"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "csrf",
+    "in": "body",
+    "bootstrap_path": "/api/bootstrap"
+  },
+  "steps": [
+    {
+      "name": "bootstrap anonymous session",
+      "method": "POST",
+      "path": "/api/bootstrap",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "check anonymous status",
+      "method": "POST",
+      "path": "/api/status",
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "login": "${email}",
+        "password": "Northstar!2025",
+        "csrf": "${csrf}",
+        "redirect": "#/identity"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "testCode"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "${identity_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "provision authenticator",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "manual_secret": "manualSecret",
+        "provisioning_uri": "provisioningUri"
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "login": "${email}",
+        "password": "wrong-password",
+        "csrf": "${csrf}",
+        "redirect": "#/identity"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "missing csrf rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {},
+      "expect_failure": true
+    }
+  ],
+  "blocking_issues": [
+    {
+      "stage": "POST /api/mfa/verify",
+      "required_body_field": "otp",
+      "issue": "The server requires a current six-digit TOTP, but /api/mfa/provision returns only manualSecret and provisioningUri. No response field exposes a mock/current authenticator OTP for an HTTP test to capture, so the required full happy path cannot continue without computing TOTP from manualSecret, which the requested rules prohibit."
+    },
+    {
+      "stage": "CSRF extraction",
+      "issue": "GET / contains no CSRF token. The token reaches the client only in the JSON csrf field returned by POST /api/bootstrap, which is why the first step captures csrf."
+    }
+  ]
+}

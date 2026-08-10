@@ -1,0 +1,141 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "new_password": "1234",
+    "pin": "<MFA_DEMO_PIN environment variable>"
+  },
+  "html_variables": {},
+  "csrf": {
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source": "Capture the csrf field from the POST /api/authenticate JSON response into variable csrf."
+  },
+  "steps": [
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/authenticate",
+      "body": {
+        "email": "${email}",
+        "credential": "${pin}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "confirm identity",
+      "method": "POST",
+      "path": "/api/identity",
+      "body": {
+        "email": "${email}",
+        "phone": "07700900123"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "create authenticator setup key",
+      "method": "POST",
+      "path": "/api/setup",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "setup_secret": "secret",
+        "setup_uri": "uri"
+      }
+    },
+    {
+      "name": "reveal practice authenticator code",
+      "method": "POST",
+      "path": "/api/test/mock/reveal",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "mock_code": "code"
+      }
+    },
+    {
+      "name": "verify practice authenticator code",
+      "method": "POST",
+      "path": "/api/test/mock/verify",
+      "body": {
+        "code": "${mock_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "generate backup codes",
+      "method": "POST",
+      "path": "/api/backups",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "backup_code": "codes.0"
+      }
+    },
+    {
+      "name": "verify one backup code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "${backup_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "complete MFA enrolment",
+      "method": "POST",
+      "path": "/api/complete",
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid PIN rejected",
+      "method": "POST",
+      "path": "/api/authenticate",
+      "body": {
+        "email": "${email}",
+        "credential": "abc"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid identity phone rejected",
+      "method": "POST",
+      "path": "/api/identity",
+      "body": {
+        "email": "${email}",
+        "phone": "not-a-phone"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed authenticator code rejected",
+      "method": "POST",
+      "path": "/api/otp",
+      "body": {
+        "code": "12345"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "used backup code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "${backup_code}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

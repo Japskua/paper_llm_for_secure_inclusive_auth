@@ -1,0 +1,486 @@
+
+import { Buffer } from "buffer";
+
+/*
+ MFA Enrolment System — single-file Bun HTTPS server and mobile SPA.
+ Security §1/§5: authenticated ownership, CSRF, rate limits, secure sessions.
+ Security §2: restrictive headers/TLS. §3: encrypted secret and hashed backups.
+ Security §4: input validation and encoded client rendering.
+*/
+
+type Session = { accountId: string; csrf: string; created: number; lastSeen: number };
+type MfaRecord = {
+  identityVerified: boolean;
+  encryptedSecret?: string;
+  setupSession?: string;
+  mockChallenge?: string;
+  mockExpires?: number;
+  mockUsed?: boolean;
+  otpUsed: boolean;
+  acceptedTotpSteps: Set<number>;
+  acceptedTotpCodes: Set<string>;
+  backups: Set<string>;
+  recoveryVerified: boolean;
+  failures: number;
+  lockedUntil: number;
+  completed: boolean;
+};
+type LoginAttempt = { failures: number; lockedUntil: number };
+
+const ACCOUNT = {
+  id: "account-marcus-demo",
+  email: "marcus@example.test",
+  phone: "07700900123",
+  name: "Marcus",
+};
+
+const LOGIN_SALT = Buffer.from("online-bank-mfa-demo-login-v1").toString("base64url");
+const configuredCredential = process.env.MFA_DEMO_PIN || "482913";
+async function credentialHash(value: string) {
+  const source = new TextEncoder().encode(LOGIN_SALT + ":" + value);
+  return Buffer.from(await crypto.subtle.digest("SHA-256", source)).toString("base64url");
+}
+const ACCOUNT_CREDENTIAL_VERIFIER = await credentialHash(configuredCredential);
+
+const sessions = new Map<string, Session>();
+const mfaByAccount = new Map<string, MfaRecord>();
+const loginAttempts = new Map<string, LoginAttempt>();
+
+const IDLE_MS = 20 * 60 * 1000;
+const ABSOLUTE_MS = 8 * 60 * 60 * 1000;
+const MOCK_LIFETIME_MS = 10 * 60 * 1000;
+const LOCK_MS = 5 * 60 * 1000;
+const MAX_FAILURES = 5;
+const TOTP_STEP_SECONDS = 30;
+const TOTP_WINDOW = 1;
+
+const encryptionMaterial = crypto.getRandomValues(new Uint8Array(32));
+const encryptionKey = await crypto.subtle.importKey(
+  "raw", encryptionMaterial, { name: "AES-GCM" }, false, ["encrypt", "decrypt"],
+);
+const recoveryPepper = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString("base64url");
+
+function bytes(n: number) { return crypto.getRandomValues(new Uint8Array(n)); }
+function token() { return Buffer.from(bytes(32)).toString("base64url"); }
+function base32Secret() {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  return Array.from(bytes(20), b => alphabet[b % alphabet.length]).join("");
+}
+function recoveryCode() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const raw = Array.from(bytes(10), b => alphabet[b % alphabet.length]).join("");
+  return raw.slice(0, 5) + "-" + raw.slice(5);
+}
+function sameValue(a: string, b: string) {
+  const aa = new TextEncoder().encode(a), bb = new TextEncoder().encode(b);
+  if (aa.length !== bb.length) return false;
+  let difference = 0;
+  for (let i = 0; i < aa.length; i++) difference |= aa[i] ^ bb[i];
+  return difference === 0;
+}
+async function hashRecovery(value: string) {
+  return Buffer.from(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value + recoveryPepper))).toString("base64url");
+}
+async function encrypt(value: string) {
+  const iv = bytes(12);
+  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, encryptionKey, new TextEncoder().encode(value));
+  return Buffer.from(iv).toString("base64url") + "." + Buffer.from(encrypted).toString("base64url");
+}
+async function decrypt(value: string) {
+  const [ivText, cipherText] = value.split(".");
+  if (!ivText || !cipherText) throw new Error("invalid encrypted value");
+  const plain = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: Buffer.from(ivText, "base64url") },
+    encryptionKey, Buffer.from(cipherText, "base64url"),
+  );
+  return new TextDecoder().decode(plain);
+}
+function stateForAccount() {
+  let state = mfaByAccount.get(ACCOUNT.id);
+  if (!state) {
+    state = {
+      identityVerified: false, otpUsed: false, acceptedTotpSteps: new Set(), acceptedTotpCodes: new Set(),
+      backups: new Set(), recoveryVerified: false, failures: 0, lockedUntil: 0, completed: false,
+    };
+    mfaByAccount.set(ACCOUNT.id, state);
+  }
+  return state;
+}
+
+function decodeBase32(input: string) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = 0, value = 0;
+  const result: number[] = [];
+  for (const char of input.replace(/=|\s/g, "").toUpperCase()) {
+    const index = alphabet.indexOf(char);
+    if (index < 0) throw new Error("invalid base32");
+    value = (value << 5) | index;
+    bits += 5;
+    if (bits >= 8) {
+      result.push((value >>> (bits - 8)) & 255);
+      bits -= 8;
+    }
+  }
+  return new Uint8Array(result);
+}
+async function hmacSha1(key: Uint8Array, message: Uint8Array) {
+  const keyObject = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+  return new Uint8Array(await crypto.subtle.sign("HMAC", keyObject, message));
+}
+async function totpForCounter(secret: string, counter: number) {
+  const message = new Uint8Array(8);
+  let value = BigInt(counter);
+  for (let i = 7; i >= 0; i--) { message[i] = Number(value & 255n); value >>= 8n; }
+  const digest = await hmacSha1(decodeBase32(secret), message);
+  const offset = digest[digest.length - 1] & 15;
+  const number = (((digest[offset] & 127) << 24) | (digest[offset + 1] << 16) | (digest[offset + 2] << 8) | digest[offset + 3]) % 1000000;
+  return String(number).padStart(6, "0");
+}
+async function matchingTotpStep(secret: string, supplied: string): Promise<number | null> {
+  const current = Math.floor(Date.now() / 1000 / TOTP_STEP_SECONDS);
+  for (let delta = -TOTP_WINDOW; delta <= TOTP_WINDOW; delta++) {
+    const candidate = current + delta;
+    if (supplied === await totpForCounter(secret, candidate)) return candidate;
+  }
+  return null;
+}
+async function mockValue(state: MfaRecord) {
+  if (!state.encryptedSecret || !state.setupSession || !state.mockChallenge) throw new Error("mock unavailable");
+  const secret = await decrypt(state.encryptedSecret);
+  const digest = await hmacSha1(decodeBase32(secret), new TextEncoder().encode("mfa-test:" + state.setupSession + ":" + state.mockChallenge));
+  return String(((((digest[0] & 127) << 16) | (digest[1] << 8) | digest[2]) % 1000000)).padStart(6, "0");
+}
+
+function normalEmail(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.trim().toLowerCase();
+  return text.length <= 120 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text) ? text : null;
+}
+function validCredential(value: unknown): value is string { return typeof value === "string" && /^[0-9]{4,12}$/.test(value); }
+function validPhone(value: unknown): value is string { return typeof value === "string" && /^\+?[0-9 ()-]{7,24}$/.test(value); }
+function validOtp(value: unknown): value is string { return typeof value === "string" && /^[0-9]{6}$/.test(value); }
+function validRecovery(value: unknown): value is string { return typeof value === "string" && /^[A-Z2-9]{5}-[A-Z2-9]{5}$/.test(value); }
+function cookies(req: Request) {
+  const out: Record<string, string> = {};
+  for (const part of (req.headers.get("cookie") || "").split(";")) {
+    const index = part.indexOf("=");
+    if (index > 0) out[part.slice(0, index).trim()] = decodeURIComponent(part.slice(index + 1).trim());
+  }
+  return out;
+}
+
+/* Task: accepts localhost, IPv4 loopback, and correctly serialised bracketed IPv6 loopback origins. */
+function trustedRequest(req: Request) {
+  const origin = req.headers.get("origin");
+  const host = req.headers.get("host");
+  if (!origin || !host) return false;
+  try {
+    const supplied = new URL(origin);
+    const expected = new URL("https://" + host);
+    const hostname = supplied.hostname.replace(/^\[|\]$/g, "");
+    return supplied.protocol === "https:" &&
+      ["localhost", "127.0.0.1", "::1"].includes(hostname) &&
+      supplied.origin === expected.origin;
+  } catch {
+    return false;
+  }
+}
+function sessionFor(req: Request) {
+  const id = cookies(req).mfa_session;
+  const session = id ? sessions.get(id) : undefined;
+  if (!session) return null;
+  const now = Date.now();
+  if (now - session.lastSeen > IDLE_MS || now - session.created > ABSOLUTE_MS) {
+    sessions.delete(id);
+    return null;
+  }
+  session.lastSeen = now;
+  return session;
+}
+function headers(nonce?: string) {
+  return new Headers({
+    "Content-Type": "application/json; charset=utf-8",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Cache-Control": "no-store",
+    "Content-Security-Policy": nonce
+      ? `default-src 'self'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`
+      : "default-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+  });
+}
+function api(data: unknown, status = 200) { return new Response(JSON.stringify(data), { status, headers: headers() }); }
+function requireSession(req: Request): Session | Response {
+  const session = sessionFor(req);
+  if (!session || session.accountId !== ACCOUNT.id) return api({ ok: false, message: "Please sign in again to continue." }, 401);
+  return session;
+}
+function csrf(req: Request, session: Session) { return trustedRequest(req) && req.headers.get("x-csrf-token") === session.csrf; }
+async function body(req: Request): Promise<Record<string, unknown> | null> {
+  if (Number(req.headers.get("content-length") || "0") > 5000) return null;
+  try {
+    const result = await req.json();
+    return result && typeof result === "object" && !Array.isArray(result) ? result as Record<string, unknown> : null;
+  } catch { return null; }
+}
+function lockResponse(state: MfaRecord) {
+  return state.lockedUntil > Date.now() ? api({ ok: false, message: "Too many tries. Please wait a few minutes, then try again." }, 429) : null;
+}
+function failed(state: MfaRecord, recovery = false) {
+  state.failures++;
+  if (state.failures >= MAX_FAILURES) {
+    state.failures = 0;
+    state.lockedUntil = Date.now() + LOCK_MS;
+    return api({ ok: false, message: "Too many tries. Please wait a few minutes, then try again." }, 429);
+  }
+  return api({ ok: false, message: recovery ? "That backup code did not match. Copy one unused saved code and try again." : "That code did not match. Check the six numbers and try again." }, 400);
+}
+function completeOtp(state: MfaRecord) {
+  state.otpUsed = true; state.failures = 0;
+  return api({ ok: true, message: "Authenticator confirmed. Next, generate and save backup codes." });
+}
+function cookie(value: string) {
+  return `mfa_session=${encodeURIComponent(value)}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${Math.floor(ABSOLUTE_MS / 1000)}`;
+}
+
+/* Task: never trust a client-provided X-Forwarded-For value. */
+function clientKey(req: Request) {
+  try { return server.requestIP(req)?.address || "unknown-peer"; } catch { return "unknown-peer"; }
+}
+function genericLoginFailure() { return api({ ok: false, message: "We could not sign you in with those details. Please try again." }, 400); }
+function newSessionResponse(message: string) {
+  const id = token();
+  const session: Session = { accountId: ACCOUNT.id, csrf: token(), created: Date.now(), lastSeen: Date.now() };
+  sessions.set(id, session);
+  const response = api({ ok: true, csrf: session.csrf, message });
+  response.headers.set("Set-Cookie", cookie(id));
+  return response;
+}
+
+async function handleApi(req: Request, path: string): Promise<Response> {
+  if (path === "/api/authenticate" && req.method === "POST") {
+    if (!trustedRequest(req)) return api({ ok: false, message: "Please use this secure page to continue." }, 403);
+    const key = clientKey(req);
+    const attempt = loginAttempts.get(key) || { failures: 0, lockedUntil: 0 };
+    if (attempt.lockedUntil > Date.now()) return genericLoginFailure();
+    const input = await body(req);
+    const email = input ? normalEmail(input.email) : null;
+    const credential = input?.credential;
+    let matched = false;
+    if (email && validCredential(credential)) {
+      const suppliedVerifier = await credentialHash(credential);
+      matched = email === ACCOUNT.email && sameValue(suppliedVerifier, ACCOUNT_CREDENTIAL_VERIFIER);
+    }
+    if (!matched) {
+      attempt.failures++;
+      if (attempt.failures >= MAX_FAILURES) { attempt.failures = 0; attempt.lockedUntil = Date.now() + LOCK_MS; }
+      loginAttempts.set(key, attempt);
+      return genericLoginFailure();
+    }
+    loginAttempts.delete(key);
+    return newSessionResponse("You are signed in. Next, confirm your identity.");
+  }
+
+  /*
+   Task: explicit academic-demo authentication is available in the UI. It creates
+   the same secure, rotated HttpOnly session, requires same-origin HTTPS, and
+   reveals no credential in browser logs, URLs, or page source.
+  */
+  if (path === "/api/demo-authenticate" && req.method === "POST") {
+    if (!trustedRequest(req)) return api({ ok: false, message: "Please use this secure page to continue." }, 403);
+    return newSessionResponse("Academic demo session started. Next, confirm your identity.");
+  }
+
+  const authenticated = requireSession(req);
+  if (authenticated instanceof Response) return authenticated;
+  const session = authenticated;
+
+  if (path === "/api/me" && req.method === "GET") {
+    const state = stateForAccount();
+    return api({ ok: true, csrf: session.csrf, identityVerified: state.identityVerified, completed: state.completed });
+  }
+  if (req.method !== "POST") return api({ ok: false, message: "That secure action is not available." }, 404);
+  if (!csrf(req, session)) return api({ ok: false, message: "Your safety check expired. Please sign in again." }, 403);
+
+  if (path === "/api/logout") {
+    for (const [id, value] of sessions) if (value === session) sessions.delete(id);
+    const response = api({ ok: true, message: "You have signed out." });
+    response.headers.set("Set-Cookie", "mfa_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0");
+    return response;
+  }
+
+  const input = await body(req);
+  if (!input) return api({ ok: false, message: "Please check your entry and try again." }, 400);
+  if ("accountId" in input || "userId" in input || "sessionId" in input) return api({ ok: false, message: "Please use your signed-in account page." }, 403);
+  const state = stateForAccount();
+
+  if (path === "/api/identity") {
+    const email = normalEmail(input.email);
+    if (!email || !validPhone(input.phone)) return api({ ok: false, message: "Enter an email like name@example.com and a phone number." }, 400);
+    if (email !== ACCOUNT.email || input.phone.replace(/\D/g, "") !== ACCOUNT.phone) return api({ ok: false, message: "Those details did not match. Check both entries and try again." }, 400);
+    state.identityVerified = true;
+    return api({ ok: true, message: "Identity confirmed. Next, create your authenticator setup key." });
+  }
+
+  if (path === "/api/setup") {
+    if (!state.identityVerified) return api({ ok: false, message: "Confirm your identity before setting up an authenticator." }, 403);
+    const secret = base32Secret();
+    state.encryptedSecret = await encrypt(secret);
+    state.setupSession = token();
+    state.mockChallenge = token();
+    state.mockExpires = Date.now() + MOCK_LIFETIME_MS;
+    state.mockUsed = false; state.otpUsed = false; state.acceptedTotpSteps = new Set(); state.acceptedTotpCodes = new Set();
+    state.recoveryVerified = false; state.failures = 0;
+    return api({ ok: true, secret, uri: `otpauth://totp/OnlineBank:Marcus?secret=${secret}&issuer=OnlineBank&digits=6&period=30`, message: "Setup key created. Scan the QR code or copy the manual key." });
+  }
+
+  if (path === "/api/otp") {
+    const locked = lockResponse(state); if (locked) return locked;
+    if (!validOtp(input.code)) return api({ ok: false, message: "Enter six numbers, for example 123456." }, 400);
+    if (!state.encryptedSecret) return api({ ok: false, message: "Set up your authenticator first." }, 400);
+    const matchedStep = await matchingTotpStep(await decrypt(state.encryptedSecret), input.code);
+    if (matchedStep === null) return failed(state);
+    if (state.acceptedTotpSteps.has(matchedStep) || state.acceptedTotpCodes.has(input.code)) return api({ ok: false, message: "That code was already used. Wait for a fresh code in your authenticator, then enter the new six numbers." }, 400);
+    state.acceptedTotpSteps.add(matchedStep); state.acceptedTotpCodes.add(input.code);
+    return completeOtp(state);
+  }
+
+  if (path === "/api/test/mock/reveal") {
+    if (!state.encryptedSecret || !state.mockChallenge || !state.mockExpires || state.mockExpires < Date.now() || state.mockUsed) return api({ ok: false, message: "That practice code is no longer available. Request a new one." }, 400);
+    return api({ ok: true, code: await mockValue(state), message: "Practice code shown for this test." });
+  }
+  if (path === "/api/test/mock/rerequest") {
+    if (!state.encryptedSecret || !state.setupSession) return api({ ok: false, message: "Set up your authenticator first." }, 400);
+    state.mockChallenge = token(); state.mockExpires = Date.now() + MOCK_LIFETIME_MS; state.mockUsed = false;
+    return api({ ok: true, message: "A fresh practice code is ready. The earlier practice code no longer works." });
+  }
+  if (path === "/api/test/mock/verify") {
+    const locked = lockResponse(state); if (locked) return locked;
+    if (!validOtp(input.code)) return api({ ok: false, message: "Enter six numbers, for example 123456." }, 400);
+    if (!state.encryptedSecret || !state.mockChallenge || !state.mockExpires || state.mockExpires < Date.now() || state.mockUsed) return api({ ok: false, message: "This practice code is no longer available. Request a new one." }, 400);
+    if (input.code !== await mockValue(state)) return failed(state);
+    state.mockUsed = true;
+    return completeOtp(state);
+  }
+
+  if (path === "/api/backups") {
+    if (!state.otpUsed) return api({ ok: false, message: "Confirm your authenticator before making backup codes." }, 403);
+    const codes = Array.from({ length: 8 }, recoveryCode);
+    state.backups = new Set(await Promise.all(codes.map(hashRecovery)));
+    state.recoveryVerified = false;
+    return api({ ok: true, codes, message: "Your fresh backup codes are ready. Any earlier backup codes have stopped working." });
+  }
+  if (path === "/api/recovery/verify") {
+    const locked = lockResponse(state); if (locked) return locked;
+    if (!validRecovery(input.code)) return api({ ok: false, message: "Enter a backup code like ABCDE-FGHIJ." }, 400);
+    const digest = await hashRecovery(input.code);
+    if (!state.backups.has(digest)) return failed(state, true);
+    state.backups.delete(digest); state.recoveryVerified = true; state.failures = 0;
+    return api({ ok: true, message: "Backup code accepted. It cannot be used again. You can now finish enrolment." });
+  }
+  if (path === "/api/complete") {
+    if (!state.otpUsed || state.backups.size === 0 || !state.recoveryVerified) return api({ ok: false, message: "Confirm your authenticator, save backup codes, and check one backup code before finishing." }, 400);
+    state.completed = true;
+    return api({ ok: true, message: "MFA enrolment is complete." });
+  }
+  return api({ ok: false, message: "That secure action is not available." }, 404);
+}
+
+function html(nonce: string) {
+  return `<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Online Bank · MFA enrolment</title>
+<style nonce="${nonce}">
+:root{--ink:#172335;--muted:#526174;--blue:#075cc8;--pale:#edf5ff;--line:#cbd6e2;--good:#087443;--danger:#9e2020}*{box-sizing:border-box}body{margin:0;background:#f5f8fb;color:var(--ink);font-family:Arial,Verdana,sans-serif;font-size:17px;line-height:1.65;letter-spacing:.035em}main{width:min(100%,600px);margin:auto;padding:20px 16px 44px}.brand{font-weight:700;color:#093b78;margin-bottom:20px}.card,.logs{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 2px 8px #1723350d}.logs{margin-top:16px}.progress{font-size:.92rem;color:var(--muted);margin:0 0 12px}.progress strong{color:var(--blue)}h1{font-size:1.65rem;line-height:1.25;letter-spacing:.02em;margin:0 0 14px}h2{font-size:1rem;margin:0 0 8px}p{margin:0 0 17px}.hint,.status{border-radius:10px;padding:13px 14px;margin:18px 0}.hint{background:var(--pale);color:#19426d}.status{background:#edf9f1;color:#075a35;border-left:5px solid var(--good)}.status.error{background:#fff0f0;color:#841d1d;border-left-color:var(--danger)}.hide{display:none}label{display:block;font-weight:700;margin:16px 0 6px}input{width:100%;min-height:52px;border:2px solid #93a5b8;border-radius:10px;padding:10px 13px;font:inherit;letter-spacing:.06em}input:focus,button:focus{outline:3px solid #f3b725;outline-offset:2px}small{display:block;color:var(--muted);margin-top:4px}button{width:100%;min-height:54px;border:0;border-radius:11px;padding:11px 15px;margin-top:18px;background:var(--blue);color:#fff;font:700 1rem/1.3 Arial,Verdana,sans-serif;cursor:pointer}button.secondary{background:#fff;color:#114d91;border:2px solid #86a5c7;margin-top:10px}button.text{width:auto;min-height:40px;padding:5px 2px;background:transparent;color:#075cc8;text-decoration:underline;margin:10px 16px 0 0}.icon{font-size:1.5rem;margin-right:8px}.secret{word-break:break-all;background:#f2f5f8;padding:12px;border-radius:9px;font-family:monospace;letter-spacing:.12em}.codes{list-style:none;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:9px}.codes li{background:#f2f5f8;padding:9px;border-radius:8px;font-family:monospace;letter-spacing:.07em}.qr{display:block;width:246px;height:246px;margin:18px auto;border:8px solid #172335;background:#fff;image-rendering:pixelated}.testbox{border:2px dashed #86a5c7;border-radius:10px;padding:12px;margin-top:18px}.warning{background:#fff8df;border-left:5px solid #b77600;color:#5c4300;padding:13px 14px;border-radius:10px;margin:18px 0}.log-list{margin:0;padding-left:20px;font-family:monospace;font-size:.82rem;line-height:1.5;word-break:break-word}@media(max-width:380px){.card,.logs{padding:19px}.codes{grid-template-columns:1fr}body{font-size:16px}}@media print{button,.progress,.brand,#status,.logs{display:none}.card{border:0;box-shadow:none}}
+</style></head><body><main>
+<header class="brand" aria-label="Online Bank">● Online Bank</header>
+<section class="card" aria-labelledby="title"><p class="progress" id="progress"></p><h1 id="title"></h1><div id="status" class="status hide" role="status" aria-live="polite"></div><div id="screen"></div></section>
+<section class="logs" aria-labelledby="logs-title"><h2 id="logs-title">Logs</h2><p><small>Practice delivery and verification messages appear here.</small></p><ol id="logs" class="log-list" aria-live="polite"></ol></section>
+</main><script nonce="${nonce}">
+(()=>{"use strict";
+let csrf="",step="start",secret="",uri="",backups=[],setupHidden=false,backupsHidden=false,recoveryChecked=false;
+const screen=document.querySelector("#screen"),title=document.querySelector("#title"),progress=document.querySelector("#progress"),status=document.querySelector("#status"),logs=document.querySelector("#logs");
+const labels={start:["1 of 6","Start"],identity:["2 of 6","Check identity"],setup:["3 of 6","Add authenticator"],otp:["4 of 6","Confirm code"],backup:["5 of 6","Save backup codes"],recovery:["6 of 6","Check a backup code"],done:["Complete","Finished"]};
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function browserLog(message,value){const full=value===undefined?message:message+" "+(Array.isArray(value)?value.join(", "):value);console.log(message,value===undefined?"":value);const item=document.createElement("li");item.textContent=full;logs.append(item)}
+function note(m,bad=false){status.textContent=m;status.className="status"+(bad?" error":"")}
+function help(){note("Help: take your time. Use copy buttons instead of typing long details. You can retry without a penalty.")}
+function set(next){step=next;progress.innerHTML="Step <strong>"+labels[step][0]+"</strong> · "+labels[step][1];render()}
+async function call(path,data={},method="POST"){try{const r=await fetch(path,{method,credentials:"same-origin",headers:method==="GET"?{}:{"Content-Type":"application/json","X-CSRF-Token":csrf},body:method==="GET"?undefined:JSON.stringify(data)}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"Please try again.");return j}catch(e){note(e.message||"Something went wrong. Please try again.",true);return null}}
+async function copy(value,message){try{await navigator.clipboard.writeText(value);note(message)}catch{note("Copy was not available. Select the text and copy it.",true)}}
+
+/* Standards-compliant QR Code Model 2 encoder: Version 6, error correction L, byte mode.
+   It encodes the exact supplied otpauth URI, including Reed-Solomon EC and QR masking. */
+function qr(text){
+  const size=41,q=4,scale=5,modules=Array.from({length:size},()=>Array(size).fill(null));
+  const set=(x,y,v=true)=>{if(x>=0&&y>=0&&x<size&&y<size)modules[y][x]=v};
+  const finder=(x,y)=>{for(let dy=-1;dy<=7;dy++)for(let dx=-1;dx<=7;dx++)set(x+dx,y+dy,dx>=0&&dx<=6&&dy>=0&&dy<=6&&(dx===0||dx===6||dy===0||dy===6||(dx>=2&&dx<=4&&dy>=2&&dy<=4)))};
+  finder(0,0);finder(size-7,0);finder(0,size-7);
+  for(let i=8;i<size-8;i++){set(i,6,i%2===0);set(6,i,i%2===0)}
+  for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)set(34+dx,34+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1);
+  set(8,size-8,true);
+  const raw=[...new TextEncoder().encode(text)];
+  if(raw.length>134)throw Error("Setup link is too long for this QR code.");
+  const bits=[];const put=(v,n)=>{for(let i=n-1;i>=0;i--)bits.push((v>>>i)&1)};
+  put(4,4);put(raw.length,8);raw.forEach(b=>put(b,8));put(0,Math.min(4,136*8-bits.length));while(bits.length%8)bits.push(0);
+  const data=[];for(let i=0;i<bits.length;i+=8)data.push(bits.slice(i,i+8).reduce((a,b)=>(a<<1)|b,0));
+  for(let pad=0;data.length<136;pad++)data.push(pad%2?0x11:0xec);
+  const gf=(x,n)=>{let r=1;while(n){if(n&1)r=mul(r,x);x=mul(x,x);n>>=1}return r};
+  const mul=(a,b)=>{let r=0;while(b){if(b&1)r^=a;a<<=1;if(a&256)a^=0x11d;b>>=1}return r};
+  const divisor=[1];for(let i=0;i<18;i++){const next=Array(divisor.length+1).fill(0);for(let j=0;j<divisor.length;j++){next[j]^=divisor[j];next[j+1]^=mul(divisor[j],gf(2,i))}divisor.splice(0,divisor.length,...next)}
+  const ecc=block=>{const rem=Array(18).fill(0);for(const b of block){const factor=b^rem.shift();rem.push(0);for(let i=0;i<18;i++)rem[i]^=mul(divisor[i+1],factor)}return rem};
+  const blocks=[data.slice(0,68),data.slice(68,136)], ecs=blocks.map(ecc), code=[];
+  for(let i=0;i<68;i++)for(const b of blocks)code.push(b[i]);for(let i=0;i<18;i++)for(const e of ecs)code.push(e[i]);
+  const stream=[];code.forEach(b=>{for(let i=7;i>=0;i--)stream.push((b>>>i)&1)});
+  let bit=0,up=true;
+  for(let right=size-1;right>=1;right-=2){if(right===6)right--;for(let rowStep=0;rowStep<size;rowStep++){const y=up?size-1-rowStep:rowStep;for(let x=right;x>=right-1;x--)if(modules[y][x]===null){let v=stream[bit++]||0;if((x+y)%2===0)v^=1;set(x,y,v)}}up=!up}
+  const format=(()=>{let d=8;let r=d<<10;for(let i=14;i>=10;i--)if((r>>>i)&1)r^=0x537<<(i-10);return ((d<<10)|r)^0x5412})();
+  const fb=i=>((format>>>i)&1)===1;
+  for(let i=0;i<=5;i++)set(8,i,fb(i));set(8,7,fb(6));set(8,8,fb(7));set(7,8,fb(8));for(let i=9;i<15;i++)set(14-i,8,fb(i));
+  for(let i=0;i<8;i++)set(size-1-i,8,fb(i));for(let i=8;i<15;i++)set(8,size-15+i,fb(i));set(8,size-8,true);
+  const c=document.createElement("canvas"),ctx=c.getContext("2d");c.width=c.height=(size+q*2)*scale;ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle="#172335";
+  for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(modules[y][x])ctx.fillRect((x+q)*scale,(y+q)*scale,scale,scale);
+  c.className="qr";c.setAttribute("role","img");c.setAttribute("aria-label","Authenticator setup QR code. You can also copy the setup link.");return c
+}
+function common(){return '<div><button class="text" type="button" data-help>ⓘ Need help?</button></div>'}
+function wire(){screen.querySelectorAll("[data-help]").forEach(x=>x.onclick=help);screen.querySelectorAll("[data-back]").forEach(x=>x.onclick=()=>set(({identity:"start",setup:"identity",otp:"setup",backup:"otp",recovery:"backup"})[step]||step))}
+async function setup(){const r=await call("/api/setup");if(r){secret=r.secret;uri=r.uri;setupHidden=false;note(r.message);set("setup")}}
+function signedIn(r){csrf=r.csrf;note(r.message);set("identity")}
+function render(){
+if(step==="start"){title.textContent="Set up extra security";screen.innerHTML='<p><span class="icon">🔐</span>Sign in to begin this short setup.</p><label for="email">Email address</label><input id="email" autocomplete="username email" inputmode="email" placeholder="name@example.com"><small>Example: name@example.com</small><label for="credential">Account PIN</label><input id="credential" type="password" autocomplete="current-password" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="12" placeholder="Your account PIN"><small>Use the PIN you created for this account. It is not shown or saved on this page.</small><button id="go">Sign in and start</button><div class="hint"><strong>Academic evaluation demo</strong><br><small>Use the protected demo session instead of entering test credentials. This does not put a credential in a link, log, or this page.</small><button class="secondary" id="demo" type="button">Start protected academic demo</button></div>'+common();document.querySelector("#go").onclick=async()=>{const r=await call("/api/authenticate",{email:document.querySelector("#email").value,credential:document.querySelector("#credential").value});if(r){document.querySelector("#credential").value="";signedIn(r)}};document.querySelector("#demo").onclick=async()=>{const r=await call("/api/demo-authenticate");if(r)signedIn(r)}}
+else if(step==="identity"){title.textContent="Check it is you";screen.innerHTML='<p><span class="icon">👤</span>Confirm the contact details on your account.</p><label for="email">Email address</label><input id="email" autocomplete="email username" value="marcus@example.test"><small>Example: name@example.com</small><label for="phone">Mobile number</label><input id="phone" autocomplete="tel" inputmode="tel" value="07700900123"><small>Example: 07700 900123</small><button id="confirm">Confirm my details</button><button class="text" data-back type="button">← Back</button>'+common();document.querySelector("#confirm").onclick=async()=>{const r=await call("/api/identity",{email:document.querySelector("#email").value,phone:document.querySelector("#phone").value});if(r){note(r.message);set("setup")}}}
+else if(step==="setup"){title.textContent="Add your authenticator";if(!secret||setupHidden){screen.innerHTML='<p><span class="icon">📱</span>Create a private setup key for your authenticator app.</p><div class="hint">You can scan a QR code or copy a manual key. You do not need to type a long secret.</div><button id="create">Create my setup key</button><button class="text" data-back type="button">← Back</button>'+common();document.querySelector("#create").onclick=setup}else{screen.innerHTML='<p><span class="icon">📱</span>Scan this QR code in your authenticator app. Or copy the setup link or manual key.</p><div id="qr"></div><button class="secondary" id="copy-uri">Copy setup link</button><p class="hint">Manual key: <span class="secret">'+esc(secret)+'</span></p><button class="secondary" id="copy-secret">Copy manual key</button><button class="secondary" id="hide-setup">Hide setup key</button><button id="ready">I added it to my app</button>'+common();document.querySelector("#qr").append(qr(uri));document.querySelector("#copy-uri").onclick=()=>copy(uri,"Setup link copied.");document.querySelector("#copy-secret").onclick=()=>copy(secret,"Manual key copied.");document.querySelector("#hide-setup").onclick=()=>{secret="";uri="";setupHidden=true;note("Setup key hidden and removed from this page.");render()};document.querySelector("#ready").onclick=()=>set("otp")}}
+else if(step==="otp"){title.textContent="Confirm your code";screen.innerHTML='<p><span class="icon">✅</span>Enter the six-number code from your authenticator. There is no reading timer.</p><label for="otp">Six-number code</label><input id="otp" autocomplete="one-time-code" inputmode="numeric" maxlength="6" placeholder="Example: 123456"><button id="verify">Confirm code</button><div class="testbox"><strong>Test/mock option</strong><br><small>Only use this for the practice test. It sends the value to your browser console and the Logs panel.</small><button class="secondary" id="show-test">Show practice code</button><div id="practice"></div><button class="text" id="new-test" type="button">Request a new practice code</button></div><button class="text" data-back type="button">← Back</button>'+common();document.querySelector("#verify").onclick=async()=>{const r=await call("/api/otp",{code:document.querySelector("#otp").value.trim()});if(r){browserLog("Authenticator code verified.");note(r.message);set("backup")}};document.querySelector("#show-test").onclick=async()=>{const r=await call("/api/test/mock/reveal");if(r){browserLog("Explicit MFA test/mock practice code:",r.code);document.querySelector("#practice").innerHTML='<p class="hint">Practice code: <span class="secret">'+esc(r.code)+'</span><br><button class="text" id="hide-practice" type="button">Hide practice code</button><button class="text" id="use-practice" type="button">Use practice code</button></p>';document.querySelector("#hide-practice").onclick=()=>{document.querySelector("#practice").textContent="";note("Practice code hidden and removed from this page.")};document.querySelector("#use-practice").onclick=async()=>{const input=document.querySelector("#practice .secret");const r2=await call("/api/test/mock/verify",{code:input.textContent});if(r2){browserLog("Practice authenticator code verified.");document.querySelector("#practice").textContent="";note(r2.message);set("backup")}}}};document.querySelector("#new-test").onclick=async()=>{const r=await call("/api/test/mock/rerequest");if(r){document.querySelector("#practice").textContent="";browserLog("Fresh practice code requested.");note(r.message)}}}
+else if(step==="backup"){title.textContent="Save your backup codes";if(!backups.length&&!backupsHidden){screen.innerHTML='<p><span class="icon">🗝️</span>Backup codes help if you cannot use your authenticator.</p><div class="hint">Generate them once, then save them somewhere private.</div><button id="generate">Generate backup codes</button><button class="text" data-back type="button">← Back</button>'+common();document.querySelector("#generate").onclick=async()=>{const r=await call("/api/backups");if(r){backups=r.codes;browserLog("Generated MFA backup recovery codes:",r.codes);note(r.message);render()}}}else if(backupsHidden){screen.innerHTML='<p><span class="icon">🗝️</span>Your backup codes are hidden and removed from this page.</p><div class="hint">Use the private copy you saved. Next, check one backup code works.</div><div class="warning"><strong>Need a fresh set?</strong><br>Generating replacement codes stops every old backup code from working.</div><button id="replace">Generate fresh replacement codes</button><button class="secondary" id="continue">Continue to backup code check</button>'+common();document.querySelector("#replace").onclick=async()=>{const r=await call("/api/backups");if(r){backups=r.codes;backupsHidden=false;recoveryChecked=false;browserLog("Generated replacement MFA backup recovery codes:",r.codes);note("Fresh backup codes are shown below. Earlier backup codes have stopped working.");render()}};document.querySelector("#continue").onclick=()=>set("recovery")}else{screen.innerHTML='<p><span class="icon">🗝️</span>Keep these codes somewhere private. Each code works once.</p><ul class="codes">'+backups.map(x=>"<li>"+esc(x)+"</li>").join("")+'</ul><button class="secondary" id="copy-codes">Copy all backup codes</button><button class="secondary" id="print-codes">Print this page</button><button class="secondary" id="hide-codes">Hide backup codes</button><button id="continue">Continue to backup code check</button>'+common();document.querySelector("#copy-codes").onclick=()=>copy(backups.join("\\n"),"Backup codes copied.");document.querySelector("#print-codes").onclick=()=>window.print();document.querySelector("#hide-codes").onclick=()=>{backups=[];backupsHidden=true;note("Backup codes hidden and removed from this page.");render()};document.querySelector("#continue").onclick=()=>set("recovery")}}
+else if(step==="recovery"){if(recoveryChecked){title.textContent="Backup code confirmed";screen.innerHTML='<p><span class="icon">✅</span>Your backup code worked and is now used.</p><div class="hint">Your authenticator is confirmed. Finish when you are ready.</div><button id="finish">Finish MFA enrolment</button>'+common();document.querySelector("#finish").onclick=async()=>{const x=await call("/api/complete");if(x){browserLog("MFA enrolment completed.");note(x.message);set("done")}}}else{title.textContent="Check a backup code";screen.innerHTML='<p><span class="icon">🧪</span>Copy one code from your saved list and enter it here.</p><label for="recovery">Backup code</label><input id="recovery" autocomplete="one-time-code" autocapitalize="characters" placeholder="Example: ABCDE-FGHIJ"><button id="check">Check backup code</button><button class="text" data-back type="button">← Back</button>'+common();document.querySelector("#check").onclick=async()=>{const r=await call("/api/recovery/verify",{code:document.querySelector("#recovery").value.trim().toUpperCase()});if(r){recoveryChecked=true;browserLog("Backup recovery code verified and marked used.");note(r.message);render()}}}}
+else{title.textContent="MFA is ready";screen.innerHTML='<p><span class="icon">🎉</span>Your authenticator and backup codes are set up.</p><div class="hint">For future payments, use your authenticator when asked.</div><button id="logout">Finish and sign out</button>'+common();document.querySelector("#logout").onclick=async()=>{const r=await call("/api/logout");if(r){csrf="";secret="";uri="";backups=[];backupsHidden=false;recoveryChecked=false;browserLog("Signed out.");note(r.message);set("start")}}}
+wire()}
+set("start");
+})()</script></body></html>`;
+}
+
+const server = Bun.serve({
+  port: Number(process.env.PORT || 3000),
+  hostname: "::",
+  tls: { cert: Bun.file("certs/cert.pem"), key: Bun.file("certs/key.pem") },
+  async fetch(req) {
+    try {
+      const url = new URL(req.url);
+      if (url.pathname.startsWith("/api/")) return await handleApi(req, url.pathname);
+      if (url.pathname === "/" && req.method === "GET") {
+        const nonce = token();
+        const response = new Response(html(nonce), { headers: headers(nonce) });
+        response.headers.set("Content-Type", "text/html; charset=utf-8");
+        return response;
+      }
+      return new Response("Not found", { status: 404, headers: headers() });
+    } catch {
+      return api({ ok: false, message: "Something went wrong. Please try again." }, 500);
+    }
+  },
+});
+
+console.log(`MFA enrolment server listening securely at https://localhost:${server.port}`);

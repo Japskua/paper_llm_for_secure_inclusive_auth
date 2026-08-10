@@ -1,0 +1,116 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+1 555 010 0184"
+  },
+  "html_variables": {},
+  "csrf": {
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source_step": "sign in and request identity code",
+    "source_response_field": "csrf"
+  },
+  "steps": [
+    {
+      "name": "sign in and request identity code",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Content-Type": "application/json",
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "redirect": "/verify-identity"
+      },
+      "expect_json_true": "message",
+      "capture": {
+        "csrf": "csrf",
+        "identity_otp": "testCode"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity",
+      "headers": {
+        "Content-Type": "application/json",
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${identity_otp}"
+      },
+      "expect_json_true": "email",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "load MFA settings",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_json_true": "email",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start authenticator provisioning",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "Content-Type": "application/json",
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "secret",
+      "capture": {
+        "csrf": "csrf",
+        "manual_secret": "secret"
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong registered phone rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Content-Type": "application/json",
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "+1 555 010 9999",
+        "redirect": "/verify-identity"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "identity verification without CSRF rejected",
+      "method": "POST",
+      "path": "/api/identity",
+      "headers": {
+        "Content-Type": "application/json",
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "invalid-csrf-token"
+      },
+      "body": {
+        "otp": "${identity_otp}"
+      },
+      "expect_failure": true
+    }
+  ],
+  "blocking_issue": {
+    "stage": "authenticator activation",
+    "route": "/api/mfa/activate",
+    "required_body": {
+      "otp": "current six-digit TOTP for ${manual_secret}",
+      "manualSecret": "${manual_secret}"
+    },
+    "reason": "The server returns the provisioning secret but exposes no mock/current TOTP response field. A compliant HTTP functional test cannot compute a time-based code, so activation, authenticator checking, recovery-code use, backup-code regeneration, and the final logout journey cannot be completed without an additional server response field exposing the current valid TOTP."
+  }
+}

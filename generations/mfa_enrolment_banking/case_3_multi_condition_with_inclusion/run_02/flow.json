@@ -1,0 +1,137 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 14,
+  "steps_passed": 11,
+  "happy_path_passed": 7,
+  "happy_path_total": 10,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load MFA setup page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "initial session status is signed out",
+      "method": "GET",
+      "path": "/api/status",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "Please sign in to continue."
+    },
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm identity code",
+      "method": "POST",
+      "path": "/api/identity",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "create authenticator provisioning",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify authenticator code",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'recovery_code' from 'codes.0'"
+      ]
+    },
+    {
+      "name": "use first backup code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "Enter a backup code like ABCDE-FGHJK."
+    },
+    {
+      "name": "regenerate backup codes",
+      "method": "POST",
+      "path": "/api/backup/regenerate",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'replacement_recovery_code' from 'codes.0'"
+      ]
+    },
+    {
+      "name": "use replacement backup code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "Enter a backup code like ABCDE-FGHJK."
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "invalid identity code rejected",
+      "method": "POST",
+      "path": "/api/identity",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "reused backup code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/backup/regenerate",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 14
+}

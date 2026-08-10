@@ -1,0 +1,149 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+1 555 123 4567"
+  },
+  "html_variables": {},
+  "csrf": null,
+  "steps": [
+    {
+      "name": "sign in and create session",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "provision authenticator",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "otp": "testOtp"
+      }
+    },
+    {
+      "name": "verify authenticator code",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${otp}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "activate MFA",
+      "method": "POST",
+      "path": "/api/mfa/enable",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "consume generated recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "replacement_recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "consume replacement recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${replacement_recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong phone rejected",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "body": {
+        "email": "marcus@example.test",
+        "phone": "+1 555 000 0000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid email rejected",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "body": {
+        "email": "not-an-email",
+        "phone": "+1 555 123 4567"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "unauthenticated provisioning rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {},
+      "expect_failure": true
+    },
+    {
+      "name": "malformed authenticator code rejected",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "abcdef"
+      },
+      "expect_failure": true
+    }
+  ]
+}

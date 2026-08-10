@@ -1,0 +1,165 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 15,
+  "steps_passed": 5,
+  "happy_path_passed": 2,
+  "happy_path_total": 12,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load MFA enrolment app",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "refresh pre-authentication context",
+      "method": "GET",
+      "path": "/api/pre-auth",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with demo account",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "confirm identity",
+      "method": "POST",
+      "path": "/api/identity",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "refresh identity status",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'authenticated': False}"
+    },
+    {
+      "name": "create authenticator setup secret",
+      "method": "POST",
+      "path": "/api/provision",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'manual_secret' from 'manualSecret'",
+        "could not capture 'authenticator_otp' from 'testOtp'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "verify authenticator and enable MFA",
+      "method": "POST",
+      "path": "/api/verify-authenticator",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'initial_recovery_code' from 'recoveryCodes.0'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "refresh MFA status",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'authenticated': False}"
+    },
+    {
+      "name": "use a recovery code",
+      "method": "POST",
+      "path": "/api/verify-recovery",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/regenerate-backups",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'regenerated_recovery_code' from 'recoveryCodes.0'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "use regenerated recovery code",
+      "method": "POST",
+      "path": "/api/verify-recovery",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "login without valid pre-auth CSRF rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "reused recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify-recovery",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 15
+}

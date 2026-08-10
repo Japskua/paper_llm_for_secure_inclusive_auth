@@ -1,0 +1,64 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 6,
+  "steps_passed": 6,
+  "happy_path_passed": 4,
+  "happy_path_total": 4,
+  "negative_passed": 2,
+  "negative_total": 2,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "sign in and request identity code",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "load MFA settings",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "start authenticator provisioning",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong registered phone rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 400,
+      "ok": true
+    },
+    {
+      "name": "identity verification without CSRF rejected",
+      "method": "POST",
+      "path": "/api/identity",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 6
+}

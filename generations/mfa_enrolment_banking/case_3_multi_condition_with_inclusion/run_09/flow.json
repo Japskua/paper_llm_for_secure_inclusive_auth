@@ -1,0 +1,108 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 11,
+  "steps_passed": 10,
+  "happy_path_passed": 7,
+  "happy_path_total": 8,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "bootstrap secure session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with demo account",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "show authenticator setup",
+      "method": "POST",
+      "path": "/api/authenticator/setup",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/otp/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "complete recovery code saving",
+      "method": "POST",
+      "path": "/api/recovery/complete",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "test a recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "{'ok': False, 'error': 'Enter a recovery code like NORTH-1234.'}"
+    },
+    {
+      "name": "sign out safely",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "invalid csrf token rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 11
+}

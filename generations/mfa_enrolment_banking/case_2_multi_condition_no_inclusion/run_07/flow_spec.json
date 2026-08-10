@@ -1,0 +1,160 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "password": "DemoPass!9",
+    "new_password": "NewDemoPass!9"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "csrf",
+    "in": "body",
+    "source": "POST /api/signin JSON response"
+  },
+  "steps": [
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "password": "${password}"
+      },
+      "expect_json_true": "next",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "testIdentityCode"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity",
+      "body": {
+        "csrf": "${csrf}",
+        "phone": "5550182",
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "next",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "check MFA status before setup",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "create authenticator setup key",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "secret",
+      "capture": {
+        "manual_secret": "secret",
+        "authenticator_otp": "testOtp"
+      }
+    },
+    {
+      "name": "verify authenticator",
+      "method": "POST",
+      "path": "/api/mfa/verify-authenticator",
+      "body": {
+        "csrf": "${csrf}",
+        "manualSecret": "${manual_secret}",
+        "otp": "${authenticator_otp}"
+      },
+      "expect_json_true": "verified"
+    },
+    {
+      "name": "activate MFA and issue recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/activate",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "backupCodes",
+      "capture": {
+        "recovery_code": "backupCodes.0"
+      }
+    },
+    {
+      "name": "check active MFA status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_json_true": "enabled",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "verify a recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recover",
+      "body": {
+        "csrf": "${csrf}",
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "verified"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/regenerate-backups",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "backupCodes",
+      "capture": {
+        "replacement_recovery_code": "backupCodes.0"
+      }
+    },
+    {
+      "name": "verify replacement recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recover",
+      "body": {
+        "csrf": "${csrf}",
+        "code": "${replacement_recovery_code}"
+      },
+      "expect_json_true": "verified"
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "loggedOut"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "marcus@example.test",
+        "password": "WrongPass!9"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "unauthenticated authenticator provisioning rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {
+        "csrf": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expect_failure": true
+    }
+  ]
+}

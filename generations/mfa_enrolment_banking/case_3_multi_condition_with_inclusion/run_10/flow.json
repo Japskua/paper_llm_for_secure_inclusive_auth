@@ -1,0 +1,142 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": false,
+  "steps_total": 13,
+  "steps_passed": 3,
+  "happy_path_passed": 1,
+  "happy_path_total": 10,
+  "negative_passed": 2,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "obtain login CSRF token",
+      "method": "GET",
+      "path": "/api/login-csrf",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with seeded account",
+      "method": "POST",
+      "path": "/api/authenticate",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'error': 'We could not complete that request. Please try again.'}"
+    },
+    {
+      "name": "request identity check code",
+      "method": "POST",
+      "path": "/api/identity/request",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'identity_code' from 'deliveredCode'"
+      ],
+      "response_message": "{'error': 'Please sign in again to continue.'}"
+    },
+    {
+      "name": "verify identity check code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "{'error': 'Please sign in again to continue.'}"
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/authenticator/setup",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'authenticator_code' from 'testCode'"
+      ],
+      "response_message": "{'error': 'Please sign in again to continue.'}"
+    },
+    {
+      "name": "verify authenticator code",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "{'error': 'Please sign in again to continue.'}"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/regenerate",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'recovery_code' from 'recoveryCodes.0'"
+      ],
+      "response_message": "{'error': 'Please sign in again to continue.'}"
+    },
+    {
+      "name": "confirm recovery codes saved",
+      "method": "POST",
+      "path": "/api/recovery/confirm",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "{'error': 'Please sign in again to continue.'}"
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "{'error': 'Please sign in again to continue.'}"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "{'error': 'Please sign in again to continue.'}"
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "obtain fresh login CSRF token for failed login",
+      "method": "GET",
+      "path": "/api/login-csrf",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": false,
+      "response_message": "{'token': 'Za5CfOSaG-6gwvKz57gCmONXzvxGe-UCms2ZyQVVWnk'}"
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/authenticate",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 13
+}

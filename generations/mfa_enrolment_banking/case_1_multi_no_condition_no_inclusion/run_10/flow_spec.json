@@ -1,0 +1,181 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+447700900123"
+  },
+  "html_variables": {},
+  "csrf": null,
+  "steps": [
+    {
+      "name": "load enrolment page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "bootstrap session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "csrf": "${csrf}",
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "capture": {
+        "csrf": "csrf",
+        "identity_otp": "testOtp"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "csrf": "${csrf}",
+        "otp": "${identity_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "create authenticator setup",
+      "method": "POST",
+      "path": "/api/authenticator/provision",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "capture": {
+        "csrf": "csrf",
+        "authenticator_secret": "secret",
+        "authenticator_otp": "testOtp"
+      }
+    },
+    {
+      "name": "enable authenticator MFA",
+      "method": "POST",
+      "path": "/api/authenticator/confirm",
+      "body": {
+        "csrf": "${csrf}",
+        "secret": "${authenticator_secret}",
+        "otp": "${authenticator_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "retrieve initial recovery codes",
+      "method": "GET",
+      "path": "/api/recovery-codes",
+      "capture": {
+        "csrf": "csrf",
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "view MFA settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "enabled",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "verify recovery code for replacement",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "csrf": "${csrf}",
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/regenerate",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "retrieve replacement recovery codes",
+      "method": "GET",
+      "path": "/api/recovery-codes",
+      "capture": {
+        "csrf": "csrf",
+        "replacement_recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "return to MFA settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "enabled",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid CSRF rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "csrf": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed identity rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "csrf": "${csrf}",
+        "email": "not-an-email",
+        "phone": "${phone}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "csrf": "${csrf}",
+        "otp": "ABC"
+      },
+      "expect_failure": true
+    }
+  ]
+}

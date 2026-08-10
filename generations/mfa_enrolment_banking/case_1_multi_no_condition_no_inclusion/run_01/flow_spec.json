@@ -1,0 +1,123 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+15551234567",
+    "password": "Marcus!2025"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "Sign in with demo account",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "password": "${password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "identity_code": "mockCode"
+      }
+    },
+    {
+      "name": "Verify identity code",
+      "method": "POST",
+      "path": "/api/verify-identity",
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "Generate authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "enrollment_otp": "mockOtp",
+        "manual_secret": "manualSecret"
+      }
+    },
+    {
+      "name": "Confirm authenticator enrollment",
+      "method": "POST",
+      "path": "/api/mfa/verify-enrollment",
+      "body": {
+        "otp": "${enrollment_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "Use a recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery-use",
+      "body": {
+        "recoveryCode": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "Regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery-regenerate",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "regenerated_recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "Log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "Wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "password": "WrongPassword!2025"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "Malformed sign-in phone rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "15551234567",
+        "password": "${password}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "Identity verification rejects wrong code",
+      "method": "POST",
+      "path": "/api/verify-identity",
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 15,
+  "steps_passed": 7,
+  "happy_path_passed": 3,
+  "happy_path_total": 11,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "create CSRF session",
+      "method": "GET",
+      "path": "/api/csrf",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in demo account",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'identity_code' from 'testValues.identityCode'"
+      ]
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "Enter the 6-digit code, for example 123456."
+    },
+    {
+      "name": "provision authenticator",
+      "method": "POST",
+      "path": "/api/provision",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'setup_secret' from 'secret'"
+      ],
+      "response_message": "Check your identity code before setting up an authenticator."
+    },
+    {
+      "name": "confirm authenticator setup",
+      "method": "POST",
+      "path": "/api/provision/manual",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'authenticator_otp' from 'testValues.authenticatorOtp'"
+      ],
+      "response_message": "Paste the full setup secret, then try again."
+    },
+    {
+      "name": "verify authenticator code",
+      "method": "POST",
+      "path": "/api/otp/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'backup_code' from 'recoveryCodes.0'",
+        "could not capture 'backup_code_to_use' from 'recoveryCodes.1'"
+      ],
+      "response_message": "Enter the 6-digit authenticator code, for example 123456."
+    },
+    {
+      "name": "confirm backup code saved",
+      "method": "POST",
+      "path": "/api/recovery/confirm",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "Paste one saved backup code in the format ABCDE-23456."
+    },
+    {
+      "name": "use backup code",
+      "method": "POST",
+      "path": "/api/recovery/use",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "Paste one saved backup code in the format ABCDE-23456."
+    },
+    {
+      "name": "regenerate backup codes",
+      "method": "POST",
+      "path": "/api/recovery/regenerate",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'replacement_backup_code' from 'recoveryCodes.0'"
+      ],
+      "response_message": "Check your identity before replacing backup codes."
+    },
+    {
+      "name": "confirm replacement backup code",
+      "method": "POST",
+      "path": "/api/recovery/confirm",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "Paste one saved backup code in the format ABCDE-23456."
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "malformed identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "invalid authenticator code rejected",
+      "method": "POST",
+      "path": "/api/otp/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "invalid backup code rejected",
+      "method": "POST",
+      "path": "/api/recovery/use",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 15
+}

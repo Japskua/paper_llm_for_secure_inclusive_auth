@@ -1,0 +1,138 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 14,
+  "steps_passed": 13,
+  "happy_path_passed": 9,
+  "happy_path_total": 10,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "initialize session and obtain CSRF token",
+      "method": "GET",
+      "path": "/api/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with registered email and phone",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify delivered identity code",
+      "method": "POST",
+      "path": "/api/identity",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "generate authenticator provisioning secret",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm authenticator enrollment",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'initial_recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "acknowledge initial recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/acknowledge",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify a recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'error': 'Request could not be completed.'}"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/regenerate",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'regenerated_recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "acknowledge regenerated recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/acknowledge",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong registered phone is rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 400,
+      "ok": true
+    },
+    {
+      "name": "identity verification rejects incorrect code",
+      "method": "POST",
+      "path": "/api/identity",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "recovery verification rejects malformed code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "state change without CSRF is rejected",
+      "method": "POST",
+      "path": "/api/mfa/regenerate",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 14
+}

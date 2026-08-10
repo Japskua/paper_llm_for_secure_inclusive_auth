@@ -1,0 +1,192 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "password": "River!47",
+    "new_password": "NewRiver!48"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source": "POST /api/signin JSON response field csrf"
+  },
+  "steps": [
+    {
+      "name": "load MFA setup page",
+      "method": "GET",
+      "path": "/",
+      "expect_status": 200
+    },
+    {
+      "name": "initial session status is signed out",
+      "method": "GET",
+      "path": "/api/status",
+      "expect_status": 401
+    },
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "${password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "testCode"
+      }
+    },
+    {
+      "name": "confirm identity code",
+      "method": "POST",
+      "path": "/api/identity",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "create authenticator provisioning",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "otp": "testOtp",
+        "provision_secret": "secret",
+        "provision_uri": "uri"
+      }
+    },
+    {
+      "name": "verify authenticator code",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "use first backup code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "regenerate backup codes",
+      "method": "POST",
+      "path": "/api/backup/regenerate",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "replacement_recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "use replacement backup code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${replacement_recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "marcus@example.com",
+        "password": "WrongPassword!47"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid identity code rejected",
+      "method": "POST",
+      "path": "/api/identity",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "reused backup code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "missing CSRF token rejected",
+      "method": "POST",
+      "path": "/api/backup/regenerate",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {},
+      "expect_failure": true
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "phone": "+447700900000",
+    "new_password": null
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source": {
+      "path": "/api/identity/verify",
+      "response_field": "csrf"
+    }
+  },
+  "steps": [
+    {
+      "name": "request identity check",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "identity_code": "mockCode"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "load MFA status",
+      "method": "GET",
+      "path": "/api/mfa",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "begin authenticator enrolment",
+      "method": "POST",
+      "path": "/api/mfa/enrol",
+      "body": {},
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "setup_secret": "secret",
+        "provisioning_uri": "provisioningUri"
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong phone rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "+447700900099"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "enrolment without CSRF rejected",
+      "method": "POST",
+      "path": "/api/mfa/enrol",
+      "body": {},
+      "expect_failure": true
+    }
+  ],
+  "blocking_issues": [
+    {
+      "stage": "POST /api/mfa/confirm",
+      "reason": "The route requires JSON field otp containing a current TOTP derived from the enrolment secret, but /api/mfa/enrol returns only secret and provisioningUri and exposes no mockOtp, currentOtp, mockAuthenticatorOtp, mockCode, or equivalent test-only current TOTP field. An automated HTTP test cannot complete this stage without computing a TOTP, which is prohibited."
+    },
+    {
+      "stage": "CSRF acquisition",
+      "reason": "GET / does not contain a CSRF token. The client receives csrf from the JSON response to POST /api/identity/verify and subsequently sends it in the X-CSRF-Token request header."
+    },
+    {
+      "stage": "password",
+      "reason": "No password field, password credential, password route, password policy, or password-change journey exists in the application source."
+    }
+  ]
+}

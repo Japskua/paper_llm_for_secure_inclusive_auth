@@ -1,0 +1,119 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "new_password": "NewPassword!54"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "body": {
+        "email": "${email}",
+        "password": "BankingDemo!54"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "mockIdentityCode"
+      }
+    },
+    {
+      "name": "confirm identity",
+      "method": "POST",
+      "path": "/api/auth/identity",
+      "body": {
+        "phone": "+44 7700 900000",
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "start authenticator enrolment",
+      "method": "POST",
+      "path": "/api/mfa/enrol/start",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "authenticator_otp": "mockAuthenticatorOtp"
+      }
+    },
+    {
+      "name": "verify authenticator",
+      "method": "POST",
+      "path": "/api/mfa/enrol/verify",
+      "body": {
+        "otp": "${authenticator_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "initial_recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "view MFA settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "redeem recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "body": {
+        "recoveryCode": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "body": {
+        "email": "${email}",
+        "password": "WrongPassword!54"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "reused recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "body": {
+        "recoveryCode": "${recovery_code}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "signed out session rejected",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_failure": true
+    }
+  ]
+}

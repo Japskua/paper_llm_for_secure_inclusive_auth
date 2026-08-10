@@ -1,0 +1,152 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "phone": "+15551234567"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "start identity verification",
+      "method": "POST",
+      "path": "/api/auth/start",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "testCode"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "begin authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/setup",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "manual_secret": "manualSecret",
+        "authenticator_otp": "testOtp"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${authenticator_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "backupCodes.0"
+      }
+    },
+    {
+      "name": "view security settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "use saved recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/backup/regenerate",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "regenerated_recovery_code": "backupCodes.0"
+      }
+    },
+    {
+      "name": "return to security settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "malformed identity details rejected",
+      "method": "POST",
+      "path": "/api/auth/start",
+      "body": {
+        "email": "not-an-email",
+        "phone": "+15551234567"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "identity verification without csrf rejected",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "settings unavailable after sign out",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_failure": true
+    }
+  ]
+}

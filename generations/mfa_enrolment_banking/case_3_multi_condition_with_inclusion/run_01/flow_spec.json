@@ -1,0 +1,212 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "credential": "Harbour-demo-54",
+    "new_password": "NewPass-2025"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source": "/api/signin",
+    "response_field": "csrf"
+  },
+  "steps": [
+    {
+      "name": "load security setup page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "sign in with demo account",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "email": "${email}",
+        "credential": "${credential}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "mockCode"
+      }
+    },
+    {
+      "name": "check MFA setup status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "verify identity check code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "check verified MFA status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "get authenticator setup details",
+      "method": "POST",
+      "path": "/api/authenticator/provision",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "refresh": false
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "authenticator_code": "mockCode"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${authenticator_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "confirm recovery codes saved",
+      "method": "POST",
+      "path": "/api/backup/confirm",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "test a saved recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/regenerate",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "replacement_recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "confirm replacement recovery codes",
+      "method": "POST",
+      "path": "/api/backup/confirm",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "email": "wrong-password@example.test",
+        "credential": "Definitely-wrong-54"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed email rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "email": "not-an-email",
+        "credential": "Harbour-demo-54"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "cross origin sign in rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://attacker.example",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "email": "${email}",
+        "credential": "${credential}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "variables": {
+    "email": "marcus.contractor@example.test"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source_path": "/api/signin",
+    "source_field": "csrf"
+  },
+  "steps": [
+    {
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_status": 200
+    },
+    {
+      "name": "request identity challenge",
+      "method": "POST",
+      "path": "/api/identity-challenge",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "+15551234567"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "identity_code": "mockCode"
+      }
+    },
+    {
+      "name": "sign in with identity code",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "+15551234567",
+        "identityCode": "${identity_code}",
+        "redirect": "setup"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "confirm authenticated MFA setup state",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "generate authenticator setup secret",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "manual_secret": "manualSecret",
+        "authenticator_code": "mockCode"
+      }
+    },
+    {
+      "name": "verify authenticator and issue backup codes",
+      "method": "POST",
+      "path": "/api/mfa/verify-otp",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${authenticator_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "initial_backup_code": "backupCodes.0"
+      }
+    },
+    {
+      "name": "confirm MFA is active",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "generate replacement backup codes",
+      "method": "POST",
+      "path": "/api/mfa/regenerate-backup",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "replacement_backup_code": "backupCodes.0"
+      }
+    },
+    {
+      "name": "verify and consume replacement recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recover",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "${replacement_backup_code}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "identity sign-in with invalid code rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "+15551234567",
+        "identityCode": "000000",
+        "redirect": "setup"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "provisioning without CSRF token rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {},
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recover",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "ABCD-EFGH-JKLM"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recover",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "${replacement_backup_code}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

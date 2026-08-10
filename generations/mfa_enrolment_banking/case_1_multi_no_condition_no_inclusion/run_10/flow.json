@@ -1,0 +1,160 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 16,
+  "steps_passed": 13,
+  "happy_path_passed": 10,
+  "happy_path_total": 13,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "bootstrap session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "start sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "create authenticator setup",
+      "method": "POST",
+      "path": "/api/authenticator/provision",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "enable authenticator MFA",
+      "method": "POST",
+      "path": "/api/authenticator/confirm",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "retrieve initial recovery codes",
+      "method": "GET",
+      "path": "/api/recovery-codes",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'recovery_code' from 'codes.0'"
+      ]
+    },
+    {
+      "name": "view MFA settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify recovery code for replacement",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'error': 'Unable to complete this request. Please try again.'}"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/regenerate",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "{'error': 'Unable to complete this request. Please try again.'}"
+    },
+    {
+      "name": "retrieve replacement recovery codes",
+      "method": "GET",
+      "path": "/api/recovery-codes",
+      "expect_failure": false,
+      "status_code": 409,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'replacement_recovery_code' from 'codes.0'"
+      ],
+      "response_message": "{'error': 'Recovery codes are unavailable. Return to MFA settings.'}"
+    },
+    {
+      "name": "return to MFA settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "invalid CSRF rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "malformed identity rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "invalid identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 16
+}

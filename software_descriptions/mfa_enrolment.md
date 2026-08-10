@@ -60,3 +60,22 @@ and Social Engineering and omits Cryptographic Failures, while its scored items
 cover Cryptographic Failures and not SSRF. Study 2's narrative and scored items
 agree. The scored constructs are identical across both studies regardless, so
 the comparison is unaffected.
+
+## Flow-test limitation, specific to this study
+
+The HTTP flow test is a weaker instrument here than in the password-recovery
+study, and its pass rate should not be compared across the two.
+
+Story 1's verification codes were mock values returned directly in responses, so
+a plain HTTP client could capture and replay them. This study's journey turns on
+a time-based one-time passcode derived from a shared secret, which an HTTP client
+cannot compute, and on backup codes that several artifacts emit as a
+comma-joined log line rather than structured data. The spec derivation was
+extended to capture the mock OTP fields the artifacts expose, which lifted the
+pass rate from 1/30 to 5/30, and runs that still fail reach 68% of the journey on
+average before stopping — almost always at the point of consuming a backup code.
+
+Boot success (28/30) and the screenshot walkthrough are the better evidence that
+these journeys work, since a browser can read an on-page code and type it back
+where an HTTP client cannot. Flow results are artifact metadata and never enter
+the scores or statistics.

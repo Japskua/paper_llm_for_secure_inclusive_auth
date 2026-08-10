@@ -1,0 +1,25 @@
+# TASKER REPORT — Iteration 1 · Step 1
+
+## SUMMARY
+- Raw tasks from Tasker: 12
+- Effective task_list after retention: 12
+- Note: Evaluator decides termination; Tasker.done is ignored.
+
+## RAW_OUTPUT
+```
+{"task_list":["Create a single runnable `app.ts` Bun HTTPS server that uses `certs/cert.pem` and `certs/key.pem`, serves the mobile SPA, and returns generic errors without debug details.","Add security middleware for every response: HTTPS enforcement, HSTS, restrictive CSP with clickjacking protection, `nosniff`, and CORS restricted to the local trusted origin.","Implement an in-memory authenticated session model with cryptographically random HttpOnly/Secure/SameSite cookies, session rotation on sign-in, idle and absolute expiry, and logout invalidation.","Implement server-side route authorization so each MFA API request derives the account solely from its validated session and rejects missing, expired, or manipulated user identifiers.","Implement CSRF token issuance and validation for every state-changing MFA request, with tokens bound to the authenticated session.","Implement the sign-in and identity-verification flow with generic anti-enumeration responses, validated inputs, rate limits/lockouts, and deterministic mock verification delivery logged only in the browser console.","Implement authenticator enrolment using a cryptographically generated secret stored protected at rest, a time-bound single-use OTP challenge, and a UI path for manually entering the provisioning secret or verification code.","Implement backup recovery-code generation with cryptographically secure random values, protected-at-rest storage, one-time redemption, authenticated regeneration, and browser-console-only display of mock codes after issuance.","Validate all server inputs (including email, phone, OTPs, CSRF tokens, and redirect targets), allow only internal redirect destinations, and contextually escape all dynamic HTML/DOM output.","Build the inline semantic HTML, responsive mobile CSS, and vanilla JavaScript SPA in `app.ts`, including working navigation for sign-in, verification, authenticator setup, backup-code confirmation, MFA settings, regeneration, and logout.","Ensure client code makes no external network calls and stores no secrets, OTPs, backup codes, or session tokens in browser storage; log simulated deliveries only through `console.log` in the browser.","Add concise code comments mapping each security control and flow to the numbered requirements, and verify `bun app.ts` is the only command needed to run the application."]}
+```
+
+## PARSED_TASKS
+- Create a single runnable app.ts Bun HTTPS server that uses certs/cert.pem and certs/key.pem, serves the mobile SPA, and returns generic errors without debug details.
+- Add security middleware for every response: HTTPS enforcement, HSTS, restrictive CSP with clickjacking protection, nosniff, and CORS restricted to the local trusted origin.
+- Implement an in-memory authenticated session model with cryptographically random HttpOnly/Secure/SameSite cookies, session rotation on sign-in, idle and absolute expiry, and logout invalidation.
+- Implement server-side route authorization so each MFA API request derives the account solely from its validated session and rejects missing, expired, or manipulated user identifiers.
+- Implement CSRF token issuance and validation for every state-changing MFA request, with tokens bound to the authenticated session.
+- Implement the sign-in and identity-verification flow with generic anti-enumeration responses, validated inputs, rate limits/lockouts, and deterministic mock verification delivery logged only in the browser console.
+- Implement authenticator enrolment using a cryptographically generated secret stored protected at rest, a time-bound single-use OTP challenge, and a UI path for manually entering the provisioning secret or verification code.
+- Implement backup recovery-code generation with cryptographically secure random values, protected-at-rest storage, one-time redemption, authenticated regeneration, and browser-console-only display of mock codes after issuance.
+- Validate all server inputs (including email, phone, OTPs, CSRF tokens, and redirect targets), allow only internal redirect destinations, and contextually escape all dynamic HTML/DOM output.
+- Build the inline semantic HTML, responsive mobile CSS, and vanilla JavaScript SPA in app.ts, including working navigation for sign-in, verification, authenticator setup, backup-code confirmation, MFA settings, regeneration, and logout.
+- Ensure client code makes no external network calls and stores no secrets, OTPs, backup codes, or session tokens in browser storage; log simulated deliveries only through console.log in the browser.
+- Add concise code comments mapping each security control and flow to the numbered requirements, and verify bun app.ts is the only command needed to run the application.

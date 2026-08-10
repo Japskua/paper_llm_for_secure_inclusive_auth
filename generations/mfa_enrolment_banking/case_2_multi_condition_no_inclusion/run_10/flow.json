@@ -1,0 +1,138 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": false,
+  "steps_total": 12,
+  "steps_passed": 3,
+  "happy_path_passed": 0,
+  "happy_path_total": 9,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "start identity verification",
+      "method": "POST",
+      "path": "/api/auth/start",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'identity_code' from 'testCode'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "begin authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/setup",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "warnings": [
+        "could not capture 'manual_secret' from 'manualSecret'",
+        "could not capture 'authenticator_otp' from 'testOtp'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "warnings": [
+        "could not capture 'recovery_code' from 'backupCodes.0'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "view security settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "use saved recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/backup/regenerate",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "warnings": [
+        "could not capture 'regenerated_recovery_code' from 'backupCodes.0'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "return to security settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "expect_failure": false,
+      "status_code": 500,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "malformed identity details rejected",
+      "method": "POST",
+      "path": "/api/auth/start",
+      "expect_failure": true,
+      "status_code": 400,
+      "ok": true
+    },
+    {
+      "name": "identity verification without csrf rejected",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "expect_failure": true,
+      "status_code": 500,
+      "ok": true
+    },
+    {
+      "name": "settings unavailable after sign out",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_failure": true,
+      "status_code": 500,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 12
+}

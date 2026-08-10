@@ -1,0 +1,171 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "password": "Marcus-54",
+    "new_password": "NewPass-54"
+  },
+  "html_variables": {},
+  "csrf": null,
+  "steps": [
+    {
+      "name": "load security setup page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "create anonymous session",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/login",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "${password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start identity check",
+      "method": "POST",
+      "path": "/api/proof/start",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "complete identity check",
+      "method": "POST",
+      "path": "/api/proof/complete",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "create authenticator setup",
+      "method": "POST",
+      "path": "/api/provision",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "otp": "testOtp"
+      }
+    },
+    {
+      "name": "confirm authenticator code",
+      "method": "POST",
+      "path": "/api/verify-otp",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${otp}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/generate-recovery",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/check-recovery",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "create session for failed login checks",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "negative_csrf": "csrf"
+      }
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${negative_csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "wrong-password"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid csrf rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "invalid-csrf-token"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "${password}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

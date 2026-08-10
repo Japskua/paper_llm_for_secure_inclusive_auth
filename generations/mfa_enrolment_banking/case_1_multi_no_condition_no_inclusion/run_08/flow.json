@@ -1,0 +1,147 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 15,
+  "steps_passed": 13,
+  "happy_path_passed": 10,
+  "happy_path_total": 12,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "start pre-auth session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with demo contact details",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "check MFA enrolment status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm registered identity",
+      "method": "POST",
+      "path": "/api/mfa/identity",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "generate authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/setup",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify authenticator and enable MFA",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'initial_recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "view generated recovery codes",
+      "method": "GET",
+      "path": "/api/mfa/recovery",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "consume a recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "Verification could not be completed."
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "view regenerated recovery codes",
+      "method": "GET",
+      "path": "/api/mfa/recovery",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'regenerated_recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "consume regenerated recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "Verification could not be completed."
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "MFA status rejected after sign out",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "identity confirmation rejected without authenticated session",
+      "method": "POST",
+      "path": "/api/mfa/identity",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "unknown route rejected",
+      "method": "GET",
+      "path": "/api/not-a-route",
+      "expect_failure": true,
+      "status_code": 404,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 15
+}

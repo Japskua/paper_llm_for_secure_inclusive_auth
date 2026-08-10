@@ -86,6 +86,18 @@ Rules:
     reference code). Such values cannot be hardcoded because they change on
     every boot, so give a regex that extracts the value from the served HTML.
     Never emit a self-referential placeholder like "${x}" as the value of x.
+  - TIME-BASED CODES: if the application uses a time-based one-time passcode
+    (TOTP) or any code derived from a shared secret, do NOT attempt to compute
+    it — an HTTP client cannot. These applications are required to expose the
+    current valid code for testing, typically as a field such as "mockOtp",
+    "currentOtp", "mockAuthenticatorOtp", "mockCode" or similar in a response
+    body. Find that field in the source and "capture" it, then send it back in
+    the next step. If the code is re-issued or rotates, capture it again from
+    the most recent response immediately before each verification step rather
+    than reusing an earlier value.
+  - Backup or recovery codes are usually returned as a list when the
+    authenticator is enrolled. Capture one element of that list before trying
+    to consume it, and do not reuse a code that a previous step already spent.
   - "${name}" interpolates a variable captured earlier or defined in "variables".
   - "capture" maps a new variable name to a field in the JSON response
     (dotted paths allowed, e.g. "data.token").

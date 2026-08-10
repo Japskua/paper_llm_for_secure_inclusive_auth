@@ -1,0 +1,103 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 10,
+  "steps_passed": 9,
+  "happy_path_passed": 6,
+  "happy_path_total": 7,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "Sign in with demo account",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Verify identity code",
+      "method": "POST",
+      "path": "/api/verify-identity",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Generate authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Confirm authenticator enrollment",
+      "method": "POST",
+      "path": "/api/mfa/verify-enrollment",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "Use a recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery-use",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "Regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery-regenerate",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'regenerated_recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "Log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "Wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "Malformed sign-in phone rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 400,
+      "ok": true
+    },
+    {
+      "name": "Identity verification rejects wrong code",
+      "method": "POST",
+      "path": "/api/verify-identity",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 10
+}

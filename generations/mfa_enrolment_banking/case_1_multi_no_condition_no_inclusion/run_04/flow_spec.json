@@ -1,0 +1,214 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "phone": "15551234567"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "start sign-in",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "redirect": "/"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identityCode": "testIdentityCode"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${identityCode}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "load authenticated session",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "create authenticator provisioning",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "manualSecret": "secret",
+        "authenticatorOtp": "testAuthenticatorCode"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "manualSecret": "${manualSecret}",
+        "otp": "${authenticatorOtp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recoveryCode": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "start authenticator verification",
+      "method": "POST",
+      "path": "/api/mfa/challenge",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "action": "verify"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "verifyOtp": "testAuthenticatorCode"
+      }
+    },
+    {
+      "name": "complete authenticator verification",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${verifyOtp}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "${recoveryCode}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "start recovery-code regeneration challenge",
+      "method": "POST",
+      "path": "/api/mfa/challenge",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "action": "regenerate"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "regenerateOtp": "testAuthenticatorCode"
+      }
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/regenerate",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${regenerateOtp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "regeneratedRecoveryCode": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid sign-in phone rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "not-a-phone",
+        "redirect": "/"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "identity verification without pending session rejected",
+      "method": "POST",
+      "path": "/api/identity-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "invalid"
+      },
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "unauthenticated provisioning rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "invalid"
+      },
+      "body": {},
+      "expect_failure": true
+    }
+  ]
+}

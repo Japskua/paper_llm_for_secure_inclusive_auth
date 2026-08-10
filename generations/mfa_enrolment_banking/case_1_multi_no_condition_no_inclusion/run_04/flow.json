@@ -1,0 +1,135 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 14,
+  "steps_passed": 13,
+  "happy_path_passed": 10,
+  "happy_path_total": 11,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "start sign-in",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity-verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "load authenticated session",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "create authenticator provisioning",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'recoveryCode' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "start authenticator verification",
+      "method": "POST",
+      "path": "/api/mfa/challenge",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "complete authenticator verification",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery-verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "The request could not be completed."
+    },
+    {
+      "name": "start recovery-code regeneration challenge",
+      "method": "POST",
+      "path": "/api/mfa/challenge",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/regenerate",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'regeneratedRecoveryCode' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "invalid sign-in phone rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "expect_failure": true,
+      "status_code": 400,
+      "ok": true
+    },
+    {
+      "name": "identity verification without pending session rejected",
+      "method": "POST",
+      "path": "/api/identity-verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "unauthenticated provisioning rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 14
+}

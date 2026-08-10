@@ -1,0 +1,88 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": false,
+  "steps_total": 7,
+  "steps_passed": 4,
+  "happy_path_passed": 1,
+  "happy_path_total": 4,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "request identity check",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'identity_code' from 'mockCode'"
+      ]
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "load MFA status",
+      "method": "GET",
+      "path": "/api/mfa",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "begin authenticator enrolment",
+      "method": "POST",
+      "path": "/api/mfa/enrol",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'setup_secret' from 'secret'",
+        "could not capture 'provisioning_uri' from 'provisioningUri'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "wrong phone rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "invalid identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "enrolment without CSRF rejected",
+      "method": "POST",
+      "path": "/api/mfa/enrol",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 7
+}

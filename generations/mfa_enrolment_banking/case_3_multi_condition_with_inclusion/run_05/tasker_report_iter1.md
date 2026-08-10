@@ -1,0 +1,24 @@
+# TASKER REPORT — Iteration 1 · Step 1
+
+## SUMMARY
+- Raw tasks from Tasker: 11
+- Effective task_list after retention: 11
+- Note: Evaluator decides termination; Tasker.done is ignored.
+
+## RAW_OUTPUT
+```
+{"task_list":[ "Create a single runnable `app.ts` Bun HTTPS server that serves the complete responsive SPA from inline HTML, CSS, and vanilla JavaScript, uses `certs/cert.pem` and `certs/key.pem`, and has no external calls or local modules.", "Implement a mobile-first, dyslexia-friendly MFA enrolment flow with semantic screens for sign-in, identity verification, authenticator setup, OTP verification, backup-code storage, completion, help, retry, reveal/hide, and logout.", "Ensure each UI screen uses plain short instructions, icons, spacious legible styling, input examples and autofill hints, a prominent current step and one primary action, with no timers, animation, flashing, or reading deadline.", "Implement mocked browser-console delivery for identity codes, provisioning details, OTPs, and recovery codes; provide QR and copy controls plus a manual authenticator-secret entry path so long values need not be transcribed.", "Implement server-side session authentication and ownership checks on every MFA route so requests operate only on the session’s account and manipulated user identifiers are rejected.", "Implement CSRF validation for every state-changing endpoint and issue session cookies with `HttpOnly`, `Secure`, and `SameSite` attributes; rotate the session at authentication and invalidate it on logout.", "Implement cryptographically secure mock secret and recovery-code generation, protect stored MFA secrets and recovery codes at rest, keep secrets/tokens out of URLs and browser storage, and never log sensitive values on the server.", "Implement deterministic, working verification mocks with single-use and time-bound codes, failed-attempt rate limiting and lockout, generic anti-enumeration failures, and clear user-facing error messages that explain the remedy.", "Validate all server inputs (including email, phone, OTP, recovery code, and redirects), escape all rendered dynamic output, and restrict redirects to an internal allow-list.", "Apply HTTPS enforcement and security headers including CSP, HSTS, `X-Content-Type-Options: nosniff`, clickjacking protection, and trusted-origin-only CORS; return generic production-safe errors without stack traces.", "Add concise comments throughout `app.ts` explicitly mapping the implemented controls and UI behaviours to the stated functional, inclusivity, and Security Evaluation requirements." ]}
+```
+
+## PARSED_TASKS
+- Create a single runnable app.ts Bun HTTPS server that serves the complete responsive SPA from inline HTML, CSS, and vanilla JavaScript, uses certs/cert.pem and certs/key.pem, and has no external calls or local modules.
+- Implement a mobile-first, dyslexia-friendly MFA enrolment flow with semantic screens for sign-in, identity verification, authenticator setup, OTP verification, backup-code storage, completion, help, retry, reveal/hide, and logout.
+- Ensure each UI screen uses plain short instructions, icons, spacious legible styling, input examples and autofill hints, a prominent current step and one primary action, with no timers, animation, flashing, or reading deadline.
+- Implement mocked browser-console delivery for identity codes, provisioning details, OTPs, and recovery codes; provide QR and copy controls plus a manual authenticator-secret entry path so long values need not be transcribed.
+- Implement server-side session authentication and ownership checks on every MFA route so requests operate only on the session’s account and manipulated user identifiers are rejected.
+- Implement CSRF validation for every state-changing endpoint and issue session cookies with HttpOnly, Secure, and SameSite attributes; rotate the session at authentication and invalidate it on logout.
+- Implement cryptographically secure mock secret and recovery-code generation, protect stored MFA secrets and recovery codes at rest, keep secrets/tokens out of URLs and browser storage, and never log sensitive values on the server.
+- Implement deterministic, working verification mocks with single-use and time-bound codes, failed-attempt rate limiting and lockout, generic anti-enumeration failures, and clear user-facing error messages that explain the remedy.
+- Validate all server inputs (including email, phone, OTP, recovery code, and redirects), escape all rendered dynamic output, and restrict redirects to an internal allow-list.
+- Apply HTTPS enforcement and security headers including CSP, HSTS, X-Content-Type-Options: nosniff, clickjacking protection, and trusted-origin-only CORS; return generic production-safe errors without stack traces.
+- Add concise comments throughout app.ts explicitly mapping the implemented controls and UI behaviours to the stated functional, inclusivity, and Security Evaluation requirements.

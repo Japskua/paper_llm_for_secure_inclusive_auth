@@ -1,0 +1,23 @@
+# TASKER REPORT — Iteration 1 · Step 1
+
+## SUMMARY
+- Raw tasks from Tasker: 10
+- Effective task_list after retention: 10
+- Note: Evaluator decides termination; Tasker.done is ignored.
+
+## RAW_OUTPUT
+```
+{"task_list":["Create a single runnable `app.ts` Bun HTTPS server that serves the complete responsive SPA from inline HTML, CSS, and vanilla JavaScript, using `certs/cert.pem` and `certs/key.pem` with no external assets or network calls.","Implement an accessible, dyslexia-friendly mobile MFA enrolment flow with short plain-language steps for sign-in, identity verification, authenticator setup, OTP verification, backup-code storage, success, help, retry, and logout.","Implement deterministic simulated OTP/authenticator provisioning and recovery-code flows that display test values only through browser `console.log`, offer QR and copy/manual-entry alternatives, and permit each required verification to succeed without a reading time limit.","Add server-side session authentication and per-request account ownership enforcement for every MFA route, ensuring client-supplied or guessed account identifiers cannot read or change another account’s MFA data.","Protect every state-changing endpoint with CSRF validation and secure HttpOnly, Secure, SameSite session cookies; rotate sessions after authentication and invalidate them on logout and configured idle or absolute expiry.","Generate OTP secrets and backup recovery codes with cryptographically secure randomness, retain only encrypted or hashed protected values in server memory, and keep secrets, codes, OTPs, and tokens out of URLs, browser storage, cookies accessible to JavaScript, server logs, and error responses.","Implement single-use, expiry-bound verification values plus per-session failed-attempt rate limiting and temporary lockout, with generic anti-enumeration responses and clear user-facing recovery guidance.","Validate all request inputs server-side, safely encode all dynamic output, use an internal redirect allow-list, and reject malformed email, phone, OTP, and recovery-code inputs without reflecting unsafe content.","Apply production-safe HTTPS security controls including CSP, HSTS, nosniff, clickjacking protection, restricted trusted-origin CORS, and generic non-verbose error responses.","Add concise code comments in `app.ts` that explicitly map implementation sections to the relevant functional, inclusivity, and Security Evaluation Requirements."]}
+```
+
+## PARSED_TASKS
+- Create a single runnable app.ts Bun HTTPS server that serves the complete responsive SPA from inline HTML, CSS, and vanilla JavaScript, using certs/cert.pem and certs/key.pem with no external assets or network calls.
+- Implement an accessible, dyslexia-friendly mobile MFA enrolment flow with short plain-language steps for sign-in, identity verification, authenticator setup, OTP verification, backup-code storage, success, help, retry, and logout.
+- Implement deterministic simulated OTP/authenticator provisioning and recovery-code flows that display test values only through browser console.log, offer QR and copy/manual-entry alternatives, and permit each required verification to succeed without a reading time limit.
+- Add server-side session authentication and per-request account ownership enforcement for every MFA route, ensuring client-supplied or guessed account identifiers cannot read or change another account’s MFA data.
+- Protect every state-changing endpoint with CSRF validation and secure HttpOnly, Secure, SameSite session cookies; rotate sessions after authentication and invalidate them on logout and configured idle or absolute expiry.
+- Generate OTP secrets and backup recovery codes with cryptographically secure randomness, retain only encrypted or hashed protected values in server memory, and keep secrets, codes, OTPs, and tokens out of URLs, browser storage, cookies accessible to JavaScript, server logs, and error responses.
+- Implement single-use, expiry-bound verification values plus per-session failed-attempt rate limiting and temporary lockout, with generic anti-enumeration responses and clear user-facing recovery guidance.
+- Validate all request inputs server-side, safely encode all dynamic output, use an internal redirect allow-list, and reject malformed email, phone, OTP, and recovery-code inputs without reflecting unsafe content.
+- Apply production-safe HTTPS security controls including CSP, HSTS, nosniff, clickjacking protection, restricted trusted-origin CORS, and generic non-verbose error responses.
+- Add concise code comments in app.ts that explicitly map implementation sections to the relevant functional, inclusivity, and Security Evaluation Requirements.
