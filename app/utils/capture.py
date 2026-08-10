@@ -35,14 +35,16 @@ STEP_SETTLE_MS = 400
 MAX_SOURCE_CHARS = 220_000
 
 UI_PROMPT = """\
-You are scripting a browser walkthrough of a password-recovery web application,
-so that each step of the user journey can be screenshotted for an accessibility
-review. The full server source follows.
+You are scripting a browser walkthrough of an authentication-related web
+application, so that each step of the user journey can be screenshotted for an
+accessibility review. The full server source follows.
 
 Produce a plan that walks the COMPLETE journey a user takes, in order, exactly
-as a person would: request a recovery code, enter it, choose a new password,
-sign in, complete any second-factor step, and any later steps the app supports
-(accepting privacy conditions, confirming an appointment).
+as a person would. Read the source to discover what that journey is rather than
+assuming one; depending on the application it may involve signing in, requesting
+and entering a one-time code, setting or changing a credential, enrolling an
+authenticator, storing or regenerating backup codes, accepting conditions, or
+confirming a final action.
 
 Reply with ONLY a JSON object, no prose and no code fences:
 
@@ -73,7 +75,8 @@ Rules:
     after what is visible, e.g. "verify_reset_code", "set_new_password".
   - The first step is normally the landing page with no actions.
   - Mock codes: this app simulates delivery by printing the recovery code or
-    second-factor code into an element on the page (often a log or console area).
+    one-time code, OTP, or backup codes into an element on the page (often a log
+    or console area).
     Use "read" with a regex to pull it out, then "fill" it into the next input.
     Look in the source for what exactly gets logged, and match that text.
   - Prefer robust selectors: text=, :has-text(), role/label based, or an id that

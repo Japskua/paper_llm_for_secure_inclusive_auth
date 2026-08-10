@@ -42,7 +42,15 @@ SOFTWARE = {
         "case_1_multi_no_condition_no_inclusion": "password_recovery_health_no_inclusivity_no_condition.md",
         "case_2_multi_condition_no_inclusion": "password_recovery_health_no_inclusivity.md",
         "case_3_multi_condition_with_inclusion": "password_recovery_health_with_inclusivity.md",
-    }
+    },
+    # User story 2: MFA enrolment for online banking, dyslexia. Case directory
+    # names deliberately match story 1 so the analysis code is shared; results
+    # and rubrics are namespaced per software to keep them apart.
+    "mfa_enrolment_banking": {
+        "case_1_multi_no_condition_no_inclusion": "mfa_enrolment_banking_no_inclusivity_no_condition.md",
+        "case_2_multi_condition_no_inclusion": "mfa_enrolment_banking_no_inclusivity.md",
+        "case_3_multi_condition_with_inclusion": "mfa_enrolment_banking_with_inclusivity.md",
+    },
 }
 
 _print_lock = threading.Lock()

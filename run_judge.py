@@ -9,7 +9,7 @@ Every artifact is scored by every judge on both tracks, repeated N times:
 Each judgement is written to a path that encodes its identity, so two records
 can never collide:
 
-    final_evaluations/results_v2/<track>/<case>/<run>/<judge>/repeat_N.json
+    final_evaluations/results_v2/<software>/<track>/<case>/<run>/<judge>/repeat_N.json
 
 Every record embeds the SHA-256 of both the rubric used and the artifact scored,
 and the artifact hash is checked against batch_manifest.json before any call is
@@ -39,8 +39,14 @@ from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 
 REPO = pathlib.Path(__file__).resolve().parent
-RUBRICS = REPO / "final_evaluations" / "evaluation_rubrics"
-RESULTS = REPO / "final_evaluations" / "results_v2"
+RUBRICS_ROOT = REPO / "final_evaluations" / "evaluation_rubrics"
+RESULTS_ROOT = REPO / "final_evaluations" / "results_v2"
+
+# Studies share case directory names ("case_1_multi_no_condition_no_inclusion"),
+# so results and rubrics must be namespaced per software or a second study would
+# silently overwrite the first study's records.
+RESULTS = RESULTS_ROOT
+RUBRICS = RUBRICS_ROOT
 
 # Reentrant by necessity: work() holds this while updating counters and then
 # calls log(), which acquires it again. With a plain Lock that is a self
@@ -86,7 +92,15 @@ def load_panel(args) -> List[str]:
 
 def load_artifacts(args) -> List[Dict[str, Any]]:
     root = REPO / args.output_root / args.software
-    manifest = json.loads((root / "batch_manifest.json").read_text())
+    manifest_path = root / "batch_manifest.json"
+    if not manifest_path.is_file():
+        raise SystemExit(
+            f"No generation manifest at {manifest_path.relative_to(REPO)}.\n"
+            f"Generate the artifacts first:\n"
+            f"  uv run python run_batch.py --software {args.software} "
+            f"--runs 10 --smoke-test --flow-test"
+        )
+    manifest = json.loads(manifest_path.read_text())
     capture = {}
     cap_path = root / "capture_summary.json"
     if cap_path.is_file():
@@ -112,6 +126,18 @@ def load_artifacts(args) -> List[Dict[str, Any]]:
             "screenshot_count": len(cap.get("screenshots") or []),
         })
     return out
+
+
+def set_software(software: str) -> None:
+    """Point the results, rubric roots and reverse-coding map at one study."""
+    global RESULTS, RUBRICS
+    from app.utils import judge as judge_mod
+    judge_mod.set_software(software)
+    RESULTS = RESULTS_ROOT / software
+    per_software = RUBRICS_ROOT / software
+    # Fall back to the flat layout so the originally published rubric paths
+    # keep working for studies that predate the per-software split.
+    RUBRICS = per_software if per_software.is_dir() else RUBRICS_ROOT
 
 
 def record_path(track: str, case: str, run: str, judge: str, repeat: int) -> pathlib.Path:
@@ -233,6 +259,7 @@ def build_tables(args) -> Dict[str, int]:
 def main() -> int:
     args = parse_args()
     load_dotenv(override=True)
+    set_software(args.software)
 
     if args.tables_only:
         counts = build_tables(args)

@@ -35,11 +35,14 @@ REQUEST_TIMEOUT_S = 20.0
 MAX_SOURCE_CHARS = 220_000
 
 SPEC_PROMPT = """\
-You are writing an automated functional test for a self-contained password
-recovery web application. The complete source of the running server follows.
+You are writing an automated functional test for a self-contained
+authentication-related web application. The complete source of the running
+server follows.
 
-Produce a test plan that exercises the FULL happy path a user would take, then
-a few negative checks. Read the source carefully to determine:
+Produce a test plan that exercises the FULL happy path a user would take through
+whatever journey this application implements — read the source to discover what
+that journey is, rather than assuming one — then a few negative checks. Read the
+source carefully to determine:
   - the exact route paths and HTTP methods
   - the exact JSON field names each route expects
   - any seeded/demo account credentials (email, password) hardcoded in the source
@@ -90,8 +93,11 @@ Rules:
     Omit it if the route signals success only by HTTP status.
   - "expect_failure": true means the step MUST NOT succeed (used for negatives).
   - Order "steps" so each one's prerequisites are satisfied by earlier steps.
-  - If the app supports steps beyond the password reset (sign-in, MFA, privacy
-    acceptance, appointment booking), include them.
+  - Include every stage the application supports, to the end of its journey.
+    Depending on the application this may involve signing in, requesting and
+    entering a one-time code, setting or changing a credential, enrolling an
+    authenticator, storing or regenerating backup codes, accepting conditions,
+    or confirming a final action.
   - Use only routes and field names that actually appear in the source.
 
 SOURCE:

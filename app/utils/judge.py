@@ -62,7 +62,27 @@ CONSTRUCTS: Dict[str, Dict[str, List[int]]] = {
 }
 
 # Statements where agreement indicates a WORSE system; inverted at aggregation.
-REVERSE_CODED: Dict[str, set] = {"security": {2, 3}, "inclusivity": set()}
+#
+# Story 1's security items 2 and 3 are worded so that agreeing means the system
+# is less secure, which split the panel 1-vs-5 on those items alone. Story 2's
+# rubric was written with every item positively worded to avoid repeating that,
+# so it has no reverse-coded items. Kept per study rather than global, since a
+# blanket rule would silently invert the wrong items.
+REVERSE_CODED_BY_SOFTWARE: Dict[str, Dict[str, set]] = {
+    "password_recovery_health": {"security": {2, 3}, "inclusivity": set()},
+    "mfa_enrolment_banking": {"security": set(), "inclusivity": set()},
+}
+DEFAULT_REVERSE_CODED: Dict[str, set] = {"security": set(), "inclusivity": set()}
+
+# Module-level view, repointed by set_software(); defaults to study 1 so any
+# existing caller keeps its previous behaviour.
+REVERSE_CODED: Dict[str, set] = REVERSE_CODED_BY_SOFTWARE["password_recovery_health"]
+
+
+def set_software(software: str) -> None:
+    """Select the reverse-coding map for the study being judged."""
+    global REVERSE_CODED
+    REVERSE_CODED = REVERSE_CODED_BY_SOFTWARE.get(software, DEFAULT_REVERSE_CODED)
 
 # Per-provider limits on images in a single request. Mistral rejects more than
 # eight outright ("Total number of images exceeds the maximum allowed of 8"),
