@@ -129,8 +129,10 @@ def load_artifacts(args) -> List[Dict[str, Any]]:
 
 
 def set_software(software: str) -> None:
-    """Point the results and rubric roots at one study."""
+    """Point the results, rubric roots and construct labels at one study."""
     global RESULTS, RUBRICS
+    from app.utils import judge as judge_mod
+    judge_mod.set_software(software)
     RESULTS = RESULTS_ROOT / software
     per_software = RUBRICS_ROOT / software
     # Fall back to the flat layout so the originally published rubric paths
@@ -215,7 +217,15 @@ def build_tables(args) -> Dict[str, int]:
             "screenshots_available": r.get("screenshots_available", 0),
             "screenshots_sampled": bool(r.get("screenshots_sampled")),
         }
-        row.update({f"c_{k}": v for k, v in r["constructs"].items()})
+        # Recompute construct means from the item scores rather than trusting the
+        # labels stored at judging time. The two studies name their inclusivity
+        # dimensions differently, and a record written before that was known would
+        # otherwise carry the wrong labels forever.
+        adjusted = r.get("adjusted_scores") or {}
+        for cname, items in CONSTRUCTS[track].items():
+            vals = [adjusted.get(str(i), adjusted.get(i)) for i in items]
+            vals = [v for v in vals if v is not None]
+            row[f"c_{cname}"] = round(sum(vals) / len(vals), 4) if vals else None
         artifact_rows.append(row)
 
     RESULTS.mkdir(parents=True, exist_ok=True)
