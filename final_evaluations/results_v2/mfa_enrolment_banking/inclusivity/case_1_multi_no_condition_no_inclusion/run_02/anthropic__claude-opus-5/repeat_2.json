@@ -1,12 +1,115 @@
 {
-  "ok": false,
-  "reason": "exception",
-  "error": "NameError: name 'MAX_IMAGES' is not defined",
+  "ok": true,
   "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
   "case": "case_1_multi_no_condition_no_inclusion",
   "run": "run_02",
   "track": "inclusivity",
   "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
   "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:51:40.698748+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 5,
+  "screenshots_available": 5,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_mfa_security_settings.png",
+    "step_04_set_up_authenticator.png",
+    "step_05_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Sans-serif typeface with clear headings, comfortable line spacing and legible body text throughout all five screens, though the monospace secret and log text is small."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps are used, but step 4/5 contains a fairly dense four-line 'Evaluation behavior' paragraph that approaches a block of text."
+    },
+    "3": {
+      "score": 3,
+      "why": "The layout is a single narrow centred card that would reflow acceptably on mobile, but the screenshots are desktop-width only and the log panel plus long secret string add horizontal pressure, so mobile readability is unverified."
+    },
+    "4": {
+      "score": 3,
+      "why": "Most instructions are short and plain ('Verify your identity', 'Add this secret to your authenticator app'), but the authenticator step uses technical jargon such as 'Time-based / TOTP', '30-second windows' and 'deterministic evaluation secret'."
+    },
+    "5": {
+      "score": 2,
+      "why": "Only the phone field shows a format placeholder (+1 555 010 0184); the verification code and six-digit authenticator fields have empty inputs with no example of expected input format."
+    },
+    "6": {
+      "score": 3,
+      "why": "Most steps are brief, but to proceed at the authenticator step the user must read a long multi-sentence explanatory paragraph to know what to do with the secret."
+    },
+    "7": {
+      "score": 1,
+      "why": "The manual setup secret JBSWY3DPEHPK3PXP is displayed as plain text in a box with no copy button or copy affordance, so it must be transcribed by hand."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code or scannable alternative is offered anywhere; the step is explicitly labelled 'Manual setup secret' only."
+    },
+    "9": {
+      "score": 2,
+      "why": "Standard email/phone/code inputs are present but there is no visible evidence of autocomplete attributes (e.g. one-time-code) and the instruction 'Do not save it in this browser' actively discourages password-manager storage."
+    },
+    "10": {
+      "score": 3,
+      "why": "Each screen has a clear bold heading and a single prominent blue primary button, but there is no step indicator or progress marker showing where the user is in the enrolment sequence."
+    },
+    "11": {
+      "score": 4,
+      "why": "Each screen requests one main action, though step 1 asks for two fields at once and step 3 presents both 'Set up authenticator' and a red 'Sign out' button."
+    },
+    "12": {
+      "score": 2,
+      "why": "Transitions give little plain confirmation of what happened or what comes next; the failure state only says 'Verification could not be completed.' with no next-step guidance, and the informative detail is buried in a developer log panel."
+    },
+    "13": {
+      "score": 2,
+      "why": "The user can retype the code and go 'Back to settings', but there is no reveal/hide toggle, no re-request or regenerate option for the secret or verification code, and the secret is stated to be 'shown only for this enrolment step'."
+    },
+    "14": {
+      "score": 1,
+      "why": "'Verification could not be completed.' states neither the actual problem nor how to fix it, offering no remedy such as checking clock sync or retrying with a fresh code."
+    },
+    "15": {
+      "score": 1,
+      "why": "The identity code expires in five minutes and the TOTP code is bound to 30-second windows, so explicit time limits are imposed rather than generous time being given."
+    }
+  },
+  "cost_usd": 0.07213,
+  "generation_id": "gen-1786384283-SEkXm6O8QjMNeKE5qLNZ",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 1,
+    "8": 1,
+    "9": 2,
+    "10": 3,
+    "11": 4,
+    "12": 2,
+    "13": 2,
+    "14": 1,
+    "15": 1
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 2.6667,
+    "comprehension": 1.3333,
+    "decision_making": 3.0,
+    "learning": 1.3333
+  },
+  "overall": 2.4,
   "capture_complete": true
 }

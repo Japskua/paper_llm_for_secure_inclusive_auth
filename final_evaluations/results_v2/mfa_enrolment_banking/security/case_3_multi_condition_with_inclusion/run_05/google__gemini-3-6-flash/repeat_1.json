@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 2,
+  "judged_at": "2026-08-10T19:44:10.992239+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA routes resolve the account directly from the authenticated session context."
+    },
+    "2": {
+      "score": 5,
+      "why": "Hardcoded mock values '123456' and '654321' are used for all accounts across the system."
+    },
+    "3": {
+      "score": 5,
+      "why": "Existing sessions in the active sessions map remain valid and are not terminated when MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "Authenticator secrets are stored encrypted via AES-256-GCM and backup codes are hashed using PBKDF2 with salt."
+    },
+    "5": {
+      "score": 1,
+      "why": "Secrets and verification codes rely on static hardcoded mock strings rather than CSPRNG generation."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are managed exclusively via HttpOnly cookies and no tokens or secrets are stored in non-HttpOnly cookies or web storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side functions enforce string trimming, length restrictions, and strict regular expression checks on email and OTP inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "API responses are returned as structured JSON with strict CSP and nonces, preventing script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The API contains no redirect mechanisms or unvalidated external location redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Comprehensive security headers including CSP, HSTS, X-Content-Type-Options, and X-Frame-Options are configured on all responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are explicitly configured with HttpOnly, Secure, and SameSite=Strict flags."
+    },
+    "12": {
+      "score": 5,
+      "why": "Sensitive tokens and stack traces are excluded from URLs, error messages, and server error outputs."
+    },
+    "13": {
+      "score": 1,
+      "why": "Authenticator setup codes do not expire and expiration checks are omitted in the authenticator verification route."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed verification and login attempts are tracked and trigger a 10-minute lockout after 5 failed tries."
+    },
+    "15": {
+      "score": 2,
+      "why": "The session ID rotates on sign-in and enforces idle/absolute timeouts, but no logout invalidation handler is implemented."
+    }
+  },
+  "cost_usd": 0.0335736,
+  "generation_id": "gen-1786391033-dnxYkMUSxMRe6UQduhxv",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 1,
+    "14": 5,
+    "15": 2
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 2.6667
+  },
+  "overall": 3.7333,
+  "capture_complete": false
+}

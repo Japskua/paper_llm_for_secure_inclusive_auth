@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:18:48.983880+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "a5196aab32aaa319fd3fb877c6c9d448e815221b7a562eee9e06d60e5f91be42",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints use authenticated()/pending() session cookies and mutate only that session’s authenticator/backup state; no user-supplied account id is accepted."
+    },
+    "2": {
+      "score": 5,
+      "why": "Real accounts all use the fixed DETERMINISTIC_IDENTITY_CODE (246810), so the same identity verification code is valid for any recognized user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling authenticator/backup only updates the current session object; no code invalidates other existing sessions for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secret is stored via encryptAtRest (AES-256-GCM); backup codes are stored only as SHA-256 hashes."
+    },
+    "5": {
+      "score": 4,
+      "why": "Tokens, TOTP secrets, and backup codes use crypto.randomBytes, but the identity challenge code is a hardcoded deterministic value."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session cookies are HttpOnly and the client never writes secrets/OTPs/tokens to localStorage, sessionStorage, or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, CSRF, and redirect with strict validators before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "API returns JSON; UI applies user-controlled values with textContent and static HTML uses a nonce CSP, preventing script injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "safeInternalPath allow-lists only /#verify, /#setup, /#backup, and /#settings; other redirect values are rejected."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets mfa_session/mfa_boot with HttpOnly; Secure; SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic without stack traces, but the demo client intentionally logs provisioning secrets, test OTPs, and backup codes into the on-page logs UI."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are marked used and expire in CHALLENGE_MS; TOTP windows are consumed in usedWindows; redeemed backup codes are deleted."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, and recovery tracks lock after MAX_FAILURES (5) for LOCK_MS (10 minutes)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Identity verify replaces the session id, idle/absolute timeouts are enforced, and logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.022962,
+  "generation_id": "gen-1786389474-b3e8PANVRa3WSADzw6X9",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

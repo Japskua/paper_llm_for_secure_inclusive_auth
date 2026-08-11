@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:05:59.574698+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA routes require authenticated() and operate only on auth.account derived from the session, rejecting foreign identifier fields."
+    },
+    "2": {
+      "score": 1,
+      "why": "Only one hardcoded account exists and identity verification requires a candidate session matching that account, so no observed path lets a code work for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the account but does not delete other server-side sessions, so previously created authenticated sessions can remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as AES-GCM ciphertext and recovery codes are stored as salted SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "The OTP secret, recovery codes, session identifiers, and master key are generated with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is only set in an HttpOnly cookie and the code does not use localStorage or non-HttpOnly cookies for secrets or tokens."
+    },
+    "7": {
+      "score": 4,
+      "why": "Server-side strict regex and type checks validate email, phone, OTP, recovery codes, secrets, and redirects, though no separate sanitization or escaping routine is shown."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with escText using textContent, and CSP nonces restrict scripts and styles."
+    },
+    "9": {
+      "score": 5,
+      "why": "allowedRedirect accepts only undefined, '/', or '/mfa', and no other redirect destination is honored."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie is set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client-side log function writes the OTP secret and recovery codes to console and an on-page log panel, so they are not kept out of logs."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity, challenge, and recovery records use used flags and expiry, but the fixed test OTP value can be used again after a new challenge is created."
+    },
+    "14": {
+      "score": 2,
+      "why": "Failure counters and lockouts exist, but OTP or identity lock states can be reset by creating a new sign-in session or MFA challenge, so repeated failures are not reliably limited."
+    },
+    "15": {
+      "score": 5,
+      "why": "rotateAuthenticated replaces the session after identity verification, sessionFrom enforces idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.10994,
+  "generation_id": "gen-1786384799-ToLXgA7htRYDRdTWWshs",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 4,
+    "14": 2,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 4.1334,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:33:55.571229+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "94a7c6dc5c1188ebf19fbb712d6c94f4fc46d3f25e16a20977597cf5afc48305",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints resolve the account solely from the server-side session (`accounts.get(s.userId)`) via `access()`, so settings can only belong to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "TOTP verification is checked against the secret stored on the session's own account and recovery codes are matched against that account's hashed list, so a code cannot validate for another user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA in `/api/mfa/verify` only sets `a.mfa = true` and never rotates or deletes existing session entries, so any previously issued session in the `sessions` map remains valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is AES-GCM encrypted (`encrypt`) and recovery codes are stored only as salted PBKDF2-SHA256 hashes with 210,000 iterations."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session ids, CSRF tokens, base32 secrets, salts, IVs and recovery codes are all generated with `crypto.getRandomValues`."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and nothing is written to localStorage/sessionStorage, though secrets and codes do live in in-page JS variables and the visible log panel."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, 6-digit OTP and recovery-code formats with regexes, normalises values, caps body size, rejects arrays/non-objects, and uses no SQL at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic client rendering uses `textContent` (never innerHTML), and a strict nonce-based CSP with `base-uri 'none'` further blocks script injection."
+    },
+    "9": {
+      "score": 3,
+      "why": "There are no redirect endpoints at all and `noId()` rejects a `redirect` field, but no actual allow-list of internal destinations is implemented since none is needed."
+    },
+    "10": {
+      "score": 5,
+      "why": "`headers()` sets a nonce CSP with `frame-ancestors 'none'`, HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and no-store."
+    },
+    "11": {
+      "score": 5,
+      "why": "The Set-Cookie for `mfa_session` includes `HttpOnly; Secure; SameSite=Strict` on both issuance and logout clearing."
+    },
+    "12": {
+      "score": 2,
+      "why": "Error output is generic with no stack traces, but `provision()` returns the plaintext secret and `mockOtp`, and recovery codes are returned and written to `console.log` plus the on-page Logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Provisioning secrets expire after a 10-minute window and are marked `used`, TOTP is only accepted in a ±30s window, and a matched recovery code is spliced out of the stored list."
+    },
+    "14": {
+      "score": 5,
+      "why": "Both OTP and recovery verification use `wrong()`/`locked()` with MAX=5 failures triggering a 5-minute lockout returning HTTP 429, plus a 3-per-10-minutes cap on setup-key reissues."
+    },
+    "15": {
+      "score": 4,
+      "why": "Sign-in deletes the presented cookie session and issues a brand-new session id with 20-minute idle and 8-hour absolute timeouts, and logout deletes the session and clears the cookie; only the MFA-enable step lacks a further rotation."
+    }
+  },
+  "cost_usd": 0.14331,
+  "generation_id": "gen-1786390405-uGSNbb3hEtKyzEUcivFD",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.3333,
+  "capture_complete": true
+}

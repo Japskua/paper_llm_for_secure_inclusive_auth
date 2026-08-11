@@ -1,12 +1,122 @@
 {
-  "ok": false,
-  "reason": "exception",
-  "error": "NameError: name 'MAX_IMAGES' is not defined",
+  "ok": true,
   "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
   "case": "case_1_multi_no_condition_no_inclusion",
   "run": "run_01",
   "track": "inclusivity",
   "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
   "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:51:39.605374+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 12,
+  "screenshots_available": 12,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_confirm_authenticator.png",
+    "step_05_save_recovery_codes.png",
+    "step_06_mfa_settings.png",
+    "step_07_recovery_code_accepted.png",
+    "step_08_save_regenerated_recovery_codes.png",
+    "step_09_mfa_settings_after_saving_regenerated_codes.png",
+    "step_10_logged_out.png",
+    "step_11_explored.png",
+    "step_12_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a clean sans-serif typeface with comfortable line spacing and well-spaced monospace recovery codes, though letter spacing is standard rather than notably generous."
+    },
+    "2": {
+      "score": 4,
+      "why": "Instructions are sentence case with no italics or all-caps, but the step 4 testing note is a fairly dense multi-line block."
+    },
+    "3": {
+      "score": 3,
+      "why": "The single-column layout fits mobile well, but on step 4 the mock provisioning URI overflows the card and is cut off at the right edge."
+    },
+    "4": {
+      "score": 4,
+      "why": "Instructions are short plain sentences (e.g. 'We sent a six-digit verification code to your registered mobile number'), though the step 4 note uses technical terms like 'clock skew' and 'provisioning URI'."
+    },
+    "5": {
+      "score": 3,
+      "why": "The recovery code field shows a format example ('ABCDE-23456') and the email/phone placeholders give examples, but both code fields only say 'Six digits' and the password field says 'Enter password' with no example."
+    },
+    "6": {
+      "score": 4,
+      "why": "No screen requires reading a long passage to proceed; the longest text (the ~4-line testing note on step 4) is supplementary rather than required."
+    },
+    "7": {
+      "score": 4,
+      "why": "The manual setup secret sits in a selectable field and recovery codes are shown as text with an explicit 'Copy them now' instruction, though no dedicated copy button is provided."
+    },
+    "8": {
+      "score": 2,
+      "why": "No QR code appears anywhere; step 3 directs the user to 'add it manually to your authenticator app' and only a plain-text mock provisioning URI is shown."
+    },
+    "9": {
+      "score": 3,
+      "why": "The login uses standard labelled email and password inputs with nothing visibly blocking autofill, but the screenshots provide no direct evidence that autofill or password managers actually work."
+    },
+    "10": {
+      "score": 4,
+      "why": "Enrolment screens pair a 'Step X of 5' badge with a large blue primary button, but on the MFA settings screen three buttons compete and the red 'Log out' is the most visually salient element."
+    },
+    "11": {
+      "score": 4,
+      "why": "Each of the five enrolment steps asks for exactly one action, though the MFA settings screen presents use-recovery-code, regenerate, and log out together."
+    },
+    "12": {
+      "score": 4,
+      "why": "Every transition produces plain feedback ('Authenticator app protection is active', 'Recovery code accepted and consumed', 'You have been logged out'), but the messages rarely state explicitly what comes next."
+    },
+    "13": {
+      "score": 3,
+      "why": "Recovery codes can be regenerated and the error message invites retry, but there is no visible resend option for the SMS verification code and no reveal/hide toggle on any field."
+    },
+    "14": {
+      "score": 2,
+      "why": "The only observed error, 'We could not complete that request. Please try again.', is non-blaming and suggests retrying but never states what the problem actually is."
+    },
+    "15": {
+      "score": 2,
+      "why": "Step 4 explicitly states 'This setup expires in five minutes' and that authenticator codes rotate every 30 seconds with only one adjacent period tolerated, so time limits are imposed."
+    }
+  },
+  "cost_usd": 0.157647,
+  "generation_id": "gen-1786384112-aTu8xvaMfU2AXo7bmtd2",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 2,
+    "9": 3,
+    "10": 4,
+    "11": 4,
+    "12": 4,
+    "13": 3,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 3.6667,
+    "comprehension": 3.0,
+    "decision_making": 4.0,
+    "learning": 2.3333
+  },
+  "overall": 3.3333,
   "capture_complete": true
 }

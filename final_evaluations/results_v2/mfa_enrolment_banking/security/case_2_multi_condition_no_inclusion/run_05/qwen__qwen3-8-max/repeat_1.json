@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:01:12.521432+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "0f3d6292f9e220cbdffca811d0ddd5f705ab37cb33484e66ff4136891f7e4a0f",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints resolve the account only through the authenticated session via accountForSession, not from client-supplied user identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each sign-in creates a pending session with its own hashed verification code and requires that session cookie and CSRF token, so the same code does not work for another user or session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the account record without deleting or invalidating other existing sessions, so prior authenticated sessions remain usable until normal timeout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM encrypted data and backup codes are stored as peppered SHA-256 hashes rather than plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session tokens, verification codes, TOTP secrets, and backup codes are generated using crypto.getRandomValues through secureInt or randomToken."
+    },
+    "6": {
+      "score": 5,
+      "why": "The application does not use localStorage, sessionStorage, or non-HttpOnly cookies for secrets or session tokens, and the session cookie is HttpOnly."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side handlers validate email, phone, six-digit OTP values, and recovery-code format before processing them."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values such as codes, secrets, and messages are inserted using textContent or created DOM nodes rather than unsafe HTML interpolation."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server does not issue HTTP redirect responses or Location headers, so there is no open redirect path."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor sets CSP, HSTS, X-Content-Type-Options, frame-ancestors, and X-Frame-Options on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieHeader sets the session cookie with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client-side disclose function console.logs the authenticator secret, current OTP, provisioning URI, and backup codes, so those secrets are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after five minutes and are marked used or removed after successful verification, TOTP counters are tracked to prevent reuse, and backup codes are marked used."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity verification, TOTP activation, and recovery-code verification all increment failure counters and impose a lockout after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Authentication rotates to a new session identifier, getSession enforces idle and absolute timeouts, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.066994,
+  "generation_id": "gen-1786388295-LZn68RPDudTJkRZbSGH3",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

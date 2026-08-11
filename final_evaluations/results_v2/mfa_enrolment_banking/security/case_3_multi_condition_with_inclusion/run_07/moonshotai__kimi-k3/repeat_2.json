@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:54:56.306008+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "580b4044089c77727fe040f6ea0000c6d5f83948bf6204c54696c4d059d00f19",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every state-changing MFA endpoint is gated by protect(), which requires a valid session created only through correct credentials for the single account, so only the signed-in owner can reach the MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "The system has exactly one hard-coded account and codes are stored on that account, hashed and marked single-use, so there is no 'other user' for whom the same code would work."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/recovery/finish only sets account.enabled and the stage; it never removes other entries from the sessions map, so sessions issued before MFA was enabled remain valid until idle/absolute timeout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM-encrypted (account.secret = encrypt(...)) and recovery codes are stored only as SHA-256 digests (account.backups = codes.map(sha))."
+    },
+    "5": {
+      "score": 4,
+      "why": "Production paths use crypto.getRandomValues for the TOTP seed, identity code, recovery codes, and tokens, but the default academic mode substitutes fixed TEST_SECRET, TEST_ID, and TEST_CODES constants."
+    },
+    "6": {
+      "score": 4,
+      "why": "The mfa_session cookie is HttpOnly and no localStorage/sessionStorage is used, but the CSRF token is deliberately kept in the non-HttpOnly mfa_csrf cookie (double-submit pattern)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators enforce strict formats — email regex plus 254-char cap, password length cap, and ^\\d{6}$ for OTPs — with JSON parsing wrapped in try/catch; no phone field exists."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client builds the DOM exclusively via createElement and textContent (the E helper), never innerHTML, and the API returns JSON, so injected markup cannot execute."
+    },
+    "9": {
+      "score": 5,
+      "why": "There is no redirect mechanism at all — no Location headers or redirect parameters exist and SPA navigation uses only hard-coded internal route functions, so open redirects are impossible."
+    },
+    "10": {
+      "score": 5,
+      "why": "All responses carry Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, a CSP with frame-ancestors 'none', plus Cache-Control: no-store and Referrer-Policy."
+    },
+    "11": {
+      "score": 5,
+      "why": "The mfa_session cookie is set with HttpOnly, Secure, and SameSite=Strict (and cleared with the same attributes on logout)."
+    },
+    "12": {
+      "score": 4,
+      "why": "The server never logs secrets, returns only generic errors, and the top-level catch suppresses stack traces, but academic mode console.logs OTPs and recovery codes and the otpauth provisioning URI necessarily embeds the seed."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code expires after 10 minutes and is flagged used on success, and TOTP codes are time-window-bound with the used-counter set preventing replay of an accepted window."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verify, and TOTP verify each track failures and impose a 15-minute lockout after 5 failed attempts (429 responses)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in issues a fresh random session id, session() enforces a 20-minute idle and 8-hour absolute timeout, and /api/logout deletes the server-side session and expires both cookies."
+    }
+  },
+  "cost_usd": 0.133683,
+  "generation_id": "gen-1786391559-48lGcMgvaH0XnWKfZTOB",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": false
+}

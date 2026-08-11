@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:53:35.467213+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "95a3e86296de0b7988f870a2cdac6ff7f3e0d9e93db206d586fb6fd059d8e0d1",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization checks enforce that only the authenticated account owner (ACCOUNT_ID) can access MFA endpoints."
+    },
+    "2": {
+      "score": 1,
+      "why": "The system does not allow the same verification code to work for any other user; codes are single-use and tied to the session."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated upon logout or rotation (e.g., `rotateSession` replaces the session ID)."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets and backup codes are stored encrypted (AES-GCM) or hashed (SHA-256 with salt), not in plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using `crypto.getRandomValues` (CSPRNG)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are never stored in browser storage or non-HttpOnly cookies (only HttpOnly/Secure cookies are used)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation (e.g., `email`, `phone`, `otp`) enforces allow-lists and sanitization."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side output is contextually encoded (e.g., `escapeHTML` for DOM insertion)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are not explicitly handled in the code, but the system restricts navigation to internal paths via trusted origins and CSP."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options) are set in the `headers` function."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with `HttpOnly`, `Secure`, and `SameSite=Strict` attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never logged, exposed in URLs, or shown in error output (only evaluation-mode logs to console)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes (e.g., identity codes) are single-use and expire after `IDENTITY_CODE_MS`."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is enforced (e.g., `MAX_ATTEMPTS` and `LOCK_MS` for identity and recovery code verification)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sessions are rotated on authentication (`rotateSession`), have idle/absolute timeouts, and are invalidated on logout."
+    }
+  },
+  "cost_usd": 0.021648,
+  "generation_id": "gen-1786388007-aYL8ydMljl0iRxmoEzvb",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

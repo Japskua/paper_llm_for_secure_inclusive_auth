@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:33:56.945271+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints (/api/mfa/settings, recovery-codes, authenticator/*, recovery/*) require sessionFrom plus authenticated(s) with s.account and appropriate stage, so only the signed-in account owner can access MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity OTPs are bound to identityStates for the session’s identityTarget and authenticator OTPs to that session’s encryptedSecret, so the same verification code does not work for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only updates the current session’s stage to mfa and never deletes or invalidates other entries in the sessions map, so prior sessions keep working."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secret is stored as AES-GCM encryptedSecret; backup codes are stored only as SHA-256 hashes with recoveryPepper, not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session IDs, CSRF tokens, OTPs, and recovery codes are produced via crypto.getRandomValues in randomBytes and related helpers."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session id is only in an HttpOnly cookie; client script uses an in-memory csrf variable and never writes secrets/OTPs/tokens to localStorage, sessionStorage, or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email/phone with validatedIdentity and OTPs/secrets/recovery codes with validOtp/validSecret/validRecovery before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic DOM updates use textContent (logs, recovery list, errors); HTML is fixed server template with nonce CSP, so injected markup is not executed."
+    },
+    "9": {
+      "score": 5,
+      "why": "No redirect endpoints or user-controlled Location/open-redirect parameters exist; navigation is client-side view switching only to app flows."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieFor and expiredCookie set mfa_session with HttpOnly; Secure; SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and tokens are not in URLs, but mock testOtp/secrets/recovery codes are returned in JSON and written to the on-page Logs panel and console."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenge has used plus expiresAt (CHALLENGE_MS); TOTP is time-stepped; recovery codes are removed on use; authenticator confirm marks authenticatorUsed."
+    },
+    "14": {
+      "score": 5,
+      "why": "failedAttempt/mayAttempt lock identity, authenticator, and recovery attempts after 5 failures for LOCKOUT_MS."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session id is rotated on signin and identity verify, idle/absolute timeouts are enforced in sessionFrom, and logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.020572,
+  "generation_id": "gen-1786386781-mK1a08SNhcJqlfK8Qzj4",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:06:05.806109+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "765fe1151228e724636d2f0b669a13b658ec30f5d90c64866be8eec351d8ce4d",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint derives the user from the authenticated server-side session rather than accepting a user identifier from the request."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are bound to a specific user's session, while authenticator and recovery codes are checked against that authenticated user's MFA data."
+    },
+    "3": {
+      "score": 5,
+      "why": "Activating MFA sets enabled to true but does not invalidate or rotate any existing authenticated sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted with AES-256-GCM, and backup codes are stored as salted SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session tokens, CSRF tokens, OTP secrets, identity codes, and recovery codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The client does not use browser storage, and the session identifier is placed only in a Secure, HttpOnly cookie."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server applies explicit format and type validation to email, phone, OTP, recovery-code, CSRF, password, and manual-secret inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values inserted through innerHTML are passed through esc, while the status value is assigned with textContent."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only redirect is a fixed server-defined HTTP-to-HTTPS destination, and no user-controlled redirect target is accepted."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses receive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, and frame-ancestors protection."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie is consistently created and cleared with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Identity codes, current authenticator OTPs, and plaintext backup codes are explicitly written to console logs and the visible test log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire and are marked used, TOTP acceptance is limited to the current time counter and rejects reuse, and recovery codes are marked used after acceptance."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, TOTP, and recovery verification each lock the session for five minutes after five failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Authentication replaces the identity-phase session with a fresh authenticated session, enforces idle and absolute timeouts, and deletes the session on logout."
+    }
+  },
+  "cost_usd": 0.09165125,
+  "generation_id": "gen-1786388741-fZdXXZWm9Couh98BLNOm",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

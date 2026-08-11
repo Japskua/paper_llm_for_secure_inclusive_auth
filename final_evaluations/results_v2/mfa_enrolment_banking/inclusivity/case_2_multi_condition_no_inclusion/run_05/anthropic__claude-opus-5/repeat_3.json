@@ -1,0 +1,123 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:59:57.888870+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "7ebb89de2c28ee4cfb4fb0889f4e47067302d1f742dc82ebf6e93b4fdeb4bc17",
+  "app_ts_sha256": "0f3d6292f9e220cbdffca811d0ddd5f705ab37cb33484e66ff4136891f7e4a0f",
+  "screenshot_count": 13,
+  "screenshots_available": 13,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_add_authenticator.png",
+    "step_04_connect_authenticator.png",
+    "step_05_save_recovery_codes.png",
+    "step_06_mfa_active.png",
+    "step_07_recovery_code_accepted.png",
+    "step_08_regenerated_recovery_codes.png",
+    "step_09_mfa_active_after_saving_regenerated_codes.png",
+    "step_10_logged_out.png",
+    "step_11_explored.png",
+    "step_12_explored.png",
+    "step_13_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a clean sans-serif typeface at comfortable size with reasonable line spacing between labels, paragraphs and code rows, though letter-spacing is default rather than notably generous."
+    },
+    "2": {
+      "score": 5,
+      "why": "No italics or all-caps text appears anywhere, and every explanatory passage is one or two short sentences rather than a dense block."
+    },
+    "3": {
+      "score": 3,
+      "why": "Only desktop-width (1280px) captures are provided; the centred card and short lines would likely reflow acceptably, but the long setup secret 'JMBXIRQSXOMZXJBB4JE4MILDBATGW2YD' and 19-character recovery codes give no evidence of tested mobile layout."
+    },
+    "4": {
+      "score": 4,
+      "why": "Instructions such as 'Enter the six-digit code sent to your phone.' and 'An authenticator app produces a new code every 30 seconds.' are brief and jargon-light."
+    },
+    "5": {
+      "score": 3,
+      "why": "The recovery-code field shows a format example placeholder 'ABCD-EFGH-IJKL-MNPQ', but the verification-code and authenticator-code fields are empty with no sample of expected input."
+    },
+    "6": {
+      "score": 4,
+      "why": "The longest passages are two-line notes (e.g. the expiry note on step 2), so no screen forces the user through a lengthy text block to proceed."
+    },
+    "7": {
+      "score": 2,
+      "why": "The setup secret and the eight recovery codes are shown as plain read-only text with no copy button, download or 'copy all' affordance, so transcription must be manual."
+    },
+    "8": {
+      "score": 1,
+      "why": "Step 3 explicitly states 'enter a setup secret manually. A QR code is not required', and no QR code or scan option appears anywhere, so the statement is false of this system."
+    },
+    "9": {
+      "score": 2,
+      "why": "Nothing in the screens indicates autofill/password-manager support (no one-time-code hints, no manager icons in the code fields), and the manually displayed secret cannot be handed to a manager."
+    },
+    "10": {
+      "score": 3,
+      "why": "Each page has a clear bold heading and a single filled blue primary button, but there is no step indicator or progress ('Step 2 of 5') to show where in the flow the user currently is."
+    },
+    "11": {
+      "score": 3,
+      "why": "Early steps ask one thing at a time, but the 'MFA is active' screen mixes verifying a recovery code, generating a whole new set, and logging out on one page."
+    },
+    "12": {
+      "score": 3,
+      "why": "Some outcomes are clearly stated ('Recovery code accepted. It cannot be used again.', 'MFA is active'), but the system rarely says what the next step is, and enrolment ends on a page that gives no forward path to payments."
+    },
+    "13": {
+      "score": 3,
+      "why": "Retry is possible ('Start again', repeated 'Verify identity') and new recovery codes can be generated, but there is no reveal/hide toggle, no resend of the SMS code, and regeneration permanently invalidates the previous set."
+    },
+    "14": {
+      "score": 2,
+      "why": "The only error seen, 'We could not complete that request. Please try again.', is non-blaming but does not state what went wrong or how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "The verification code is stated to expire in five minutes, the authenticator code rotates every 30 seconds, and recovery codes are 'displayed only once', all of which impose time pressure on reading and entry."
+    }
+  },
+  "cost_usd": 0.148965,
+  "generation_id": "gen-1786388359-psLEXpRygoGOyXVCaPeA",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 3,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 2,
+    "8": 1,
+    "9": 2,
+    "10": 3,
+    "11": 3,
+    "12": 3,
+    "13": 3,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 3.6667,
+    "comprehension": 1.6667,
+    "decision_making": 3.0,
+    "learning": 2.3333
+  },
+  "overall": 2.9333,
+  "capture_complete": true
+}

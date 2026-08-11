@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:02:33.590027+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "09fdd56138de07d37e0eeceb5b77a462484d946b26840067cc508ef31c4e45d7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls authorized(), which resolves the account solely from the server-side session's userId and never from client-supplied identifiers, so settings always belong to the signed-in user."
+    },
+    "2": {
+      "score": 4,
+      "why": "Challenges are stored per-session (session.identity, session.fixture), but DEMO_MODE (default whenever NODE_ENV !== 'production') hardcodes the same '123456' identity code, '654321' authenticator code and a fixed recovery-code list for every account, so those codes are identical for any user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Sign-in deletes only the current session and creates a new one; enabling the authenticator (/api/authenticator/verify) or confirming backups never iterates the sessions map to invalidate the user's other existing sessions, so pre-existing sessions remain valid until idle/absolute timeout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored only as AES-256-GCM ciphertext (encrypt()/pendingSecret → account.secret) and backup codes are stored as peppered SHA-256 hashes in the backups Map, never in plain text."
+    },
+    "5": {
+      "score": 4,
+      "why": "Session IDs, CSRF tokens, TOTP seeds, keys and pepper all use crypto.randomBytes/randomInt, but in the default demo mode the identity code, authenticator code and recovery codes are hardcoded constants rather than CSPRNG output."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and no localStorage/sessionStorage is used; secrets/codes only live transiently in JS variables and DOM text (and are console.logged in demo mode), which is not persistent browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation includes emailOK, otpOK, codeOK regexes, a method allow-list ('email'|'phone'), a 10 KB body limit, password length cap, and JSON object type checks; there is no SQL/datastore query to inject into."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are inserted client-side via textContent/replaceChildren, the HTML template interpolates only a server-generated nonce, and a strict nonce-based CSP with base-uri 'none' blocks inline/injected script."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application implements no redirect functionality at all (no Location headers, no location assignment), so there is no open-redirect surface, though no explicit allow-list exists either."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders() sets a nonce-based CSP with frame-ancestors 'none', Strict-Transport-Security with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieValue()/clearCookie emit 'mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=...' on all session cookies."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server errors are caught and returned as a generic message with no stack traces, and nothing sensitive appears in URLs, but simulatedDelivery() deliberately console.logs the identity OTP, authenticator code and full recovery-code list to the browser console."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity codes and demo fixtures carry expires (10 min) plus a 'used' flag, and recovery codes flip to used-once in the Map; the only gap is validTotp accepting a ±1 step drift window, allowing brief reuse of a TOTP value."
+    },
+    "14": {
+      "score": 5,
+      "why": "Separate Failures counters for sign-in, identity, authenticator and recovery lock for 15 minutes after 5 failures, plus a 3-per-15-minutes cap on identity code requests, returning HTTP 429."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful sign-in deletes the old session and issues a brand-new opaque ID and CSRF token, getSession enforces a 20-minute idle and 8-hour absolute timeout, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.17334,
+  "generation_id": "gen-1786392112-R4TMJS1qIp1PrJh40dzu",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 2,
+    "3": 2,
+    "4": 5,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2,
+  "capture_complete": false
+}

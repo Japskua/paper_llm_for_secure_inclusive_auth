@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:09:23.864168+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "3d09bd0257e9941bea9ed673158f55946146901e5fa8fb38fe05ada4ea49310d",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint resolves the user solely from the opaque server-side session via authorize(), and all mutations act on auth.user, so settings always belong to the signed-in account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are derived from a per-account AES-GCM-encrypted TOTP secret and recovery hashes stored on the user record, so a code cannot be reused across accounts; the statement is false of this system."
+    },
+    "3": {
+      "score": 4,
+      "why": "Session rotation only happens at sign-in; /api/mfa/enable sets mfaActive without deleting any other entries in the sessions map, so pre-existing sessions remain valid after MFA activation."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as {iv, ciphertext} via AES-GCM (encryptSecret) and recovery codes are kept only as peppered SHA-256 digests in recoveryHashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "randomToken, randomBase32, and the AES-GCM IV all use crypto.getRandomValues, and the master key is imported from CSPRNG bytes."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and the session cookie is HttpOnly; Secure; SameSite=Strict, though the provisioning secret, test OTP and recovery codes are held in JS variables/DOM and echoed to the browser console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side regex validators (validEmail, validPhone, validOtp, validRecoveryCode) plus normalisation and rejection of non-JSON or identifier-bearing bodies gate every endpoint; no SQL is used at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (secret, recovery codes, notices, logs) are inserted with textContent, innerHTML is only given static markup, and a nonce-based CSP with object-src 'none' and base-uri 'none' is enforced."
+    },
+    "9": {
+      "score": 3,
+      "why": "The application performs no redirects whatsoever, so there is no open-redirect risk but equally no allow-list mechanism as the statement describes."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders() sets CSP with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie()/clearSessionCookie() emit mfa_session with Path=/, HttpOnly, Secure and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and tokens never appear in URLs, but the client deliberately console.logs the provisioning secret, the current OTP and the full set of recovery codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "Enrolment verification uses a one-shot verification.used flag against a 30-second TOTP step, and recovery codes are spliced out of the stored hash list once accepted."
+    },
+    "14": {
+      "score": 5,
+      "why": "MFA verification locks for 15 minutes after 5 failures, recovery verification locks after 5 failures, and sign-in has a rolling 5-failure window lockout plus a minimum failure duration."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes any presented token and issues a fresh randomToken(32) session with new CSRF value, authorize() enforces 15-minute idle and 8-hour absolute expiry, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.12642,
+  "generation_id": "gen-1786385335-s5dxDvF6bEaYiQYVRmJA",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

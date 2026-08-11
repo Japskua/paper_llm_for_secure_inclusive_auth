@@ -1,12 +1,122 @@
 {
-  "ok": false,
-  "reason": "exception",
-  "error": "NameError: name 'MAX_IMAGES' is not defined",
+  "ok": true,
   "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
   "case": "case_1_multi_no_condition_no_inclusion",
   "run": "run_01",
   "track": "inclusivity",
   "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
   "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:52:17.099142+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 12,
+  "screenshots_available": 12,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_confirm_authenticator.png",
+    "step_05_save_recovery_codes.png",
+    "step_06_mfa_settings.png",
+    "step_07_recovery_code_accepted.png",
+    "step_08_save_regenerated_recovery_codes.png",
+    "step_09_mfa_settings_after_saving_regenerated_codes.png",
+    "step_10_logged_out.png",
+    "step_11_explored.png",
+    "step_12_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a clean sans-serif typeface with comfortable line height, and codes/secrets are set in letter-spaced monospace."
+    },
+    "2": {
+      "score": 4,
+      "why": "Guidance text is sentence-case with no italics and short blocks; the only dense text is the non-instructional provisioning URI line in step 4."
+    },
+    "3": {
+      "score": 2,
+      "why": "The mock provisioning URI on the Confirm authenticator screen overflows the card horizontally, so content is not fully readable and well laid out at mobile width."
+    },
+    "4": {
+      "score": 4,
+      "why": "Most instructions are one plain sentence (e.g., 'Generate a secret, then add it manually'), though the step-4 note uses jargon like 'adjacent period for limited clock skew'."
+    },
+    "5": {
+      "score": 4,
+      "why": "Placeholders show example formats for most inputs ('marcus@example.test', 'ABCDE-23456'), but the OTP fields only say 'Six digits' rather than showing a sample value."
+    },
+    "6": {
+      "score": 4,
+      "why": "No screen forces the user to read a long passage; the longest text is an optional four-line informational note."
+    },
+    "7": {
+      "score": 4,
+      "why": "The setup secret and recovery codes are rendered as selectable text and the UI says 'Copy them now', but no one-tap copy button is provided."
+    },
+    "8": {
+      "score": 2,
+      "why": "No QR code appears anywhere; the only alternative is a raw, overflowing otpauth URI string that still must be handled manually."
+    },
+    "9": {
+      "score": 3,
+      "why": "Standard email/password fields should work with password managers, but nothing observable (e.g., one-time-code autofill on OTP fields) demonstrates autofill support."
+    },
+    "10": {
+      "score": 4,
+      "why": "Each enrolment screen shows a 'Step X of 5' pill and one dominant blue button, though on the settings page the red Log out button visually competes with the primary actions."
+    },
+    "11": {
+      "score": 4,
+      "why": "Every flow step requests a single action (Continue, Verify, Confirm, Save), while the settings page merely lists optional self-initiated actions."
+    },
+    "12": {
+      "score": 4,
+      "why": "Plain status lines follow actions ('Recovery code accepted and consumed.', 'You have been logged out.') and each screen states what to do next."
+    },
+    "13": {
+      "score": 4,
+      "why": "Failed steps can be retried ('Please try again') and recovery codes can be regenerated with no shown penalty, though there is no reveal/hide toggle or SMS resend control."
+    },
+    "14": {
+      "score": 2,
+      "why": "The only observed error, 'We could not complete that request. Please try again.', is non-blaming but generic and never states what the actual problem was."
+    },
+    "15": {
+      "score": 2,
+      "why": "Step 4 imposes a five-minute setup expiry and 30-second code rotation, so code entry is time-limited rather than untimed and generous."
+    }
+  },
+  "cost_usd": 0.063872,
+  "generation_id": "gen-1786384109-JF9jvecK7ZVKOOKbs0zu",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 2,
+    "9": 3,
+    "10": 4,
+    "11": 4,
+    "12": 4,
+    "13": 4,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.3333,
+    "memory": 4.0,
+    "comprehension": 3.0,
+    "decision_making": 4.0,
+    "learning": 2.6667
+  },
+  "overall": 3.4,
   "capture_complete": true
 }

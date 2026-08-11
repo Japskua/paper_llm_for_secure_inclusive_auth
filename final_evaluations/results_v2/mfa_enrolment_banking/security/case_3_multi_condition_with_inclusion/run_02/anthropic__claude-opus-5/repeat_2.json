@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:31:39.698086+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "8c8e2b8bff5b5766fd0e1b65a04d06dcd989e190bf5b129b0024d646e7ea4504",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA state is stored in `records` keyed by `session.userId` derived from the server-side session cookie, and `getSession` rejects any session whose userId is not the authenticated account, so no client-supplied identifier can select another account's MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are hashed and stored inside the individual session object (`session.identity`), TOTP counters and backup verifiers are per-user records, so a code issued in one session/user context cannot validate for another."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA in `/api/totp/verify` only sets `record.enabled = true` and never rotates the session id or clears other entries in the `sessions` map, so any concurrently existing sessions remain valid afterwards (login only deletes the requester's own old cookie)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext via `encrypt()` and backup codes are stored only as PBKDF2-SHA256 (120k iteration, per-code salt) verifiers in `makeBackups`."
+    },
+    "5": {
+      "score": 5,
+      "why": "`token()`, `randomFrom()` and IV generation all use `crypto.getRandomValues` with modulo-bias rejection; hardcoded FIXTURES apply only when the explicit `MFA_TEST_MODE=1` flag is set."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and no localStorage/sessionStorage is used; only transient in-memory JS variables (`csrf`, `latestCodes`) hold sensitive values, though codes can be downloaded as a file."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates JSON content type, trims strings, and applies strict regexes to email, password length, six-digit OTPs, and the `[A-Z0-9]{5}-[A-Z0-9]{5}` recovery format; there is no SQL layer at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic client rendering passes through the `esc()` HTML-entity encoder or `textContent` (e.g. the setup key), and a nonce-based CSP with no 'unsafe-inline' blocks injected script."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server's `safePath()` restricts the `next` value to a fixed internal path list and the client `navigate()` validates the hash route against an identical allow-list, defaulting to `/signin`."
+    },
+    "10": {
+      "score": 5,
+      "why": "`headers()` sets a nonce CSP with `frame-ancestors 'none'`, `base-uri 'none'`, HSTS with includeSubDomains, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, Referrer-Policy and no-store."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()` emits `HttpOnly; Secure; SameSite=Strict` with Max-Age=1800, and `clearSessionCookie()` keeps the same attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and nothing sensitive appears in URLs, but the client deliberately logs the authenticator secret, provisioning URI and all recovery codes to `console.log` and into the visible on-page \"Logs\" panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes carry a 20-minute expiry plus a `used` flag, TOTP counters are recorded in `usedCounters` to block replay within the accepted window, and backup codes are marked `used: true` on consumption."
+    },
+    "14": {
+      "score": 5,
+      "why": "`failed()` increments a per-user counter and triggers a 5-minute lockout after MAX_FAILURES = 5, enforced with 429 responses on identity, TOTP, and recovery endpoints."
+    },
+    "15": {
+      "score": 4,
+      "why": "Login deletes the presented session and issues a fresh 32-byte id, 30-minute idle and 8-hour absolute timeouts are enforced in `getSession`, and logout deletes the session and clears the cookie; however no further rotation occurs at MFA completion."
+    }
+  },
+  "cost_usd": 0.147975,
+  "generation_id": "gen-1786390264-S4fAPNM1PNCVOkhReeTM",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:26:01.204418+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint derives the account identifier from a validated server-side session rather than accepting a user identifier from the client."
+    },
+    "2": {
+      "score": 4,
+      "why": "Default-enabled test mode accepts the same hard-coded identity and authenticator mock codes across accounts, although account-bound challenges and sessions are still required."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA does not rotate or invalidate existing sessions, so sessions established on other clients remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted with AES-GCM and backup codes are stored as salted PBKDF2-derived hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, tokens, challenges, and recovery codes are generated from crypto.getRandomValues with appropriate rejection handling where needed."
+    },
+    "6": {
+      "score": 5,
+      "why": "The application does not use browser storage and places session and challenge tokens only in HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates and normalizes email, phone, OTP, recovery-code, and redirect inputs, and no database queries are present."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted using textContent or JSON serialization rather than being interpolated as executable HTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "The redirect value is accepted only when it matches an entry in the fixed internal ROUTES allow-list."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are consistently configured with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client explicitly writes the provisioning secret, mock OTPs, and newly issued backup codes to the browser console and visible Logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges and provisioning attempts expire and are marked used, TOTP counters cannot be accepted twice, and recovery codes are invalidated after use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, OTP, and recovery-code failures are counted and trigger a ten-minute lock after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Authentication replaces the prior cookie-associated session, sessions enforce idle and absolute expiration, and logout deletes the server-side session."
+    }
+  },
+  "cost_usd": 0.064673,
+  "generation_id": "gen-1786386316-tlZ41FsR8zZLaRTREWFw",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 2,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

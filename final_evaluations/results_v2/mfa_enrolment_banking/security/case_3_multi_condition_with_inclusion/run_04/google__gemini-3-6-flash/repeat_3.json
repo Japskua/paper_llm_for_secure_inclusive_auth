@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:38:49.919538+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "c08fd9d85e429c55d45db1aac6ad59f72dd588811e3b858c08385d4e6ba1851e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The owner() helper function strictly checks that the session belongs to the signed-in user ID on all MFA endpoints."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes and TOTP secrets are bound to individual user sessions rather than being valid across accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the active session state but does not clear or invalidate other existing sessions for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "Shared TOTP secrets are encrypted with AES-GCM and backup codes are hashed using SHA-256 before storage."
+    },
+    "5": {
+      "score": 5,
+      "why": "Random tokens, secrets, and verification codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are restricted to HttpOnly cookies and sensitive secrets are kept out of localStorage and non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side helper functions enforce length limits and pattern matching on email, password, OTP, and recovery inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic string values rendered into the page are sanitized using an explicit HTML entity encoding function e()."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not perform dynamic user-controlled redirects, preventing open redirect vulnerabilities."
+    },
+    "10": {
+      "score": 5,
+      "why": "HTTP response headers enforce CSP, HSTS, X-Content-Type-Options, frame-ancestors, and X-Frame-Options."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies explicitly set the HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Production mode suppresses verbose stack traces and prevents OTP seeds, backup codes, and session tokens from appearing in logs or error output."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes carry explicit expiration timestamps and are invalidated upon consumption."
+    },
+    "14": {
+      "score": 5,
+      "why": "The system tracks verification failures and triggers a 10-minute lockout after 5 consecutive failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated on sign-in, bounded by idle and absolute timeouts, and deleted on logout."
+    }
+  },
+  "cost_usd": 0.0300705,
+  "generation_id": "gen-1786390715-7PDj8QLdMFok1dm39Ii9",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

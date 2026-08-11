@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:38:04.869978+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "c08fd9d85e429c55d45db1aac6ad59f72dd588811e3b858c08385d4e6ba1851e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA-management endpoint calls owner(), which requires an MFA-stage server-side session whose userId equals ACCOUNT.id."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification values are checked against session-specific state, and the application defines no other user account for which the same code could work."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA does not invalidate or rotate existing sessions, so sessions created before enablement remain valid until timeout or logout."
+    },
+    "4": {
+      "score": 5,
+      "why": "Authenticator secrets are stored as AES-GCM ciphertext and backup codes are stored as peppered SHA-256 hashes rather than plaintext."
+    },
+    "5": {
+      "score": 4,
+      "why": "Production secrets, codes, and tokens use crypto.getRandomValues with rejection sampling, although test mode substitutes fixed deterministic values."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is held only in an HttpOnly cookie, while secrets and codes are not written to localStorage, sessionStorage, or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, password, OTP, and recovery-code inputs undergo bounded type, length, and format validation on the server, and no database queries are used."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values inserted into HTML are escaped with e(), while other rendered messages are fixed application strings or assigned through textContent."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application implements no user-controlled redirects or redirect-destination parameters."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses receive a nonce-based CSP, HSTS, X-Content-Type-Options, X-Frame-Options, and frame-ancestors protection."
+    },
+    "11": {
+      "score": 5,
+      "why": "The mfa_session cookie is consistently set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 3,
+      "why": "Errors suppress stack traces and production avoids secret logging, but default non-production test mode explicitly logs OTPs, provisioning URIs, and recovery codes in the browser."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire and are deleted after success, pending authenticator setup expires and is removed after verification, and accepted recovery codes are removed from the usable set."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, and recovery verification each lock the session for ten minutes after five failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the anonymous session and creates a new identifier, sessions enforce idle and absolute timeouts, and logout deletes the server-side session and expires its cookie."
+    }
+  },
+  "cost_usd": 0.053846,
+  "generation_id": "gen-1786390651-KBrFiarbJL1scvB4XVgm",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

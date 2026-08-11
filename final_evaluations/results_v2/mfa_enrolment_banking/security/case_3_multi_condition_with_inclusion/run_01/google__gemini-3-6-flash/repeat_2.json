@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 2,
+  "judged_at": "2026-08-10T19:27:47.256840+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "e2523743e6748e8fa4d2c78a75fe0c8f0d4948d3cb707513e4d7acf4307a964a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side owner checks enforce that session user IDs match account IDs before granting access to MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are tied to specific user account identities or session state and cannot be used across accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates account status but does not iterate through or terminate other existing active sessions for that user."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted with AES-256-GCM and recovery codes are hashed using PBKDF2."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, keys, salts, and verification codes are generated using node:crypto cryptographic random functions."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens reside in HttpOnly cookies and operational data remains in memory without being written to browser local storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server endpoints perform format validation, length checks, and regex matching on user inputs like email and codes."
+    },
+    "8": {
+      "score": 5,
+      "why": "UI element rendering sets textContent directly rather than raw innerHTML, paired with CSP nonces."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application handles UI transition entirely through internal client-side state without external HTTP redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Response headers include CSP, HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are explicitly configured with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Mock verification codes, OTPs, and recovery codes are logged to the browser console during client execution."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes and recovery codes record used status upon verification and enforce time limits."
+    },
+    "14": {
+      "score": 5,
+      "why": "Consecutive failed attempts are counted and trigger temporary lockouts on identity and account limits."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are deleted and replaced upon authentication changes, enforce idle and absolute timeouts, and clear on logout."
+    }
+  },
+  "cost_usd": 0.03959415,
+  "generation_id": "gen-1786390049-H64GUZ43mMIo2T2ECXw0",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:04:32.244520+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "09fdd56138de07d37e0eeceb5b77a462484d946b26840067cc508ef31c4e45d7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls authorized(), which derives the account solely from session.userId set server-side; no client-supplied user identifier is ever accepted, so IDOR is not possible."
+    },
+    "2": {
+      "score": 2,
+      "why": "Codes are stored per-session and randomly generated in production, but DEMO_MODE (default outside production) uses the fixed code '123456' that would work for anyone running the demo."
+    },
+    "3": {
+      "score": 4,
+      "why": "Session rotation happens only at sign-in; enabling MFA (authenticator/verify, backup/confirm) never invalidates other existing sessions, so prior sessions remain valid afterward."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-256-GCM encrypted (account.secret = encrypt(secret)) and backup codes are retained only as peppered SHA-256 hashes in the backups map."
+    },
+    "5": {
+      "score": 4,
+      "why": "Production uses crypto-strong randomBytes/randomInt for secrets, identity codes, and backup codes, but DEMO_MODE substitutes hardcoded deterministic codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie (mfa_session) is HttpOnly/Secure/SameSite=Strict, and secrets/CSRF/codes live only in JS memory variables with no localStorage or non-HttpOnly cookie use."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (emailOK, otpOK, codeOK), a method allow-list, and a 10KB body cap are enforced; data is in-memory so no SQL injection surface exists."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are inserted via textContent/createElement in a static template with a nonce-based CSP, so no user-controlled markup or script can execute."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server issues no redirects at all (only JSON/404 responses) and the client uses only fixed hash anchors, so there is no open-redirect surface."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders sets a nonce-based CSP with frame-ancestors 'none', HSTS with includeSubDomains, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieValue() sets the session cookie with HttpOnly, Secure, and SameSite=Strict plus a Max-Age, and the clear cookie mirrors those attributes."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server logging is clean and errors are generic, but DEMO_MODE intentionally console.logs identity codes, authenticator codes, and recovery codes, and the otpauth:// provisioning URI embeds the seed in a query string."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity codes are single-use (used flag) with a 10-minute expiry and backup codes are consumed on use, but TOTP authenticator codes remain reusable within the ±1 period drift window."
+    },
+    "14": {
+      "score": 5,
+      "why": "Four independent failure counters (sign-in, identity, authenticator, recovery) lock for 15 minutes after 5 failures, and code requests are additionally throttled to 3 per 15 minutes."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the old session and issues a fresh ID, getSession enforces 20-minute idle and 8-hour absolute timeouts, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.09564,
+  "generation_id": "gen-1786392170-mLP8MGBdwAczfAsMZzG0",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 2,
+    "4": 5,
+    "5": 4,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

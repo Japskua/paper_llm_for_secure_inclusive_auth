@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:58:04.647887+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "95a3e86296de0b7988f870a2cdac6ff7f3e0d9e93db206d586fb6fd059d8e0d1",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints require authenticated(session) with session.userId === ACCOUNT_ID and accountRecord(session), and client-supplied owner identifiers are rejected."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored per session and recovery/TOTP state is tied to the authenticated account record, so no observed code works for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/mfa/confirm stores the MFA record but does not rotate or delete existing authenticated sessions, so sessions established before enrollment remain usable."
+    },
+    "4": {
+      "score": 5,
+      "why": "The authenticator secret is stored as AES-GCM ciphertext and recovery codes are stored as salted SHA-256 digests."
+    },
+    "5": {
+      "score": 4,
+      "why": "Normal secret/code generation uses crypto.getRandomValues, although explicit evaluation mode substitutes fixed test constants."
+    },
+    "6": {
+      "score": 5,
+      "why": "The client does not use localStorage/sessionStorage and the only session cookie is HttpOnly, Secure, and SameSite=Strict."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server handlers pass email, phone, OTP, secret, and recovery inputs through strict regex validators and length/trim checks before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values inserted into innerHTML are passed through escapeHTML, and errors/logs use textContent, preventing script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server never issues redirect responses or Location headers, so no open-redirect path was observed."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie sets __Host-mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Errors and stack traces are generic, but evaluation-mode client code logs identity codes, setup secrets, current TOTPs, and recovery codes to the console."
+    },
+    "13": {
+      "score": 3,
+      "why": "The identity code expires and is cleared after success, but TOTP can be replayed within its window and recovery codes have no expiration."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, draft confirmation, and recovery verification failures increment attempt counters that trigger 10-minute lockouts after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "rotateSession deletes the old session on authentication, getSession enforces idle/absolute timeouts, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.075334,
+  "generation_id": "gen-1786388021-FdrGcy6NaadXrZUQOW9W",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 3,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 4.3333,
+  "capture_complete": true
+}

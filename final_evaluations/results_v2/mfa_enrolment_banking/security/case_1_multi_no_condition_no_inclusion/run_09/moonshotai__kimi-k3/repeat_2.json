@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:29:48.996525+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints (provision, verify-otp, regenerate-backup, recover) derive accountId exclusively from the server-side session via getSession(req) and mfa(s.accountId), with no client-supplied account identifier accepted, and CSRF is enforced via origin check plus constant-time token comparison."
+    },
+    "2": {
+      "score": 2,
+      "why": "Challenge codes are bound to the identity and account via identityMatches (ctHash of identityKey) and ownershipMatches checks, so a code issued for one identity cannot authenticate another, though the test-mode mock code '246810' is universal across challenges when TEST_MODE is on."
+    },
+    "3": {
+      "score": 5,
+      "why": "The /api/mfa/verify-otp handler enables MFA without deleting, rotating, or otherwise invalidating any existing sessions for the account, so sessions issued before enrolment continue to work."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted (v.secret = {iv, ciphertext}) and backup codes are stored as PBKDF2-SHA-256 hashes with 210,000 iterations and per-code salts via protect()."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, digits, tokens, and recovery codes are generated from crypto.getRandomValues, with rejection sampling in digit() to avoid modulo bias."
+    },
+    "6": {
+      "score": 5,
+      "why": "No localStorage/sessionStorage is used anywhere; session and challenge cookies are both __Host-prefixed with HttpOnly, Secure, and SameSite=Strict, and the CSRF token lives only in JS memory."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators emailOK, phoneOK, otpOK, and recoveryInput enforce strict regex formats, body() rejects non-objects, redirect is checked against the ROUTES allow-list, and data lives in in-memory Maps so no SQL injection surface exists."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (titles, secrets, backup codes, logs) are inserted via textContent/createElement rather than innerHTML, which is only used with static templates, and a nonce-based CSP further blocks injected script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The sign-in redirect parameter is validated against the fixed ROUTES allow-list (signin, setup, verify, backup, confirmed, settings) and client-side routing only accepts those same hash routes."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders sets Strict-Transport-Security, a restrictive nonce-based CSP with frame-ancestors 'none', X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy, Permissions-Policy, and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie emits '__Host-mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=...', carrying all three required attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "While errors are generic, no stack traces are shown and no secrets appear in URLs, the frontend log() function deliberately writes the OTP manual secret, backup recovery codes, and mock codes to console.log and an on-page Logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges expire after 2 minutes and are marked used/deleted on success, provisioning windows expire after 5 minutes with a used flag, accepted TOTP time-steps are recorded to prevent replay (v.accepted), and recovery codes are single-use via their used flag."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, OTP, and recovery attempts all use the failed()/isLocked() mechanism that locks for 10 minutes after 5 failures, returning HTTP 429 while locked."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes any prior session cookie's session and issues a fresh random ID (rotation), sessions enforce 15-minute idle and 8-hour absolute timeouts in getSession, and /api/logout deletes the session server-side and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0817236,
+  "generation_id": "gen-1786386454-ic6QsLvrIcdR7vgxLnWE",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

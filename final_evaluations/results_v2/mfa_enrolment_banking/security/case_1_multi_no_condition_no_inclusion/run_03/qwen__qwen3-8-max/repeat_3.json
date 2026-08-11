@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:58:45.519382+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA records are accessed through s.userId from the authenticated session, not from a client-supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification state is tied to the signed-in user's security and MFA records, and there is no mechanism accepting a shared verification code across different users."
+    },
+    "3": {
+      "score": 4,
+      "why": "confirm() enables MFA without invalidating existing session identifiers, so previously issued valid sessions can remain usable until timeout or logout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as an AES-GCM encrypted value and recovery codes are stored only as salted PBKDF2 verifiers."
+    },
+    "5": {
+      "score": 4,
+      "why": "OTP secrets, recovery codes, session IDs, and CSRF tokens use crypto.getRandomValues, but the identity verification code is a hardcoded test value."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is only set in an HttpOnly cookie, and the code does not persist secrets, OTPs, or session tokens in localStorage, sessionStorage, or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server handlers enforce JSON content type and allowed keys, bound lengths, and regex validation for email, phone, OTP, and recovery-code input."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are rendered with textContent or returned as JSON, and script execution is restricted by CSP nonces."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only redirect-like input is the signin redirect field, which must equal /, and the server does not issue external redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets the session cookie with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "TEST_MODE causes provisioning secrets and recovery codes to be written into the browser/console log area, although error output is generic and stack traces are not exposed."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity codes are single-use and expire, TOTP is limited to the current 30-second period, and recovery codes are single-use, but recovery codes lack an explicit expiration."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed identity, TOTP confirmation, and recovery attempts increment counters that trigger a 10-minute lock after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "signin and identity rotate session identifiers, getSession enforces idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.072104,
+  "generation_id": "gen-1786384483-q6QU01KrTzmJL3kkKzGr",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 4,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

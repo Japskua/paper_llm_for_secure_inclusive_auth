@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:45:17.457509+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints use auth(req) and only mutate the account loaded from the session cookie’s accountId, never a client-supplied user id."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification is bound to the signed-in account’s own identity/auth/recovery state; a code cannot be applied to a different user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/authenticator/verify does not invalidate or rotate other existing sessions in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secret is stored AES-GCM encrypted (crypt/decrypt) and backup codes are stored as PBKDF2 hashes with per-code salts."
+    },
+    "5": {
+      "score": 1,
+      "why": "OTP secret, authenticator code, identity code, and recovery codes are hardcoded MOCK_* constants, not produced by a CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session is only set as an HttpOnly Secure SameSite cookie; server code does not write secrets/OTPs/tokens to non-HttpOnly cookies or browser storage APIs."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, OTP, and recovery inputs are length-limited, trimmed, and format-checked (regex/otpOk/recoveryCodeOk) on the server before use."
+    },
+    "8": {
+      "score": 4,
+      "why": "API responses are JSON.stringify’d and CSP with nonces/frame-ancestors is set; no unsafe HTML reflection of user input appears in the served code."
+    },
+    "9": {
+      "score": 5,
+      "why": "No redirect/Location-based flows are implemented, so there is no open-redirect behavior."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and related secure headers on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets mfa_session with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 4,
+      "why": "Errors are generic with no stack traces and tokens are not put in URLs/logs; practice mockCode/secret values are intentionally returned in some API JSON bodies."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity codes use check() for single-use and CODE_LIFE expiry; authenticator path marks used and removes pending but relies on mock fixed codes with weaker expiry enforcement."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed identity, authenticator, recovery, and login attempts increment counters and lock for LOCK after MAX failures."
+    },
+    "15": {
+      "score": 4,
+      "why": "Sign-in creates a fresh session id, auth() enforces idle/absolute timeouts, and expiredCookie() exists for logout invalidation (handler truncated but mechanism present)."
+    }
+  },
+  "cost_usd": 0.022404,
+  "generation_id": "gen-1786391055-9WXYFRvoyAMWtHbTUTqz",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 4,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 4.2,
+  "capture_complete": false
+}

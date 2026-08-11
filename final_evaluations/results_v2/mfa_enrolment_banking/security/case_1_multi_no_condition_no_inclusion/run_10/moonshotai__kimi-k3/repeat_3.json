@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:38:46.321322+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint authorizes via the server-side session (256-bit random ID cookie) with authenticated(s) and stage checks (e.g., /api/mfa/settings and /api/recovery-codes require stage 'mfa'), and no user-supplied identifiers exist to select another user's settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "False: identity challenges are stored per 'email|phone' target in identityStates and /api/identity/verify only checks the challenge bound to the session's own identityTarget, so a code issued for one identity cannot verify a different user's session."
+    },
+    "3": {
+      "score": 5,
+      "why": "True: /api/authenticator/confirm flips stage to 'mfa' without rotating or deleting the session, and no other pre-existing sessions are invalidated, so sessions established before MFA enablement remain usable."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted (encryptSecret) in the session and recovery codes are stored only as peppered SHA-256 hashes in recoveryHashes, not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets and codes — masterKey, recoveryPepper, session/CSRF IDs, TOTP secret, identity codes, and recovery codes — are generated via crypto.getRandomValues through randomBytes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The SPA uses no localStorage/sessionStorage (the CSRF token lives only in a JS variable) and the sole cookie, mfa_session, is HttpOnly; Secure; SameSite=Strict."
+    },
+    "7": {
+      "score": 5,
+      "why": "All input is validated server-side: validatedIdentity (strict email/phone regexes and normalization), validOtp, validSecret, validRecovery, plus a 10 KB request-body cap and JSON-object enforcement."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client renders all dynamic values via textContent (no innerHTML anywhere) and CSP limits scripts to a per-response nonce, so injected markup or script cannot execute."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application performs no HTTP redirects and accepts no redirect parameter, so open redirect is impossible, though no explicit allow-list mechanism exists because there are no redirects at all."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders applies CSP (nonce-based script-src), HSTS, X-Content-Type-Options: nosniff, X-Frame-Options: DENY and frame-ancestors 'none' to every response including errors."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieFor and expiredCookie set the session cookie with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Errors are generic with no stack traces and nothing leaks via URLs, but mock OTPs and recovery codes are deliberately written to console.log and the visible on-page 'Logs' panel, so codes are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code is marked used on success and expires after 5 minutes, TOTP codes are bound to a 120-second window with authenticatorUsed blocking replay, and recovery codes are removed from recoveryHashes on use."
+    },
+    "14": {
+      "score": 5,
+      "why": "failedAttempt imposes a 10-minute lockout after 5 failed attempts for identity, authenticator, and recovery verification, enforced by mayAttempt before each check."
+    },
+    "15": {
+      "score": 5,
+      "why": "The session ID is rotated at signin and again on successful identity verification (sessions.delete plus newSession), idle (15 min) and absolute (8 h) timeouts are enforced in sessionFrom, and /api/logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.1766436,
+  "generation_id": "gen-1786386821-wK2RdansjtvuYukaMQcd",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

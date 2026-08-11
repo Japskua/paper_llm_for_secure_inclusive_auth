@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:15:59.884855+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system validates that MFA settings and operations belong strictly to the authenticated user's session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are calculated strictly from individual account secrets and do not work for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Existing sessions are not revoked or terminated when MFA is enabled during verification."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP shared secrets are stored AES-GCM encrypted and backup codes are stored both hashed and encrypted."
+    },
+    "5": {
+      "score": 5,
+      "why": "All session tokens, secrets, and recovery codes are generated using Web Crypto crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens use HttpOnly cookies and client state is kept in memory rather than browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server strictly validates format and length for email, phone, OTP, and recovery input using explicit regular expressions."
+    },
+    "8": {
+      "score": 5,
+      "why": "Values inserted into the DOM are encoded using a textContent-based escaping function."
+    },
+    "9": {
+      "score": 5,
+      "why": "Navigation is constrained entirely to fixed client-side hash routes with no redirect parameter mechanisms."
+    },
+    "10": {
+      "score": 5,
+      "why": "Response headers explicitly enforce CSP with nonces, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies explicitly set the HttpOnly, Secure, and SameSite=Strict flags."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client application explicitly writes OTP secrets, test codes, and recovery codes into browser console logs and an on-screen log box."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes expire after 5 minutes and are invalidated immediately once marked used."
+    },
+    "14": {
+      "score": 5,
+      "why": "Repeated verification and recovery failures trigger a 10-minute lock after 5 failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated on login, enforce idle and absolute timeouts, and are invalidated upon logout."
+    }
+  },
+  "cost_usd": 0.044688,
+  "generation_id": "gen-1786385741-4ojz0KAPDd6xZqQo4JzO",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

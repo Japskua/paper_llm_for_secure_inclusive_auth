@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:27:25.474466+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "e2523743e6748e8fa4d2c78a75fe0c8f0d4948d3cb707513e4d7acf4307a964a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization is enforced on MFA endpoints, ensuring only the authenticated account owner can view/modify their MFA settings (e.g., `owner` and `pendingOwner` functions check session and account ownership)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are single-use and tied to a specific user's session/email hash, but the code itself is not user-specific in a way that prevents reuse across users if the session is hijacked (though the system mitigates this via session binding)."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are not invalidated when MFA is enabled; the code only deletes the current session (`sessions.delete(s.id)`) but does not clear all existing sessions for the user."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP shared secrets and backup codes are stored encrypted (AES-256-GCM) or hashed (PBKDF2-SHA256), not in plaintext (see `enc`, `dec`, and `hash` functions)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using `randomBytes` (cryptographically secure RNG) and `randomInt` for numeric codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are never stored in browser storage or non-HttpOnly cookies; session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is performed (e.g., `normalEmail` for emails, regex checks for OTP/recovery codes, and type checks for all inputs)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Output encoding is handled via `JSON.stringify` for API responses and explicit HTML escaping in the frontend (e.g., `textContent` usage in `E` function), preventing XSS."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are not explicitly implemented in the backend; frontend navigation is client-side, and no open redirects are present in the provided code."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers are set, including CSP (with nonce), HSTS, `X-Content-Type-Options`, `X-Frame-Options: DENY`, and `frame-ancestors 'none'` (see `headers` function)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are configured with `HttpOnly`, `Secure`, and `SameSite=Strict` attributes (see `sessionCookie` function)."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never exposed in logs, URLs, or error output; stack traces are not shown to users (errors return generic messages)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes (TOTP) are single-use (tracked via `usedTotp` set) and time-bound (checked against current and adjacent time steps)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is enforced for failed verification attempts (e.g., `recordFailure` locks accounts/sessions after 5 failures for `LOCK` duration)."
+    },
+    "15": {
+      "score": 3,
+      "why": "Session identifiers are rotated on authentication (new session created during sign-in/MFA verification), but idle/absolute timeouts are enforced only on session access (`getSession` checks), not explicitly on logout (though `sessions.delete` is called). Invalidation on logout is handled."
+    }
+  },
+  "cost_usd": 0.0256875,
+  "generation_id": "gen-1786390031-g2oTGyxpmYWebZS2uPOS",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 4.8667,
+  "capture_complete": true
+}

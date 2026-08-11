@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:16:14.501473+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "d8c5dbd5061e8b177d6cbb2c854604d59d269a0a9fe64507809dadc323e1593e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "auth() and verified() obtain the account only from the session's accountId, so MFA settings routes are bound to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes, pending OTP secrets, and backup-code digests are stored and checked per account or pending object, not shared across users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA changes account state but does not delete other existing sessions, so previously created valid sessions remain usable until timeout or logout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as AES-GCM ciphertext and backup codes are stored as peppered SHA-256 digests rather than plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session identifiers, identity codes, and backup codes are generated through crypto.getRandomValues via bytes()."
+    },
+    "6": {
+      "score": 5,
+      "why": "The code does not use localStorage, sessionStorage, or non-HttpOnly cookies for secrets, OTPs, or session tokens; the session cookie is HttpOnly."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators enforce regex and length constraints on email, password, phone, OTP, manual secret, and recovery-code inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are written using textContent or element creation, while innerHTML is only used with static template strings, and CSP nonces restrict scripts."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server issues no Location redirects, and client-side hash navigation only accepts an explicit allow-list of internal states."
+    },
+    "10": {
+      "score": 5,
+      "why": "sec() sets CSP with frame-ancestors, HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets the session cookie with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The front-end log() writes provisioning secrets, OTPs, and recovery codes to the console and visible log panel, so they are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have a five-minute expiry and used flag, pending MFA secrets expire, and recovery codes are marked used after successful verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "badIdentity(), badMfa(), and badLogin() lock the relevant account or session after five failed attempts for fifteen minutes."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful sign-in deletes the prior session and creates a new one, session() enforces idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.063424,
+  "generation_id": "gen-1786389198-S7ejhOjhyeYH4YLDdPeY",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

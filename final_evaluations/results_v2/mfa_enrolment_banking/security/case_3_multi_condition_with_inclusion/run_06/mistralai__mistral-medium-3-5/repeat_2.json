@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:46:25.628951+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "6d39d515364379a85979f05bdba4088e9c91f5547fdc46b6b25e253a3375adab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization is enforced on MFA endpoints via `owner()` and `verified()` checks, ensuring only the authenticated account owner can modify their MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same verification code (e.g., TOTP) is not reusable for other users due to per-user secrets and counter tracking, but the statement implies a flaw (reusability), which is false."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated on logout (`sessions.delete(s.id)`), but enabling MFA does not explicitly invalidate existing sessions. The statement claims they 'still work,' which is true (no forced re-auth), but this is a weakness."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted (AES-GCM) and recovery codes are hashed (SHA-256 with pepper) at rest."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using `crypto.getRandomValues()` (cryptographically secure RNG)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are never stored in browser storage or non-HttpOnly cookies (session cookies are HttpOnly)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input (e.g., email, OTP) is validated (regex checks, type guards like `six()` and `rec()`)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Output encoding is handled via `JSON.stringify()` and CSP nonces, preventing XSS execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are not explicitly implemented, but the app enforces same-origin policies and no open redirects are present."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options) are set in the `headers()` function."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with `HttpOnly`, `Secure`, and `SameSite=Strict` attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never logged, exposed in URLs, or error output (simulated logs are client-side only)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes (TOTP) are single-use (tracked via `acceptedTotpCounters`) and time-bound (30-second windows)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is enforced for failed attempts (e.g., `MAX_FAILURES` and `LOCK` for identity/auth codes)."
+    },
+    "15": {
+      "score": 4,
+      "why": "Session identifiers are rotated on login (`newSession()`), have idle/absolute timeouts, and are invalidated on logout, but session fixation could theoretically occur if not explicitly regenerated on auth state changes."
+    }
+  },
+  "cost_usd": 0.021585,
+  "generation_id": "gen-1786391180-TaRhY44z4r2QmB84bcFw",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.9333,
+  "capture_complete": true
+}

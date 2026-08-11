@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:16:04.741862+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system enforces session-based ownership checks (auth() verifies s.userId === account.id) for all MFA endpoints."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are single-use and time-bound, but the statement claims they work for any user, which is false."
+    },
+    "3": {
+      "score": 1,
+      "why": "Old sessions are deleted on new login (sessions.delete(old)), but the statement claims they still work, which is false."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted (await encrypt(secret)) and backup codes are encrypted (encrypted: await encrypt(code))."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated with crypto.getRandomValues(), a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are never stored in browser storage or non-HttpOnly cookies (cookies are HttpOnly, Secure, SameSite)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is performed (e.g., emailOK, phoneOK, and type checks for OTP/recovery codes)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Contextual output encoding is applied (esc() function in HTML, and JSON responses are properly escaped)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are not open; the system uses client-side routing (location.hash) with no arbitrary URL redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options) are set in the headers() function."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never exposed in logs, URLs, or error output (sensitive data is encrypted or hashed)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes are single-use (p.used = true) and time-bound (now > p.expires check)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is implemented (p.attempts >= 5 locks the pending OTP, and account.failures >= 5 locks recovery codes)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifier is rotated on authentication (new token() on login), and sessions are invalidated on logout (sessions.delete(a.t))."
+    }
+  },
+  "cost_usd": 0.017664,
+  "generation_id": "gen-1786385759-XDXHKgzDXT25FGpQBROs",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

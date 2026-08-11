@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:53:46.342205+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls required()/getSession() and derives the account id solely from the server-side session record (s.userId), never from client-supplied identifiers."
+    },
+    "2": {
+      "score": 2,
+      "why": "Verification material is per-account (TOTP secret encrypted per user record, recovery codes as per-user PBKDF2 verifiers) and the code is checked against the session's own account state, so cross-user reuse does not hold — although the identity step uses a hardcoded constant IDENTITY_CODE in this single-account fixture."
+    },
+    "3": {
+      "score": 4,
+      "why": "Session rotation only occurs at /api/signin and /api/identity; confirm() sets m.enabled = true without invalidating any other existing sessions, so concurrently established sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored as AES-GCM ciphertext (encrypt/encryptedSecret) and recovery codes only as salted PBKDF2-SHA256 (120k iteration) verifiers, never plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "All session ids, CSRF tokens, nonces, TOTP seeds and recovery codes come from bytes()/crypto.getRandomValues."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and the session cookie is HttpOnly; Secure; SameSite=Strict, though test-mode secrets/OTPs are held in JS variables, printed to console and rendered into the DOM."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server enforces JSON content-type, strict key allow-listing, length truncation and regexes for email, phone, 6-digit codes and recovery-code format; there is no SQL layer at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are inserted with textContent/createElement (never innerHTML), and a nonce-based CSP with base-uri 'none' and frame-ancestors 'none' is applied."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only redirect input is validated with b.redirect !== \"/\" (an exact internal allow-list of one) and no Location-based redirect is ever issued."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets Content-Security-Policy (incl. frame-ancestors 'none'), Strict-Transport-Security with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY and Referrer-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() and expired() both emit mfa_session with Path=/; HttpOnly; Secure; SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Errors are generic (\"Request could not be completed.\") with no stack traces, but TEST_MODE = true returns testIdentityCode, testProvisioningSecret, testAuthenticatorCode and plaintext recoveryCodes in API responses which the client then console.logs and renders into a visible log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code is marked identityUsed and expires after CODE_LIFE (5 min), TOTP is accepted only within the live 30-second period, and a matched recovery code is spliced out inside the account lock."
+    },
+    "14": {
+      "score": 5,
+      "why": "addFail()/MAX=5 with a 10-minute LOCK window is applied to identity codes, TOTP confirmation and recovery-code verification, with checks of identityLocked/authLocked/recoveryLocked before validating."
+    },
+    "15": {
+      "score": 5,
+      "why": "A brand-new session id is issued (old one deleted) on sign-in and on identity verification, getSession() enforces 20-minute idle and 8-hour absolute timeouts, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.1451,
+  "generation_id": "gen-1786384387-8M4ahYtOtfgtDjafe3uw",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

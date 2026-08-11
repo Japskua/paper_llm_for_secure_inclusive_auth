@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:38:49.200694+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "c08fd9d85e429c55d45db1aac6ad59f72dd588811e3b858c08385d4e6ba1851e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint goes through owner(), which requires a server-side session at stage 'mfa' with userId === ACCOUNT.id, and all MFA state (pending, enrolled, backups) lives on that server-side session rather than being taken from client input."
+    },
+    "2": {
+      "score": 3,
+      "why": "Codes are validated against per-session stored values (so cross-user reuse fails in production), but TEST mode is on by default (TEST = MFA_TEST_MODE || !PROD) and hardcodes identity OTP '123456', TOTP '654321' and fixed recovery codes, which would work for any session/user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Only the current session is deleted at sign-in; enabling MFA (/api/authenticator/verify) never enumerates or invalidates other existing sessions, so previously established sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored only as AES-GCM ciphertext (encrypt/decrypt with a non-extractable key) and backup codes are stored as peppered SHA-256 hashes, never plain text."
+    },
+    "5": {
+      "score": 4,
+      "why": "random(), token(), secret(), codes() and issueIdentity() all use crypto.getRandomValues with rejection sampling in production, though the default TEST mode substitutes hardcoded non-random values."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and no localStorage/sessionStorage is used; secrets and recovery codes only sit in transient JS variables (window._savedCodes) and in the test-mode on-page log list."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (emailInput, passwordInput, otpInput, recoveryInput with bounded length checks and strict regexes) reject malformed input, and there is no SQL/database layer at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values inserted into the DOM pass through the e() HTML-escaping helper, and a strict nonce-based CSP with base-uri 'none' further blocks injected script."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application implements no redirect functionality whatsoever (only a client-side location.reload()), so no open redirect exists, although no explicit allow-list mechanism is present either."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP with frame-ancestors 'none', HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, referrer-policy and permissions-policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "secureCookie() emits 'HttpOnly; Secure; SameSite=Strict' with Path=/ and Max-Age, and logout clears it with the same attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces, but in the default (non-production) TEST mode the API returns testIdentityOtp/testAuthenticatorCode and the client console.logs plus renders the identity OTP, authenticator code, provisioning URI and full recovery code list into a visible log panel."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity codes have a 10-minute expiry and are cleared on success, recovery codes are removed from the list once used, and pending setup secrets expire; TOTP codes, however, are not marked used within their ±30s drift window."
+    },
+    "14": {
+      "score": 4,
+      "why": "failed()/locked()/clearLock() enforce 5 attempts then a 10-minute lockout separately for identity, authenticator and recovery verification, though the counters are per-session so a fresh session resets them."
+    },
+    "15": {
+      "score": 4,
+      "why": "Sign-in deletes the old session and issues a brand-new 48-char session id, idle (20 min) and absolute (8 h) timeouts are enforced in get(), and logout deletes the session and expires the cookie; only the MFA step-up rotates the CSRF token without rotating the session id."
+    }
+  },
+  "cost_usd": 0.16333,
+  "generation_id": "gen-1786390688-6RJtK3Y9VQQEJ89Y1wpr",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 3,
+    "3": 2,
+    "4": 5,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 4,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 4.0667,
+  "capture_complete": true
+}

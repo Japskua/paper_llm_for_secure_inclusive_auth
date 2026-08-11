@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:02:18.425950+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "09fdd56138de07d37e0eeceb5b77a462484d946b26840067cc508ef31c4e45d7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization via authorized() is enforced on every MFA endpoint, ensuring users can only view or modify their own settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes, TOTP secrets, and recovery codes are bound to specific user accounts or sessions and do not work for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the account state without revoking or deleting other existing active sessions from the server sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP shared seeds are encrypted using AES-256-GCM and backup codes are stored as salted SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, recovery codes, salts, and tokens are generated using cryptographically secure randomBytes and randomInt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored exclusively in HttpOnly cookies, while secrets and CSRF tokens are maintained in memory rather than browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input validation functions enforce strict formatting rules, regex checks, and length restrictions on all server-side inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic user data and status text rendered into the page use textContent and canvas elements, preventing executable markup injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application contains no HTTP redirect logic or open redirect parameters, restricting navigation entirely to internal single-page views."
+    },
+    "10": {
+      "score": 5,
+      "why": "Security headers including CSP with script nonces, HSTS, X-Content-Type-Options, and X-Frame-Options/frame-ancestors are set on all responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are explicitly configured with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Sensitive tokens, seeds, backup codes, and error stack traces are omitted from query strings, server logs, and user-facing responses."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after a set duration and are marked used, TOTPs are time-windowed, and backup codes are flagged as used upon verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity, authenticator, and recovery verification endpoints track failures and enforce a 15-minute lockout after 5 failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are regenerated upon sign-in, enforce 20-minute idle and 8-hour absolute timeouts, and are invalidated on logout."
+    }
+  },
+  "cost_usd": 0.0610305,
+  "generation_id": "gen-1786392113-NjzzQgGjItjqkvZYzOXp",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": false
+}

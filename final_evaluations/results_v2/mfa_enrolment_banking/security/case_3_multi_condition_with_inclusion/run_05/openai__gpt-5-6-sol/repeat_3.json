@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:43:19.162709+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All shown MFA endpoints authenticate via the session cookie and derive the account exclusively from session.accountId rather than a user-supplied identifier."
+    },
+    "2": {
+      "score": 2,
+      "why": "Verification state is stored on the session-owned account, although the application uses globally fixed practice codes and contains only one account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA sets account.mfaEnabled but does not rotate or invalidate any existing sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "Authenticator secrets are encrypted with AES-256-GCM and recovery codes are stored as individually salted PBKDF2-SHA-256 hashes."
+    },
+    "5": {
+      "score": 1,
+      "why": "Although random tokens, IVs, and salts use crypto.getRandomValues, the OTP secret, verification codes, and recovery codes are deterministic constants."
+    },
+    "6": {
+      "score": 5,
+      "why": "The shown code uses an HttpOnly session cookie and contains no browser-storage persistence of secrets, OTPs, or session tokens."
+    },
+    "7": {
+      "score": 4,
+      "why": "The server limits and type-checks JSON fields and applies explicit email, six-digit OTP, and recovery-code formats, with no database queries shown."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic API values are serialized with JSON.stringify rather than interpolated into executable HTML, and the CSP restricts script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user-controlled redirect or redirect destination is present in the provided code."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie is explicitly set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 4,
+      "why": "No logging or URL exposure of sensitive values is shown and errors are controlled messages, although no explicit global production error handler is visible."
+    },
+    "13": {
+      "score": 3,
+      "why": "Identity codes are checked for expiry and single use, but authenticator verification does not enforce the stored expires or used fields directly."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, recovery, and sign-in failures have counters and ten-minute lockouts after five failed attempts."
+    },
+    "15": {
+      "score": 3,
+      "why": "Sign-in creates a fresh random session identifier with idle and absolute timeouts, but logout invalidation is not visible in the provided truncated source."
+    }
+  },
+  "cost_usd": 0.0460075,
+  "generation_id": "gen-1786390971-Q2CaiXNdPBPDQZqRJ6YG",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 3,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 4.0,
+  "capture_complete": false
+}

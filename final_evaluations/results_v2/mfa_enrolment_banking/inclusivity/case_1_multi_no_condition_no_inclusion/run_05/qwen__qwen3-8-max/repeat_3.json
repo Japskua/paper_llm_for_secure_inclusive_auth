@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "inclusivity",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:12:19.330725+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "ea5bab4b0d6539028296220e344d7db471d5a50ff1c6cc99aaff0f369372e18a",
+  "screenshot_count": 17,
+  "screenshots_available": 17,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_authenticator_secret.png",
+    "step_05_mfa_enabled_recovery_codes.png",
+    "step_06_recovery_codes_management.png",
+    "step_07_recovery_code_submission_error.png",
+    "step_08_replacement_recovery_codes.png",
+    "step_09_logged_out_login_page.png",
+    "step_10_explored.png",
+    "step_11_explored.png",
+    "step_12_explored.png",
+    "step_13_explored.png",
+    "step_14_explored.png",
+    "step_15_explored.png",
+    "step_16_explored.png",
+    "step_17_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Body copy throughout (e.g., 'Use the trusted demo credentials to begin MFA enrolment.') is a clean sans-serif with ample line height, although the Logs panel uses small dense monospace type."
+    },
+    "2": {
+      "score": 4,
+      "why": "Instructions are sentence-case with no italics and no all-caps (e.g., 'Use a code if your authenticator is unavailable…'); the only all-caps text is the NORTHSTAR BANK brand header."
+    },
+    "3": {
+      "score": 4,
+      "why": "The single-column mobile-width layout with full-width buttons and wrapped paragraphs stays readable in every screenshot."
+    },
+    "4": {
+      "score": 4,
+      "why": "Each step gives a one- or two-sentence instruction, though jargon such as 'provisioning representation' and 'manual secret' slightly undermines plain language."
+    },
+    "5": {
+      "score": 3,
+      "why": "Only the recovery-code field shows a format example via its 'ABCD-EFGH-JKLM' placeholder, while the verification-code and authenticator-code inputs show no example of the expected six-digit input."
+    },
+    "6": {
+      "score": 2,
+      "why": "The user must extract every code from the ever-growing dense monospace Logs panel (eight-plus lines by step_17) and parse the long wrapped otpauth string in order to proceed."
+    },
+    "7": {
+      "score": 2,
+      "why": "No copy affordance exists on any screen, and step_04 explicitly instructs the user to 'enter this in your authenticator', so the 32-character secret must be transcribed by hand."
+    },
+    "8": {
+      "score": 1,
+      "why": "Although step_04 says 'scan the provisioning value', only a text otpauth URI and a manual secret are offered; no QR code or scannable equivalent appears anywhere."
+    },
+    "9": {
+      "score": 3,
+      "why": "The login uses a conventional masked password input that password managers can usually fill, but nothing demonstrates autocomplete attributes or one-time-code autofill for the OTP fields."
+    },
+    "10": {
+      "score": 3,
+      "why": "Headings and a prominent green button mark each step, but there is no progress indicator and by step_17 eight stacked 'Unable to continue sign-in.' banners bury the current step."
+    },
+    "11": {
+      "score": 3,
+      "why": "Most screens show one green primary button, but step_04 presents two green buttons at once ('Create authenticator secret' plus 'Enable MFA and show recovery codes') and step_06 adds a second full-width action."
+    },
+    "12": {
+      "score": 2,
+      "why": "Happy-path screens explain what happened and what's next ('We sent a short-lived verification code…'), but failed actions yield only 'Unable to continue sign-in.' or a raw DOM exception with no next-step guidance."
+    },
+    "13": {
+      "score": 3,
+      "why": "Sign-in can be retried repeatedly without lockout and replacement recovery codes can be generated, but there is no resend-code link and no reveal/hide toggle for the password or codes."
+    },
+    "14": {
+      "score": 1,
+      "why": "Errors are either the vague 'Unable to continue sign-in.' or the raw technical dump 'Failed to execute insertBefore on Node…', neither of which states the problem or how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "Reading has no time limit, but the verification code is 'short-lived' and authenticator codes 'rotate every 30 seconds', giving a non-generous window to enter codes."
+    }
+  },
+  "cost_usd": 0.075312,
+  "generation_id": "gen-1786385266-izscFQzj074YHpiwdUAK",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 2,
+    "8": 1,
+    "9": 3,
+    "10": 3,
+    "11": 3,
+    "12": 2,
+    "13": 3,
+    "14": 1,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 3.0,
+    "comprehension": 2.0,
+    "decision_making": 2.6667,
+    "learning": 2.0
+  },
+  "overall": 2.7333,
+  "capture_complete": true
+}

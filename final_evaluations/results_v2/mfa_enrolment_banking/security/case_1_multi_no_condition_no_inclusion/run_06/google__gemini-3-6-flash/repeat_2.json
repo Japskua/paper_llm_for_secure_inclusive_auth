@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:09:45.739551+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "3d09bd0257e9941bea9ed673158f55946146901e5fa8fb38fe05ada4ea49310d",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization retrieves and updates MFA settings strictly for the account tied to the authenticated session."
+    },
+    "2": {
+      "score": 1,
+      "why": "TOTP secrets and recovery codes are randomly generated per account, so a verification code for one user will not work for another."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the user state without revoking or invalidating active user sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP shared secret is encrypted using AES-GCM and recovery codes are stored as SHA-256 digests."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, tokens, and recovery codes are generated using Web Crypto crypto.getRandomValues()."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored in HttpOnly cookies, and secrets/OTPs are held in application memory rather than browser storage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server endpoints validate inputs like email, phone, OTP, and recovery codes using regex pattern checks and normalization."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic user data rendered into the DOM is set via textContent properties rather than unsafe HTML injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not implement dynamic HTTP redirects or accept redirect target parameters."
+    },
+    "10": {
+      "score": 5,
+      "why": "The baseHeaders function sets CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie includes the HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Provisioned TOTP secrets, test OTPs, and generated recovery codes are explicitly written to browser console logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTP verification codes expire after 30 seconds and are marked used, while recovery codes are removed from the user record upon consumption."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, MFA code verification, and recovery code verification track failed attempts and enforce temporary lockouts after 5 failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session IDs are rotated upon sign-in, enforced with idle and absolute expiration checks, and deleted upon logout."
+    }
+  },
+  "cost_usd": 0.0438825,
+  "generation_id": "gen-1786385366-T9vE4S4ta3zD9t8p8ccj",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

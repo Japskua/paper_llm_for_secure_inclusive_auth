@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:47:46.088165+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "auth(req) resolves the account from the session cookie and all MFA endpoints operate only on that session-bound account, with no user-supplied owner identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Only one hardcoded account is present and verification state is tied to the authenticated account, so no observed path lets the same verification code be used for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA changes account.mfaEnabled and stores backup codes but does not delete existing sessions, so prior sessions remain valid until timeout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The authenticator secret is stored using AES-GCM encryption via crypt(), and recovery codes are stored as salted PBKDF2 hashes."
+    },
+    "5": {
+      "score": 1,
+      "why": "The OTP secret, identity code, authenticator code, and recovery codes are hardcoded MOCK_* constants rather than CSPRNG-generated values."
+    },
+    "6": {
+      "score": 3,
+      "why": "The session cookie is HttpOnly, but OTP secrets and backup codes are returned to the client, so their exclusion from browser storage cannot be confirmed."
+    },
+    "7": {
+      "score": 5,
+      "why": "JSON bodies are size-limited and parsed as objects, and email/OTP fields are trimmed and constrained by regex and length checks."
+    },
+    "8": {
+      "score": 3,
+      "why": "The server returns JSON rather than HTML and no explicit contextual output encoding or client-side rendering logic was observed."
+    },
+    "9": {
+      "score": 3,
+      "why": "No redirect endpoints or Location headers were observed, but no redirect allow-list mechanism was observed either."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP including frame-ancestors 'none', HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets the session cookie with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "No logging, URL query exposure, error-output exposure, or stack traces were observed for OTP seeds, backup codes, or session tokens."
+    },
+    "13": {
+      "score": 2,
+      "why": "Identity verification checks use and expiry, but authenticator verification compares a fixed mock code without enforcing expiry or single-use before re-provisioning."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, and authenticator verification increment attempt counters and set locked timestamps after repeated failures."
+    },
+    "15": {
+      "score": 3,
+      "why": "Sign-in issues a new random session identifier and idle/absolute timeouts are enforced, but no logout invalidation was observed in the provided excerpt."
+    }
+  },
+  "cost_usd": 0.068576,
+  "generation_id": "gen-1786391056-UXKYNNaUSxwZ5LhK0TAf",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 3,
+    "7": 5,
+    "8": 3,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 2,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 3.3333
+  },
+  "overall": 3.7333,
+  "capture_complete": false
+}

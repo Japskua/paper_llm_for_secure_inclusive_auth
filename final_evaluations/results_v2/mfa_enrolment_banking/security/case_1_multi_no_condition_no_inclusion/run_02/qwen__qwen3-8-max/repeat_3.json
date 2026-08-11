@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:52:00.393127+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "authenticatedSession checks that the session's userId matches the server-side account id before any MFA settings route is served."
+    },
+    "2": {
+      "score": 1,
+      "why": "The verification code hash is stored per session and there is no code-sharing path that would let the same code authenticate another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "MFA activation changes account state but does not revoke existing sessions, so any previously issued valid session would remain usable until timeout or logout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-256-GCM ciphertext and backup codes are stored as salted, peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 2,
+      "why": "Backup codes, identity codes, session tokens, keys, and IVs use node:crypto randomBytes, but the TOTP secret is a fixed hardcoded evaluation value."
+    },
+    "6": {
+      "score": 5,
+      "why": "The app does not place secrets, OTPs, or session tokens in localStorage/sessionStorage or non-HttpOnly cookies; the session cookie is HttpOnly."
+    },
+    "7": {
+      "score": 4,
+      "why": "Server-side code rejects malformed JSON and applies strict regex validation to email, phone, OTP, recovery codes, and base32 secrets, though it does not perform separate sanitisation transformations."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are rendered with textContent and the page uses a nonce-based CSP, preventing injected markup or script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only redirect-like input must exactly equal the internal path /verify-identity, and the server does not issue user-controlled external redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders sets CSP, HSTS, X-Content-Type-Options nosniff, X-Frame-Options DENY, and CSP frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie sets the session cookie with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Client-side logging outputs the identity code, TOTP secret, and backup codes, so those secrets are not kept out of logs even though stack traces are suppressed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire and are marked used, TOTP counters are tracked to prevent reuse, and recovery codes are marked used after acceptance."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed identity, TOTP, and recovery attempts increment failure counters and cause a 10-minute lockout after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "The session id is rotated after identity verification, idle and absolute timeouts are enforced, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.06258,
+  "generation_id": "gen-1786384122-YRI2s41GsxZPQWTzgDSZ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 5,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

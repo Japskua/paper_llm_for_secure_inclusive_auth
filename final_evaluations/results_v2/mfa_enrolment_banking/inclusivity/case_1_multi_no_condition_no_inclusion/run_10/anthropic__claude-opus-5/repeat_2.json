@@ -1,0 +1,123 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:34:46.812944+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 13,
+  "screenshots_available": 13,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity_code.png",
+    "step_03_authenticator_setup.png",
+    "step_04_authenticator_setup_details.png",
+    "step_05_initial_recovery_codes.png",
+    "step_06_mfa_settings.png",
+    "step_07_confirm_recovery_code.png",
+    "step_08_recovery_code_confirmed.png",
+    "step_09_replacement_recovery_codes.png",
+    "step_10_mfa_settings_after_replacement.png",
+    "step_11_logged_out.png",
+    "step_12_explored.png",
+    "step_13_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Sans-serif typeface with clear headings, adequate line spacing and good contrast throughout, though the monospace log block and the small monospace secret/provisioning fields are tighter than ideal."
+    },
+    "2": {
+      "score": 4,
+      "why": "No all-caps or italic instruction text and paragraphs are short; only the recovery-code lists and the dark Logs panel present slightly denser monospace content."
+    },
+    "3": {
+      "score": 3,
+      "why": "The layout is a single narrow centred card that would reflow acceptably, but all screenshots are desktop-width and the long provisioning URI and code lists risk overflow/tiny text on a phone; no mobile evidence is provided."
+    },
+    "4": {
+      "score": 4,
+      "why": "Instructions such as 'Use an authenticator app to generate a code' and 'Confirm your bank account details before enrolling MFA' are one short plain sentence per screen."
+    },
+    "5": {
+      "score": 3,
+      "why": "Only step 7 shows a format example via the placeholder 'ABCDE-23489'; the verification code and authenticator code fields (steps 2 and 4) show no example or expected length."
+    },
+    "6": {
+      "score": 4,
+      "why": "Every screen's proceed path requires reading at most two short sentences, although step 5/9 requires scanning eight recovery codes."
+    },
+    "7": {
+      "score": 2,
+      "why": "The manual secret, provisioning URI and recovery codes are shown as plain read-only text/list with no copy button or 'copy all' affordance, so copying depends on manual text selection."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code is rendered anywhere; step 4 explicitly says 'Authenticator created. Add this value manually.' and only exposes the raw otpauth:// string."
+    },
+    "9": {
+      "score": 2,
+      "why": "Nothing indicates autocomplete/one-time-code attributes; the email and mobile fields are pre-filled by the mock and code fields give no evidence of password-manager or OTP autofill support."
+    },
+    "10": {
+      "score": 3,
+      "why": "Each screen has a clear bold heading and one prominent blue primary button, but there is no step indicator (e.g. 'Step 2 of 5') so the user's position in the flow is unclear."
+    },
+    "11": {
+      "score": 3,
+      "why": "Most screens ask a single action, but step 4 presents a manual secret field plus an authenticator code field together, and step 8 shows two competing buttons plus a back link."
+    },
+    "12": {
+      "score": 3,
+      "why": "Confirmations like 'Authenticator created', 'Recovery code confirmed.' and 'Authenticator MFA is active.' state what happened, but they rarely state what comes next."
+    },
+    "13": {
+      "score": 3,
+      "why": "Codes can be regenerated via 'Regenerate recovery codes' and steps can be retried, but regeneration consumes an unused recovery code (a penalty) and codes are 'Shown once' with no reveal/hide or re-request option."
+    },
+    "14": {
+      "score": 1,
+      "why": "The only error shown, 'Unable to complete this request. Please try again.' (steps 12–13), states neither the actual problem nor how to fix it."
+    },
+    "15": {
+      "score": 3,
+      "why": "No countdown timers or session expiry warnings appear in any screenshot, but the provisioning URI sets period=120, implying a rolling OTP window, and no explicit generous-time reassurance is given."
+    }
+  },
+  "cost_usd": 0.12785,
+  "generation_id": "gen-1786386867-QwXLExQi2AIodij3bePT",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 2,
+    "8": 1,
+    "9": 2,
+    "10": 3,
+    "11": 3,
+    "12": 3,
+    "13": 3,
+    "14": 1,
+    "15": 3
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 3.6667,
+    "comprehension": 1.6667,
+    "decision_making": 3.0,
+    "learning": 2.3333
+  },
+  "overall": 2.8667,
+  "capture_complete": true
+}

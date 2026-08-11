@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:31:51.514863+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "e2523743e6748e8fa4d2c78a75fe0c8f0d4948d3cb707513e4d7acf4307a964a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints are reached only through owner or pendingOwner, which resolve the account from the authenticated session's user id rather than a client-supplied identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are hashed and tracked per session emailHash, so a code is not accepted for arbitrary other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/mfa/confirm changes account.mfa but does not delete or rotate other existing authenticated sessions, so prior sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored as AES-256-GCM encrypted Protected objects and backup codes are stored as salted PBKDF2 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, tokens, identity codes, and backup codes are generated with node:crypto randomBytes or randomInt."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is only set in an HttpOnly cookie and the client does not use localStorage, sessionStorage, or non-HttpOnly cookies for secrets, OTPs, or session tokens."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation includes email format checking, six-digit OTP regex checks, recovery-code regex checks, trimming, and body-size limits."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic UI values are inserted with textContent and the server-rendered page uses nonce-protected script and style blocks, preventing injected markup from executing."
+    },
+    "9": {
+      "score": 5,
+      "why": "The handler never issues redirect responses or Location headers, so there is no open-redirect surface."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, Strict-Transport-Security, X-Content-Type-Options nosniff, X-Frame-Options DENY, and CSP frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie sets the session cookie with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "Browser console.log calls expose mock OTPs and newly generated backup codes, so OTP-related secrets are written to logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have expiry and used flags, TOTP time steps are recorded in used sets, and backup codes are marked used and have expiry timestamps."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed identity, MFA, enrollment, and recovery attempts increment failure counters that lock for ten minutes after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful identity and MFA verification delete the prior session and create a new session, sessions have idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.067362,
+  "generation_id": "gen-1786390067-EZPPsyb1YxIBWLWRqptH",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

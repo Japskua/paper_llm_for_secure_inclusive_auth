@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:09:04.852118+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "09fdd56138de07d37e0eeceb5b77a462484d946b26840067cc508ef31c4e45d7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "authorized() resolves the account from session.userId and all MFA endpoints operate only on that account, with no client-supplied owner identifier."
+    },
+    "2": {
+      "score": 3,
+      "why": "Non-demo challenges are bound to the session/account, but DEMO_MODE uses fixed identity/authenticator/recovery codes that could work across sessions."
+    },
+    "3": {
+      "score": 5,
+      "why": "MFA enrolment changes the current session/account state but contains no logic revoking other pre-existing sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored encrypted with AES-256-GCM and backup codes are stored as peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 3,
+      "why": "Production paths use crypto.randomBytes/randomInt, but DEMO_MODE substitutes fixed demo codes instead of generated ones."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is HttpOnly and no browser storage or non-HttpOnly cookie is used, although secrets/codes are temporarily present in DOM/JS memory."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates email format, password length, six-digit OTPs, recovery-code format, identity method, and body size before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side dynamic values are assigned via textContent under a nonce CSP, with no user-controlled innerHTML observed."
+    },
+    "9": {
+      "score": 4,
+      "why": "No HTTP redirects or Location headers are issued, so open redirects are absent, though no explicit allow-list is implemented."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie string includes HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 3,
+      "why": "Errors are generic and URLs do not expose secrets, but DEMO_MODE returns demo codes and the client console.logs them, so sensitive codes can appear in logs."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity/demo challenges are single-use and time-limited and recovery codes are one-time, but recovery codes lack expiry and TOTP has no separate single-use counter."
+    },
+    "14": {
+      "score": 5,
+      "why": "failed() locks sign-in, identity, authenticator, and recovery flows after five failures, and identity-code requests are additionally rate-limited."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the old session and creates a new one, getSession enforces idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.106646,
+  "generation_id": "gen-1786392154-qsXhGzxMvXxzlhCCZmCv",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 3,
+    "3": 1,
+    "4": 5,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.1333,
+  "capture_complete": false
+}

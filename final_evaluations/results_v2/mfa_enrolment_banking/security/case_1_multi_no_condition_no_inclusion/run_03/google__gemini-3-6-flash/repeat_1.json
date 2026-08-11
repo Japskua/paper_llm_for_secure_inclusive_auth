@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:53:46.254205+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints derive the target account exclusively from the authenticated session rather than user-supplied identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are strictly tied to specific user accounts and secrets, so a code generated for one user cannot validate another."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the current session state but does not revoke or invalidate other existing active sessions for the user."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted using AES-256-GCM and backup codes are stored only as salted PBKDF2 verifiers."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, recovery codes, and tokens are generated using crypto.getRandomValues and Web Crypto cryptographic key generation."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored in HttpOnly, Secure, SameSite=Strict cookies and secrets are not stored in localStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server endpoints strictly sanitize, length-bound, and pattern-validate inputs including emails, phone numbers, OTPs, and recovery codes."
+    },
+    "8": {
+      "score": 5,
+      "why": "User-supplied and dynamic values rendered in the client UI are safely assigned via textContent rather than unescaped markup."
+    },
+    "9": {
+      "score": 5,
+      "why": "The sign-in handler enforces that the redirect field strictly equals the allow-listed internal path '/'."
+    },
+    "10": {
+      "score": 5,
+      "why": "Response headers enforce CSP with strict nonces, HSTS, X-Content-Type-Options: nosniff, and clickjacking protection via X-Frame-Options and frame-ancestors."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies explicitly include the HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Sensitive values are excluded from server logs, query strings, and error messages, and server errors return generic non-verbose responses."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes and TOTP tokens have short time limits, and recovery codes are spliced out of storage upon successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "The application enforces a 10-minute lockout after 5 consecutive failed verification attempts across identity, TOTP, and recovery code checks."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session IDs are rotated at each authentication step, enforced with idle and absolute expiration limits, and deleted from memory on logout."
+    }
+  },
+  "cost_usd": 0.0483795,
+  "generation_id": "gen-1786384403-HR1jh9dNVNrfvckSIYFp",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

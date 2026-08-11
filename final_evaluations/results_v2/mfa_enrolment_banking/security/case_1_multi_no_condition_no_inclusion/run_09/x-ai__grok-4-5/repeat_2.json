@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:27:34.219841+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints resolve state via getSession(req) and mfa(s.accountId) only, with no client-supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "OTP/TOTP secrets, identity challenges, and backup codes are bound per account or per challenge, so one user’s real verification code does not authenticate another."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in verify-otp updates only mfas state and never deletes or invalidates existing entries in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored with AES-GCM encrypt(); backup codes are stored as PBKDF2-derived hashes via protect()."
+    },
+    "5": {
+      "score": 5,
+      "why": "tokens, secrets, digits, and recovery codes all use crypto.getRandomValues (and WebCrypto) for generation."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session/challenge cookies are HttpOnly; no code writes secrets, OTPs, or session ids to localStorage, sessionStorage, or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, recovery codes, and JSON body shape with emailOK/phoneOK/otpOK/recoveryInput before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "API returns JSON; UI assigns untrusted values with textContent and uses a nonce CSP, so markup/script is not executed from injected input."
+    },
+    "9": {
+      "score": 5,
+      "why": "Sign-in accepts redirect only if it is in the ROUTES allow-list; server responses do not perform open external redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options/frame-ancestors 'none', and related controls on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie and challengeCookie set HttpOnly, Secure, and SameSite=Strict (with __Host- prefix)."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic without stack traces, but TEST_MODE returns mock codes in JSON and the client deliberately logs manual secrets and backup codes into the on-page Logs UI."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges and provisioning are expiry- and used-flag gated; backup codes flip used; TOTP acceptance is time-windowed and replay-guarded via v.accepted."
+    },
+    "14": {
+      "score": 5,
+      "why": "identityAttempts, otpAttempts, and recoveryAttempts lock out after MAX_FAILURES within LOCK_MS."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in issues a new session id and drops the prior cookie session; idle/absolute timeouts are enforced in getSession; logout deletes the session."
+    }
+  },
+  "cost_usd": 0.0205428,
+  "generation_id": "gen-1786386405-M3OxF53OEBiKkF7A6hH4",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

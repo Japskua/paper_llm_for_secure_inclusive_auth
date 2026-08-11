@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:30:49.397886+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints call getSession and then operate only on mfa(s.accountId), with no client-supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Sign-in checks challenge.identityKey and challenge.accountId against the submitted identity, so a challenge code is bound to the matching challenge/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "verify-otp enables MFA without deleting or rotating existing sessions, so previously issued sessions remain usable."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored using AES-GCM encryption and backup codes are stored as salted PBKDF2 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Tokens, challenge digits, OTP secrets, and recovery codes are generated through crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session and challenge identifiers are set only as HttpOnly/Secure cookies and the code does not write secrets to localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators emailOK, phoneOK, otpOK, and recoveryInput check and normalize user-supplied fields."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent or constrained nonced HTML, avoiding unsafe execution of rendered user-controlled values."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only redirect-like input is checked against the ROUTES allow-list and navigation uses internal hash routes."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie and challengeCookie include HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client logs manualSecret and backup recovery codes to the console and DOM log area, exposing OTP seeds/codes in logs."
+    },
+    "13": {
+      "score": 3,
+      "why": "Real challenge and recovery codes are single-use and time-limited, but default test mode also accepts reusable static mock codes."
+    },
+    "14": {
+      "score": 5,
+      "why": "identityAttempts, otpAttempts, and recoveryAttempts lock for LOCK_MS after MAX_FAILURES failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in creates a new session token, getSession enforces idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.069772,
+  "generation_id": "gen-1786386407-jWU7Y08OOLJvtOwNKl8E",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 3,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 4.3333,
+  "capture_complete": true
+}

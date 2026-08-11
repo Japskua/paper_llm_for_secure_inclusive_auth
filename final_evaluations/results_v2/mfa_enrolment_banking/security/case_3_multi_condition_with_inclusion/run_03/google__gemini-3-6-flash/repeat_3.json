@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 3,
+  "judged_at": "2026-08-10T19:34:32.302732+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "94a7c6dc5c1188ebf19fbb712d6c94f4fc46d3f25e16a20977597cf5afc48305",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The access function retrieves the user account using the server-side session user ID and rejects client-supplied user identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each account uses a unique, cryptographically generated secret key, preventing verification codes from working across different user accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the account state flag but does not revoke or purge other existing active sessions in the session store."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored AES-GCM encrypted and recovery codes are stored as salted PBKDF2 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, secret keys, salts, and recovery codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored exclusively in HttpOnly, Secure cookies and sensitive values are maintained in memory without being written to browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server applies strict regular expression and type checks to email, phone, OTP, and recovery code inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic content is inserted safely using textContent alongside a strict Content Security Policy using nonces."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application rejects payloads containing redirect parameters and performs no external or non-allowlisted redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include strict CSP, HSTS, X-Content-Type-Options, and clickjacking protections (X-Frame-Options and frame-ancestors)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies explicitly set the HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Sensitive tokens and secrets are omitted from URLs and server logs, and unexpected errors return generic messages with detailed stack traces suppressed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Provisioning keys feature expiration timestamps with single-use flags, and verified recovery codes are immediately removed from storage."
+    },
+    "14": {
+      "score": 5,
+      "why": "Both TOTP and recovery code checks enforce a lockout period after five consecutive failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are regenerated upon signing in, checked against idle and absolute timeouts, and deleted from memory on logout."
+    }
+  },
+  "cost_usd": 0.0389907,
+  "generation_id": "gen-1786390453-S4Fp2Argvq9qjPm3TJcw",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

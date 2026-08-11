@@ -1,0 +1,123 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "inclusivity",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:21:43.560238+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 13,
+  "screenshots_available": 13,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_confirm_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_authenticator_secret_created.png",
+    "step_05_verify_authenticator.png",
+    "step_06_generate_recovery_codes.png",
+    "step_07_recovery_codes_displayed.png",
+    "step_08_mfa_active.png",
+    "step_09_remaining_recovery_codes.png",
+    "step_10_logged_out.png",
+    "step_11_explored.png",
+    "step_12_explored.png",
+    "step_13_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a clean sans-serif typeface with comfortable spacing and an airy card layout, though the monospace log lines wrap awkwardly mid-word (\"enrolmen t\")."
+    },
+    "2": {
+      "score": 5,
+      "why": "Instructions are short, sentence-case lines with no italics, no all-caps text (only acronyms like MFA/OTP and the [SIMULATION] log tags), and no dense paragraphs."
+    },
+    "3": {
+      "score": 3,
+      "why": "All 13 screenshots are desktop-width; the narrow single-column card would likely adapt to small screens, but readability at a mobile size is never actually demonstrated."
+    },
+    "4": {
+      "score": 4,
+      "why": "Each step carries one short, plain instruction (e.g., \"Generate backup codes and store them safely\"), though \"manual Base32 secret\" is technical jargon."
+    },
+    "5": {
+      "score": 2,
+      "why": "The sign-in fields are prefilled, but the one input the user must actually type — the authenticator code at step 5 — is empty with no placeholder or example of the expected six-digit format."
+    },
+    "6": {
+      "score": 4,
+      "why": "Every required instruction is a single short line; only the optional Logs panel holds longer text, though step 5 does direct the user to extract the code from that dense log block."
+    },
+    "7": {
+      "score": 3,
+      "why": "The 32-character secret and the recovery codes are rendered as selectable monospace text, but no copy button or copy-all affordance appears on any screen."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code or otpauth:// link is offered anywhere; step 3 explicitly instructs \"Use this manual Base32 secret in an authenticator app.\""
+    },
+    "9": {
+      "score": 3,
+      "why": "Only standard prefilled text inputs are shown, with no evidence (autocomplete hints, password-manager prompts) confirming or denying autofill and password-manager support."
+    },
+    "10": {
+      "score": 4,
+      "why": "Each screen has a bold heading naming the step and a single prominent blue primary button, though the large black Logs panel competes for visual attention."
+    },
+    "11": {
+      "score": 4,
+      "why": "Every step centres on one main action (Sign in securely, Confirm identity, Create authenticator secret, etc.), with secondary actions like Log out and Regenerate codes visually de-emphasised."
+    },
+    "12": {
+      "score": 3,
+      "why": "What comes next is always clear from the next screen's heading, but what happened is confirmed only via technical \"[SIMULATION]...\" log lines; only the final \"MFA is active\" screen states the outcome in plain language."
+    },
+    "13": {
+      "score": 3,
+      "why": "Codes can be re-viewed (\"View recovery codes\") and re-requested (\"Regenerate codes\") without visible penalty, but no hide control and no retry-after-error flow are shown."
+    },
+    "14": {
+      "score": 3,
+      "why": "No error message appears in any of the 13 screenshots, so whether errors explain the problem and fix without blame cannot be confirmed."
+    },
+    "15": {
+      "score": 4,
+      "why": "No countdowns, timers, or session-expiry warnings appear on any screen, although real TOTP codes inherently rotate every 30 seconds (the test code 627186 is static here)."
+    }
+  },
+  "cost_usd": 0.1512054,
+  "generation_id": "gen-1786385937-KCe364VScT2OO8EC5Cdu",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 3,
+    "4": 4,
+    "5": 2,
+    "6": 4,
+    "7": 3,
+    "8": 1,
+    "9": 3,
+    "10": 4,
+    "11": 4,
+    "12": 3,
+    "13": 3,
+    "14": 3,
+    "15": 4
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 3.3333,
+    "comprehension": 2.3333,
+    "decision_making": 3.6667,
+    "learning": 3.3333
+  },
+  "overall": 3.3333,
+  "capture_complete": true
+}

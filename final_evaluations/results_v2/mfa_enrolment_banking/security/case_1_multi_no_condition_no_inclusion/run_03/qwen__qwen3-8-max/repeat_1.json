@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:58:55.708809+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls required(r, true) and uses only s.userId from the authenticated session to access mfas."
+    },
+    "2": {
+      "score": 1,
+      "why": "There is no alternate user identifier or endpoint that lets a code be verified for another user; verification is tied to the session's single account."
+    },
+    "3": {
+      "score": 5,
+      "why": "confirm only updates the MFA record and leaves existing session objects valid, so pre-existing sessions are not invalidated when MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as encryptedSecret via AES-GCM encrypt, and recovery codes are stored only as salted PBKDF2 verifiers."
+    },
+    "5": {
+      "score": 5,
+      "why": "OTP secrets, recovery codes, session identifiers, and CSRF tokens are generated through bytes using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is set only in an HttpOnly cookie and the code does not use localStorage, sessionStorage, or non-HttpOnly cookies for secrets or tokens."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side checks constrain email, phone, identity code, OTP, and recovery-code input with length limits and regular-expression validation before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent or created as text nodes, while innerHTML is used only for static markup, and CSP restricts scripts."
+    },
+    "9": {
+      "score": 5,
+      "why": "signin rejects any redirect value other than the internal path / and the server does not issue arbitrary Location redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers sets Content-Security-Policy with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie sets mfa_session with Path=/, HttpOnly, Secure, SameSite=Strict, and an absolute Max-Age."
+    },
+    "12": {
+      "score": 1,
+      "why": "TEST_MODE responses expose the provisioning secret and recovery codes, and the client writes those values into the visible Logs area and console."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code is marked used and has identityExpires, TOTP is accepted only for the live 30-second period, and recovery codes are removed on success."
+    },
+    "14": {
+      "score": 5,
+      "why": "addFail imposes a LOCK period after MAX failures for identity, authenticator, and recovery verification attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "signin and identity delete the old session and issue a new identifier, getSession enforces idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.102126,
+  "generation_id": "gen-1786384446-oD9ZA5mJm13c42k1OZMi",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

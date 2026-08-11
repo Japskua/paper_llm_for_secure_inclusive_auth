@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:31:21.661292+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "8c8e2b8bff5b5766fd0e1b65a04d06dcd989e190bf5b129b0024d646e7ea4504",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA records are looked up via `records.get(session.userId)` where the userId comes only from the server-side session map keyed by an HttpOnly cookie, so settings are always scoped to the signed-in account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored per-session (`session.identity`) and TOTP/backup codes are verified against the per-user encrypted record, so a code cannot be used by another account (and only one account exists)."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA in `/api/totp/verify` only sets `record.enabled = true` and never rotates the session id or clears other entries in the `sessions` map, so previously issued sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext via `encrypt()` and backup codes are stored as PBKDF2-SHA256 (120k iterations, per-code salt) verifiers, never plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session ids, CSRF tokens, salts, IVs, identity codes, secrets and backup codes all derive from `crypto.getRandomValues` with modulo-bias rejection in `randomFrom` (fixtures only under explicit MFA_TEST_MODE)."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and the CSRF token plus codes live only in JS variables — no localStorage/sessionStorage use — though secrets are printed to the console/log panel and offered as a file download."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server enforces JSON content-type, object-shaped bodies, trimmed string fields, and strict regexes for email, 6-digit codes, and the `XXXXX-XXXXX` recovery format; there is no SQL layer at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values go through the `esc()` HTML-entity encoder or `textContent`, and the nonce-based CSP with `default-src 'self'` blocks inline/injected script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "`safePath()` restricts the post-login `next` value to a fixed internal path list and the client router likewise validates the hash route against an allow-list, with no external redirect sink."
+    },
+    "10": {
+      "score": 5,
+      "why": "Every response sets a nonce-based CSP with `frame-ancestors 'none'`, HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()` emits `HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=1800` and the clearing cookie carries the same attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and nothing sensitive is in URLs, but the app deliberately logs the authenticator secret, provisioning URI and full recovery code list to the browser console and the on-page 'Logs' panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are hashed with a 20-minute expiry and a `used` flag, TOTP counters are recorded in `usedCounters` to block replay, and backup codes are marked `used` on first successful match."
+    },
+    "14": {
+      "score": 5,
+      "why": "`failed()`/`locked()` implement a 5-attempt threshold with a 5-minute lockout returning HTTP 429, applied to identity, TOTP and recovery-code verification."
+    },
+    "15": {
+      "score": 4,
+      "why": "Login deletes any presented old session and issues a fresh 32-byte id, with 30-minute idle and 8-hour absolute timeouts and server-side deletion on logout; the only gap is no additional rotation after the MFA step itself."
+    }
+  },
+  "cost_usd": 0.146875,
+  "generation_id": "gen-1786390247-45bdVBfc1Ft888YSYQAp",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

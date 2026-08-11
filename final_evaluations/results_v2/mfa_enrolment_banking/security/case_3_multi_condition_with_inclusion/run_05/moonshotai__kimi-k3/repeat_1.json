@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:46:03.086999+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "auth() resolves the account solely from the session cookie's accountId and every MFA route operates on that session-derived account, with no user-supplied identifiers accepted."
+    },
+    "2": {
+      "score": 2,
+      "why": "Codes are checked only against the session-bound account's own verifier with per-account used/expiry/attempts state and only one account exists, although the mock uses a shared deterministic code constant."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/authenticator/verify sets mfaEnabled=true without invalidating or rotating any existing sessions, so previously issued session ids remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-256-GCM encrypted via crypt() and backup codes are PBKDF2-SHA256 hashed (210k iterations) with per-code random salts."
+    },
+    "5": {
+      "score": 2,
+      "why": "Session tokens, salts and IVs use crypto.getRandomValues, but the OTP shared secret and all verification/recovery codes are hardcoded deterministic mock constants, not RNG-generated."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session id is only ever set in an HttpOnly; Secure; SameSite=Strict cookie and no browser storage appears in this code, though secrets and codes are returned in JSON bodies where client-side handling is not visible."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email is regex- and length-validated, OTP and recovery codes are strictly format-checked, and bodies are size-limited and type-checked, but no phone input exists and sanitisation is limited to trim/lowercase."
+    },
+    "8": {
+      "score": 3,
+      "why": "The server emits only JSON with a strict nonce-based CSP, but no page-rendering code is present in the provided source to confirm contextual output encoding."
+    },
+    "9": {
+      "score": 3,
+      "why": "No redirect logic exists in the provided code, so no open redirect is possible, but no redirect allow-list is implemented either (the ORIGIN allow-list applies only to CORS)."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP with nonces and frame-ancestors 'none', HSTS, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Permissions-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() issues mfa_session with HttpOnly, Secure, SameSite=Strict and a Max-Age on every signin."
+    },
+    "12": {
+      "score": 3,
+      "why": "No logging or stack traces appear and error messages are generic, but the OTP secret is embedded in an otpauth URI and mock codes plus backup codes are deliberately returned in API responses."
+    },
+    "13": {
+      "score": 3,
+      "why": "Identity codes are single-use with a 15-minute expiry enforced in check(), but the authenticator setup code's expires value is never checked during verify (the mock doc states it does not expire), though deleting pending makes it effectively single-use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed attempts increment a counter that locks verification for 10 minutes after 5 failures on the identity, authenticator and signin paths, with recoveryAttempts/recoveryLocked fields present for recovery codes."
+    },
+    "15": {
+      "score": 4,
+      "why": "A fresh random session id is issued at each signin with idle (30 min) and absolute (8 h) timeouts enforced in auth(), and an expiredCookie() helper exists, but the logout handler lies in the truncated portion so invalidation on logout cannot be fully confirmed."
+    }
+  },
+  "cost_usd": 0.195849,
+  "generation_id": "gen-1786391077-mg6yKr8tPRPIdTLvVP2j",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 4,
+    "7": 4,
+    "8": 3,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 3,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 3.3333,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.7333,
+  "capture_complete": false
+}

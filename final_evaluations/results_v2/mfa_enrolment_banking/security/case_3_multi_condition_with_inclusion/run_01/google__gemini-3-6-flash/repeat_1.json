@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:27:11.679530+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "e2523743e6748e8fa4d2c78a75fe0c8f0d4948d3cb707513e4d7acf4307a964a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization via owner() verifies that session phase is authenticated and belongs to the account owner before processing MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes and TOTP seeds are bound to specific account or session records and cannot be interchanged across users."
+    },
+    "3": {
+      "score": 1,
+      "why": "Session IDs are deleted and re-issued during authentication phase transitions, preventing pre-MFA sessions from remaining valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are stored encrypted with AES-256-GCM and backup codes are stored hashed using PBKDF2 with unique salts."
+    },
+    "5": {
+      "score": 5,
+      "why": "All cryptographic keys, salts, tokens, and random codes utilize crypto.randomBytes and crypto.randomInt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are managed strictly via HttpOnly, Secure, SameSite cookies and secrets are kept in memory without browser storage persistence."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation uses strict type checking, regex checks for emails/codes, and input length constraints on incoming request bodies."
+    },
+    "8": {
+      "score": 5,
+      "why": "The DOM rendering helper explicitly sets textContent for user inputs and variables, preventing XSS injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application handles navigation purely through single-page application state changes and contains no open redirect mechanisms."
+    },
+    "10": {
+      "score": 5,
+      "why": "The system configures Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options DENY, and a strict Content-Security-Policy."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are explicitly formatted with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Catch blocks return sanitized general error messages to clients without revealing stack traces, session tokens, or OTP seeds."
+    },
+    "13": {
+      "score": 5,
+      "why": "Codes are enforced with expiration timestamps and tracked via sets/flags to prevent re-use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate limiting and temporal lockout rules are enforced on both identity and source keys after repeated verification failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated upon successful authentication, feature explicit idle/absolute timeouts, and are deleted on logout."
+    }
+  },
+  "cost_usd": 0.0377325,
+  "generation_id": "gen-1786390020-XdHrko7I5ZbxFX7piWTY",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

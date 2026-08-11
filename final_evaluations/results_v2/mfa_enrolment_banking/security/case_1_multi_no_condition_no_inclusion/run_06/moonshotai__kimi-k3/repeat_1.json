@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:15:06.366323+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "3d09bd0257e9941bea9ed673158f55946146901e5fa8fb38fe05ada4ea49310d",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA route calls authorize(), which derives the user solely from the opaque mfa_session token (session.accountId), and bodyObject()/authorize() reject any id/uid/userId/accountId in the body or query string, so only the signed-in owner's settings are touched."
+    },
+    "2": {
+      "score": 1,
+      "why": "False: /api/mfa/verify computes the expected TOTP from the authenticated user's own encryptedSecret, so a code is bound to that user's secret (and the demo has a single account) rather than working for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "True: /api/mfa/enable only sets mfaActive and stores recoveryHashes and never deletes entries from the sessions map, so pre-existing sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored via AES-GCM encryptSecret() (encryptedSecret) and recovery codes are stored only as SHA-256 peppered hashes (hashRecoveryCode into recoveryHashes), never in plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "randomToken() and randomBase32() (used for the TOTP secret and recovery codes) as well as the master key all use crypto.getRandomValues, a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "The client keeps csrf/secret/codes only in JS variables with no localStorage/sessionStorage use, and the sole cookie mfa_session is HttpOnly/Secure/SameSite=Strict, so secrets and tokens are not in browser storage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server enforces validEmail/validPhone/validOtp/validRecoveryCode and JSON-only object bodies via bodyObject(), applying normalizeEmail/normalizePhone to sign-in input."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are inserted with textContent (audit, msg, s.textContent=secret, list items) while the innerHTML templates are static with no user data interpolated, and CSP is nonce-based, so injected markup cannot execute."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server never issues a redirect (no Location header or 3xx response and no redirect/next parameter anywhere), so there is no open-redirect surface to violate the allow-list rule."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders() sets Content-Security-Policy (including frame-ancestors 'none'), Strict-Transport-Security, X-Content-Type-Options: nosniff and X-Frame-Options: DENY, and Bun.serve is started with TLS."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits 'mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict', so the HttpOnly, Secure and SameSite attributes are all present."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client deliberately console.logs the TOTP seed ('manual secret'), the current testOtp and the recovery codes (the page even states sensitive test values go to the console), so seeds/codes are not kept out of logs even though errors are generic, nothing leaks via URLs and no stack traces are shown."
+    },
+    "13": {
+      "score": 5,
+      "why": "The TOTP is computed for the current 30s step only (time-bound) and a successful /api/mfa/verify sets verification.used=true so it cannot be reused, while recovery codes are consumed via splice."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed OTP attempts increment mfaVerificationFailures and lock for MFA_LOCKOUT_MS after 5, recovery verification locks after 5 failures, and sign-in uses a rolling 5-in-15-minute lockout plus a 450ms minimum failure duration."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the old mfa_session token and issues a fresh randomToken (rotation), authorize() enforces a 15-minute idle and 8-hour absolute timeout, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.179475,
+  "generation_id": "gen-1786385436-ubYuAGbBvcegvgNenfMl",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

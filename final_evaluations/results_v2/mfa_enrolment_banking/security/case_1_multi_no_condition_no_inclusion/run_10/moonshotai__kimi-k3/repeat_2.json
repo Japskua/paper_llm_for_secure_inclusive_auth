@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:35:05.602739+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "/api/mfa/settings and the recovery endpoints require an authenticated session at stage 'mfa' resolved from the HttpOnly session cookie, so only the owning signed-in session can view or modify MFA state."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity challenge is looked up via the session's own identityTarget, marked used on success, and requires state.account, so a code issued to one identity cannot be replayed by another user's session."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA only flips the existing session's stage to 'mfa' and never deletes or rotates that or any concurrent sessions, so sessions established before MFA remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted via encryptSecret and recovery codes are stored only as peppered SHA-256 hashes (recoveryHashes)."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, OTPs, recovery codes, session IDs, and CSRF tokens are generated through randomBytes, which uses crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and the SPA keeps the CSRF token only in an in-memory variable with no localStorage or sessionStorage usage."
+    },
+    "7": {
+      "score": 5,
+      "why": "validatedIdentity, validOtp, validSecret, and validRecovery strictly validate email, phone, OTP, secret, and recovery code inputs server-side with regexes and length limits."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client renders all dynamic values via textContent (never innerHTML) and responses carry a nonce-based CSP, so injected markup or script cannot execute."
+    },
+    "9": {
+      "score": 4,
+      "why": "The server issues no HTTP redirects at all and navigation is client-side view switching, so no open redirect is possible, though no explicit redirect allow-list exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders sets Content-Security-Policy, Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, and frame-ancestors 'none' on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieFor sets the mfa_session cookie with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Mock OTPs and recovery codes are deliberately written to the in-page Logs panel and console (testOtp, 'Mock recovery codes'), although stack traces are suppressed and secrets stay out of URLs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes carry used and expiresAt flags checked on verify, authenticator confirmation sets authenticatorUsed, and recovery codes are spliced from recoveryHashes after use."
+    },
+    "14": {
+      "score": 5,
+      "why": "failedAttempt locks identity, authenticator, and recovery verification for 10 minutes after 5 consecutive failures, checked via mayAttempt."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sessions are rotated at signin and identity verification, expire after 15-minute idle and 8-hour absolute limits, and are deleted with an expired cookie on logout."
+    }
+  },
+  "cost_usd": 0.0816528,
+  "generation_id": "gen-1786386809-1C15NMPNdCxnINu8gqlq",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

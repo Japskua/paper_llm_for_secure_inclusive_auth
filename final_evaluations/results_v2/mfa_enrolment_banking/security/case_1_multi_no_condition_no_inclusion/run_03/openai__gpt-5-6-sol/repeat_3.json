@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:53:06.789445+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint obtains the user ID exclusively from an authenticated session and accepts no client-supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "The application defines only Marcus's account, and verification is performed against state associated with the session-derived Marcus user ID."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in confirm updates the MFA record without rotating the current session or invalidating other existing sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is encrypted with AES-256-GCM, while recovery codes are stored as salted 120,000-iteration PBKDF2-SHA-256 verifiers."
+    },
+    "5": {
+      "score": 2,
+      "why": "Secrets and recovery codes use crypto.getRandomValues, but the identity verification code is the fixed constant 135790 while TEST_MODE is enabled."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is stored only in an HttpOnly cookie, while CSRF tokens and plaintext codes remain in JavaScript memory rather than persistent browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server enforces JSON schemas, type and length limits, strict regular expressions, and normalization for email, phone, OTP, and recovery-code input."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted using textContent or createElement rather than interpolated into executable HTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only accepted redirect value is the exact internal path \"/\"."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies consistently include HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Although server errors are generic, TEST_MODE exposes identity codes, TOTP seeds, OTPs, and recovery codes and the client writes them to console and visible test logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are marked used and expire after five minutes, recovery codes are removed after use, and enrollment TOTP acceptance is limited to the live 30-second period."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, and recovery verification paths apply a ten-minute lock after five failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated after sign-in and identity verification, enforce idle and absolute timeouts, and are deleted and expired on logout."
+    }
+  },
+  "cost_usd": 0.05258,
+  "generation_id": "gen-1786384354-X6FAQ3Ndlqc6xmVNPiS6",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

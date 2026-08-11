@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:36:27.104094+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The /api/mfa/settings endpoint only returns data when the session is authenticated and in the mfa stage, tying settings to the signed-in session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Challenges are stored per identity target and verification requires the matching target and account, so a code for one user is not accepted for another."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only changes the current session stage and does not revoke other active sessions, so previous sessions can remain valid until timeout or logout."
+    },
+    "4": {
+      "score": 3,
+      "why": "The OTP secret is AES-GCM encrypted and recovery hashes are SHA-256 based, but plaintext recovery codes are temporarily stored in pendingRecoveryDisplay."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, identity codes, and recovery codes are generated through randomBytes, which uses crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The code does not use localStorage, sessionStorage, or non-HttpOnly cookies for secrets, OTPs, or session tokens; the session cookie is HttpOnly."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators constrain email, phone, OTP, secret, and recovery-code inputs with strict regular expressions and normalization."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent or form value assignment rather than HTML injection, and CSP nonces are used for static scripts and styles."
+    },
+    "9": {
+      "score": 3,
+      "why": "No redirect endpoints or Location headers are present, so there is no observed redirect allow-list but also no open redirect behavior."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders sets CSP with frame-ancestors none, HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieFor sets the session cookie with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client-side Logs panel and console receive identity codes, mock authenticator OTPs, and recovery codes, although generic errors are used and stack traces are not exposed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges have expiresAt and used flags, and recovery codes are removed from recoveryHashes when verified."
+    },
+    "14": {
+      "score": 5,
+      "why": "failedAttempt increments counters and locks identity, authenticator, or recovery attempts for 10 minutes after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in and identity verification delete the old session and create a new session identifier, sessionFrom enforces idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.075806,
+  "generation_id": "gen-1786386784-dI6brx5Ra6aqsvr8Nmh6",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 3,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

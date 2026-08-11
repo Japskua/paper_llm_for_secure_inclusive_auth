@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:05:14.786984+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ea5bab4b0d6539028296220e344d7db471d5a50ff1c6cc99aaff0f369372e18a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints resolve the account solely via `authenticated(request)` → `accountFor(session.userId)`, so settings can only be read/modified for the signed-in session's own account."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity code is stored as a peppered hash on the individual session (`session.identityHash`) and globally de-duplicated via `activeIdentityHashes`, so a code cannot be replayed by or for another user."
+    },
+    "3": {
+      "score": 4,
+      "why": "`/api/mfa/verify` only sets `account.mfaEnabled = true` and never iterates the `sessions` map, so any other pre-existing session for the account would remain valid after MFA is enabled (only sign-in rotates a session)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM `EncryptedValue` and recovery codes are stored only as peppered SHA-256 hashes in `account.recoveryCodes`."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session ids, CSRF tokens, TOTP seed, six-digit codes and recovery codes all come from `crypto.getRandomValues`, with rejection sampling to avoid modulo bias."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage or JS-readable cookie is used and the session cookie is HttpOnly/Secure/SameSite=Strict; secrets exist only transiently in JS memory (though they are echoed into the on-page log panel)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates strictly: JSON-only bodies with 4 KB cap, allow-listed keys, `/^\\d{6}$/` OTP, recovery-code regex, normalised login regex, and rejection of client-supplied identity fields."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client builds all DOM via `createElement`/`textContent` with no `innerHTML`, and the only server-interpolated HTML value is a hex nonce, so injected markup cannot execute (also CSP nonce-based)."
+    },
+    "9": {
+      "score": 5,
+      "why": "`validRedirect` restricts the redirect parameter to a fixed allow-list of five internal hash routes and no HTTP redirect responses are ever issued."
+    },
+    "10": {
+      "score": 5,
+      "why": "`headers()` sets CSP with `frame-ancestors 'none'`, HSTS with includeSubDomains, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, Referrer-Policy and Cache-Control on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()` and `expiredCookie()` both emit `HttpOnly; Secure; SameSite=Strict` with Path and Max-Age."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server errors are generic with no stack traces and nothing sensitive is server-logged, but the TOTP seed appears in the `otpauth://...?secret=` URI and the identity code plus recovery codes are written to the browser console and the visible log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have `identityUsed` plus a 5-minute `identityExpires`, TOTP steps are recorded in `totpUsedSteps` to block replay, and recovery codes flip to `true` once consumed."
+    },
+    "14": {
+      "score": 5,
+      "why": "`fail`/`allowed` enforce 5 failures → 10-minute lockout for identity, TOTP, recovery, and a separate IP+login keyed `signInAttempts` limiter for sign-in."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in destroys the pre-auth session and issues a new id, `readSession` enforces 20-minute idle and 8-hour absolute timeouts, and `/api/logout` calls `destroySession` and clears the cookie."
+    }
+  },
+  "cost_usd": 0.1418,
+  "generation_id": "gen-1786385082-L9gk69aAFoeQ8ZhzfNbk",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": true
+}

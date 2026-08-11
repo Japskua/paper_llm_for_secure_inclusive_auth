@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:31:56.388420+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "8c8e2b8bff5b5766fd0e1b65a04d06dcd989e190bf5b129b0024d646e7ea4504",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Session ownership is validated on every request via requireSession, and MFA operations act exclusively on the authenticated session's user ID."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes, TOTP secrets, and recovery codes are tied strictly to individual user sessions or records and cannot be used for other accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/totp/verify updates the user's record status without deleting or invalidating other existing active sessions in memory."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored encrypted with AES-GCM and backup codes are stored hashed using PBKDF2 with 120,000 iterations."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, secrets, identity codes, IVs, and backup codes are generated using crypto.getRandomValues()."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are restricted to HttpOnly cookies and operational state is held in JavaScript memory without writing to browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side endpoints validate inputs like email addresses, OTP numbers, and formatted recovery codes using strict regular expressions and string sanitization."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic HTML strings rendered on the client pass through an explicit HTML entity escaping function prior to insertion into the DOM."
+    },
+    "9": {
+      "score": 5,
+      "why": "The safePath function on the server restricts redirect routes to a fixed allow-list of known internal path strings."
+    },
+    "10": {
+      "score": 5,
+      "why": "HTTP response headers consistently include Content-Security-Policy with nonces, HSTS, X-Content-Type-Options: nosniff, and frame-ancestors/X-Frame-Options protection."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies explicitly set the HttpOnly, Secure, and SameSite=Strict flags."
+    },
+    "12": {
+      "score": 1,
+      "why": "The frontend application explicitly logs sensitive identity codes, TOTP secrets, and recovery codes to console.log and an on-screen log element."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 20 minutes and mark used = true, TOTP prevents counter reuse, and recovery codes are consumed on first use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed verification attempts are tracked per user and trigger a 5-minute lockout upon reaching 5 consecutive failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session IDs are re-generated upon sign-in, deleted from the server session map on logout, and enforced with idle and absolute expiration timeouts."
+    }
+  },
+  "cost_usd": 0.0446505,
+  "generation_id": "gen-1786390294-OQz8Sn6h7XsERZO3blBS",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

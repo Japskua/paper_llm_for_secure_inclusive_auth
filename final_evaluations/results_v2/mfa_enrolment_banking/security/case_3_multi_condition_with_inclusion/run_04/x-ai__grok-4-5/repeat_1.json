@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:39:33.040076+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "c08fd9d85e429c55d45db1aac6ad59f72dd588811e3b858c08385d4e6ba1851e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA routes go through owner(), which requires a valid session in stage mfa whose userId matches the signed-in ACCOUNT.id."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification material is bound to the caller session (per-session identity hash, pending TOTP secret, and backup hashes), so the same code does not authorize a different user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only mutates the current session (o.enabled/o.enrolled); no code invalidates other existing sessions, so prior sessions continue to work."
+    },
+    "4": {
+      "score": 5,
+      "why": "Pending/enrolled OTP secrets are stored with AES-GCM encrypt(), and backup codes are stored as peppered SHA-256 hashes, not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "token(), secret(), codes(), and related helpers use crypto.getRandomValues (CSPRNG); fixed values appear only in explicit TEST mode."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session id is only in an HttpOnly cookie; client code does not write secrets/OTPs/tokens to localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, password, OTP, and recovery inputs via bounded length checks and strict regex/format helpers before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "UI rendering escapes untrusted strings with the e() HTML encoder, and CSP nonce restricts script execution."
+    },
+    "9": {
+      "score": 4,
+      "why": "No user-controlled redirect targets exist (only location.reload and static responses), so open redirects are avoided even without an explicit redirect allow-list."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "secureCookie() sets mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 4,
+      "why": "Production error handler returns a generic 500 without stack traces and secrets are not put in URLs; TEST-only client logs can expose codes when test mode is on."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity codes expire (LIFE) and are cleared after success; backup codes are removed on use; TOTP is time-bound though not recorded as single-use within its window."
+    },
+    "14": {
+      "score": 5,
+      "why": "identity/otp/recovery failures increment counters and lock for LOCK after MAX attempts, returning 429 while locked."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the old session and issues a new id; get() enforces idle/absolute timeouts; logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0412464,
+  "generation_id": "gen-1786390722-jhcOjKueh6f6FgtymP9P",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.5334,
+  "capture_complete": true
+}

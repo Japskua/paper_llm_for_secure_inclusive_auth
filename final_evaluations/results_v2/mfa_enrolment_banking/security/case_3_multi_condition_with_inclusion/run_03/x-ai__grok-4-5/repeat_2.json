@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:34:28.332099+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "94a7c6dc5c1188ebf19fbb712d6c94f4fc46d3f25e16a20977597cf5afc48305",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints use access() which loads the account solely from the server-side session userId and rejects client-supplied userId/accountId fields via noId()."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification uses only the secret bound to the signed-in account’s provision record, so one user’s OTP does not validate for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/mfa/verify only updates account flags and does not invalidate or re-check other existing sessions in the sessions Map."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored with AES-GCM encrypt() and recovery codes are stored only as PBKDF2 hashes via codeHash()."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session ids, CSRF tokens, and recovery codes are all generated with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session id is only in an HttpOnly cookie; code does not write secrets, OTPs, or tokens to localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, and recovery input with dedicated validators before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "API responses are JSON and the UI assigns untrusted text via textContent, not HTML injection sinks."
+    },
+    "9": {
+      "score": 5,
+      "why": "No redirect endpoints exist and client-supplied redirect fields are rejected by noId(), so open redirects are not possible."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "Set-Cookie for mfa_session includes HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic, but the client intentionally logs mock OTP and recovery codes to the on-page logs and console."
+    },
+    "13": {
+      "score": 5,
+      "why": "Enrollment marks provision.used, provision expires after PROVISION_WINDOW, TOTP is time-windowed, and recovery codes are removed after one successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "OTP and recovery failures increment counters and lock out after MAX attempts for LOCK duration."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in issues a new session id and drops the prior cookie session, idle/absolute timeouts are enforced, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0373664,
+  "generation_id": "gen-1786390433-qcOGu03W6O5hPNzLNRrM",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

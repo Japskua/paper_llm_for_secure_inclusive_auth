@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:31:34.546609+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "8c8e2b8bff5b5766fd0e1b65a04d06dcd989e190bf5b129b0024d646e7ea4504",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server endpoints enforce session validation and operate exclusively on the authenticated user's ID."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes and MFA settings are strictly scoped to the authenticated user's record and session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in the TOTP verification endpoint does not revoke or invalidate other existing active sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored encrypted using AES-GCM and backup codes are hashed with PBKDF2."
+    },
+    "5": {
+      "score": 5,
+      "why": "Random generation functions for tokens, secrets, IVs, and codes consistently use crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session cookies are configured with HttpOnly and no sensitive tokens or secrets are stored in localStorage or sessionStorage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server handlers validate and sanitize input formats for email, OTP, and recovery code parameters using regular expressions."
+    },
+    "8": {
+      "score": 5,
+      "why": "User-facing dynamic text rendered by the client script is escaped using an HTML entity encoding function."
+    },
+    "9": {
+      "score": 5,
+      "why": "Post-authentication redirect targets are validated against an explicit internal route allow-list via safePath."
+    },
+    "10": {
+      "score": 5,
+      "why": "The response header helper sets strict CSP, HSTS, X-Content-Type-Options, and X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with the HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "OTP seeds, identity codes, and recovery codes are explicitly written to the browser console and onscreen activity log UI."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity verification codes expire after 20 minutes and mark used status, TOTP tracks used counters, and backup codes are marked used upon consumption."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed verification attempts are tracked on server state and enforce a 5-minute lockout after 5 failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are replaced upon login, checked for idle and absolute timeouts, and deleted from memory on logout."
+    }
+  },
+  "cost_usd": 0.052065,
+  "generation_id": "gen-1786390275-BwhdPjz7TFNr92v6li6U",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

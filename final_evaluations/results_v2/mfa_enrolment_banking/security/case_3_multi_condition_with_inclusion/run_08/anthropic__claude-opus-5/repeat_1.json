@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:57:29.756429+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "48fa2822d4bb533cb7f6b1373e6850d18a371d90cdcb9c7879856ab4a2a475d0",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint derives the account solely from the server-side session (`owned()` → `sessions.get(cookie)` → `accounts.get(session.accountId)`), and `object()` even rejects request bodies containing id/userId keys, so settings can only belong to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are freshly generated per request and stored only as a salted hash inside that specific session's `challenge`, and TOTP/recovery hashes are per-account, so a code cannot validate for any other user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA (`/api/authenticator/confirm`) only sets `account.mfa = true` and never rotates or deletes session IDs, so the pre-MFA session cookie continues to work afterwards (only sign-in purges other sessions)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored as AES-256-GCM ciphertext (`encrypt()`), and recovery codes are stored only as per-code salted SHA-256 hashes; no plaintext is retained."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session IDs, CSRF tokens, salts, IVs, recovery codes and identity codes come from `crypto.getRandomValues` (only minor modulo bias in `freshIdentityCode`)."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and `mfa_session` is HttpOnly+Secure+SameSite=Strict; however the `signin_csrf` cookie is deliberately non-HttpOnly and secrets/OTPs live in JS variables and the console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (`emailOK`, `passwordOK`, `otpOK` /^\\d{6}$/, `recoveryOK` strict pattern) gate every input, JSON bodies are type-checked by `object()`, and there is no SQL/interpolated datastore at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are injected with `textContent` (secret, recovery codes, error messages, logs) or through `esc()` for the notice banner, and all `innerHTML` strings are static templates plus a strict nonce-based CSP."
+    },
+    "9": {
+      "score": 5,
+      "why": "Navigation goes through `go()` which coerces anything outside the fixed `routes` allow-list to `#signin`, there are no server-side Location redirects, and `object()` blocks `next`/`redirect` keys in bodies."
+    },
+    "10": {
+      "score": 5,
+      "why": "`secureHeaders()` sets a nonce-based CSP with `frame-ancestors 'none'`, HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()` emits `HttpOnly; Secure; SameSite=Strict` for the `mfa_session` cookie."
+    },
+    "12": {
+      "score": 2,
+      "why": "Error responses are generic with no stack traces and nothing sensitive appears in URLs, but the client explicitly `console.log`s the identity code, the simulated authenticator OTP and the full recovery-code set via `privateDemo()`, and the server returns `simulatedCode`/`simulatedOtp` in responses."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges carry a 15-minute `expires` plus a `used` flag, accepted TOTP time-steps are recorded in `usedSteps` to block replay, and recovery codes are marked `used` once redeemed."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator and recovery verification each count failures and impose a 10-minute lockout with HTTP 429 after 5 failed attempts, cleared by `clearLock`."
+    },
+    "15": {
+      "score": 4,
+      "why": "Sign-in mints a brand-new session ID and deletes all prior sessions for the account, idle (30 min) and absolute (8 h) timeouts are enforced in `getSession`, and logout deletes the session and clears the cookie — but the ID is not rotated at the MFA step-up (`session.verified = true`)."
+    }
+  },
+  "cost_usd": 0.1662,
+  "generation_id": "gen-1786391801-LjwO2h1FkM0XnG78Kskm",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

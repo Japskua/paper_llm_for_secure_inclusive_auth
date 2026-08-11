@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 2,
+  "judged_at": "2026-08-10T18:53:53.646876+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "95a3e86296de0b7988f870a2cdac6ff7f3e0d9e93db206d586fb6fd059d8e0d1",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization enforces that MFA settings belong to the authenticated account owner and rejects client-supplied user identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are tied to specific user session objects and cannot be used for other accounts."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous session identifiers are explicitly deleted from the active sessions map during session rotation upon completing authentication."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored encrypted using AES-GCM and recovery codes are stored as salted SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, verification codes, and tokens are generated using Web Crypto CSPRNG via crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored in HttpOnly cookies and sensitive values are kept in transient JS memory rather than browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "User inputs including email, phone, and OTP codes are strictly validated and sanitized server-side using regex patterns and length bounds."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic content rendered into HTML is contextually encoded using an escapeHTML helper function."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application relies strictly on internal SPA routing and enforces form-action 'self', preventing external redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with the HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Generic error responses prevent detailed stack trace disclosures and sensitive tokens are omitted from server logs and URL query parameters."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes carry explicit expiration timestamps and are single-use or consumed immediately upon verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed attempts across identity verification, MFA setup, and recovery codes trigger a 10-minute lockout after 5 failed tries."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated upon authentication, subject to 15-minute idle and 8-hour absolute timeouts, and invalidated on logout."
+    }
+  },
+  "cost_usd": 0.03546885,
+  "generation_id": "gen-1786388015-Ak2cCudigHhCvmOaKuU9",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

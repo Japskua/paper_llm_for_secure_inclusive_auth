@@ -1,0 +1,126 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:49:48.726347+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "7ebb89de2c28ee4cfb4fb0889f4e47067302d1f742dc82ebf6e93b4fdeb4bc17",
+  "app_ts_sha256": "652bf86f5783a50ebf90d322da5510ea9fa899a6e4f41ad87fa0fc835067602a",
+  "screenshot_count": 16,
+  "screenshots_available": 16,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_add_authenticator.png",
+    "step_05_save_initial_recovery_codes.png",
+    "step_06_mfa_status.png",
+    "step_07_enter_initial_recovery_code.png",
+    "step_08_initial_recovery_code_confirmed.png",
+    "step_09_mfa_status_after_recovery.png",
+    "step_10_save_replacement_recovery_codes.png",
+    "step_11_mfa_status_with_replacement_codes.png",
+    "step_12_enter_replacement_recovery_code.png",
+    "step_13_replacement_recovery_code_confirmed.png",
+    "step_14_signed_out.png",
+    "step_15_explored.png",
+    "step_16_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Screens use a clean sans-serif face at a comfortable size with visibly loose line spacing in body text and labels, though letter-spacing is default rather than expanded."
+    },
+    "2": {
+      "score": 5,
+      "why": "No italics or all-caps are used anywhere; every screen has only short sentences and bulleted-style code lists, with no dense paragraphs."
+    },
+    "3": {
+      "score": 3,
+      "why": "The single-column card layout with full-width buttons would likely adapt to a phone, but all screenshots are desktop-width (1280px) so mobile rendering, including the wide monospace setup key and log block, is unverified."
+    },
+    "4": {
+      "score": 4,
+      "why": "Most instructions are one short plain sentence (e.g. 'Enter the six-digit verification code.'), though lines like 'Your password confirms ownership separately from the demonstration verification code.' are abstract wording."
+    },
+    "5": {
+      "score": 2,
+      "why": "No placeholder or worked example of an expected entry is shown for the verification code, authenticator code or recovery code fields; only a description ('six-digit', 'Type: Time-based, 6 digits') is given."
+    },
+    "6": {
+      "score": 5,
+      "why": "Every step's text is at most two short sentences plus a brief info callout, so nothing long must be read to proceed."
+    },
+    "7": {
+      "score": 2,
+      "why": "The 32-character setup key and the eight recovery codes are displayed as static text with no copy button, copy-all, or download option visible, implying manual transcription."
+    },
+    "8": {
+      "score": 1,
+      "why": "Step 3 mentions 'scan or manually enter' but step 4 presents only the manual setup key string — no QR code or equivalent scannable alternative appears anywhere."
+    },
+    "9": {
+      "score": 2,
+      "why": "Standard email/password fields exist, but there is no visible evidence of autocomplete/one-time-code support, and step 15/16 shows the email and password re-entered manually with no password-manager affordance."
+    },
+    "10": {
+      "score": 3,
+      "why": "Each page has a bold heading and one prominent blue primary button, but there is no step indicator (e.g. 'Step 2 of 5') or progress cue to show where the user is in the enrolment flow."
+    },
+    "11": {
+      "score": 4,
+      "why": "Nearly every screen asks for a single action with one primary button, though the login screen collects three fields at once and the MFA status page offers two competing buttons plus log out."
+    },
+    "12": {
+      "score": 4,
+      "why": "Outcomes are stated plainly ('MFA is active', 'That recovery code has been used and cannot be used again'), but the next required action is usually implied by a button rather than explicitly described."
+    },
+    "13": {
+      "score": 3,
+      "why": "'Show setup key' reveals the secret and 'Generate new recovery codes' re-issues codes, and the failed login can be retried, but there is no hide/re-show option and the recovery codes explicitly 'will not be shown again'."
+    },
+    "14": {
+      "score": 2,
+      "why": "The only error observed, 'We could not complete that request. Please try again.', is non-blaming but generic — it names neither the problem nor how to fix it."
+    },
+    "15": {
+      "score": 4,
+      "why": "No countdown timers, expiry warnings or session-timeout messages appear on any screen, so reading and entry time is not visibly constrained, although the TOTP code is inherently time-based with no remaining-time indicator."
+    }
+  },
+  "cost_usd": 0.17361,
+  "generation_id": "gen-1786387757-p3ZgWob9ZnIZErauWdJw",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 3,
+    "4": 4,
+    "5": 2,
+    "6": 5,
+    "7": 2,
+    "8": 1,
+    "9": 2,
+    "10": 3,
+    "11": 4,
+    "12": 4,
+    "13": 3,
+    "14": 2,
+    "15": 4
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 3.6667,
+    "comprehension": 1.6667,
+    "decision_making": 3.6667,
+    "learning": 3.0
+  },
+  "overall": 3.2,
+  "capture_complete": true
+}

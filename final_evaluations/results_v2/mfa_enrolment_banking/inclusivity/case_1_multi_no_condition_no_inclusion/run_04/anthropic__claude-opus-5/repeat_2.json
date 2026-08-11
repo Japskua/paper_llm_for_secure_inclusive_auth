@@ -1,0 +1,128 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:01:33.280240+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 18,
+  "screenshots_available": 18,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_authenticator_provisioning.png",
+    "step_05_store_recovery_codes.png",
+    "step_06_mfa_settings.png",
+    "step_07_authenticator_verification_form.png",
+    "step_08_authenticator_verification_succeeded.png",
+    "step_09_recovery_code_form.png",
+    "step_10_recovery_code_accepted.png",
+    "step_11_regenerate_recovery_codes.png",
+    "step_12_regeneration_challenge_ready.png",
+    "step_13_regenerated_recovery_codes.png",
+    "step_14_mfa_settings_after_storing_regenerated_codes.png",
+    "step_15_logged_out.png",
+    "step_16_explored.png",
+    "step_17_explored.png",
+    "step_18_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The UI uses a clean sans-serif typeface with clear headings and comfortable line spacing, though the recovery codes, secret and Logs panel are in a dense monospace font at smaller size."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps appear and instruction paragraphs are at most two or three short lines, but the Logs panel presents a dense multi-line block of monospace text."
+    },
+    "3": {
+      "score": 3,
+      "why": "The layout is a single narrow centred card that would reflow reasonably on a phone, but the two-column recovery code grid and long unbroken secret string (HZINUBRN6AYU4JXHWBKELFHV5ZSOMEF7) and log lines would crowd a small screen."
+    },
+    "4": {
+      "score": 4,
+      "why": "Each screen's instruction is one or two plain sentences such as 'Enter the six-digit identity code' and 'Each recovery code works once.'"
+    },
+    "5": {
+      "score": 4,
+      "why": "Placeholders demonstrate expected formats: 'marcus@example.com', '15551234567', '6 digits', and 'ABCD-1234-EF56-7890' for recovery codes, although the identity code and authenticator verification fields on steps 2 and 7 are empty with no example."
+    },
+    "6": {
+      "score": 4,
+      "why": "Progression only requires reading short instruction lines; no long text block gates any action, though the user must scan the Logs block to find simulated codes."
+    },
+    "7": {
+      "score": 1,
+      "why": "No copy buttons, download, or print options appear anywhere — the provisioning secret and the eight recovery codes are shown as plain static text that must be transcribed by hand."
+    },
+    "8": {
+      "score": 1,
+      "why": "Step 4 offers only 'Provisioning information' text and a 'Manual secret entry' field; no QR code or scannable alternative is rendered despite the text mentioning scanning."
+    },
+    "9": {
+      "score": 2,
+      "why": "Fields are labelled but there is no visible evidence of autocomplete attributes, one-time-code input types, or password-manager affordances, and the secret/recovery code inputs are generic text boxes."
+    },
+    "10": {
+      "score": 4,
+      "why": "Each screen has a large bold heading naming the current step and a single prominent dark-blue primary button, though no step counter or progress indicator is shown."
+    },
+    "11": {
+      "score": 2,
+      "why": "Several screens present multiple competing actions — step 4 shows 'Create authenticator setup', a manual secret field, an authenticator code field and 'Confirm authenticator', and steps 6–10 stack four buttons plus an inline form."
+    },
+    "12": {
+      "score": 3,
+      "why": "Outcomes are confirmed ('Authenticator verification succeeded.', 'Recovery code accepted and permanently consumed.', 'Challenge ready. Enter the test code from Logs.') but these messages state what happened without telling the user what comes next."
+    },
+    "13": {
+      "score": 3,
+      "why": "'Start over', 'Back to settings', 'Regenerate recovery codes' and re-entry of codes are all available without penalty, but recovery codes cannot be revealed/hidden or re-displayed once dismissed ('they will not be shown again')."
+    },
+    "14": {
+      "score": 2,
+      "why": "The only error observed, 'The request could not be completed.' on steps 17–18, does not name the problem or explain how to fix it, although it does not blame the user."
+    },
+    "15": {
+      "score": 4,
+      "why": "No countdown timers, expiry warnings, or session time limits appear on any screen, so nothing visibly rushes reading or code entry."
+    }
+  },
+  "cost_usd": 0.176065,
+  "generation_id": "gen-1786384873-KA7rgC9maooa0NdPQ98Q",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 1,
+    "8": 1,
+    "9": 2,
+    "10": 4,
+    "11": 2,
+    "12": 3,
+    "13": 3,
+    "14": 2,
+    "15": 4
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 4.0,
+    "comprehension": 1.3333,
+    "decision_making": 3.0,
+    "learning": 3.0
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

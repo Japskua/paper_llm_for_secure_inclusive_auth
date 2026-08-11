@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:05:38.955672+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "31d216139647b7d620ecbca0d7a59e1098b895c1f19b7446fcd16d88225bb6cd",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints resolve the user solely from the server-side session via authorized(), and invalidIdentifierAttempt() rejects any client-supplied userId/accountId/ownerId, so settings are bound to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification is checked against the session-bound user's own encrypted provision secret (with the manualSecret required to match and usedSteps preventing replay), so a code cannot be used across users; the statement is false."
+    },
+    "3": {
+      "score": 5,
+      "why": "verify-authenticator sets mfaActive=true without deleting or rotating entries in the sessions map, so any previously issued sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored AES-GCM encrypted (encryptSecret) and backup codes are stored as peppered SHA-256 hashes, never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, tokens, recovery codes, the master key and pepper are generated with crypto.getRandomValues, a CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session and pre-auth cookies are HttpOnly/Secure/SameSite=Strict and the client script keeps all secrets in an in-memory state object with no localStorage/sessionStorage or non-HttpOnly cookie use."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators validEmail, validPhone, validOtp, validSecret and validRecovery are applied to every user-supplied field before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values (secret, codes, server messages) are inserted exclusively via textContent, and innerHTML is used only with static template strings, preventing script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "safeInternalPath restricts the 'next' destination to a fixed allow-list of internal hash routes and defaults to #/dashboard otherwise."
+    },
+    "10": {
+      "score": 5,
+      "why": "standardHeaders sets HSTS, CSP (with frame-ancestors 'none'), X-Content-Type-Options: nosniff, X-Frame-Options: DENY, plus Referrer-Policy and Permissions-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie emits 'mfa_session=...; HttpOnly; Secure; SameSite=Strict' with all three required attributes."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server-side there are no secret logs, generic errors and no stack traces, but the client mockLog writes the OTP seed, current OTP and backup codes to console.log and a persistent on-page log panel, so secrets are not fully kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTPs are bound to the current 30-second step with usedSteps blocking reuse, provisioning expires after 15 minutes, and recovery codes are deleted from the backups array upon successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "recordFailure enforces a 10-minute lockout after 5 failed attempts for login, authenticator verification and recovery verification, plus a 60-second throttle on backup regeneration."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes any prior session and issues a fresh random ID (rotation), sessions enforce 20-minute idle and 8-hour absolute timeouts in getSession, and logout deletes the session server-side and clears the cookie."
+    }
+  },
+  "cost_usd": 0.090492,
+  "generation_id": "gen-1786388628-X6RqzoAFxenKUUwUJS7A",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": true
+}

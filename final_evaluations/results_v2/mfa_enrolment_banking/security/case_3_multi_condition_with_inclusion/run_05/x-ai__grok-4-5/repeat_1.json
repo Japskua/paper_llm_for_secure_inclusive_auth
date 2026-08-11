@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:45:09.804284+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints use auth() to bind the request to the session’s accountId and operate only on that account object, with no client-supplied user id."
+    },
+    "2": {
+      "score": 5,
+      "why": "Identity and authenticator codes are fixed global mocks (123456 / 654321), so the same code value is accepted for any account that has requested a verifier."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only sets account.mfaEnabled and stores secrets/backups; it does not delete or invalidate existing entries in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secret is kept as AES-GCM ciphertext (crypt/decrypt) and recovery codes are stored as PBKDF2-SHA-256 hashes with per-code salt."
+    },
+    "5": {
+      "score": 1,
+      "why": "OTP secret, OTP codes, and recovery codes are hardcoded MOCK_* constants rather than produced by crypto.getRandomValues or another CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only session credential is the mfa_session cookie set with HttpOnly; server code never writes secrets/OTPs/tokens into non-HttpOnly cookies or instructs browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Inputs are length-limited and typed via field(), email is regex-checked, OTPs must match /^\\d{6}$/, recovery codes match a strict alphabet, and body() rejects non-JSON/oversized payloads."
+    },
+    "8": {
+      "score": 4,
+      "why": "API responses are JSON.stringify’d and CSP with script nonce is set; no HTML template rendering is present in the supplied code, so XSS encoding is largely implicit rather than demonstrated."
+    },
+    "9": {
+      "score": 3,
+      "why": "No redirect responses or Location handling appear in the supplied code, so an allow-list policy is neither implemented nor violated."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options: DENY, and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() builds mfa_session with HttpOnly; Secure; SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 4,
+      "why": "Generic error messages and no stack traces are returned; secrets are not written to URLs or logs in the shown code, though mock codes are intentionally returned in JSON bodies."
+    },
+    "13": {
+      "score": 4,
+      "why": "check() enforces single-use and CODE_LIFE expiry for identity codes; authenticator verify marks used but does not test auth.expires before accepting the mock code."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed attempts increment per-verifier counters and lock for LOCK (10 minutes) after MAX (5) failures on login, identity, authenticator, and recovery paths."
+    },
+    "15": {
+      "score": 4,
+      "why": "Sign-in mints a fresh session id, and idle/absolute timeouts are enforced in auth(); logout invalidation is not present in the supplied (truncated) source."
+    }
+  },
+  "cost_usd": 0.0305384,
+  "generation_id": "gen-1786391053-SRpqcGX2Cac2DrEQRtAO",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 4,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.8,
+  "capture_complete": false
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:11:11.786710+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "dd1c9201f3d2704d9a0e18cf89bf577bc13685e7b79911478303ad462c640bd6",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "owner() checks the session cookie, userId, stage, CSRF token, and account record before MFA endpoints, binding settings to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored per session, TOTP codes are checked against the account's own decrypted secret, and recovery codes are matched to that account's hashes, so no single code works for any other user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA changes only the current session's stage and does not revoke other unexpired sessions, so previously issued sessions can remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext in mfaSecretEncrypted and backup codes are stored as salted PBKDF2 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Tokens, OTPs, base32 secrets, and recovery codes are generated from crypto.getRandomValues via bytes/randomChars."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session is stored only in an HttpOnly cookie and the client code keeps secrets/codes in transient JavaScript variables rather than localStorage, sessionStorage, or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators constrain email, phone, OTP, recovery-code, and secret formats, and phone/email are normalized before comparison."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic UI values are inserted with textContent and the CSP uses nonces, so user-controlled values are not parsed as HTML or script."
+    },
+    "9": {
+      "score": 5,
+      "why": "No server-side Location redirects or client-side location assignments are present, so there is no open redirect path."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS, X-Content-Type-Options nosniff, X-Frame-Options DENY, and CSP frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie sets Host-mfa_session with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "consoleSecret writes issued recovery codes and test OTP values to the console/log area, so backup codes/OTPs are exposed in logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have expiry and a used flag, TOTP acceptance requires a counter newer than mfaLastCounter, and recovery codes are deleted after successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, OTP, and recovery verification failures increment counters that trigger 10-minute lockouts after five failures, with request throttling for identity code issuance."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the old session and issues a new token, current() enforces absolute and idle timeouts, and logout invalidates and deletes the session."
+    }
+  },
+  "cost_usd": 0.05192,
+  "generation_id": "gen-1786392495-liYGAD9fAbunRpH7ASt2",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:13:24.817011+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "d8c5dbd5061e8b177d6cbb2c854604d59d269a0a9fe64507809dadc323e1593e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA routes use auth()/verified(), which load the account only from the session's accountId and never from a client-supplied user id."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes and OTP/backup verification are bound to the session account's own secret/code state, so a code does not authenticate a different user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the account flags and secrets but does not invalidate or rotate other existing sessions for that account."
+    },
+    "4": {
+      "score": 5,
+      "why": "mfaSecret/pending secrets are AES-GCM encrypted (Enc) and backup codes are stored only as SHA-256 digests with a pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "bytes()/rnd()/makeCodes()/six() all use crypto.getRandomValues for secrets, session ids, CSRF tokens, OTPs, and recovery codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session is only in an HttpOnly Secure cookie; no localStorage/sessionStorage or non-HttpOnly cookie holds secrets, OTPs, or session tokens."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validators email(), phone(), code(), and recovery() enforce strict formats before sign-in, identity, MFA, and recovery handlers use inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "User-influenced values are applied with textContent or JSON APIs; HTML shells use fixed titles and CSP nonces, not unencoded user HTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "No open redirect parameters exist; only fixed internal path allow-lists are served and APIs return JSON without Location-based redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "sec()/hs() set CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets __Host-mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Errors omit stack traces and tokens are not in URLs, but provisioning secrets, mock OTPs, and recovery codes are returned to the client and written into the on-page logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes and pending MFA secrets are single-use with expiry; TOTP is time-stepped; backup codes flip used=true when consumed."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed identity/MFA/login attempts increment counters and lock for LOCK after MAX failures (plus generic login throttling)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the old session and issues fresh(); idle/absolute timeouts are enforced in session(); logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0345324,
+  "generation_id": "gen-1786389158-nkYMo5MO5IuFY7R0NJXA",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

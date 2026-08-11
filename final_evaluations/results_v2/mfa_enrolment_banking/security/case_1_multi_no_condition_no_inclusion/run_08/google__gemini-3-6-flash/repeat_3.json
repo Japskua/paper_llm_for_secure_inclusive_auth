@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:21:35.824189+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "e75c5e1f2640b1b5327f2decd8300f8832941a1fa4252cfc26f15807ec177e22",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The authenticatedSession function explicitly checks that session.accountId matches the signed-in account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are bound to account-specific TOTP secrets and tracked counters, preventing reuse across users."
+    },
+    "3": {
+      "score": 5,
+      "why": "When MFA is enabled in /api/mfa/verify, active sessions are not invalidated or rotated, allowing existing sessions to remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP shared secret and recovery codes are encrypted using AES-256-GCM via encrypt() before being stored in the account object."
+    },
+    "5": {
+      "score": 5,
+      "why": "Crypto.randomBytes is used to generate session tokens, Base32 OTP secrets, and recovery codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session identifiers are stored exclusively in HttpOnly, Secure, SameSite cookies, and client state is kept in memory rather than browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side functions validEmail, validPhone, validOtp, and validCode enforce strict type, length, and format validation on all incoming inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side values are safely rendered using DOM textContent and createTextNode rather than dangerous HTML injection methods."
+    },
+    "9": {
+      "score": 5,
+      "why": "The system does not accept user-supplied redirect parameters or execute external HTTP redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "The headers helper sets HSTS, CSP with nonces, X-Content-Type-Options: nosniff, and X-Frame-Options/frame-ancestors for clickjacking protection on all responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "The cookie helper explicitly sets HttpOnly, Secure, and SameSite=Strict attributes on session cookies."
+    },
+    "12": {
+      "score": 1,
+      "why": "Client-side code explicitly outputs manual setup secrets, test OTPs, and recovery codes to the on-screen log output element and browser console."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTP verification enforces single-use via acceptedCounter and time windows, while recovery codes are consumed and removed upon use."
+    },
+    "14": {
+      "score": 5,
+      "why": "The failed() function locks out verification attempts for 10 minutes after 5 failed attempts across both OTP and recovery verification endpoints."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session IDs are rotated upon sign-in, validated against idle and absolute expiration times, and deleted from memory on logout."
+    }
+  },
+  "cost_usd": 0.0389085,
+  "generation_id": "gen-1786386077-jijYQgv2KgulJU2VWPKy",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

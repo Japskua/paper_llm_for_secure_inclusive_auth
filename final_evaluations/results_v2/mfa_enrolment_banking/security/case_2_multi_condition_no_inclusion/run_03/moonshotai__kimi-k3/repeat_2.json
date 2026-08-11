@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:50:10.981597+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "652bf86f5783a50ebf90d322da5510ea9fa899a6e4f41ad87fa0fc835067602a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints go through authenticated(req), which resolves the user solely from the server-side session, request bodies containing userId/accountId are rejected in body(), and /api/mfa/verify re-checks session ownership (sessions.get(session.id)===session && session.userId===user.id)."
+    },
+    "2": {
+      "score": 1,
+      "why": "The statement is false: the identity code is an HMAC bound to the individual session id and compared against that session's stored identityHash, while TOTP and backup codes are verified per-user, so a code does not work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The statement is literally true: /api/mfa/verify sets mfaEnabled=true without rotating the session or deleting other sessions in the map, so pre-existing sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted (encryptedTotp) and backup codes are stored only as peppered SHA-256 hashes in backupHashes, never in plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, backup codes, session ids, CSRF tokens, keys, and the pepper are all produced via crypto.getRandomValues, and the identity code is derived from HMAC-SHA-256 keyed with that random pepper."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie is mfa_session set with HttpOnly/Secure/SameSite=Strict, and the client keeps the CSRF token in a JS variable with no localStorage/sessionStorage or non-HttpOnly cookie use anywhere."
+    },
+    "7": {
+      "score": 5,
+      "why": "Every input passes strict server-side validators (email, phone, password, otp, backup regexes and length checks), bodies must be JSON objects with userId/accountId stripped, and there is no SQL (in-memory maps), so injection surface is validated away."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values (secrets, codes, errors) are rendered exclusively via textContent/createElement while innerHTML is used only for static templates, and a nonce-based CSP further blocks injected script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The signin handler rejects any destination other than the hardcoded \"/\" allow-list entry, and the HTTP listener redirects only to a fixed https://localhost host, so no open redirect exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "hdr() sets a strict nonce-based CSP with frame-ancestors 'none', HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, plus Referrer-Policy and Cache-Control on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() and clearCookie() both emit the mfa_session cookie with HttpOnly, Secure, and SameSite=Strict attributes (and a Max-Age bound to the absolute timeout)."
+    },
+    "12": {
+      "score": 2,
+      "why": "Although server-side logging, URLs, and error output are clean and stack traces are suppressed, the API returns testCode/manualSecret/codes and the client writes the identity code, TOTP code, and all backup codes into the page's \"Logs (test simulation)\" panel and console.log, so codes are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are single-use (identityUsed) and expire after LIFE (5 min), TOTP codes expire (pendingTotpExpires), are single-use (pendingTotpUsed plus an accepted-counters set), and backup codes are deleted from backupHashes on use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, TOTP, and backup verification each track failure counters and impose a 10-minute lockout after MAX=5 failures via attempt()/available() and the per-user totp/backup lock fields."
+    },
+    "15": {
+      "score": 5,
+      "why": "rotate() issues a fresh session id (deleting the old one) upon identity/authentication transitions, active() enforces 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.079701,
+  "generation_id": "gen-1786387709-crgwWhxu7n3Bt5m3WPNV",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

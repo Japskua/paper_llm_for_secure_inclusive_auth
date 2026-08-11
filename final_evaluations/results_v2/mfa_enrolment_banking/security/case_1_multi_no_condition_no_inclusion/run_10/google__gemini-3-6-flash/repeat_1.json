@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:32:49.302305+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server checks session authentication and state ownership on all MFA endpoints before granting access."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are tied directly to specific identity targets and account states, preventing cross-user reuse."
+    },
+    "3": {
+      "score": 1,
+      "why": "Session identifiers are explicitly deleted and rotated upon authentication state transitions, invalidating previous sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are encrypted using AES-GCM and recovery codes are stored as SHA-256 hashes with a secret pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "All cryptographic keys, OTP secrets, session identifiers, and verification codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session identifiers are stored exclusively in HttpOnly, Secure cookies and no sensitive tokens are saved in browser local/session storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side functions validate email, phone, secret, and code formats using regular expressions and length limits."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic content is assigned safely via DOM textContent properties and rendered under strict CSP script nonces."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application is a single-page application that performs internal view switches without server-side HTTP redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Server responses consistently include HSTS, CSP, X-Content-Type-Options, and frame-ancestors/X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are explicitly configured with HttpOnly, Secure, and SameSite=Strict directives."
+    },
+    "12": {
+      "score": 1,
+      "why": "Mock verification codes, recovery codes, and OTP seeds are explicitly logged to the browser console and client UI log element."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes are single-use, marked as used upon consumption, and bound to short expiration timestamps."
+    },
+    "14": {
+      "score": 5,
+      "why": "The server enforces a 10-minute lockout period after five consecutive failed attempt counters across authentication stages."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated upon login verification, check idle and absolute timeouts, and are deleted on logout."
+    }
+  },
+  "cost_usd": 0.038544,
+  "generation_id": "gen-1786386753-2Z4RzT3nzhsvpBFyJT23",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:42:58.868221+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every protected MFA route derives the account from the authenticated server-side session, and no client-supplied account identifier is used."
+    },
+    "2": {
+      "score": 5,
+      "why": "Identity and authenticator verification use global deterministic constants, so the same issued codes would be accepted for every account using this implementation."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA sets account.mfaEnabled but does not invalidate or rotate any existing sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "Authenticator secrets are encrypted with AES-256-GCM, while recovery codes are stored as individually salted PBKDF2-SHA-256 hashes."
+    },
+    "5": {
+      "score": 1,
+      "why": "Although tokens, IVs, and salts use crypto.getRandomValues, the identity code, authenticator secret, authenticator code, and recovery codes are hard-coded constants."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session identifier is placed only in an HttpOnly cookie and no browser-storage persistence is shown, although secrets and codes are returned to the client in JSON."
+    },
+    "7": {
+      "score": 4,
+      "why": "The server enforces JSON size and type limits, validates email and code formats, and uses no SQL queries, though comprehensive sanitization is not explicitly implemented."
+    },
+    "8": {
+      "score": 5,
+      "why": "Responses are serialized with JSON.stringify and protected by a restrictive nonce-based CSP, with no unsafe HTML rendering shown."
+    },
+    "9": {
+      "score": 4,
+      "why": "No redirect destination or redirect mechanism accepting user input appears in the supplied code, so no open redirect is exposed."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie is explicitly configured with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "No logging or stack-trace exposure is shown, but the OTP seed is embedded in the returned otpauth URI query string and practice codes are exposed in response documentation."
+    },
+    "13": {
+      "score": 2,
+      "why": "Identity codes are checked for expiry and marked used, but authenticator verification bypasses those checks and repeatedly provisions the same fixed code."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, authenticator verification, and the declared recovery mechanism track failures and impose a ten-minute lock after five attempts."
+    },
+    "15": {
+      "score": 3,
+      "why": "New sign-ins receive cryptographically random session identifiers with idle and absolute timeouts, but MFA enablement does not rotate sessions and logout invalidation is not visible in the supplied code."
+    }
+  },
+  "cost_usd": 0.07743125,
+  "generation_id": "gen-1786390954-750UlABujFr5NZCaWGTR",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 2,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 3.3333
+  },
+  "overall": 3.4666,
+  "capture_complete": false
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:33:00.029093+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization is enforced on MFA endpoints, verifying session ownership (e.g., `authenticated(s)` checks in `/api/mfa/settings` and `/api/recovery-codes`)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are single-use (marked `used: true` after first use), but the same code could theoretically work for another user if they share the same `identityTarget` (unlikely in practice due to session isolation)."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are not invalidated when MFA is enabled; old sessions remain active until they expire or are logged out."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets and backup codes are stored encrypted (AES-GCM) and hashed (SHA-256 with pepper), respectively."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using `crypto.getRandomValues()`, a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are never stored in browser storage or non-HttpOnly cookies (session cookies are `HttpOnly`)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is strict (e.g., `validatedIdentity`, `validOtp`, `validSecret`, `validRecovery`)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Output encoding is handled via `TextEncoder`/`TextDecoder` and CSP nonces, preventing XSS."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are not explicitly implemented, but internal navigation is controlled via client-side routing with no open redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options) are set in `baseHeaders`."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with `HttpOnly`, `Secure`, and `SameSite=Strict` attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never exposed in logs, URLs, or error output (generic errors are returned)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes are single-use (`used: true` after first use) and time-bound (`expiresAt` check)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is enforced (5 attempts max per `AttemptKind`), with lockout (`lockedUntil`) after exceeding attempts."
+    },
+    "15": {
+      "score": 4,
+      "why": "Session identifiers are rotated on authentication (e.g., new session created in `/api/identity/verify`), but idle/absolute timeouts are enforced, and logout invalidates sessions. However, session rotation on re-authentication is not explicitly shown."
+    }
+  },
+  "cost_usd": 0.0195015,
+  "generation_id": "gen-1786386775-HXU2ju98joRbh0PwwTeH",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.9333,
+  "capture_complete": true
+}

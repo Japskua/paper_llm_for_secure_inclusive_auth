@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:26:47.637246+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system enforces server-side authorization by verifying challenge ownership (identityKey and accountId) and constant-time code comparison before issuing a session."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same verification code does not work for any other user; each challenge is tied to a specific identityKey and accountId."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated (deleted) when a new session is created after MFA enablement."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP shared secret is encrypted (AES-GCM) and backup codes are hashed (PBKDF2) before storage."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using crypto.getRandomValues() (cryptographically secure RNG)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are stored in HttpOnly, Secure, SameSite cookies or server-side only."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is performed for email, phone, OTP, and recovery codes (e.g., emailOK, phoneOK, otpOK, recoveryInput)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Contextual output encoding is applied in the HTML template (e.g., nonce-based CSP, escaped dynamic content in the page)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are restricted to an allow-list (ROUTES) of internal paths, with no open redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options, frame-ancestors) are set in secureHeaders()."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never exposed in logs, URLs, or error output; stack traces are suppressed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes (OTP) are single-use (marked as used after validation) and time-bound (CHALLENGE_MS expiry)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Repeated failed attempts are rate-limited (MAX_FAILURES) and locked out (LOCK_MS) for identity, OTP, and recovery attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifier is rotated on authentication (new token generated), has idle/absolute timeouts, and is invalidated on logout."
+    }
+  },
+  "cost_usd": 0.0203715,
+  "generation_id": "gen-1786386396-MPMyPcjiWQlHqJhylMDz",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

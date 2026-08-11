@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:59:22.423617+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every /api/mfa/* route resolves the owner solely from the authenticated server-side session (`authenticated(request)` → `accounts.get(session.userId)`) and rejects any client-supplied userId/accountId/ownerId via `hasForeignIdentity`, so MFA settings are always bound to the signed-in user."
+    },
+    "2": {
+      "score": 4,
+      "why": "Verification values are global hard-coded constants (TEST_IDENTITY_CODE \"246810\", TEST_AUTHENTICATOR_CODE \"135790\") rather than per-user derived secrets, so the identical code string would be accepted for any user's challenge — the binding is only to the session's challenge record, not to the user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA in /api/mfa/confirm only mutates `auth.account.mfa` and clears `session.enrollment`; it never rotates the current session ID nor iterates `sessions` to invalidate other sessions, so pre-existing sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP shared secret is stored only as AES-GCM ciphertext (`encryptSecret`) and recovery codes are stored as salted SHA-256 digests via `storeRecoveryCodes`/`hashValue`, never in plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets (session IDs, CSRF tokens, base32 TOTP seed, salts, recovery codes, AES key, IVs) come from `crypto.getRandomValues`, a CSPRNG."
+    },
+    "6": {
+      "score": 4,
+      "why": "The only cookie is `mfa_session` with HttpOnly; Secure; SameSite=Strict, and CSRF token/secret/recovery codes live solely in in-memory JS variables with no localStorage/sessionStorage use — though secrets are echoed to console/an on-page log panel, that is not browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates every field with strict allow-list regexes (`isEmail`, `isPhone`, `isOtp`, `isRecovery`, `isSecret`), enforces a 4 KB body limit, rejects non-object bodies, and uses in-memory Maps (no SQL string concatenation)."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (secret, label, recovery codes, messages) are written with `textContent` via `escText`, `innerHTML` receives only static literals, and a strict nonce-based CSP with `base-uri 'none'` further blocks script injection."
+    },
+    "9": {
+      "score": 4,
+      "why": "`allowedRedirect` restricts the `redirect` parameter to an internal allow-list of \"/\" or \"/mfa\" and no Location header is ever emitted from user input, so no open redirect exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "`securityHeaders` sets a strict nonce CSP with `frame-ancestors 'none'`, Strict-Transport-Security with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "The `cookie()` helper always emits `mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=...`."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and tokens are never in URLs, but the client explicitly does `console.log`/on-page logging of the authenticator secret, the test OTP codes and the full set of recovery codes (\"New simulated recovery codes...\" + visibleCodes.join)."
+    },
+    "13": {
+      "score": 4,
+      "why": "Each challenge/enrollment record carries `used` and `expires = now + 5 min` and is checked before acceptance, and recovery codes are marked consumed permanently — although the accepted OTP string itself is a fixed constant reusable in a fresh challenge."
+    },
+    "14": {
+      "score": 5,
+      "why": "`failed()` increments a per-record counter and applies a 10-minute `lockUntil` lockout after 5 failures, enforced by `locked()` with HTTP 429 on identity verification, enrollment confirm, MFA verify, regenerate and recovery-code use."
+    },
+    "15": {
+      "score": 5,
+      "why": "`rotateAuthenticated` deletes the pending session and issues a new ID/CSRF token after identity verification, `sessionFrom` enforces 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.154465,
+  "generation_id": "gen-1786384725-q7gW4vm7ba0pisoRpcFM",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 2,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:48:48.308232+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "652bf86f5783a50ebf90d322da5510ea9fa899a6e4f41ad87fa0fc835067602a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints use authenticated() which binds the session to session.userId and operate only on that user; request bodies reject userId/accountId and verify session ownership."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are HMAC-bound to the session id, TOTP secrets are per-user, and backup codes are per-user hashes, so the same code does not work for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only sets mfaEnabled and stores secrets on the user record; no code invalidates other existing sessions for that account."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secret is stored via AES-GCM encrypt() as encryptedTotp; backup codes are stored only as peppered SHA-256 hashes in backupHashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session ids, CSRF tokens, TOTP seeds, and backup codes are produced with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session id is only in an HttpOnly cookie; client script never writes secrets/OTPs/tokens to localStorage, sessionStorage, or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, password, OTP, and backup inputs with strict helpers and drops non-JSON or identifier-injection bodies."
+    },
+    "8": {
+      "score": 5,
+      "why": "API responses are JSON and the UI assigns untrusted values with textContent, not innerHTML, so markup/script is not executed."
+    },
+    "9": {
+      "score": 5,
+      "why": "Sign-in only accepts destination \"/\"; the HTTP listener issues a fixed redirect to the local HTTPS origin path."
+    },
+    "10": {
+      "score": 5,
+      "why": "hdr() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie sets HttpOnly, Secure, and SameSite=Strict on mfa_session."
+    },
+    "12": {
+      "score": 4,
+      "why": "Server errors are generic with no stack traces and secrets are not put in URLs or server logs, though the demo UI intentionally surfaces test codes in an on-page log."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity and pending TOTP codes expire after LIFE and are marked used; TOTP counters are replay-protected; backup codes are deleted after one successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, TOTP, and backup failures increment counters and lock for LOCK after MAX attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "rotate() issues a new session id on auth steps, active() enforces idle and absolute timeouts, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0200396,
+  "generation_id": "gen-1786387686-8U2LkOheNqUCkrZWxLUB",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6667,
+  "capture_complete": true
+}

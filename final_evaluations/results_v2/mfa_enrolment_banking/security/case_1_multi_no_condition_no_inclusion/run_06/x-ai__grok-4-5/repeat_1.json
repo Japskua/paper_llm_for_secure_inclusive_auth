@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:10:35.601023+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "3d09bd0257e9941bea9ed673158f55946146901e5fa8fb38fe05ada4ea49310d",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA routes use authorize() so the user is taken only from the opaque session cookie’s accountId, and client-supplied id/uid/userId/accountId fields are rejected."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification uses the authenticated user’s own encrypted TOTP secret from the session; the same OTP is not accepted for a different account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only flips flags and stores recovery hashes on the user record and does not invalidate other existing entries in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted and recovery codes are stored as peppered SHA-256 hashes, not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session tokens, CSRF tokens, and recovery codes are produced with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session token is only in an HttpOnly cookie; nothing writes secrets, OTPs, or session tokens to localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, and recovery code with strict validators and normalizes email/phone before comparison."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic DOM updates use textContent (not innerHTML) and CSP nonces limit script execution, so injected markup does not run."
+    },
+    "9": {
+      "score": 1,
+      "why": "The application never issues redirects and implements no allow-list of internal redirect destinations."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() sets mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic and tokens are not put in URLs, but provisioning intentionally writes the OTP secret, test OTP, and recovery codes to the browser console."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTP values are time-step bound, enrollment verification is marked used after success, and recovery codes are removed from the hash list when consumed."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed MFA verification and recovery attempts increment counters and lock out after 5 failures; sign-in failures are similarly window-limited and locked."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in mints a new session id and drops the prior cookie token, idle/absolute timeouts are enforced in authorize(), and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0344464,
+  "generation_id": "gen-1786385387-D58c2pH4nMKenSIePFiJ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 1,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

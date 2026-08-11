@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 2,
+  "judged_at": "2026-08-10T20:02:43.180020+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "09fdd56138de07d37e0eeceb5b77a462484d946b26840067cc508ef31c4e45d7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The authorized() middleware checks that session userId matches account ownership on every protected endpoint."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes and TOTP seeds are cryptographically bound to specific user accounts or session states and cannot be reused across users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the current session stage but does not explicitly clear or invalidate other pre-existing active session tokens in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored encrypted via AES-256-GCM and backup recovery codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All cryptographic operations, keys, and tokens utilize Node/Bun crypto randomBytes and randomInt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session identifiers are placed exclusively in HttpOnly, Secure cookies and secrets are retained in server memory."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side helper functions emailOK, otpOK, codeOK, and JSON body parsing validate types and formats."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side updates use textContent rather than innerHTML and inline scripts rely on strict CSP nonces."
+    },
+    "9": {
+      "score": 5,
+      "why": "Navigation and UI view switching use an explicit client-side allow-list array of fixed internal view IDs."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include Content-Security-Policy, Strict-Transport-Security, X-Content-Type-Options, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies explicitly set HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Error handlers return standardized generic messages without leaking stack traces or sensitive credentials in logs and outputs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 10 minutes and are explicitly flagged as used upon verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed attempts trigger lockouts after 5 tries, enforcing a 15-minute wait period."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in explicitly deletes the prior unauthenticated session ID, enforces absolute and idle timeouts, and deletes the session on logout."
+    }
+  },
+  "cost_usd": 0.0311775,
+  "generation_id": "gen-1786392149-GlDSpG7bHrpIsVMORc5Z",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": false
+}

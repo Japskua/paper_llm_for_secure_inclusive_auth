@@ -1,12 +1,122 @@
 {
-  "ok": false,
-  "reason": "exception",
-  "error": "NameError: name 'MAX_IMAGES' is not defined",
+  "ok": true,
   "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
   "case": "case_1_multi_no_condition_no_inclusion",
   "run": "run_01",
   "track": "inclusivity",
   "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
   "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:51:55.674874+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 12,
+  "screenshots_available": 12,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_confirm_authenticator.png",
+    "step_05_save_recovery_codes.png",
+    "step_06_mfa_settings.png",
+    "step_07_recovery_code_accepted.png",
+    "step_08_save_regenerated_recovery_codes.png",
+    "step_09_mfa_settings_after_saving_regenerated_codes.png",
+    "step_10_logged_out.png",
+    "step_11_explored.png",
+    "step_12_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a clean sans-serif typeface with comfortable line spacing, though letter spacing appears default rather than deliberately generous."
+    },
+    "2": {
+      "score": 5,
+      "why": "Instructions are set in sentence case with no italics, no all-caps prose, and no dense paragraphs anywhere in the flow."
+    },
+    "3": {
+      "score": 3,
+      "why": "The single-column layout is readable at mobile width, but the unbroken provisioning URI in step 4 spills out of the card and would force horizontal scrolling on a phone."
+    },
+    "4": {
+      "score": 4,
+      "why": "Most guidance is short and plain (e.g. 'Keep these codes somewhere safe'), but the step-4 note uses technical phrasing such as 'one adjacent period for limited clock skew'."
+    },
+    "5": {
+      "score": 4,
+      "why": "Placeholders model the expected format for email, phone and recovery code (e.g. 'ABCDE-23456'), but the OTP fields only say 'Six digits' instead of showing a sample code."
+    },
+    "6": {
+      "score": 5,
+      "why": "The longest required text is a five-line informational note; no screen forces the user to read a long block before continuing."
+    },
+    "7": {
+      "score": 2,
+      "why": "No copy buttons are provided and step 3 explicitly instructs the user to add the 32-character secret manually, so long secrets must be transcribed by hand."
+    },
+    "8": {
+      "score": 2,
+      "why": "No QR code is offered; the only alternative is a plain-text otpauth:// URI that is not a clickable link and overflows the layout."
+    },
+    "9": {
+      "score": 3,
+      "why": "The email/password fields are standard inputs a password manager could heuristically fill, but the one-time code fields show no autofill support and codes arrive via an in-page log rather than SMS that platform autofill could use."
+    },
+    "10": {
+      "score": 5,
+      "why": "Each screen pairs a visible step badge ('Step 2 of 5') with one full-width blue button, making the current step and primary action unmistakable."
+    },
+    "11": {
+      "score": 4,
+      "why": "Every enrolment screen asks for a single action, though the MFA settings screen presents three separate actions (use recovery code, regenerate codes, log out) at once."
+    },
+    "12": {
+      "score": 4,
+      "why": "Status banners plainly report outcomes ('Recovery code accepted and consumed', 'You have been logged out') and each screen explains the next step, but the failure banner only says the request failed without explaining what happened."
+    },
+    "13": {
+      "score": 2,
+      "why": "Retrying and regenerating recovery codes are allowed without penalty, but there is no show/hide toggle for the password, no resend option for the verification code, and the setup step expires."
+    },
+    "14": {
+      "score": 2,
+      "why": "The error banner ('We could not complete that request. Please try again.') is non-blaming but generic, never stating what the actual problem was or how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "Reading pages have no timer, but the authenticator setup expires in five minutes and codes rotate every 30 seconds, so code entry is time-limited."
+    }
+  },
+  "cost_usd": 0.054398,
+  "generation_id": "gen-1786384109-3bSAnCG7Euz1E7vnWIky",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 3,
+    "4": 4,
+    "5": 4,
+    "6": 5,
+    "7": 2,
+    "8": 2,
+    "9": 3,
+    "10": 5,
+    "11": 4,
+    "12": 4,
+    "13": 2,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 4.3333,
+    "comprehension": 2.3333,
+    "decision_making": 4.3333,
+    "learning": 2.0
+  },
+  "overall": 3.4,
   "capture_complete": true
 }

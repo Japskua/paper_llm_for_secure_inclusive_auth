@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:17:54.084117+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "a5196aab32aaa319fd3fb877c6c9d448e815221b7a562eee9e06d60e5f91be42",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints enforce session authentication and operate strictly on the account tied to the active session."
+    },
+    "2": {
+      "score": 5,
+      "why": "The identity verification code is hardcoded to '246810' for all valid user accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the session state but does not invalidate or revoke other pre-existing sessions for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are encrypted using AES-256-GCM and backup codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 1,
+      "why": "Identity verification codes are static hardcoded strings rather than generated using a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored in HttpOnly cookies and no secrets or tokens are stored in Web Storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates email formats, phone number patterns, and numeric OTP entries before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic dynamic text inserted into the DOM relies on textContent, preventing HTML or script injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirect values are validated against a server-side allow-list of internal hash destinations."
+    },
+    "10": {
+      "score": 5,
+      "why": "Headers including CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options, and X-Frame-Options are configured on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "All cookies created by the application specify HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Provisioning secrets, test OTPs, and recovery codes are sent in client payloads and logged to the UI console log."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire in 5 minutes and are marked used, TOTP windows are tracked against reuse, and backup codes are deleted when redeemed."
+    },
+    "14": {
+      "score": 5,
+      "why": "Verification and recovery endpoints track failed attempts and enforce a 10-minute lockout after 5 consecutive failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session IDs are rotated when completing identity verification, idle and absolute timeouts are enforced, and logout deletes the session server-side."
+    }
+  },
+  "cost_usd": 0.0486405,
+  "generation_id": "gen-1786389451-rlIewSJnbasLVNSKhON0",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

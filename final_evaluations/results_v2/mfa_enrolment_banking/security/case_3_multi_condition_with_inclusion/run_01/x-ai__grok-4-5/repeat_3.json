@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:28:25.617333+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "e2523743e6748e8fa4d2c78a75fe0c8f0d4948d3cb707513e4d7acf4307a964a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA routes go through owner()/pendingOwner(), which bind the session’s user id to accountIds and never accept an external account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "TOTP is derived from the account’s own encrypted secret and backup codes are verified only against that account’s hashes, so a code does not authenticate any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Confirming MFA sets a.mfa=true on the account but does not invalidate or re-challenge any other existing auth-phase sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored with AES-256-GCM (enc/dec) and backup codes are stored as PBKDF2 hashes with per-code salt and pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session ids, CSRF tokens, backup codes, and OTPs are produced with node:crypto randomBytes/randomInt."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is HttpOnly and the client never writes secrets, OTPs, or tokens to localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email is normalized/regex-checked server-side, OTP/recovery input is constrained by strict patterns, and body size/type are limited."
+    },
+    "8": {
+      "score": 5,
+      "why": "UI text is applied via textContent, API data is JSON, and a nonce-based CSP blocks inline script injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "The handler never issues redirects or Location headers, so no open-redirect path exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() sets HttpOnly, Secure, and SameSite=Strict on the MFA session cookie."
+    },
+    "12": {
+      "score": 2,
+      "why": "Demo mock identity codes, mock OTPs, and backup codes are written to the browser console and returned in JSON, so they are not kept fully out of logs/output."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are marked used and time-limited; TOTP steps are recorded in usedTotp/used sets; backup codes flip used and carry expires."
+    },
+    "14": {
+      "score": 5,
+      "why": "recordFailure/checkLimit lock accounts and sources after repeated failures for LOCK duration, returning 429."
+    },
+    "15": {
+      "score": 5,
+      "why": "signin/verify and mfa/verify delete the old session and issue a new id; idle/absolute timeouts expire sessions; logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0216044,
+  "generation_id": "gen-1786390052-VKOWogoe1BtQwCYojCZ3",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

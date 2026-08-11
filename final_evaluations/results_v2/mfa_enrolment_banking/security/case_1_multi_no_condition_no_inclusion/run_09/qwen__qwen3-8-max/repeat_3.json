@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:32:23.440498+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint retrieves the session with getSession and operates on mfa(s.accountId), with no client-supplied account identifier."
+    },
+    "2": {
+      "score": 4,
+      "why": "TEST_MODE accepts constant identity and authenticator codes that are not user-bound, although the sample data configures only one account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/mfa/verify-otp changes the MFA record but does not delete existing sessions, so prior session tokens remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as AES-GCM ciphertext and recovery codes are stored as PBKDF2-derived hashes with salts."
+    },
+    "5": {
+      "score": 5,
+      "why": "Random values for secrets, codes, and tokens are produced by crypto.getRandomValues through bytes()."
+    },
+    "6": {
+      "score": 4,
+      "why": "Session and challenge cookies are HttpOnly and no localStorage/sessionStorage or non-HttpOnly cookies are used, although enrolment secrets and codes are temporarily rendered in the DOM."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side handlers validate email, phone, OTP, and recovery-code formats with regexes and normalize email and phone before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent or are static/boolean, and the page uses nonce-based CSP rather than rendering unescaped user input."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only redirect-like input is checked against the ROUTES allow-list and the client navigates only to fixed internal hash routes."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders sets HSTS, CSP with frame-ancestors 'none', X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie and challengeCookie include HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client log function writes the manual OTP secret, mock OTP codes, and backup recovery codes into the DOM/console, although error output is generic and stack traces are hidden."
+    },
+    "13": {
+      "score": 4,
+      "why": "Issued challenges, provisioning, TOTP counters, and backup codes are time-limited and marked used, but default TEST_MODE also accepts reusable constant mock codes."
+    },
+    "14": {
+      "score": 5,
+      "why": "identityAttempts, otpAttempts, and recoveryAttempts lock for 10 minutes after 5 failures via failed() and isLocked()."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes an existing session cookie and creates a new session token, getSession enforces idle and absolute expiry, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.08686,
+  "generation_id": "gen-1786386444-MyMAryBbMENI2aI5ESdq",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 2,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

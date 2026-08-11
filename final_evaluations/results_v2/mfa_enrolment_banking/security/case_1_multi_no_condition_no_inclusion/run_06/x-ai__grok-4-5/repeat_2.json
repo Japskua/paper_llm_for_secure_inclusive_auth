@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:10:35.959693+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "3d09bd0257e9941bea9ed673158f55946146901e5fa8fb38fe05ada4ea49310d",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA routes use authorize() which loads the user solely from the opaque HttpOnly session cookie; body/query user ids are rejected."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification uses totpForSecret on the authenticated user's own encryptedSecret, so a code is bound to that user's secret and does not work for another account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only sets mfaActive and recovery state on the user and never deletes or rotates other entries in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored with AES-GCM encryptSecret; recovery codes are stored only as SHA-256 hashes with recoveryPepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session tokens, CSRF values, and recovery codes are produced via crypto.getRandomValues (randomToken/randomBase32)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session token is only in an HttpOnly cookie; no localStorage/sessionStorage or non-HttpOnly cookie is used for secrets, OTPs, or session tokens."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, and recovery code with strict validators and rejects non-JSON or identifier-bearing bodies."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client inserts dynamic values with textContent and the HTML shell is server-built with nonce-based CSP, not unescaped HTML concatenation of user input."
+    },
+    "9": {
+      "score": 1,
+      "why": "The app never issues redirects and implements no allow-list of redirect destinations."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders sets CSP (with frame-ancestors 'none'), HSTS, X-Content-Type-Options, and X-Frame-Options DENY on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() sets mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic and tokens are not put in URLs, but provisioning/enable paths return secrets/codes and the client writes them to the browser console."
+    },
+    "13": {
+      "score": 5,
+      "why": "Enrollment verification is marked used after success; TOTPs are stepped every 30s; recovery codes are removed from the hash list when consumed."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed MFA verifies lock after 5 tries, recovery locks after 5 failures, and sign-in has a sliding window lockout."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in mints a new session id and drops the old cookie session; idle/absolute timeouts are enforced in authorize; logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0194168,
+  "generation_id": "gen-1786385390-9u7iBzsWItq2zKIjwAQT",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 1,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

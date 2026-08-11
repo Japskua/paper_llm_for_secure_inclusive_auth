@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:45:19.156442+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "c08fd9d85e429c55d45db1aac6ad59f72dd588811e3b858c08385d4e6ba1851e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints are gated by owner(), which requires the session userId to equal the signed-in ACCOUNT.id."
+    },
+    "2": {
+      "score": 2,
+      "why": "TEST mode uses fixed identity and authenticator codes, but the application only supports one hardcoded account, so cross-user reuse is not actually observable."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA mutates only the current session and does not delete other sessions, so previously created sessions can remain valid until timeout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The pending authenticator secret is stored as AES-GCM ciphertext and backup codes are stored as peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 2,
+      "why": "Production branches use crypto.getRandomValues, but TEST mode, enabled unless NODE_ENV=production, uses hardcoded secrets and codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is set only in an HttpOnly cookie and no localStorage, sessionStorage, or non-HttpOnly cookie stores secrets or tokens."
+    },
+    "7": {
+      "score": 4,
+      "why": "Server-side validators check email, password, OTP, and recovery input, but there is no phone input present to validate."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values rendered into the page are escaped by the e() function and the page uses a nonced CSP."
+    },
+    "9": {
+      "score": 3,
+      "why": "No redirect endpoints or open redirects are present, but no explicit redirect allow-list implementation is observed."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include CSP, HSTS, X-Content-Type-Options, and frame-ancestors/X-Frame-Options protections."
+    },
+    "11": {
+      "score": 5,
+      "why": "secureCookie sets the session cookie with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Generic error handling hides stack traces, but TEST mode logs identity codes, authenticator codes, provisioning URIs containing secrets, and recovery codes."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity and setup codes expire and are cleared after successful verification, and TOTP is time-based, but explicit replay prevention within the TOTP drift window is limited."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, OTP, and recovery attempts are locked for ten minutes after five failures."
+    },
+    "15": {
+      "score": 4,
+      "why": "Sign-in rotates the session identifier and sessions have idle/absolute timeouts and logout deletion, but the identifier is not rotated again after the MFA step."
+    }
+  },
+  "cost_usd": 0.12666,
+  "generation_id": "gen-1786390725-dnok0Wpixfw3ORYbfRrN",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 2,
+    "4": 5,
+    "5": 2,
+    "6": 5,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

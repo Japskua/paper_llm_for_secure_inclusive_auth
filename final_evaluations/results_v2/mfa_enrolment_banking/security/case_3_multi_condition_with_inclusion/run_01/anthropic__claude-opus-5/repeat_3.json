@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:27:32.286071+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "e2523743e6748e8fa4d2c78a75fe0c8f0d4948d3cb707513e4d7acf4307a964a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints resolve the account solely from the server-side session via owner()/pendingOwner() (accountIds.get(s.user)), never from client-supplied identifiers, so settings always belong to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are hashed and stored per-email in identityLimits keyed by privacyHash(email) and only checked against the session's own emailHash, and TOTP/backup codes are matched against the specific account's stored secret/hashes, so one user's code cannot authenticate another."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA in /api/mfa/confirm only mutates the account record and clears the enrollment; it does not iterate the sessions map to revoke other existing sessions for that account, so any other pre-existing session remains valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-256-GCM ciphertext (enc/Protected) and backup codes only as PBKDF2-SHA256 (210k iterations, salt+pepper) hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "randomBytes() and randomInt() from node:crypto are used for session ids, CSRF tokens, keys, base32 secrets, backup codes and the 6-digit identity code."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and nothing is written to localStorage/sessionStorage; the CSRF token and enrollment secret exist only in transient JS memory (with mock codes echoed to the console), so no persistent browser storage of secrets occurs."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates content-length, requires a JSON object body, normalises/regex-validates email, and enforces strict regexes on OTP (^\\d{6}$) and backup-code formats; no SQL/database is used at all (in-memory Maps)."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client builds DOM exclusively with createElement/textContent (no innerHTML), and a nonce-based CSP with script-src 'nonce-...' blocks injected inline script."
+    },
+    "9": {
+      "score": 3,
+      "why": "The application issues no redirects anywhere (all responses are JSON or the single HTML page), so while there is no open-redirect risk there is also no explicit allow-list implemented."
+    },
+    "10": {
+      "score": 5,
+      "why": "Every response carries HSTS, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, CSP with frame-ancestors 'none' and base-uri 'none', plus Referrer-Policy and Cache-Control: no-store."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() sets `Path=/; HttpOnly; Secure; SameSite=Strict` and clearCookie() mirrors those attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and secrets never appear in URLs, but the API deliberately returns mockCode, mockOtp, the plaintext setup secret and backup codes to the client, which then console.log()s the identity code, authenticator OTP and full list of recovery codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have a 10-minute expiry plus a `used` flag, TOTP steps are recorded in usedTotp/e.used to prevent replay, and backup codes are marked used and have an expiry timestamp."
+    },
+    "14": {
+      "score": 5,
+      "why": "recordFailure() locks after 5 failures for 10 minutes on identity, source-IP, account and enrollment counters, with an additional 30-second request cooldown returning HTTP 429."
+    },
+    "15": {
+      "score": 5,
+      "why": "A new session id is minted (old one deleted) after identity verification and again after MFA verification, getSession enforces 30-minute idle and 8-hour absolute limits, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.16076,
+  "generation_id": "gen-1786390016-4tHtrRk2efy1j0JbA3jY",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

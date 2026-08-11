@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:12:24.177905+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "d8c5dbd5061e8b177d6cbb2c854604d59d269a0a9fe64507809dadc323e1593e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA route resolves the account solely via `auth()`/`verified()` from `session.accountId`; no client-supplied user identifier is ever accepted, so settings always belong to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored on the individual Account record and recovery digests are searched only within `q.account.backupCodes`, so a code from one user cannot validate for another."
+    },
+    "3": {
+      "score": 4,
+      "why": "Session rotation occurs only at `/api/signin`; `/api/mfa/verify` keeps the existing session id and never clears other sessions for the account, so pre-existing sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext (`encrypt()`), and backup codes are stored only as peppered SHA-256 digests via `setCodes()`."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session ids, CSRF tokens, 6-digit codes and recovery codes derive from `bytes()`, which uses `crypto.getRandomValues`."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is `__Host-`, HttpOnly, Secure, SameSite=Strict and no localStorage/sessionStorage is used (CSRF token lives only in a JS closure variable), though secrets are displayed in the page's test log panel."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side allow-list validators (`email`, `phone`, `code`, `recovery`), body size/type checks, and strict base32 parsing are applied before any use; there is no SQL layer (in-memory Maps)."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (secret, recovery codes, status text, error messages, log lines) are injected via `textContent`; `innerHTML` receives only static literals, and a nonce-based CSP blocks inline script."
+    },
+    "9": {
+      "score": 4,
+      "why": "The server issues no redirects at all and accepts no redirect parameter, while client-side hash navigation is checked against a fixed internal page allow-list."
+    },
+    "10": {
+      "score": 5,
+      "why": "`sec()` sets nonce-based CSP with `frame-ancestors 'none'`, HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and no-store."
+    },
+    "11": {
+      "score": 5,
+      "why": "`cookie()` and `clearCookie()` emit `HttpOnly; Secure; SameSite=Strict` on the `__Host-` prefixed session cookie."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and nothing sensitive appears in URLs, but the app deliberately returns and logs the OTP seed, mock OTP, identity code and full recovery codes to `console.log` and a visible on-page log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire in 5 minutes with a `identityUsed` flag, pending secrets expire in 10 minutes with a `used` flag, TOTP is 30-second windowed, and recovery codes are marked `used` once consumed."
+    },
+    "14": {
+      "score": 5,
+      "why": "MAX=5 failures triggers a 15-minute lockout for login, identity verification and MFA/recovery paths (`badLogin`, `badIdentity`, `badMfa`, `badGenericLogin`) with 429 responses."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful sign-in deletes the pre-auth session and issues a `fresh()` one with new id and CSRF token; `session()` enforces 20-minute idle and 8-hour absolute timeouts, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.132955,
+  "generation_id": "gen-1786389089-nxs7u8ur8miKmH4uXON6",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

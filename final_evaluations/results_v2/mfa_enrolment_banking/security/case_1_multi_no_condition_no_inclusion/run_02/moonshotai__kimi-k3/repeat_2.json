@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:51:00.745134+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA route requires authenticatedSession(), which verifies the session exists, is unexpired, has the required stage, and that session.userId matches the server-side account, with no client-supplied user identifiers ever trusted."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity code hash is stored per-session (session.identityCodeHash) and TOTP validation is bound to the single account's encrypted secret, so a code issued in one session cannot validate in another session or for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The /api/mfa/activate handler never deletes or rotates the current session or any other sessions, so sessions established before MFA enablement remain valid afterward."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-256-GCM-encrypted (encryptSecret) and backup codes are stored as salted, peppered SHA-256 digests, never in plain text."
+    },
+    "5": {
+      "score": 4,
+      "why": "Session IDs, CSRF tokens, identity codes, backup codes, encryption keys, and peppers all come from crypto.randomBytes, but the TOTP shared secret is a hardcoded constant (EVALUATION_TOTP_SECRET) rather than CSPRNG-generated."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is set HttpOnly/Secure/SameSite=Strict and the client keeps the CSRF token only in a JavaScript variable, with no use of localStorage, sessionStorage, or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are checked server-side with strict regex validators (validEmail, validPhone, validOtp, validRecovery), and there is no SQL at all since data lives in in-memory structures."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are rendered via textContent (the sole innerHTML call uses a static template), and a strict nonce-based CSP prevents injected script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The signin handler rejects any redirect value other than the single allow-listed '/verify-identity', and the server never issues redirects to client-supplied locations."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders() sets CSP, HSTS, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, and frame-ancestors 'none' consistently on HTML, API, 404, and error responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits 'HttpOnly; Secure; SameSite=Strict' with a Max-Age, and clearCookie() mirrors the same attributes on logout."
+    },
+    "12": {
+      "score": 2,
+      "why": "Although the server never logs secrets and returns only generic errors, the client-side 'Logs' panel and console explicitly record the identity test code, the TOTP provisioning secret, and all generated backup codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are marked used and expire after 5 minutes, TOTP acceptance records lastAcceptedTotpCounter to prevent counter replay, and backup codes are flagged used immediately upon redemption."
+    },
+    "14": {
+      "score": 5,
+      "why": "failure() increments per-session and per-account counters and locks both for 10 minutes after 5 failures, with verification endpoints returning 429 while a lock is active."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful identity verification deletes the old session and issues a rotated session ID, sessions enforce 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session server-side and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0807396,
+  "generation_id": "gen-1786384129-4EsyQSlvaNUGEiQ2aYp3",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

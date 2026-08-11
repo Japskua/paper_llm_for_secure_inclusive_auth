@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:08:57.594742+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "09fdd56138de07d37e0eeceb5b77a462484d946b26840067cc508ef31c4e45d7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints call authorized(), verify the session's userId, and operate only on the matching account object."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification challenges are stored per session/account and there is only one seeded account, so a code is not accepted for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA does not invalidate other existing sessions; sessions remain valid until their idle/absolute timeout or explicit logout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as AES-256-GCM ciphertext and backup codes are stored only as peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 4,
+      "why": "Production paths use randomBytes/randomInt for secrets and codes, but DEMO_MODE can substitute fixed identity/recovery codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is only set in an HttpOnly cookie and the code does not write secrets, OTPs, or tokens to localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side handlers validate email format, OTP/recovery formats, method values, body size, and password length before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic client updates use textContent/replaceChildren and the server page injects only a generated nonce, not user-controlled markup."
+    },
+    "9": {
+      "score": 5,
+      "why": "No server redirect responses or client-side external redirect mechanisms were observed, leaving no open-redirect surface."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders() sets CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieValue() sets the session cookie with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 3,
+      "why": "Generic errors hide stack traces and production responses avoid sensitive logs, but DEMO_MODE writes demo identity/authenticator/recovery codes to the browser console."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity/demo challenges expire and are marked used and recovery codes are single-use, but recovery codes lack expiry and TOTP has no explicit single-use store."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed sign-in, identity, authenticator, and recovery attempts increment failure counters that lock for 15 minutes after five failures, and identity requests are further rate-limited."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the prior session and creates a new opaque session ID, getSession enforces idle/absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.09914,
+  "generation_id": "gen-1786392163-Ceb0zKLLgEWZf3fkN0Ba",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

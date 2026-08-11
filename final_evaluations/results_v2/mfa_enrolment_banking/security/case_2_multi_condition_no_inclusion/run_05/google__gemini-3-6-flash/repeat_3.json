@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:58:16.843849+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "0f3d6292f9e220cbdffca811d0ddd5f705ab37cb33484e66ff4136891f7e4a0f",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA configuration endpoints verify session authentication and retrieve account data bound exclusively to the authenticated user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are tied to specific user sessions and account records, preventing their use by other accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Activating MFA updates the account's MFA status without invalidating or purging other existing active sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are encrypted using AES-GCM and backup codes are hashed with SHA-256 and a server pepper before storage."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, secrets, peppers, and verification codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored exclusively in HttpOnly, Secure, SameSite=Strict cookies and sensitive credentials are not saved to browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Input values such as email, phone, and OTP formats are validated using strict server-side regular expressions."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client script renders dynamic data using textContent, preventing execution of injected markup or script."
+    },
+    "9": {
+      "score": 5,
+      "why": "Request routes are validated against an explicit set of allowed path endpoints on the server."
+    },
+    "10": {
+      "score": 5,
+      "why": "Server responses set CSP, HSTS, X-Content-Type-Options, and frame-ancestors/X-Frame-Options clickjacking protections."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie configuration explicitly includes Path=/, HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 5,
+      "why": "Error handling yields generic responses without stack traces, and sensitive tokens are excluded from URL parameters and server logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after five minutes and are marked as used immediately upon successful verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed attempts across identity verification, TOTP, and recovery codes trigger a ten-minute lockout upon reaching five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated upon successful authentication, enforced with idle/absolute timeouts, and removed upon logout."
+    }
+  },
+  "cost_usd": 0.0251082,
+  "generation_id": "gen-1786388284-g5IhbfuP2nnMbvL2Eu23",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

@@ -1,0 +1,123 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:59:35.941368+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "7ebb89de2c28ee4cfb4fb0889f4e47067302d1f742dc82ebf6e93b4fdeb4bc17",
+  "app_ts_sha256": "0f3d6292f9e220cbdffca811d0ddd5f705ab37cb33484e66ff4136891f7e4a0f",
+  "screenshot_count": 13,
+  "screenshots_available": 13,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_add_authenticator.png",
+    "step_04_connect_authenticator.png",
+    "step_05_save_recovery_codes.png",
+    "step_06_mfa_active.png",
+    "step_07_recovery_code_accepted.png",
+    "step_08_regenerated_recovery_codes.png",
+    "step_09_mfa_active_after_saving_regenerated_codes.png",
+    "step_10_logged_out.png",
+    "step_11_explored.png",
+    "step_12_explored.png",
+    "step_13_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a clean sans-serif face with clear bold headings, comfortable line spacing and monospaced blocks for codes, though letter-spacing is default rather than notably generous."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps are used and body copy is limited to one- or two-line sentences, although the recovery-code screen stacks a long list of items."
+    },
+    "3": {
+      "score": 3,
+      "why": "Only 1280px desktop captures are supplied; the centred fixed-width card would likely reflow acceptably but no mobile-width rendering is shown to confirm."
+    },
+    "4": {
+      "score": 4,
+      "why": "Instructions such as 'Enter the six-digit code sent to your phone' and 'An authenticator app produces a new code every 30 seconds' are short and plainly worded."
+    },
+    "5": {
+      "score": 3,
+      "why": "Only the recovery-code field shows a format example ('ABCD-EFGH-IJKL-MNPQ' placeholder); the verification code, authenticator code, email and phone fields show no example input."
+    },
+    "6": {
+      "score": 4,
+      "why": "Every screen keeps prose to a few short lines; the longest text is a three-line info panel, so no long block must be read to proceed."
+    },
+    "7": {
+      "score": 2,
+      "why": "The 32-character setup secret and the 16-character recovery codes are displayed in plain boxes with no copy button, copy-all, or download option, implying manual transcription."
+    },
+    "8": {
+      "score": 1,
+      "why": "Step 3 explicitly states 'A QR code is not required' and step 4 offers only manual entry of the setup secret, so no QR or scan alternative exists."
+    },
+    "9": {
+      "score": 2,
+      "why": "No password field, autocomplete hints, or password-manager affordances are visible anywhere in the flow, so autofill support cannot be observed."
+    },
+    "10": {
+      "score": 3,
+      "why": "Each page has a bold heading and a single prominent blue primary button, but there is no step indicator (e.g. 'Step 2 of 5') showing where the user is in the sequence."
+    },
+    "11": {
+      "score": 4,
+      "why": "Most screens ask for one thing with a single primary button, though the 'MFA is active' screen simultaneously offers verify a code, generate new codes, and log out."
+    },
+    "12": {
+      "score": 4,
+      "why": "Confirmations like 'Your authenticator is ready for protected payments' and 'Recovery code accepted. It cannot be used again.' state outcomes clearly, though onward next-step guidance is thin."
+    },
+    "13": {
+      "score": 3,
+      "why": "Users can retry verification and regenerate recovery codes, but there is no reveal/hide toggle, no resend/re-request of the delivered code, and regenerating permanently invalidates prior codes."
+    },
+    "14": {
+      "score": 2,
+      "why": "The error 'We could not complete that request. Please try again.' is non-blaming but does not identify the problem (wrong/expired code) or how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "The verification code explicitly 'expires in five minutes' and TOTP codes rotate every 30 seconds, so time pressure is imposed rather than generous or absent."
+    }
+  },
+  "cost_usd": 0.14794,
+  "generation_id": "gen-1786388346-AN5iRlpVWsBBqXw8a3RD",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 2,
+    "8": 1,
+    "9": 2,
+    "10": 3,
+    "11": 4,
+    "12": 4,
+    "13": 3,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 3.6667,
+    "comprehension": 1.6667,
+    "decision_making": 3.6667,
+    "learning": 2.3333
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

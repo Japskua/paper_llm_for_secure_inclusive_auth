@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:17:47.852243+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "a5196aab32aaa319fd3fb877c6c9d448e815221b7a562eee9e06d60e5f91be42",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side endpoints check session authentication and map all MFA operations directly to the signed-in user's account session."
+    },
+    "2": {
+      "score": 5,
+      "why": "The identity verification code is hardcoded to a constant value ('246810') for all valid user accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling and confirming MFA does not revoke or invalidate other existing active sessions for the user account."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is encrypted using AES-256-GCM and backup codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Random values and secrets are generated using Node's cryptographically secure randomBytes function."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are managed via HttpOnly cookies and no secrets are stored in localStorage or sessionStorage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server endpoints strictly validate email, phone number, and OTP inputs using length, type, and regex checks."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic dynamic content is rendered using safe DOM properties like textContent, preventing script injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirect parameters are restricted by safeInternalPath to an explicit allow-list of internal paths."
+    },
+    "10": {
+      "score": 5,
+      "why": "The server sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options, and frame-ancestors headers on responses."
+    },
+    "11": {
+      "score": 1,
+      "why": "Session cookies are configured with HttpOnly, Secure, and SameSite=Strict attributes in the cookie helper function."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client-side script explicitly outputs provisioning secrets and backup codes to browser console logs and on-screen log elements."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 5 minutes and are marked used, while TOTP window tracking prevents token reuse."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed attempts are tracked per challenge type and trigger a 10-minute lockout after 5 consecutive failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "A new session identifier is generated upon identity verification, idle/absolute timeouts are enforced, and sessions are deleted on logout."
+    }
+  },
+  "cost_usd": 0.0408255,
+  "generation_id": "gen-1786389449-7EnrmyxcJ43uJ9WLjsTQ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 1,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 2.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:25:52.919886+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "b55abc4a79cf3d67ef963185b565c940df7fe619c2829f582b705e1f4531b230",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls owner(), which requires an authenticated session whose userId matches ACCOUNT.id, and manipulated() rejects any body-supplied userId/accountId/ownerId/email fields."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each pre-auth session receives its own identityCode and /api/auth/verify only accepts that session's code with session.userId === ACCOUNT.id, so a code issued to one session/user cannot be used by another."
+    },
+    "3": {
+      "score": 5,
+      "why": "Neither /api/mfa/confirm nor /api/mfa/backup/regenerate invalidates any sessions, so the current and any other sessions established before MFA enablement remain fully valid afterward."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted via encryptSecret and backup codes are stored only as HMAC-SHA-256 hashes via backupHash, never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session IDs, identity digits, the TOTP secret, backup codes, and the encryption/HMAC keys are all produced with crypto.getRandomValues, a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie set is the HttpOnly __Host-mfa_session cookie, and the client never touches localStorage/sessionStorage, keeping the CSRF token, setup secret, and codes only in JS variables."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server enforces JSON content-type and a 4KB body limit and validates email, phone, OTP, and backup code formats with strict regexes (validEmail, validPhone, validOtp, validBackup) before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are inserted via textContent, the innerHTML templates interpolate no user data, and a nonce-based CSP (script-src 'nonce-...') blocks any injected script execution."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application issues no redirects at all (no Location headers or redirect parameters exist), so open redirects are impossible, though there is no explicit allow-list mechanism."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets a nonce-based CSP with frame-ancestors 'none', HSTS (max-age=63072000; includeSubDomains), X-Content-Type-Options: nosniff, X-Frame-Options: DENY, plus Referrer-Policy and Permissions-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits __Host-mfa_session with HttpOnly, Secure, SameSite=Strict, Path=/, and a Max-Age, satisfying all required attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server logs, URLs, and error output are clean and stack traces are suppressed, but the client log() function writes the identity code, current TOTP, and backup codes to console.log and a visible log panel, and the API itself returns testCode/testOtp."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after VERIFY_WINDOW_MS (10 min) and are destroyed with the session on success, TOTP counters are recorded in usedCounters to block replay within the time window, and backup codes are deleted from the hash set upon use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed attempts trigger a 10-minute lockout after 5 failures via identityThrottles (durably keyed on normalized submitted details), authenticatorThrottles, and per-record recovery throttling."
+    },
+    "15": {
+      "score": 5,
+      "why": "On successful verification the pre-auth session is deleted and a brand-new authenticated session ID is issued, idle (15 min) and absolute (8 h) timeouts are enforced in currentSession, and /api/auth/logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.116964,
+  "generation_id": "gen-1786389800-1PsCs70bNWryZ0Y8U3jg",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

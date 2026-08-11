@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:43:39.953448+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint resolves the account solely from the server-side session (auth() → sessions.get → accounts.get(session.accountId)); no user identifier is ever accepted from the client, so settings always belong to the signed-in user."
+    },
+    "2": {
+      "score": 4,
+      "why": "Verification values are hard-coded constants (MOCK_IDENTITY_CODE '123456', MOCK_AUTHENTICATOR_CODE '654321', shared MOCK_RECOVERY_CODES), so the identical code would be valid for any account, even though each account keeps its own used/attempt state."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA in /api/authenticator/verify only sets account.mfaEnabled and issues backup codes; it neither rotates the current session id nor deletes other entries in the sessions map, so pre-existing sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored only as AES-GCM ciphertext via crypt()/Stored{iv,cipher} and each recovery code is stored as a per-code random-salt PBKDF2-SHA256 hash (210k iterations), never plaintext."
+    },
+    "5": {
+      "score": 2,
+      "why": "Although token() and salts use crypto.getRandomValues, the actual OTP shared secret, identity code, authenticator code and all recovery codes are fixed hard-coded constants rather than CSPRNG-generated."
+    },
+    "6": {
+      "score": 3,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict, but the responses hand the plaintext TOTP seed, otpauth URI, mock OTPs and recovery codes to the browser in JSON, and the client-side handling of those values is not visible in the supplied code."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation is consistent: JSON content-type and 4000-byte body limit, typed/length-capped field(), email regex, otpOk /^\\d{6}$/, recoveryCodeOk alphabet regex, and state is held in Maps with no SQL string concatenation."
+    },
+    "8": {
+      "score": 3,
+      "why": "Responses are JSON-encoded with an explicit charset and CSP forbids inline script (nonce-only), but the front-end rendering code that would perform contextual output encoding is not included in the excerpt."
+    },
+    "9": {
+      "score": 3,
+      "why": "The API contains no redirect logic at all (only JSON replies), so there is no allow-list implemented — the claim cannot be observed as true, though no open redirect exists either."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets a strict CSP (nonce-based, frame-ancestors 'none', base-uri 'none'), HSTS max-age=31536000 includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() emits 'mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=...' and expiredCookie() mirrors the same attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Error messages are generic with no stack traces, but /api/identity/request and /api/provision deliberately return mockCode, mockDocumentation ('Practice identity code: 123456'), the plaintext secret and an otpauth:// URI containing the seed, so OTP seeds/codes are directly exposed in output."
+    },
+    "13": {
+      "score": 3,
+      "why": "check() enforces used/expires with CODE_LIFE=15 min for identity codes, but /api/authenticator/verify never tests account.auth.expires or .used (and its documentation states the practice code 'does not expire in this mock'), so time-binding/single-use is only partially enforced."
+    },
+    "14": {
+      "score": 5,
+      "why": "MAX=5 failed attempts triggers a 10-minute LOCK for identity codes, authenticator setup and recovery codes, and loginFailures applies the same lockout on sign-in with a generic message."
+    },
+    "15": {
+      "score": 4,
+      "why": "A fresh random session id and CSRF token are minted on successful sign-in with IDLE=30 min and ABSOLUTE=8 h timeouts enforced in auth(), and expiredCookie() exists for logout, but the id is not re-rotated when MFA is completed and the logout handler is cut off in the excerpt."
+    }
+  },
+  "cost_usd": 0.12034,
+  "generation_id": "gen-1786390978-RV1nThbvEYkGFVyKKBZn",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 2,
+    "3": 2,
+    "4": 5,
+    "5": 2,
+    "6": 3,
+    "7": 5,
+    "8": 3,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 3,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 3.3333,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 3.6,
+  "capture_complete": false
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:35:34.954128+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "94a7c6dc5c1188ebf19fbb712d6c94f4fc46d3f25e16a20977597cf5afc48305",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "access() resolves the account solely from the server-side session (accounts.get(s.userId)) and noId() rejects client-supplied userId/accountId/emailOwner, so only the signed-in owner can reach their MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "TOTPs are verified against each account's own encrypted secret and recovery codes against that account's own hashes, so a verification code from one user cannot validate for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/mfa/verify sets a.mfa=true but never removes other entries from the sessions map, and only signin/logout delete sessions, so pre-existing sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted via encrypt() and recovery codes are stored only as salted PBKDF2-SHA-256 hashes (210,000 iterations) via codeHash()."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session tokens, CSRF tokens, and recovery codes are generated with crypto.getRandomValues (token(), base32Secret(), recoveryCode()), a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "No localStorage/sessionStorage is used — CSRF token and codes live only in JS variables — and the session cookie is set HttpOnly, Secure, SameSite=Strict."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates email, phone, OTP (/^\\d{6}$/), and recovery format with strict regexes, caps body size at 10kB, normalises email/phone, and uses in-memory Maps so no SQL injection surface exists."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are rendered via textContent only (message(), log(), renderKey/renderCodes) with a nonce-based CSP blocking inline script, so injected markup cannot execute."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application performs no server- or client-side redirects at all, and noId() explicitly rejects any 'redirect' field in request bodies."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets a strict CSP including frame-ancestors 'none', HSTS with includeSubDomains, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "The mfa_session cookie is set with HttpOnly, Secure, and SameSite=Strict both at signin and when cleared at logout."
+    },
+    "12": {
+      "score": 2,
+      "why": "Although server errors are generic with no stack traces, the client deliberately writes the mock OTP and all recovery codes to the console and the visible on-page logs panel (log(\"Mock MFA OTP delivered: \"+r.mockOtp) and log(\"Recovery codes delivered: \"+codes.join(\", \")))."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTPs are 30-second time-window codes, provisioning secrets expire after 10 minutes, provision.used blocks re-verification, and recovery codes are spliced out after a single successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "wrong() locks verification for 5 minutes after 5 failed attempts on both the OTP (a.otp) and recovery (a.rec) verifiers, returning 429 responses."
+    },
+    "15": {
+      "score": 5,
+      "why": "Signin issues a fresh session id and deletes the old cookie's session, session() enforces 20-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.1146753,
+  "generation_id": "gen-1786390472-uRbSHDx5JpiWfErp2oF5",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

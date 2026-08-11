@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:59:50.957289+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization derives the target account strictly from the authenticated session user ID and explicitly blocks requests containing foreign identity fields."
+    },
+    "2": {
+      "score": 5,
+      "why": "The system validates verification codes against hardcoded static constants (TEST_AUTHENTICATOR_CODE and TEST_IDENTITY_CODE) which are identical across all users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA via the confirm endpoint updates the account's MFA state without terminating or invalidating other existing active sessions in the server session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The shared OTP secret is encrypted at rest using AES-GCM and backup codes are stored as salted SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All OTP shared seeds, backup codes, master keys, and session tokens are generated using Web Crypto's crypto.getRandomValues()."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session identifiers reside in HttpOnly cookies, and dynamic sensitive values are held in application memory rather than browser storage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server applies strict regex, format, and length checks to user inputs such as email, phone, OTP, secret, and recovery code strings."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic user data rendered by client script uses node.textContent to prevent execution of injected HTML or scripts."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server validates redirect parameters against an internal allow-list consisting only of undefined, '/', and '/mfa'."
+    },
+    "10": {
+      "score": 5,
+      "why": "The application issues security headers including CSP, HSTS, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies explicitly include the HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Client-side code explicitly outputs sensitive values like OTP seeds, test verification codes, and generated recovery codes to browser console logs and a UI log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes, OTP challenges, and recovery codes enforce timestamp expiration and are marked as used upon verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "Verification guards increment failure counters on wrong attempts and trigger temporary lockouts after 5 consecutive failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "The server rotates the session ID upon authentication, enforces idle and absolute timeouts, and deletes the session on logout."
+    }
+  },
+  "cost_usd": 0.0479175,
+  "generation_id": "gen-1786384771-QAL0EZaoJ3D7PPRafn5i",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

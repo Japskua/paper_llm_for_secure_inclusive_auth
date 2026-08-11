@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:16:04.084347+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server enforces authentication on every request and checks that session user identifiers match the account owner."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are tied to the specific account's pending TOTP secret and cannot be used for other accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates account flags but does not invalidate or purge other pre-existing active session tokens."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored using AES-GCM encryption and recovery codes are stored as SHA-256 hashes and encrypted payloads."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, recovery codes, and session identifiers are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are restricted to HttpOnly cookies and credentials are not stored in localStorage or sessionStorage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server endpoints strictly validate input types and formats for email addresses, phone numbers, and numeric OTPs."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic dynamic variables rendered into the frontend DOM are passed through an HTML entity escaping function."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application handles client-side routing via hashes and contains no open server-side redirect capabilities."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include strict headers for CSP, HSTS, X-Content-Type-Options, and anti-clickjacking frame controls."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client application explicitly displays generated OTP secrets, test OTPs, and unhashed backup codes in the UI log component."
+    },
+    "13": {
+      "score": 5,
+      "why": "Pending verification codes are enforced with a 5-minute expiration window and marked used upon successful verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed OTP and recovery code attempts are tracked and enforce a 10-minute lockout after 5 invalid attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session IDs are reissued upon login, check idle and absolute timeouts on requests, and are removed from memory at logout."
+    }
+  },
+  "cost_usd": 0.040344,
+  "generation_id": "gen-1786385745-i2UVQfpCTooRQbQBn0at",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

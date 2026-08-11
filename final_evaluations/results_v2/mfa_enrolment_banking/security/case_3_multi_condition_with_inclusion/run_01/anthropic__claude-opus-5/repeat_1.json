@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:27:06.069131+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "e2523743e6748e8fa4d2c78a75fe0c8f0d4948d3cb707513e4d7acf4307a964a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints resolve the account solely from the server-side session via `owner()`/`pendingOwner()` (session.user → accountIds), with no user identifier accepted from the request, so settings always belong to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity code is stored hashed under the requesting session's `emailHash` and only validated against that hash plus `limit.supported`, so a code issued for one identity cannot be used by another user."
+    },
+    "3": {
+      "score": 4,
+      "why": "`/api/mfa/confirm` only sets `a.mfa`/`a.secret` and clears the enrollment; it never iterates the `sessions` map to delete other existing sessions for that account, so previously established sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-256-GCM ciphertext (`enc`/`Protected`) and backup codes only as PBKDF2-SHA256 (210k iterations, salt+pepper) digests, never plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, salts, session/CSRF tokens, backup codes and the 6-digit identity code all come from `randomBytes`/`randomInt` (Node CSPRNG)."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie is `mfa_session` with HttpOnly, Secure, SameSite=Strict; the client keeps CSRF token and setup secret only in transient JS state with no localStorage/sessionStorage usage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates body size and JSON shape, normalises/regex-validates email, and enforces `/^\\d{6}$/` for OTP/identity codes and a strict pattern for recovery codes; there is no SQL (in-memory Maps)."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic output is inserted via `textContent`/`document.createTextNode` in the `E()` helper, and a nonce-based CSP with no `unsafe-inline` further blocks injected script."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application issues no redirects at all (no Location header or redirect parameter anywhere), so no open-redirect exists, though there is also no explicit allow-list mechanism."
+    },
+    "10": {
+      "score": 5,
+      "why": "Every response carries HSTS, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, a nonce-based CSP with `frame-ancestors 'none'`, Referrer-Policy and Cache-Control: no-store."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()` and `clearCookie()` both emit `HttpOnly; Secure; SameSite=Strict` with Path=/ and Max-Age."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server-side there is no logging, no secrets in URLs and errors are generic (catch-all returns a plain message), but the client deliberately `console.log`s the mock identity code, the mock OTP and the full list of backup recovery codes, and renders demo codes into the page."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have a 10-minute expiry and a `used` flag, TOTP steps are recorded in `usedTotp`/`e.used` to prevent replay within the ±1 window, and backup codes are marked `used` and carry an expiry."
+    },
+    "14": {
+      "score": 5,
+      "why": "`recordFailure` locks for 10 minutes after 5 failures, applied per email hash, per request-source hash, per enrollment and per account, plus a 30s request cooldown returning 429."
+    },
+    "15": {
+      "score": 5,
+      "why": "A brand-new session id is minted (old one deleted) at `/api/signin/verify` and `/api/signin/mfa/verify`, `getSession` enforces 30-minute idle and 8-hour absolute timeouts, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.16581,
+  "generation_id": "gen-1786389988-l7ZKHtpp5NYUWuXtaAhs",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": true
+}

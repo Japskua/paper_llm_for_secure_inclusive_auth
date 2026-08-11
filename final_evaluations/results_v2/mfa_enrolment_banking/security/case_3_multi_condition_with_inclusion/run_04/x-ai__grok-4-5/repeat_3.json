@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:39:55.119445+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "c08fd9d85e429c55d45db1aac6ad59f72dd588811e3b858c08385d4e6ba1851e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA routes call owner(), which requires a server session at stage mfa whose userId matches the signed-in account before any settings are read or changed."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity OTPs, pending TOTP secrets, and backup hashes are stored on the caller’s own session object, so a code bound to one session does not validate for a different user/session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only mutates the current session (enrolled/enabled/backups); no code invalidates other existing sessions for that account, so prior sessions continue to work."
+    },
+    "4": {
+      "score": 5,
+      "why": "Pending/enrolled authenticator secrets are stored via AES-GCM encrypt(), and backup codes are stored as SHA-256 hashes with a pepper, not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "token(), secret(), and codes() use crypto.getRandomValues through the random() helper (fixed demo values only when TEST mode is on)."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session is only in an HttpOnly Secure SameSite cookie; CSRF and secrets live in memory/DOM for setup and are never written to localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server applies bounded length checks and strict pattern validators (emailInput, passwordInput, otpInput, recoveryInput) before any auth logic uses the values."
+    },
+    "8": {
+      "score": 5,
+      "why": "API responses are JSON and the client encodes dynamic HTML with the e() escapers; CSP nonce further blocks inline script injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "No user-controlled redirect targets exist; navigation is same-origin reload or fixed paths, and CORS Origin is allow-listed to localhost HTTPS origins."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "secureCookie() sets mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 5,
+      "why": "Production responses use generic errors with no stack traces; secrets are not logged or put in query strings (test-only UI logs are gated by TEST)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity and pending setup secrets use LIFE (10 minutes) expiry and are cleared after success; backup codes are removed on use; TOTP is windowed."
+    },
+    "14": {
+      "score": 5,
+      "why": "failed()/locked() enforce MAX=5 attempts then a LOCK=10 minute lockout on identity, authenticator, and recovery verification."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the old session and issues a new id; get() enforces idle and absolute timeouts; logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0257588,
+  "generation_id": "gen-1786390725-iWHJRKFX4J42NhWy4qqW",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

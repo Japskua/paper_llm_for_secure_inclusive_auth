@@ -1,12 +1,122 @@
 {
-  "ok": false,
-  "reason": "exception",
-  "error": "NameError: name 'MAX_IMAGES' is not defined",
+  "ok": true,
   "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
   "case": "case_1_multi_no_condition_no_inclusion",
   "run": "run_01",
   "track": "inclusivity",
   "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
   "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:48:20.136562+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 12,
+  "screenshots_available": 12,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_confirm_authenticator.png",
+    "step_05_save_recovery_codes.png",
+    "step_06_mfa_settings.png",
+    "step_07_recovery_code_accepted.png",
+    "step_08_save_regenerated_recovery_codes.png",
+    "step_09_mfa_settings_after_saving_regenerated_codes.png",
+    "step_10_logged_out.png",
+    "step_11_explored.png",
+    "step_12_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The UI uses a clean sans-serif typeface with bold labels, clear headings and reasonably generous line spacing throughout, though the monospace secret/log blocks are tighter and small."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps are used and most text is short, but step 4's testing note is a five-line dense paragraph mixing several ideas."
+    },
+    "3": {
+      "score": 4,
+      "why": "The layout is a single narrow mobile-width column with full-width fields and buttons, but the provisioning URI on step 4 overflows past the card edge and would not fit a phone screen."
+    },
+    "4": {
+      "score": 4,
+      "why": "Most instructions are one short plain sentence (e.g. 'Enter the six-digit code currently displayed by your authenticator app'), apart from the longer technical note about 30-second periods and clock skew."
+    },
+    "5": {
+      "score": 4,
+      "why": "Input formats are exemplified by placeholders such as 'marcus@example.test', '+15551234567', 'Six digits' and 'ABCDE-23456' for the recovery code."
+    },
+    "6": {
+      "score": 4,
+      "why": "Each screen can be completed by reading a heading and one short line, though step 4 places a multi-sentence technical note directly above the required input."
+    },
+    "7": {
+      "score": 2,
+      "why": "The manual setup secret and recovery codes are shown as plain text/read-only fields with no copy button or 'copy all' action, despite instructions telling the user to 'copy them now'."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code is rendered anywhere; step 3 explicitly says the secret must be added 'manually' and only a raw otpauth:// URI string is shown."
+    },
+    "9": {
+      "score": 2,
+      "why": "Standard labelled email/password/tel inputs are present so basic autofill may work, but there is no visible evidence of autocomplete attributes, one-time-code handling, or a show/hide password control for password managers."
+    },
+    "10": {
+      "score": 5,
+      "why": "Every screen shows a 'Step X of 5' badge, a large bold heading, and a single full-width primary blue button that clearly dominates."
+    },
+    "11": {
+      "score": 4,
+      "why": "Most steps ask for one action, though step 1 requires three fields at once and the MFA settings screen presents recovery-code entry, regeneration and log out together."
+    },
+    "12": {
+      "score": 4,
+      "why": "Confirmations such as 'Authenticator app protection is active', 'Recovery code accepted and consumed' and 'You have been logged out' are shown, but they state what happened more than what comes next."
+    },
+    "13": {
+      "score": 4,
+      "why": "The user can re-enter codes, regenerate recovery codes and retry after errors, but there is no reveal/hide toggle for the secret and no way to re-display recovery codes once dismissed."
+    },
+    "14": {
+      "score": 2,
+      "why": "The observed error 'We could not complete that request. Please try again.' is non-blaming but generic, giving no indication of the actual problem or how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "Step 4 imposes a five-minute setup expiry and 30-second rotating codes with only one adjacent period of tolerance, so time pressure is present rather than generous."
+    }
+  },
+  "cost_usd": 0.123205,
+  "generation_id": "gen-1786384081-B8n570IVv60xZOk7HgP2",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 2,
+    "8": 1,
+    "9": 2,
+    "10": 5,
+    "11": 4,
+    "12": 4,
+    "13": 4,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 4.0,
+    "comprehension": 1.6667,
+    "decision_making": 4.3333,
+    "learning": 2.6667
+  },
+  "overall": 3.3333,
   "capture_complete": true
 }

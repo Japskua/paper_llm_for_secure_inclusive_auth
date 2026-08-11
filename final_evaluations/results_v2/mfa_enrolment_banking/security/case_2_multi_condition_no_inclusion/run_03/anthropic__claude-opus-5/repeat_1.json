@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:47:31.361739+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "652bf86f5783a50ebf90d322da5510ea9fa899a6e4f41ad87fa0fc835067602a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints go through `authenticated(req)` which resolves the user solely from the server-side session (`s.userId`), and `body()` rejects any request containing `userId`/`accountId`, so settings are always scoped to the signed-in account."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity code is an HMAC bound to the specific session id (`identity-demo:${sessionId}`) and is checked against the per-session `identityHash`, so a code from one session/user cannot be used in another."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA in `/api/mfa/verify` only flips `mfaEnabled` and never deletes or rotates other entries in the `sessions` map, so previously established sessions for that user remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext (`encryptedTotp = await encrypt(secret)`) and backup codes are stored only as peppered SHA-256 hashes in `backupHashes`."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session ids, CSRF tokens, TOTP seeds, backup codes, encryption key and pepper are all derived from `crypto.getRandomValues`."
+    },
+    "6": {
+      "score": 4,
+      "why": "The only cookie is `mfa_session` with HttpOnly/Secure/SameSite=Strict and no localStorage/sessionStorage is used (CSRF token only in JS memory), though secrets are echoed into a DOM log pane and console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators `email()`, `phone()`, `password()`, `otp()`, and `backup()` normalise and regex-validate every input, and non-object/array or ID-injected JSON bodies are rejected."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (setup key, backup codes, error messages, logs) are inserted with `textContent`/`createElement`, `innerHTML` only receives static strings, and a nonce-based CSP blocks inline script."
+    },
+    "9": {
+      "score": 4,
+      "why": "The only accepted `destination` value is the literal `\"/\"` and the HTTP→HTTPS 308 redirect hardcodes `https://localhost:${PORT}`, so no attacker-controlled host is reachable."
+    },
+    "10": {
+      "score": 5,
+      "why": "`hdr()` sets a nonce CSP with `frame-ancestors 'none'`, HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()`/`clearCookie()` always emit `HttpOnly; Secure; SameSite=Strict` with a bounded Max-Age."
+    },
+    "12": {
+      "score": 2,
+      "why": "Errors are generic (`fail()`) with no stack traces and nothing sensitive is in URLs, but the responses deliberately return `testCode`, `manualSecret` and the backup `codes`, which the client then writes to `console.log` and a visible \"Logs\" pane."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code has `identityUsed` plus a 5-minute `identityExpires`, TOTP enrolment uses `pendingTotpUsed`/`accepted` counter set with a 5-minute window, and backup hashes are deleted on successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, TOTP and backup verification each increment failure counters and set a 10-minute lockout at `MAX = 5` failures, enforced via `available()`/`attempt()`."
+    },
+    "15": {
+      "score": 5,
+      "why": "`rotate()` issues a brand-new session id at sign-in and again on successful identity verification, `active()` enforces 15-minute idle and 8-hour absolute timeouts, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.13321,
+  "generation_id": "gen-1786387619-yOCPmgxDIzOmP6C1HN5H",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

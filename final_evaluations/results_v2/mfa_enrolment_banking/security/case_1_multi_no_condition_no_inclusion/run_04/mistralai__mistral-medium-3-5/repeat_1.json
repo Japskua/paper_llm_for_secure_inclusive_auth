@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:59:45.104591+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system enforces server-side authorization by deriving owner identity only from authenticated session (see authenticated() and MFA routes)."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same verification code (TEST_IDENTITY_CODE) works for any user, as it is hardcoded and not user-specific."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions remain valid after MFA is enabled (no explicit invalidation of old sessions on MFA enablement)."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP shared secret and backup codes are stored encrypted (AES-GCM) or hashed (SHA-256 with salt) at rest."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using crypto.getRandomValues(), a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are kept out of browser storage and non-HttpOnly cookies (stored in memory or HttpOnly/Secure cookies)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is performed (e.g., isEmail, isPhone, isOtp, hasForeignIdentity checks)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Contextual output encoding is used (e.g., escText function in HTML, JSON responses)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are restricted to an allow-list (allowedRedirect function checks for '/' or '/mfa')."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure response headers are set (CSP, HSTS, X-Content-Type-Options, X-Frame-Options, etc.)."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are kept out of logs, URLs, and error output (no exposure in code)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes are single-use (e.g., check.used, enrollment.used flags) and time-bound (expires checks)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Repeated failed verification attempts are rate-limited (failed() function locks after 5 failures)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifier is rotated on authentication (rotateAuthenticated), has idle/absolute timeouts, and is invalidated on logout."
+    }
+  },
+  "cost_usd": 0.020484,
+  "generation_id": "gen-1786384774-NjWti8vWtD9DJkt58WWO",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

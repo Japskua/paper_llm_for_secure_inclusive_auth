@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 3,
+  "judged_at": "2026-08-10T19:52:39.883096+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "580b4044089c77727fe040f6ea0000c6d5f83948bf6204c54696c4d059d00f19",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization verifies the session token and CSRF header on every endpoint to ensure MFA actions belong to the authenticated session owner."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are tied to account-specific secrets or hashes and flagged as used upon verification rather than working universally."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the current session stage but does not clear or invalidate existing session tokens stored in the server map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP shared secret is stored encrypted with AES-GCM and recovery codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, secrets, encryption keys, and verification codes are generated using crypto.getRandomValues()."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored in HttpOnly cookies and no tokens or secrets are stored in browser localStorage or sessionStorage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side helper functions validate format, length, and numerical regex patterns for emails, passwords, and OTP entries."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side rendering sets textContent for dynamic strings, preventing injected HTML or scripts from executing."
+    },
+    "9": {
+      "score": 5,
+      "why": "Client-side routing uses an explicit internal object mapping for view stages and contains no open redirect endpoints."
+    },
+    "10": {
+      "score": 5,
+      "why": "Standard security headers including HSTS, X-Content-Type-Options, DENY frame options, and frame-ancestors CSP rules are applied to all HTTP responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are explicitly configured with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Backup codes and test OTPs are printed to browser console logs and rendered inside the UI log element in academic mode."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity verification codes expire after 10 minutes with single-use flags, and TOTP time steps are recorded to prevent reuse."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity checks, and TOTP validation enforce a 15-minute lockout period after 5 failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in issues a freshly generated session token, requests enforce idle and absolute timeouts, and logging out removes the session from the server map."
+    }
+  },
+  "cost_usd": 0.057366,
+  "generation_id": "gen-1786391536-KOOJHtxtcX4gqgfPsNOx",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

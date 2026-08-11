@@ -1,0 +1,123 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "inclusivity",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:37:29.047216+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 13,
+  "screenshots_available": 13,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity_code.png",
+    "step_03_authenticator_setup.png",
+    "step_04_authenticator_setup_details.png",
+    "step_05_initial_recovery_codes.png",
+    "step_06_mfa_settings.png",
+    "step_07_confirm_recovery_code.png",
+    "step_08_recovery_code_confirmed.png",
+    "step_09_replacement_recovery_codes.png",
+    "step_10_mfa_settings_after_replacement.png",
+    "step_11_logged_out.png",
+    "step_12_explored.png",
+    "step_13_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a clean sans-serif typeface at readable sizes with adequate line spacing, though the spacing is typical rather than notably generous."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or dense instruction blocks appear anywhere, but uppercase acronyms (MFA, OTP) and all-caps code strings such as the manual secret are present."
+    },
+    "3": {
+      "score": 4,
+      "why": "The layout is a single narrow centered card with large fields and buttons that would fit mobile widths, though only desktop-width screenshots were provided to verify this."
+    },
+    "4": {
+      "score": 4,
+      "why": "Instructions are mostly one short plain sentence (e.g., 'Use an authenticator app to generate a code.'), but jargon like 'Provisioning value' and 'protected one-way verification values' appears."
+    },
+    "5": {
+      "score": 3,
+      "why": "Only the recovery code field shows an example placeholder ('ABCDE-23489'); the verification code and authenticator code fields are empty with no example of the expected format."
+    },
+    "6": {
+      "score": 4,
+      "why": "Every instructional message is one to two short sentences, so no long prose block must be read to proceed, though the mock Logs panel is a dense block the evaluator must read to obtain codes."
+    },
+    "7": {
+      "score": 4,
+      "why": "The manual secret sits in a selectable read-only field, the provisioning URI in a selectable text area, and recovery codes are selectable text with the instruction 'Copy these codes now', but no dedicated copy buttons are offered."
+    },
+    "8": {
+      "score": 2,
+      "why": "No QR code is shown anywhere; the success message explicitly says 'Add this value manually', with only a raw otpauth:// URI string as an alternative."
+    },
+    "9": {
+      "score": 3,
+      "why": "The screenshots show standard text inputs and a prefilled email, but nothing visible confirms or denies support for browser autofill or password managers."
+    },
+    "10": {
+      "score": 5,
+      "why": "Each screen has a large bold heading naming the current task (e.g., 'Verify your identity') and a single high-contrast blue primary button that clearly dominates the layout."
+    },
+    "11": {
+      "score": 4,
+      "why": "Most screens present one primary action, but the MFA settings screens show both 'Regenerate recovery codes' and 'Log out', and step 8 shows 'Verify recovery code' and 'Generate replacement codes' buttons simultaneously."
+    },
+    "12": {
+      "score": 4,
+      "why": "Actions produce plain confirmations ('Authenticator created. Add this value manually.', 'Recovery code confirmed.', 'Authenticator MFA is active.'), but the logout confirmation appears only in the Logs panel and the error message is vague."
+    },
+    "13": {
+      "score": 3,
+      "why": "Retry is supported ('Please try again', 'Back to MFA settings' link) and codes can be re-requested via 'Regenerate recovery codes', but there is no reveal/hide option and regenerating requires consuming an existing recovery code ('It will be consumed.')."
+    },
+    "14": {
+      "score": 3,
+      "why": "The only observed error, 'Unable to complete this request. Please try again.', does not blame the user and suggests retrying, but it does not state what the actual problem is."
+    },
+    "15": {
+      "score": 4,
+      "why": "No countdowns or time limits appear on any screen and the authenticator is configured with a generous 120-second code period (period=120), though absence of session timeouts cannot be fully confirmed from screenshots."
+    }
+  },
+  "cost_usd": 0.1230984,
+  "generation_id": "gen-1786386923-2CLtDlYzjh1CMzeTxGCP",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 2,
+    "9": 3,
+    "10": 5,
+    "11": 4,
+    "12": 4,
+    "13": 3,
+    "14": 3,
+    "15": 4
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 3.6667,
+    "comprehension": 3.0,
+    "decision_making": 4.3333,
+    "learning": 3.3333
+  },
+  "overall": 3.6667,
+  "capture_complete": true
+}

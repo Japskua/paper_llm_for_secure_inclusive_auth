@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:26:40.091758+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "b55abc4a79cf3d67ef963185b565c940df7fe619c2829f582b705e1f4531b230",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints call owner(), which requires an authenticated session whose userId equals ACCOUNT.id, and MFA records are keyed to ACCOUNT.id."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity code is stored per session and /api/auth/verify also requires session.userId === ACCOUNT.id, so a code from one session/user does not work for another."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/mfa/confirm creates the MFA record without deleting, rotating, or invalidating existing authenticated sessions, so prior sessions remain usable."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as AES-GCM encryptedSecret and backup codes are stored as HMAC backupHashes rather than plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, identity codes, backup codes, and tokens are generated with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The code does not use localStorage/sessionStorage or non-HttpOnly cookies for secrets/OTPs/session tokens; the session cookie is HttpOnly."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side handlers validate email, phone, OTP, and backup-code formats with validEmail, validPhone, validOtp, and validBackup before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent rather than innerHTML, and CSP uses nonces, preventing injected markup/script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "No server redirect responses or client-side location assignments are present, so there is no open-redirect behavior."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() sets __Host-mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client-side log() writes backup recovery codes and test OTPs to the console and visible Logs panel, so those secrets are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity sessions expire and are deleted after successful verification, TOTP counters are recorded in usedCounters, and backup hashes are deleted after use."
+    },
+    "14": {
+      "score": 5,
+      "why": "identityThrottles, authenticatorThrottles, and recovery lockout enforce MAX_FAILURES=5 with LOCK_MS after repeated failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "/api/auth/verify deletes the pre-auth session and issues a new session ID, currentSession enforces idle/absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.058312,
+  "generation_id": "gen-1786389798-WnOZmKBLON65lvzhn50z",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

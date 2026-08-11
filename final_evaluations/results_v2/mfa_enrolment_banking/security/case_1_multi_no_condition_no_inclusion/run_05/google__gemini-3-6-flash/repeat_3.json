@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:05:32.556270+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ea5bab4b0d6539028296220e344d7db471d5a50ff1c6cc99aaff0f369372e18a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA operations strictly resolve the account bound to the authenticated session's user ID and reject user-supplied identity parameters."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes, TOTP secrets, and recovery codes are bound directly to specific user accounts or session hashes and cannot be used by other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA toggles the account's MFA flag without invalidating or terminating other existing active sessions for the user."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are encrypted at rest with AES-GCM and backup codes are stored as SHA-256 protected hashes with pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "All seeds, codes, and tokens are generated using the Web Crypto API's crypto.getRandomValues function."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session identifiers use HttpOnly cookies and credentials/OTPs are handled in memory rather than persisted in Web Storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side request bodies are size-restricted and inputs such as OTPs and recovery codes are validated with strict regular expressions."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values in the frontend script are safely inserted using DOM textContent properties rather than unsafe innerHTML operations."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirect parameters are restricted to a fixed allow-list of internal hash routes via validRedirect."
+    },
+    "10": {
+      "score": 5,
+      "why": "The server sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options: DENY, and frame-ancestors 'none' headers on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are explicitly configured with HttpOnly, Secure, and SameSite=Strict directives."
+    },
+    "12": {
+      "score": 5,
+      "why": "Sensitive tokens and backup codes are excluded from server logs and URLs, and generic error responses conceal stack traces."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes carry a 5-minute expiration and single-use tracking is enforced for identity codes, TOTP time-steps, and recovery codes."
+    },
+    "14": {
+      "score": 5,
+      "why": "Attempt counters enforce a 10-minute lockout after 5 failed attempts across sign-in, identity, TOTP, and recovery flows."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session IDs are destroyed and regenerated on sign-in, checked for idle and absolute timeouts, and invalidated upon calling logout."
+    }
+  },
+  "cost_usd": 0.0353037,
+  "generation_id": "gen-1786385114-COd1MZQ5t7zdQg5objLC",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}
