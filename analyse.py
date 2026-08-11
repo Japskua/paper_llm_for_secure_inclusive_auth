@@ -20,6 +20,7 @@ final_evaluations/results_v2/<software>/analysis/.
 
 import argparse
 import itertools
+import json
 import pathlib
 import sys
 import warnings
@@ -183,6 +184,9 @@ def main() -> int:
                          "(default: analysed as a separate stratum)")
     ap.add_argument("--exclude-sampled", action="store_true",
                     help="Drop judgements where screenshots were capped to 8")
+    ap.add_argument("--working-only", action="store_true",
+                    help="Restrict to artifacts whose client script actually runs "
+                         "(client_ok); reported alongside the full set, never instead of it")
     ap.add_argument("--complete-capture-only", action="store_true",
                     help="Drop artifacts whose journey capture was partial")
     ap.add_argument("--drop-degenerate", action="store_true",
@@ -208,6 +212,20 @@ def main() -> int:
     if args.exclude_sampled and "screenshots_sampled" in jdf.columns:
         jdf = jdf[~jdf.screenshots_sampled.astype(str).isin(["True", "true"])]
         note.append("screenshot-capped judgements excluded")
+    if args.working_only:
+        import glob as _glob
+        health = {}
+        for d in _glob.glob(f"generations/{args.software}/case_*/run_*"):
+            try:
+                s = json.loads(pathlib.Path(d, "smoke.json").read_text())
+            except Exception:
+                continue
+            health["/".join(pathlib.Path(d).parts[-2:])] = bool(s.get("client_ok"))
+        keep = {k for k, v in health.items() if v}
+        dropped = sorted(set(jdf.artifact_id) - keep)
+        jdf = jdf[jdf.artifact_id.isin(keep)]
+        note.append(f"{len(dropped)} artifacts with a dead client script excluded")
+
     if args.complete_capture_only:
         keep = jdf[(jdf.track == "inclusivity")].groupby("artifact_id").screenshot_count.max()
         partial = set(keep[keep < 6].index)
