@@ -1,0 +1,123 @@
+# Best run per case — screenshots
+
+Six generated applications, one per case per user story. These are the highest
+scoring artifacts of the ten independent runs each case produced, and they are
+the candidates for human evaluation.
+
+Each folder is one application, photographed step by step as it was walked
+through its own UI in Chromium at a phone viewport (390 × 844). File names are
+in journey order.
+
+**These are the best of ten, not typical.** Every case also produced weaker runs,
+and in story 2 case 3 produced several that do not work at all. Do not read a
+difference between two folders as the difference between two cases — for that,
+use the statistics in `final_evaluations/results_v2/cross_study/`.
+
+## What differs between the cases
+
+Within each story, the functional goal and the security requirements are
+identical across all three cases. **Only the inclusivity specification changes:**
+
+| Case | Inclusivity specification given to the model |
+|------|----------------------------------------------|
+| 1 | None. Functional goal and security requirements only. |
+| 2 | The condition is named, nothing more. |
+| 3 | The condition is described, with concrete inclusivity requirements. |
+
+| Story | Application | Condition |
+|-------|-------------|-----------|
+| 1 | Password recovery for a health portal | ADHD |
+| 2 | MFA enrolment for online banking | Dyslexia |
+
+## Contents
+
+```
+story_1_password_recovery_ADHD/
+├── case_1_no_inclusivity_spec__run_04/     8 images
+├── case_2_condition_named__run_04/         6 images
+└── case_3_detailed_guidance__run_05/       7 images
+
+story_2_mfa_enrolment_dyslexia/
+├── case_1_no_inclusivity_spec__run_01/    12 images
+├── case_2_condition_named__run_05/        13 images
+└── case_3_detailed_guidance__run_01/      15 images
+```
+
+## Scores
+
+Artifact score on a 1–5 scale: the median across the independent judges of each
+judge's mean over 3 repeats. The generator's own lab (OpenAI) is excluded, as is
+one judge that failed the discrimination check on story 1's security track.
+
+| Story | Case | Run | Security | Inclusivity |
+|-------|------|-----|----------|-------------|
+| 1 | 1 no spec | `run_04` | 3.978 | 3.289 |
+| 1 | 2 condition named | `run_04` | 4.044 | 3.378 |
+| 1 | 3 detailed guidance | `run_05` | 3.867 | **4.111** |
+| 2 | 1 no spec | `run_01` | 4.622 | 3.522 |
+| 2 | 2 condition named | `run_05` | 4.678 | 3.689 |
+| 2 | 3 detailed guidance | `run_01` | 4.578 | **4.589** |
+
+### Story 1 — inclusivity constructs (ADHD rubric)
+
+| Construct | Case 1 | Case 2 | Case 3 |
+|-----------|--------|--------|--------|
+| Attention | 4.33 | 4.31 | 4.72 |
+| Memory | 1.78 | 1.91 | **3.24** |
+| Comprehension | 2.72 | 2.91 | 3.72 |
+| Decision making | 3.87 | 3.69 | 4.44 |
+| Learning | 3.83 | 3.96 | 4.67 |
+
+### Story 2 — inclusivity constructs (dyslexia rubric)
+
+| Construct | Case 1 | Case 2 | Case 3 |
+|-----------|--------|--------|--------|
+| Readability | 4.15 | 4.35 | 4.52 |
+| Reading load | 4.02 | 4.20 | 4.80 |
+| Transcription | 2.31 | 2.15 | **4.26** |
+| Orientation | 4.28 | 4.20 | 4.61 |
+| Recovery | 2.74 | 3.17 | **4.02** |
+
+> The two inclusivity rubrics name different dimensions, because the stories
+> target different conditions. Compare within a story, not across.
+
+### Security constructs — same rubric in both stories, so comparable
+
+| Construct | S1 c1 | S1 c2 | S1 c3 | S2 c1 | S2 c2 | S2 c3 |
+|-----------|-------|-------|-------|-------|-------|-------|
+| A01 Broken Access Control | 3.76 | 3.82 | 3.69 | 3.91 | 4.02 | 4.02 |
+| A02 Cryptographic Failures | 3.76 | 3.71 | 3.67 | 4.93 | 4.87 | 4.93 |
+| A03 Injection | 4.69 | 4.64 | 4.76 | 4.74 | 4.89 | 4.89 |
+| A05 Security Misconfiguration | 2.29 | 2.36 | **1.64** | 4.56 | 4.52 | 4.33 |
+| A07 Authentication Failures | 4.87 | 4.93 | 4.80 | 4.94 | 5.00 | 4.94 |
+
+## What to look for
+
+The panel is not separating these on general polish. The gap sits in two or
+three constructs, and those are visible in the screenshots:
+
+- **Story 1, memory** (1.78 → 3.24) is the single biggest movement anywhere.
+  Compare how much the case-1 flow expects you to hold in your head between
+  steps against case 3.
+- **Story 2, transcription** (2.31 → 4.26) — entering the authenticator secret
+  and the OTP. Look at how the secret is chunked, whether it can be copied, and
+  what the code entry field looks like.
+- **Story 2, recovery** (2.74 → 4.02) — the backup-codes step, and what happens
+  when you get something wrong.
+- **Security barely moves within a story.** Story 1's A05 Security
+  Misconfiguration is weak in all three cases, and weakest in case 3 — this is
+  the one place a security cost is even arguable, and it is not statistically
+  significant.
+- **Story 2 scores much higher on security than story 1 in every case.** Same
+  rubric, so this is a real comparison. The likely cause is the requirements:
+  MFA enrolment names its controls more concretely than password recovery does.
+
+## Provenance
+
+Generated by `openai/gpt-5.6-terra` through a three-agent pipeline, no seed set.
+Screenshots produced by `run_capture.py`; the walkthrough is derived per artifact
+because every run invents its own interface.
+
+The applications themselves are in the repository at
+`generations/<story>/<case>/<run>/app.ts` and can be run directly with Bun. Full
+data, statistics and method: `final_evaluations/results_v2/README.md`.
