@@ -1,0 +1,164 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "password": "CorrectHorse1!",
+    "new_password": "NewPassword1!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "bootstrap session and CSRF token",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "password": "${password}"
+      },
+      "expect_json_true": "signedIn",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request identity code",
+      "method": "POST",
+      "path": "/api/identity/request",
+      "body": {
+        "method": "email"
+      },
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "demoCode"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/authenticator/start",
+      "body": {},
+      "expect_json_true": "provisioningUri",
+      "capture": {
+        "csrf": "csrf",
+        "authenticator_code": "demoCode"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "body": {
+        "code": "${authenticator_code}"
+      },
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/backup/generate",
+      "body": {},
+      "expect_json_true": "codes",
+      "capture": {
+        "csrf": "csrf",
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "confirm recovery codes saved",
+      "method": "POST",
+      "path": "/api/backup/confirm",
+      "body": {},
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "csrf",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "password": "WrongPassword1!"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "ZZZZZ-9999"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid CSRF token rejected",
+      "method": "POST",
+      "path": "/api/logout",
+      "headers": {
+        "X-CSRF-Token": "invalid"
+      },
+      "body": {},
+      "expect_failure": true
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 12,
+  "steps_passed": 11,
+  "happy_path_passed": 8,
+  "happy_path_total": 9,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "request identity challenge",
+      "method": "POST",
+      "path": "/api/identity-challenge",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with identity code",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "read authenticated state",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "generate authenticator setup secret",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify authenticator and issue backups",
+      "method": "POST",
+      "path": "/api/mfa/verify-otp",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'initial_backup_code' from 'backupCodes.0'"
+      ]
+    },
+    {
+      "name": "generate replacement backup codes",
+      "method": "POST",
+      "path": "/api/mfa/regenerate-backup",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'replacement_backup_code' from 'backupCodes.0'"
+      ]
+    },
+    {
+      "name": "verify replacement recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recover",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "The request could not be completed."
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "old backup code rejected after replacement",
+      "method": "POST",
+      "path": "/api/mfa/recover",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "authenticated action rejected after logout",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong identity code rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 12
+}

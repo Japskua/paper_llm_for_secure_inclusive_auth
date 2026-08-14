@@ -1,0 +1,115 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:51:57.645289+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 5,
+  "screenshots_available": 5,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_mfa_security_settings.png",
+    "step_04_set_up_authenticator.png",
+    "step_05_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Sans-serif typeface with clear headings, adequate line spacing and high contrast dark-on-light text is used consistently across all five screens, though the monospace secret block is tightly set."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps are used and most text is short, but step 04/05 includes a dense four-line 'Evaluation behavior' paragraph that approaches a block of text."
+    },
+    "3": {
+      "score": 3,
+      "why": "The layout is a single narrow centred card that would reflow acceptably on a phone, but the screenshots are rendered at desktop width and the long secret string plus wide log panel risk cramping/overflow at mobile size."
+    },
+    "4": {
+      "score": 3,
+      "why": "Headings and banners are short and plain, yet the authenticator step uses technical wording ('Time-based / TOTP', 'deterministic evaluation secret', '30-second windows') that is not plain language."
+    },
+    "5": {
+      "score": 2,
+      "why": "Only the phone field shows a placeholder example (+1 555 010 0184); the verification code and six-digit authenticator fields show no example format, only a mock code line."
+    },
+    "6": {
+      "score": 3,
+      "why": "Most steps need only a sentence, but to complete enrolment the user must read the multi-sentence 'Evaluation behavior' explanation to know what to do with the secret."
+    },
+    "7": {
+      "score": 1,
+      "why": "The manual setup secret JBSWY3DPEHPK3PXP is displayed in a plain read-only box with no copy button or copy affordance, so it must be transcribed by hand."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code or scan option is offered anywhere; the step is explicitly labelled 'Manual setup secret' only."
+    },
+    "9": {
+      "score": 2,
+      "why": "Standard text inputs are present but there is no visible indication of autofill/one-time-code support, and the instruction 'Do not save it in this browser' actively discourages password-manager use."
+    },
+    "10": {
+      "score": 4,
+      "why": "Each screen has a single bold title and one prominent blue primary button, though no step indicator (e.g. 'Step 2 of 4') shows where the user is in the flow."
+    },
+    "11": {
+      "score": 3,
+      "why": "Most screens ask one action, but step 04/05 combines adding the secret to an app and entering a code, and step 03 presents both 'Set up authenticator' and a red 'Sign out' button."
+    },
+    "12": {
+      "score": 2,
+      "why": "Status is conveyed mainly via a developer log panel and a terse badge; after the failed activation the only feedback is 'Verification could not be completed.' with no statement of what happened next or what to do."
+    },
+    "13": {
+      "score": 2,
+      "why": "The user can retry the code entry and go 'Back to settings', but there is no reveal/hide toggle, no re-request or regenerate secret option, and no recovery codes are ever issued (count stays at 0)."
+    },
+    "14": {
+      "score": 1,
+      "why": "'Verification could not be completed.' names neither the specific problem nor any remedy, giving no guidance on clock drift, expiry, or re-entry."
+    },
+    "15": {
+      "score": 2,
+      "why": "No countdown timer is visible, but the identity code is stated to expire in five minutes and the TOTP is bound to 30-second windows, so time pressure is imposed rather than generous."
+    }
+  },
+  "cost_usd": 0.07163,
+  "generation_id": "gen-1786384299-swQuAKooXGCF0fEP4AQD",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 3,
+    "5": 2,
+    "6": 3,
+    "7": 1,
+    "8": 1,
+    "9": 2,
+    "10": 4,
+    "11": 3,
+    "12": 2,
+    "13": 2,
+    "14": 1,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 2.6667,
+    "comprehension": 1.3333,
+    "decision_making": 3.0,
+    "learning": 1.6667
+  },
+  "overall": 2.4667,
+  "capture_complete": true
+}

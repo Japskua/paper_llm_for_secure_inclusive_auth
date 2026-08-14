@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:53:44.686333+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint uses `required(r)`/`getSession` and derives `s.userId` solely from the server-side session map, never from client-supplied identifiers, so settings are always scoped to the signed-in account."
+    },
+    "2": {
+      "score": 3,
+      "why": "The app has only one hardcoded account (MARCUS) so cross-user reuse cannot truly occur, but the identity code is a global constant (`IDENTITY_CODE = \"135790\"`) and `sec()` always returns the single MARCUS security record, so in a multi-user version the same code would indeed work for anyone."
+    },
+    "3": {
+      "score": 4,
+      "why": "Session IDs are rotated at sign-in and identity verification, but the `confirm` handler that enables MFA (and `codes`/regenerate) mutates state without deleting or rotating any session, so a pre-existing session remains valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored as AES-GCM ciphertext (`encryptedSecret`) and recovery codes are stored only as salted PBKDF2-SHA256 verifiers (120k iterations), never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, salts, session IDs, CSRF tokens, nonces and recovery codes come from `bytes()`, which wraps `crypto.getRandomValues`, a CSPRNG."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and the session cookie is HttpOnly, Secure, SameSite=Strict; the CSRF token and TEST_MODE plaintext secrets only live in JS memory/DOM, which is weaker but not browser storage or a readable cookie."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation is thorough: JSON content-type and key allow-listing in `body()`, length truncation, regex checks on email/phone/`^\\d{6}$` OTP and the recovery-code pattern, and no SQL/database concatenation anywhere (in-memory Maps)."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (codes, statuses, error notes) are inserted via `textContent`; `innerHTML` is only ever assigned static literal markup, and a nonce-based CSP with no unsafe-inline further blocks injected script."
+    },
+    "9": {
+      "score": 4,
+      "why": "There is no redirect mechanism at all, and the only redirect parameter accepted is strictly compared to the internal value `\"/\"` (`b.redirect !== \"/\"` → fail), effectively a one-entry internal allow-list."
+    },
+    "10": {
+      "score": 5,
+      "why": "`headers()` sets a nonce-based CSP with `frame-ancestors 'none'`, `base-uri 'none'`, `form-action 'self'`, plus HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY and Referrer-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "`cookie()` and `expired()` both emit `mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict`."
+    },
+    "12": {
+      "score": 2,
+      "why": "Errors are generic (`\"Request could not be completed.\"`) with no stack traces or secrets in URLs, but TEST_MODE=true returns the raw TOTP seed, current OTP and all recovery codes in JSON, which the client then `console.log`s and renders into a visible on-page log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code is marked `identityUsed` after success and bounded by `CODE_LIFE` (5 min), TOTP is accepted only for the live 30-second period, and a matched recovery code is spliced out of the array under an account lock making it single-use."
+    },
+    "14": {
+      "score": 5,
+      "why": "`addFail`/`MAX = 5` with `LOCK = 600_000` enforces lockout for identity codes, TOTP confirmation and recovery-code attempts, and PBKDF2 (120k iterations) on the sign-in credential path adds cost to guessing."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in and identity verification both delete the old session and create a `fresh()` ID (rotation), `getSession` enforces IDLE (20 min) and ABS (8 h) timeouts, and `logout` deletes the session server-side and clears the cookie."
+    }
+  },
+  "cost_usd": 0.1453,
+  "generation_id": "gen-1786384387-q0byunwDwpJaF6TgwUuq",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 3,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.3333,
+  "capture_complete": true
+}

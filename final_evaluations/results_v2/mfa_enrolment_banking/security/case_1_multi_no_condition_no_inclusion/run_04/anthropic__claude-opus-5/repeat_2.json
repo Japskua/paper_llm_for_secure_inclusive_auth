@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:59:31.389860+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA route calls authenticated() and derives the account solely from the server-side session, and hasForeignIdentity() rejects any client-supplied userId/accountId/ownerId, so settings are always the signed-in owner's."
+    },
+    "2": {
+      "score": 5,
+      "why": "Verification is compared against global hardcoded constants TEST_IDENTITY_CODE ('246810') and TEST_AUTHENTICATOR_CODE ('135790'), so the identical code would validate for any account rather than being per-user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Session rotation only occurs at identity verification (rotateAuthenticated); /api/mfa/confirm sets account.mfa but never deletes or invalidates other entries in the sessions Map, so pre-existing sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext via encryptSecret() and recovery codes are stored only as salted SHA-256 hashes in storeRecoveryCodes(); no plaintext copies are retained."
+    },
+    "5": {
+      "score": 4,
+      "why": "Session IDs, CSRF tokens, salts, the base32 secret and recovery codes all come from crypto.getRandomValues(), though the OTP/identity verification codes themselves are hardcoded test constants rather than randomly generated."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and the client keeps csrf, secret and codes only in in-memory JS variables with no localStorage/sessionStorage use — although secrets are rendered into the visible log panel, that is not browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators isEmail, isPhone, isOtp, isRecovery, isSecret, allowedRedirect plus a 4 KB body cap and object-shape check run before any processing, and there is no SQL (in-memory Maps only)."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (secret, label, recovery codes, messages) are inserted with textContent via escText/fillCodes, innerHTML is used only with static literals, and a nonce-based CSP with base-uri 'none' further blocks injected script."
+    },
+    "9": {
+      "score": 4,
+      "why": "allowedRedirect() restricts the redirect parameter to the internal allow-list '/' or '/mfa' and no Location header or client redirect is ever built from user input, so no open redirect exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders() sets a nonce CSP with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "The cookie() helper always emits 'mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=...'."
+    },
+    "12": {
+      "score": 2,
+      "why": "Although errors are generic and stack-trace-free, the API deliberately returns testIdentityCode/testAuthenticatorCode and the plaintext secret, and the client console.log()s the authenticator secret and all recovery codes into the console and an on-page log panel."
+    },
+    "13": {
+      "score": 4,
+      "why": "Each identity, enrollment and MFA challenge record carries a 'used' flag plus a 5-minute 'expires' window that is checked before acceptance, and recovery codes are marked consumed permanently — though the code values themselves are static constants."
+    },
+    "14": {
+      "score": 5,
+      "why": "failed()/locked() give a 5-attempt threshold with a 10-minute lockout returning HTTP 429, applied to identity verification, enrollment confirmation, MFA challenges and the recoveryGuard."
+    },
+    "15": {
+      "score": 5,
+      "why": "rotateAuthenticated() deletes the pending session and issues a new ID on successful authentication, sessionFrom() enforces 15-minute idle and 8-hour absolute expiry, and /api/logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.15464,
+  "generation_id": "gen-1786384735-twfsS0xA9sIHvzvCxo6t",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 2,
+    "4": 5,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.0667,
+  "capture_complete": true
+}

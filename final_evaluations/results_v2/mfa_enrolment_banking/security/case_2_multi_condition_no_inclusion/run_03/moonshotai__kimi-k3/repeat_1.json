@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:52:27.844078+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "652bf86f5783a50ebf90d322da5510ea9fa899a6e4f41ad87fa0fc835067602a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints derive the user from the server-side session via authenticated(), request bodies containing userId/accountId are rejected, and /api/mfa/verify adds an explicit session/user ownership check."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity code is an HMAC bound to the individual session ID, requires prior password ownership verification, and is checked only against that session's own hash, so it cannot be used for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/mfa/verify performs no session rotation or invalidation and no other user sessions are deleted, so sessions existing before enablement continue to work."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted (encryptedTotp) and backup codes are stored only as peppered SHA-256 hashes (backupHashes)."
+    },
+    "5": {
+      "score": 5,
+      "why": "TOTP seeds, backup codes, session/CSRF tokens, and keys all come from crypto.getRandomValues, with the identity code derived via keyed HMAC-SHA-256."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and the client keeps the CSRF token only in an in-memory variable, with no localStorage, sessionStorage, or document.cookie usage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Every endpoint applies strict server-side validators (email, phone, password, otp, backup regexes) and JSON bodies are type- and shape-checked before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are rendered only via textContent/createElement, innerHTML templates contain no user data, and a nonce-based CSP blocks any injected script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only server redirect is the HTTP→HTTPS 308 to a hardcoded localhost host, and the sign-in destination parameter is allow-listed to '/', so no external open redirect exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "hdr() sets CSP (including frame-ancestors 'none'), HSTS, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on the page and all API responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() and clearCookie() both set the mfa_session cookie with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client deliberately writes the identity test code, TOTP seed/test code, and backup codes to console.log and the on-page 'Logs' panel, though server errors are generic and stack traces are hidden."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code is single-use (identityUsed) with a 5-minute expiry, the pending TOTP code is single-use with expiry plus replay rejection via the accepted-counter set, and backup code hashes are deleted after use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, TOTP, and backup verification paths each increment failure counters and impose a 10-minute lockout after 5 failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "rotate() issues a fresh session ID at sign-in and at identity verification, active() enforces 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.156471,
+  "generation_id": "gen-1786387705-juq2NLsnYFg0WPoD3AFf",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

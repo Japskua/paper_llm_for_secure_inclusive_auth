@@ -1,0 +1,122 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:48:32.729231+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 12,
+  "screenshots_available": 12,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_confirm_authenticator.png",
+    "step_05_save_recovery_codes.png",
+    "step_06_mfa_settings.png",
+    "step_07_recovery_code_accepted.png",
+    "step_08_save_regenerated_recovery_codes.png",
+    "step_09_mfa_settings_after_saving_regenerated_codes.png",
+    "step_10_logged_out.png",
+    "step_11_explored.png",
+    "step_12_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "A clean sans-serif face is used throughout with clear label/heading hierarchy and comfortable line spacing, though monospace code blocks (e.g. the log panel and provisioning URI) are tighter than the body text."
+    },
+    "2": {
+      "score": 3,
+      "why": "No italics or all-caps are used, but the step 4 'Testing note' plus the long unbroken provisioning-URI string form a dense block of small text."
+    },
+    "3": {
+      "score": 3,
+      "why": "The single-column card layout is narrow and mobile-friendly, but the mock provisioning URI in step 4 overflows past the card boundary, showing the layout is not fully contained at small widths."
+    },
+    "4": {
+      "score": 3,
+      "why": "Most instructions are one short plain sentence ('Keep these codes somewhere safe'), but step 4 uses technical jargon about '30-second period and one adjacent period for limited clock skew'."
+    },
+    "5": {
+      "score": 4,
+      "why": "Placeholders model the expected input format for nearly every field ('Six digits', 'ABCDE-23456', 'marcus@example.test', '+15551234567')."
+    },
+    "6": {
+      "score": 3,
+      "why": "Most screens are brief, but to complete step 4 the user must read a multi-sentence testing note, the secret, and the long provisioning URI before entering a code."
+    },
+    "7": {
+      "score": 2,
+      "why": "The manual secret and the eight recovery codes are shown as plain text/read-only fields with no copy button or copy-to-clipboard affordance anywhere."
+    },
+    "8": {
+      "score": 2,
+      "why": "No QR code is shown; step 3 explicitly says to 'add it manually' and only a text secret plus a non-clickable otpauth URI string are offered."
+    },
+    "9": {
+      "score": 3,
+      "why": "Standard labelled email/phone/password inputs are present which browsers can generally autofill, but there is no visible evidence of autocomplete attributes, one-time-code hints, or password-manager support."
+    },
+    "10": {
+      "score": 4,
+      "why": "Each screen carries a 'Step X of 5' badge, a large bold heading, and a single filled blue primary button, though the regenerate flow re-shows 'Step 5 of 5' outside the original sequence."
+    },
+    "11": {
+      "score": 3,
+      "why": "Enrolment screens ask for one action each, but the MFA settings screen presents three competing actions (use recovery code, regenerate codes, log out) and sign-in asks for three fields at once."
+    },
+    "12": {
+      "score": 3,
+      "why": "Confirmations such as 'Recovery code accepted and consumed', 'Authenticator app protection is active' and 'You have been logged out' say what happened, but none state what comes next."
+    },
+    "13": {
+      "score": 3,
+      "why": "Sign-in can be retried and recovery codes can be regenerated, but regeneration invalidates all previous codes, and there is no reveal/hide toggle or visible 'resend code' option for the SMS/authenticator steps."
+    },
+    "14": {
+      "score": 2,
+      "why": "The only error seen, 'We could not complete that request. Please try again.', is non-blaming but identifies neither the actual problem nor how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "Step 4 states the setup expires in five minutes and codes rotate every 30 seconds, so a time limit is imposed rather than generous open-ended time."
+    }
+  },
+  "cost_usd": 0.15298,
+  "generation_id": "gen-1786384081-dGKT0zCxbRoSNDVroZFH",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 3,
+    "3": 3,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 2,
+    "8": 2,
+    "9": 3,
+    "10": 4,
+    "11": 3,
+    "12": 3,
+    "13": 3,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.3333,
+    "memory": 3.3333,
+    "comprehension": 2.3333,
+    "decision_making": 3.3333,
+    "learning": 2.3333
+  },
+  "overall": 2.9333,
+  "capture_complete": true
+}

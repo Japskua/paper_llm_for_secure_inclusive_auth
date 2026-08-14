@@ -1,0 +1,154 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+15550101954",
+    "new_password": "NotUsed-Password1!"
+  },
+  "html_variables": {},
+  "csrf": null,
+  "steps": [
+    {
+      "name": "bootstrap session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start evaluation sign-in",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "testMode": true,
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "testIdentityCode"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity-verify",
+      "body": {
+        "code": "${identity_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "create authenticator setup key",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "manual_secret": "manualSecret",
+        "authenticator_otp": "testOtp",
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "body": {
+        "manualSecret": "${manual_secret}",
+        "otp": "${authenticator_otp}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "recoveryCodes.0",
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "verify and consume recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "${recovery_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "generate replacement recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/regenerate",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "replacement_recovery_code": "recoveryCodes.0",
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid sign-in phone rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "body": {
+        "email": "${email}",
+        "phone": "+15550000000",
+        "testMode": true,
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "incorrect identity code rejected",
+      "method": "POST",
+      "path": "/api/identity-verify",
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "AAAAA-AAAAA",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "missing csrf rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {},
+      "expect_failure": true
+    }
+  ]
+}

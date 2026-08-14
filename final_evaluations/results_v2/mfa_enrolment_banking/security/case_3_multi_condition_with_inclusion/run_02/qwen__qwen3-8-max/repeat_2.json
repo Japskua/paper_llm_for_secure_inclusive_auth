@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:34:50.638751+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "8c8e2b8bff5b5766fd0e1b65a04d06dcd989e190bf5b129b0024d646e7ea4504",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA records are accessed only through requireSession and keyed by session.userId, with no user-supplied account identifier on MFA endpoints."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored per session and TOTP or recovery data are tied to the session user, so a code is not accepted for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/totp/verify only sets record.enabled and does not delete or rotate other existing sessions, so prior sessions can remain valid."
+    },
+    "4": {
+      "score": 4,
+      "why": "The persistent record encrypts the TOTP secret and hashes backup codes, but plaintext backup codes are temporarily kept in session.pendingBackups during enrolment."
+    },
+    "5": {
+      "score": 4,
+      "why": "Non-test generation uses crypto.getRandomValues, but TEST_MODE can substitute fixed fixture secrets and codes."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session token is in an HttpOnly Secure cookie and no localStorage or non-HttpOnly cookie is used, but provisioning secrets and recovery codes are rendered in the DOM or console during the flow."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side handlers validate JSON content type and apply regex or length checks to email, password, identity codes, TOTP codes, and recovery codes."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client rendering escapes dynamic values with esc or uses textContent, and the page is served with a nonce-restricted Content-Security-Policy."
+    },
+    "9": {
+      "score": 5,
+      "why": "The login next value is passed through safePath and client hash navigation only permits a fixed internal route allow-list."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set CSP, HSTS, X-Content-Type-Options, and frame-ancestors or X-Frame-Options protections."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie string includes HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "The page deliberately logs identity codes, TOTP secrets, provisioning URIs, and recovery codes to the browser console and visible log area, although errors are generic and stack traces are not exposed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity pending codes expire and are marked used, TOTP counters are recorded to prevent reuse, and recovery codes are marked used after one successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed identity, TOTP, and recovery attempts increment a counter that locks the account for five minutes after five failures."
+    },
+    "15": {
+      "score": 4,
+      "why": "Login issues a new session token, deletes the presented old session, logout deletes the session, and idle and absolute timeouts are enforced, but other existing sessions are not globally invalidated."
+    }
+  },
+  "cost_usd": 0.046928,
+  "generation_id": "gen-1786390318-MHKQxROtmh71cE5lh9sV",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2667,
+  "capture_complete": false
+}

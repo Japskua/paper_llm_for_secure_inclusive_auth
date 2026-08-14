@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:52:20.444743+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "580b4044089c77727fe040f6ea0000c6d5f83948bf6204c54696c4d059d00f19",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Every MFA endpoint resolves the actor solely from the HttpOnly session cookie via session()/protect() and never accepts a client-supplied user identifier, so settings are always operated on for the signed-in principal (though there is only one hard-coded account object to own them)."
+    },
+    "2": {
+      "score": 2,
+      "why": "The identity code is stored as a single-use hash on the single account record with a used flag and expiry, so it cannot be replayed by a different verification flow; there are no other users for whom it would work, though the global (non-per-session) storage is a latent multi-user risk."
+    },
+    "3": {
+      "score": 5,
+      "why": "Completing /api/recovery/finish only sets account.enabled and the current session's stage — no other entries in the sessions Map are deleted or rotated, so previously issued sessions remain fully valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored AES-GCM encrypted (account.secret = await encrypt(...)) and recovery codes are stored only as SHA-256 digests (account.backups = codes.map(sha)), never in plain text."
+    },
+    "5": {
+      "score": 3,
+      "why": "Production paths use crypto.getRandomValues (token(), random(20), sixDigitCode()), but ACADEMIC mode is the default (MFA_REAL_PRODUCTION !== 'true'), so the seed, identity code '123456' and the eight recovery codes are hard-coded constants as shipped."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and the session id cookie is HttpOnly; Secure; SameSite=Strict, but the session's CSRF token is deliberately placed in a JS-readable cookie (mfa_csrf) and secrets/codes are echoed to the browser console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators validEmail, validPassword and otp (/^\\d{6}$/) gate all inputs, JSON parsing is wrapped in try/catch, and there is no SQL layer to inject into."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are inserted with textContent/E() and fixed setAttribute keys — no innerHTML or template HTML injection — plus a CSP with base-uri 'none' and frame-ancestors 'none'."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application performs no HTTP redirects or client-side location assignments at all, so no destination is reachable outside the app, although no explicit allow-list mechanism exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "The shared headers object sets Content-Security-Policy (incl. frame-ancestors 'none'), Strict-Transport-Security with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "mfa_session is issued as 'Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=28800' and cleared with the same attributes on logout."
+    },
+    "12": {
+      "score": 3,
+      "why": "Errors are generic strings with no stack traces and nothing sensitive appears in URLs, but in the default academic mode the identity code, TOTP test codes and all recovery codes are written to the browser console (console.log) and their delivery is noted in the on-page log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code carries expires = now()+10min plus a used flag checked on verify, and TOTP counters are tracked in q.used so a given 30-second step cannot be replayed."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification and TOTP verification each increment a failure counter and set a 15-minute lock (LOCK) after MAX = 5 failures, returning HTTP 429."
+    },
+    "15": {
+      "score": 4,
+      "why": "A fresh random session id and CSRF token are minted at sign-in and the session is deleted plus cookies expired on logout, with 20-minute idle and 8-hour absolute timeouts enforced in session(), but the identifier is not re-rotated when MFA enrolment completes."
+    }
+  },
+  "cost_usd": 0.166025,
+  "generation_id": "gen-1786391493-2KqWN4lNjmwuomZAqKsi",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 1,
+    "4": 5,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.1333,
+  "capture_complete": false
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:08:10.962141+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "dd1c9201f3d2704d9a0e18cf89bf577bc13685e7b79911478303ad462c640bd6",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server-side owner function verifies session ownership and restricts access exclusively to the signed-in user's account."
+    },
+    "2": {
+      "score": 1,
+      "why": "TOTP verification relies on per-account unique encrypted secrets, so a code generated for one user is invalid for another."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the session stage and CSRF token in place without invalidating or rotating the underlying session token."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are encrypted using AES-GCM and recovery codes are hashed using PBKDF2 before storage."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, tokens, salts, and codes are generated using the Web Crypto API getRandomValues function."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are restricted to HttpOnly cookies and sensitive secrets are not persisted in browser web storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Strict server-side validation functions filter and sanitize all incoming phone numbers, emails, OTPs, and recovery codes."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are rendered safely into the UI using textContent, preventing cross-site scripting."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application uses internal SPA state transitions and does not perform unvalidated HTTP redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses specify strict security headers including CSP, HSTS, X-Content-Type-Options, and X-Frame-Options."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie explicitly includes the HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Error handling returns generic user messages without stack traces, and sensitive tokens are excluded from logs and URL parameters."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 10 minutes, TOTP tracks last used counter intervals, and recovery codes are deleted upon use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Endpoints track failed verification attempts and enforce a 10-minute lockout after 5 consecutive failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are recreated on sign-in, enforce idle and absolute timeouts, and are deleted from memory upon logout."
+    }
+  },
+  "cost_usd": 0.03306495,
+  "generation_id": "gen-1786392475-iAawMSbyPF7eQX2LufRi",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:07:27.020141+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "ea5bab4b0d6539028296220e344d7db471d5a50ff1c6cc99aaff0f369372e18a",
+  "screenshot_count": 17,
+  "screenshots_available": 17,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_authenticator_secret.png",
+    "step_05_mfa_enabled_recovery_codes.png",
+    "step_06_recovery_codes_management.png",
+    "step_07_recovery_code_submission_error.png",
+    "step_08_replacement_recovery_codes.png",
+    "step_09_logged_out_login_page.png",
+    "step_10_explored.png",
+    "step_11_explored.png",
+    "step_12_explored.png",
+    "step_13_explored.png",
+    "step_14_explored.png",
+    "step_15_explored.png",
+    "step_16_explored.png",
+    "step_17_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Text uses a clean sans-serif face at reasonable size with comfortable line spacing and clear headings, though monospace code blocks and log panels are tighter."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps body text (only the small 'NORTHSTAR BANK' wordmark) and paragraphs are one or two short lines, so dense text blocks are avoided apart from the dark log dumps."
+    },
+    "3": {
+      "score": 3,
+      "why": "The layout is a single narrow centred column that would scale to a phone, but nothing in the screenshots is shown at mobile width and the long wrapped otpauth:// string and log panel would be cramped."
+    },
+    "4": {
+      "score": 4,
+      "why": "Each screen has a one-sentence instruction in plain language, e.g. 'Store these recovery codes somewhere secure. Each code works once.'"
+    },
+    "5": {
+      "score": 2,
+      "why": "Only the recovery code field shows a format example placeholder (ABCD-EFGH-JKLM); the verification code and authenticator code fields show no example of expected input."
+    },
+    "6": {
+      "score": 4,
+      "why": "Progression never requires reading more than a couple of short sentences; the longest content (secret/otpauth string and logs) is optional reference material."
+    },
+    "7": {
+      "score": 1,
+      "why": "No copy button or copy affordance is present anywhere — the manual secret, otpauth URI and eight recovery codes are plain read-only text that must be transcribed."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code is rendered; only a raw 'Provisioning representation' otpauth:// text string is offered, which cannot be scanned."
+    },
+    "9": {
+      "score": 2,
+      "why": "Standard login name/password inputs exist and could attract autofill, but there is no visible evidence of autocomplete attributes or one-time-code support and code fields are generic."
+    },
+    "10": {
+      "score": 2,
+      "why": "The primary green button is visually prominent, but there is no step indicator or progress marker showing which stage of enrolment the user is at."
+    },
+    "11": {
+      "score": 3,
+      "why": "Most screens ask one thing, but step 4 presents secret display, code entry and 'Enable MFA and show recovery codes' at once, and the recovery screen offers two competing buttons."
+    },
+    "12": {
+      "score": 3,
+      "why": "Some outcomes are stated ('MFA is enabled'), but there is no confirmation after identity verification and no statement of what comes next after storing recovery codes."
+    },
+    "13": {
+      "score": 3,
+      "why": "The user can re-request codes via 'Generate replacement recovery codes' and retry sign-in repeatedly, but there is no reveal/hide toggle and no option to re-send the verification code."
+    },
+    "14": {
+      "score": 1,
+      "why": "Errors are unhelpful and technical: a raw JavaScript exception ('Failed to execute insertBefore on Node...') and repeated 'Unable to continue sign-in.' with no cause or fix, stacking up to eight times."
+    },
+    "15": {
+      "score": 2,
+      "why": "No visible countdown timer is imposed on reading, but the page states codes rotate every 30 seconds and verification codes are 'short-lived', so entry time is not generous."
+    }
+  },
+  "cost_usd": 0.1664,
+  "generation_id": "gen-1786385229-wtw1MApzxq7ik0EN19fL",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 4,
+    "5": 2,
+    "6": 4,
+    "7": 1,
+    "8": 1,
+    "9": 2,
+    "10": 2,
+    "11": 3,
+    "12": 3,
+    "13": 3,
+    "14": 1,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 3.3333,
+    "comprehension": 1.3333,
+    "decision_making": 2.6667,
+    "learning": 2.0
+  },
+  "overall": 2.6,
+  "capture_complete": true
+}

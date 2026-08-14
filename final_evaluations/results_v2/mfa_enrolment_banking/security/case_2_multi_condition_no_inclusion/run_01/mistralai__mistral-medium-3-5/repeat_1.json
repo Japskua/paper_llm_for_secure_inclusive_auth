@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:38:14.168675+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "b94e9bf6be546bd722ad6952f8bb406c950155f6c9bedb310317adeda7c7e386",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system enforces server-side authorization on MFA endpoints by checking the authenticated session and account ownership (e.g., `authenticated(request)` and `session.accountId`)."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same verification code can be reused for any user if the pre-auth token is manipulated, as the code is tied to the pre-auth session rather than the user account."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions remain valid after enabling MFA, as there is no logic to invalidate existing sessions upon MFA activation."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP shared secret and backup codes are stored encrypted (AES-GCM) and hashed (HMAC-SHA256), respectively, rather than in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using cryptographically secure RNGs (e.g., `crypto.getRandomValues`)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are not stored in browser storage or non-HttpOnly cookies; they are kept in HttpOnly, Secure, SameSite cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation and sanitization are performed (e.g., `validEmail`, `validPhone`, `validOtp`)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Contextual output encoding is applied (e.g., `encodeURIComponent` for URIs, and CSP with nonces prevents script execution)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are not explicitly handled in the code, but the system does not allow open redirects; all navigation is client-side."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure response headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options) are set on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 4,
+      "why": "OTP seeds, backup codes, and session tokens are not exposed in logs or error output in production, but mock codes are logged in TEST_MODE."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes (TOTP) are single-use and time-bound (30-second window), and pre-auth codes expire after 10 minutes."
+    },
+    "14": {
+      "score": 5,
+      "why": "Repeated failed verification attempts are rate-limited (5 attempts) and locked out for 10 minutes."
+    },
+    "15": {
+      "score": 4,
+      "why": "Session identifiers are rotated on authentication, have idle and absolute timeouts, and are invalidated on logout, but session fixation is not explicitly mitigated."
+    }
+  },
+  "cost_usd": 0.021597,
+  "generation_id": "gen-1786387082-QDVkXMPYyNbWCobaJysA",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.8667,
+  "capture_complete": true
+}

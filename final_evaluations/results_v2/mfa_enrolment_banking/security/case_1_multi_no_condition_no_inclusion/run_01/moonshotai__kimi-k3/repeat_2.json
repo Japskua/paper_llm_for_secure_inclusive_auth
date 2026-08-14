@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:45:27.105937+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls authorizedMfa(), which requires a valid server-side session whose accountId matches the account, and no client-supplied account identifier is ever accepted."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are hashed and bound to a specific pendingIdentities entry keyed by a random preauth cookie and accountId, with used/expiry checks, so a code is not usable by any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "verify-enrollment enables MFA without invalidating or rotating the existing session; sessions are only deleted on logout, so the pre-MFA session continues to work."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted (encryptAtRest) and recovery codes are stored as argon2id hashes via Bun.password.hash."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, codes, tokens, and the encryption key are generated with crypto.getRandomValues, a CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Cookies are HttpOnly/Secure/SameSite=Strict, no localStorage/sessionStorage is used, and the CSRF token and recovery codes live only in in-memory JS state."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (isValidEmail, isValidPhone, isOtp, isRecovery) plus strict JSON body typing validate all user input before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "The UI builds DOM exclusively with textContent/createTextNode (no innerHTML) and responses carry a nonce-based CSP, preventing injected markup from executing."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server issues no redirects at all (only JSON/HTML responses on same-origin routes), so no open redirect exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor sets CSP (with frame-ancestors 'none'), HSTS, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie and pendingCookie both set HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 4,
+      "why": "The server logs nothing sensitive, uses no secret-bearing URLs, and returns only generic errors, but the mock client intentionally writes OTPs and recovery codes to the browser console/Logs panel as simulated delivery."
+    },
+    "13": {
+      "score": 5,
+      "why": "Sign-in codes and provisioning challenges carry used flags and 5-minute expiries and are deleted after use; TOTP is 30-second time-bound and recovery codes are removed upon consumption."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, enrollment OTP, and recovery-code paths all implement attempt counters with a 5-attempt/10-minute lockout policy."
+    },
+    "15": {
+      "score": 5,
+      "why": "A fresh random SID is issued at verify-identity (rotation on authentication), sessions enforce 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0565716,
+  "generation_id": "gen-1786383825-zTsWpPxm11UlTctCX8Kr",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6667,
+  "capture_complete": true
+}

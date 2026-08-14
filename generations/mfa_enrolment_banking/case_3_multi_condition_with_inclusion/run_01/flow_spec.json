@@ -1,0 +1,127 @@
+{
+  "variables": {
+    "email": "marcus@example.com"
+  },
+  "html_variables": {},
+  "csrf": null,
+  "steps": [
+    {
+      "name": "start session and obtain CSRF token",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request demo identity code",
+      "method": "POST",
+      "path": "/api/signin/request",
+      "body": {
+        "email": "${email}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "identity_code": "mockCode"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/signin/verify",
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start authenticator enrollment",
+      "method": "POST",
+      "path": "/api/mfa/enroll",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "enrollment_otp": "mockOtp"
+      }
+    },
+    {
+      "name": "confirm authenticator with current mock OTP",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "body": {
+        "otp": "${enrollment_otp}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "create recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/backup/regenerate",
+      "body": {
+        "confirm": false
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid email is rejected",
+      "method": "POST",
+      "path": "/api/signin/request",
+      "body": {
+        "email": "not-an-email"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "non-numeric identity code is rejected",
+      "method": "POST",
+      "path": "/api/signin/verify",
+      "body": {
+        "code": "ABCDEF"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid authenticator code is rejected",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "body": {
+        "otp": "ABCDEF"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed recovery code is rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "body": {
+        "code": "BAD"
+      },
+      "expect_failure": true
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:46:42.158853+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "authorizedMfa() derives the account solely from the server-side session (session.value.accountId !== account.id), accepts no client-supplied identifier, and enforces CSRF token plus trusted-origin checks on every state-changing MFA endpoint."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each verification code is bound to a single pendingIdentities entry keyed by the preauth cookie, compared only against that entry's codeHash, and deleted after one success, so it cannot work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/mfa/verify-enrollment sets account.mfaEnabled = true without deleting any existing entries from the sessions map, so previously issued sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is AES-GCM encrypted at rest (encryptAtRest, stored as authenticatorSecretEncrypted) and recovery codes are argon2id-hashed via strongHash, never stored in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, SMS digits, recovery codes, and base32 secrets are generated with crypto.getRandomValues, a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session and preauth cookies are HttpOnly/Secure/SameSite=Strict, and the client keeps the CSRF token, manual secret, and recovery codes only in in-memory JS state, never in localStorage or readable cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Every server endpoint validates input with strict type/regex guards (isValidEmail, isValidPhone, isOtp, isRecovery) and state lives in in-memory maps with no SQL, so injection through queries is not possible."
+    },
+    "8": {
+      "score": 5,
+      "why": "The UI renders all dynamic values via textContent/createTextNode with no innerHTML, under a per-response nonce-based CSP, so injected markup or script cannot execute."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application issues no redirects at all (no Location headers exist), so no open redirect is possible, though there is also no explicit redirect allow-list mechanism implemented."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor() applies CSP with a random nonce, HSTS, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, and frame-ancestors 'none' on every response including errors."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() and pendingCookie() both set HttpOnly, Secure, and SameSite=Strict attributes, and cookie clearing uses the same attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server logs and error output are clean and stack traces are suppressed, but the client deliberately writes the SMS code, authenticator OTP, and recovery codes to the browser console and on-page Logs panel via logMock(), and the otpauth provisioningUri containing the seed is rendered on the page."
+    },
+    "13": {
+      "score": 5,
+      "why": "Pending codes carry used/expiresAt flags (5-minute window) and are deleted on success, recovery codes are spliced from the hash list after one use, and TOTP codes are inherently 30-second time-bound."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, enrollment OTP, and recovery endpoints all use failure trackers with MAX_ATTEMPTS = 5 and a 10-minute lockout (recordFailure/isLocked)."
+    },
+    "15": {
+      "score": 5,
+      "why": "A fresh random sid is issued on successful identity verification with the preauth cookie cleared, sessions enforce 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.11736,
+  "generation_id": "gen-1786383819-InuxqSQOILN57ZPPg7NF",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

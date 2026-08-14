@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:11:36.428502+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "dd1c9201f3d2704d9a0e18cf89bf577bc13685e7b79911478303ad462c640bd6",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls owner(), which resolves the account exclusively from session.userId after validating session, stage, and CSRF token, with no client-supplied user identifiers accepted."
+    },
+    "2": {
+      "score": 1,
+      "why": "Codes are bound to the session and account (identity code stored on the session after matching the account's phone, TOTP secret stored per-account), and only one hardcoded account exists, so a code cannot work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing revokes or rotates sessions when MFA is enabled (/api/mfa/verify only advances stage and rotates the CSRF token), so the enrolling session and any other pre-existing sessions in the map continue to work."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM-256 encrypted (mfaSecretEncrypted) and recovery codes are stored as PBKDF2-SHA256 hashes (210,000 iterations) with per-code salts."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets and codes (tokens, OTPs, base32 secrets, recovery codes, salts) derive from crypto.getRandomValues via bytes() with rejection sampling in randomChars()."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict, and the client never uses localStorage/sessionStorage or document.cookie, holding CSRF token, setup key, and codes only in in-memory variables."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (validEmail, phone(), validOtp, validSecret, validRecovery, password length cap) check all submitted input, and data is kept in in-memory Maps so no SQL injection surface exists."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client renders all dynamic values via textContent/createElement (innerHTML is used only for self-generated SVG rects), and a nonce-based CSP blocks any injected inline script."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application issues no HTTP redirects and performs no navigation to user-supplied URLs (only fixed internal API paths and state-based screens), so no open redirect is possible."
+    },
+    "10": {
+      "score": 5,
+      "why": "Every response sets a nonce-based CSP with frame-ancestors 'none', HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, plus Referrer-Policy and Permissions-Policy."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() sets the session cookie with HttpOnly, Secure, and SameSite=Strict (and Max-Age), and logout overwrites it with Max-Age=0."
+    },
+    "12": {
+      "score": 2,
+      "why": "With ACADEMIC_LOCALHOST_TEST_MODE=true on a localhost-only app, the server returns testingCode OTPs in API responses and the client logs OTPs and recovery codes to the browser console via consoleSecret, so codes are not kept out of logs, though stack traces are suppressed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are marked used and cleared after success and expire after 10 minutes, TOTP codes are time-windowed with replay blocked by mfaLastCounter, and recovery codes are spliced out after a single use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, OTP, and recovery verification each lock for 10 minutes after 5 failures (identityLockedUntil/otpLockedUntil/recoveryLockedUntil), and code requests are throttled to one per 20 seconds."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the old session and issues a fresh token (rotation), sessions enforce a 20-minute idle and 8-hour absolute timeout in current(), and logout sets invalidated, deletes the session, and clears the cookie."
+    }
+  },
+  "cost_usd": 0.1077366,
+  "generation_id": "gen-1786392530-TLLXJVdh6ALTRML5nPlA",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:48:12.324635+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "6d39d515364379a85979f05bdba4088e9c91f5547fdc46b6b25e253a3375adab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint resolves the account server-side from the session's user field via owner()/verified(), never from a client-supplied identifier, so only the session owner reaches their MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are bound to the owning session (identityCode stored on the session) and TOTP/recovery secrets to the owning account, so no code can be redeemed by a different user."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/authenticator/confirm sets mfa=true without rotating or deleting the session, and no other sessions are invalidated, so existing sessions continue to work after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM-256 encrypted (encrypt()) and recovery codes are stored as SHA-256 hashes with a server-side pepper, never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, OTPs, and codes derive from crypto.getRandomValues via bytes()/randomFrom(), a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie is mfa_session with HttpOnly, Secure and SameSite=Strict, and the client keeps CSRF token and secrets solely in JS variables with no localStorage/sessionStorage use."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side checks validate email format/length, enforce ^\\d{6}$ for OTPs (six()) and the recovery-code pattern (rec()), and type-check the parsed JSON body."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (codes, keys, messages, logs) are inserted via textContent, innerHTML is used only with static markup, and a nonce-based CSP blocks injected scripts."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application issues no redirects at all (no Location headers or redirect logic), so open redirects are impossible, though no explicit allow-list mechanism exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets Content-Security-Policy with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits 'HttpOnly; Secure; SameSite=Strict' with a Max-Age on the session cookie."
+    },
+    "12": {
+      "score": 3,
+      "why": "The server logs nothing and returns only generic errors with no stack traces, but the client intentionally writes the OTP seed, identity code, TOTP codes and backup codes to the browser console and an on-page 'Logs' panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes carry a used flag and 10-minute expiry, TOTP counters are recorded in acceptedTotpCounters and rejected on reuse, and recovery codes are deleted from the set once used."
+    },
+    "14": {
+      "score": 5,
+      "why": "Login, identity verify, authenticator confirm, and recovery verify all apply a 5-failure counter triggering a 5-minute lockout (429 responses)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes the old session and issues a fresh ID, current() enforces 20-minute idle and 8-hour absolute timeouts, and logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.139176,
+  "generation_id": "gen-1786391248-fjNt5NkVC7rHY47twO4l",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

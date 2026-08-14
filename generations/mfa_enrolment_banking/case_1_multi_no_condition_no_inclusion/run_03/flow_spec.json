@@ -1,0 +1,201 @@
+{
+  "variables": {
+    "email": "marcus@northstar.test",
+    "phone": "+447700900000",
+    "new_password": null
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "csrf",
+    "in": "body"
+  },
+  "steps": [
+    {
+      "name": "load security setup page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "initialize session and CSRF token",
+      "method": "GET",
+      "path": "/api/status",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign in with registered identity",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}",
+        "email": "${email}",
+        "phone": "${phone}",
+        "redirect": "/"
+      },
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "testIdentityCode"
+      }
+    },
+    {
+      "name": "verify delivered identity code",
+      "method": "POST",
+      "path": "/api/identity",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}",
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "identityVerified",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "provision authenticator secret",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "identityVerified",
+      "capture": {
+        "csrf": "csrf",
+        "authenticator_code": "testAuthenticatorCode"
+      }
+    },
+    {
+      "name": "confirm authenticator enrollment",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}",
+        "otp": "${authenticator_code}"
+      },
+      "expect_json_true": "mfaEnabled",
+      "capture": {
+        "csrf": "csrf",
+        "recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "acknowledge saved recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/acknowledge",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "recoveryAcknowledged",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "verify one recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}",
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "recoveryCodeAccepted",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/regenerate",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "recoveryPending",
+      "capture": {
+        "csrf": "csrf",
+        "regenerated_recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "acknowledge regenerated recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/acknowledge",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "recoveryAcknowledged",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong phone rejected during sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "${csrf}",
+        "email": "${email}",
+        "phone": "+447700900001",
+        "redirect": "/"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "forged CSRF rejected during sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "csrf": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "email": "${email}",
+        "phone": "${phone}",
+        "redirect": "/"
+      },
+      "expect_failure": true
+    }
+  ]
+}

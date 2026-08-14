@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:52:04.431509+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "580b4044089c77727fe040f6ea0000c6d5f83948bf6204c54696c4d059d00f19",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Every MFA endpoint passes through protect()/session(), which resolves the owner from the HttpOnly session cookie rather than any client-supplied identifier, so MFA state is only touched via the signed-in session (though the single global `account` object means ownership is implicit, not explicitly keyed per user)."
+    },
+    "2": {
+      "score": 2,
+      "why": "The application models only one account, and identity/TOTP codes are validated against that account's stored hash/secret with no user id accepted from the client, so there is no demonstrable path for one user's code to work for another, even though all code state is held in one global object."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA at /api/recovery/finish only mutates the current session's stage and never removes or invalidates other entries in the `sessions` map, so any previously issued session cookies remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "account.secret is stored as AES-GCM ciphertext via encrypt() and account.backups stores only SHA-256 digests of the recovery codes, never plaintext."
+    },
+    "5": {
+      "score": 2,
+      "why": "Although helpers use crypto.getRandomValues, ACADEMIC mode is the default (Bun.env.MFA_REAL_PRODUCTION !== 'true') so the TOTP seed, identity code, and all eight recovery codes are hardcoded constants (TEST_SECRET, TEST_ID, TEST_CODES) rather than CSRNG output."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and mfa_session is HttpOnly+Secure+SameSite=Strict; only the CSRF token lives in a JS-readable cookie, though secrets/OTPs are echoed to the browser console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation exists for all inputs: validEmail regex with length cap, validPassword length check, and otp() enforcing /^\\d{6}$/, with JSON parse failures handled safely; no SQL is used at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "The SPA builds DOM exclusively with createElement/textContent/setAttribute and never uses innerHTML, so injected markup in secrets or messages cannot execute."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application contains no redirect mechanism whatsoever (no Location headers, no location assignments), so there are no open-redirect sinks, but no explicit allow-list is implemented either."
+    },
+    "10": {
+      "score": 5,
+      "why": "The shared `headers` object sets CSP with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and no-store on both HTML and API responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "mfa_session is issued as `HttpOnly; Secure; SameSite=Strict` (and cleared with the same attributes on logout) over a TLS-only Bun.serve listener."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server errors return generic messages with no stack traces and nothing sensitive appears in URLs, but simulation identity codes, TOTP codes, and recovery codes are deliberately console.log'ed in the browser and referenced in the on-page log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code carries `used` plus a 10-minute `expires` check, and TOTP verification records accepted counters in q.used so a code cannot be replayed within the ±1 step window."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, and TOTP verification each increment a failure counter and set a 15-minute lockout after MAX=5 failures, returning HTTP 429."
+    },
+    "15": {
+      "score": 4,
+      "why": "A fresh random 32-byte session id and CSRF token are minted at successful sign-in, IDLE (20 min) and ABS (8 h) timeouts are enforced in session(), and logout deletes the session and clears cookies — but the identifier is not re-rotated when MFA enrolment completes."
+    }
+  },
+  "cost_usd": 0.158825,
+  "generation_id": "gen-1786391480-OeOGjHv4kJuWHeRoV3y1",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.0,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.0667,
+  "capture_complete": false
+}

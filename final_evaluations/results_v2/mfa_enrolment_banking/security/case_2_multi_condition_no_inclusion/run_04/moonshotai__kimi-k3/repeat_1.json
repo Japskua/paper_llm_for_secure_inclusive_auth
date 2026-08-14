@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:55:30.619007+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "95a3e86296de0b7988f870a2cdac6ff7f3e0d9e93db206d586fb6fd059d8e0d1",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA route is gated by authenticated(), which requires session.state 'authenticated' with the server-side ACCOUNT_ID, accountRecord() resolves the record from session.userId only, and manipulated() rejects any client-supplied account identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored per-session (session.identityCode) and checked against that session's state, so a code issued to one session/user is not valid for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Completing enrolment in /api/mfa/confirm only writes the MfaRecord and never deletes or rotates other existing sessions in the sessions map, so any previous sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored AES-GCM encrypted via encryptAtRest and recovery codes are retained only as salted SHA-256 digests, never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, codes, tokens, and salts derive from crypto.getRandomValues through randomBytes/token/randomDigits/base32Secret/recoveryCode, which is a CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "The client holds all sensitive values only in closure variables with no localStorage/sessionStorage use, and the session cookie is __Host-prefixed with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs (email, phone, OTP, secret, recovery code) pass through strict server-side allow-list validators before use, and no database queries or shell calls exist to inject into."
+    },
+    "8": {
+      "score": 5,
+      "why": "Every dynamic value interpolated into innerHTML is passed through escapeHTML, log/error messages use textContent, and a strict nonce-based CSP further blocks injected script execution."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application performs no HTTP redirects at all and client navigation is a fixed set of internal views, so open redirects are impossible, though no explicit redirect allow-list mechanism exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets a nonce-based Content-Security-Policy with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on all responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() and clearCookie() set the __Host-mfa_session cookie with HttpOnly, Secure, SameSite=Strict, Path=/, and a Max-Age."
+    },
+    "12": {
+      "score": 4,
+      "why": "The server never logs secrets and returns only generic error messages with no stack traces, but the explicit evaluation mode intentionally writes (deterministic mock) codes and secrets to the browser console via sensitiveLog."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 3 minutes and are cleared on success, provisioning drafts expire after 5 minutes and are marked used, and recovery codes are flagged used upon successful verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed identity, draft confirmation, and recovery verification attempts increment counters that impose a 10-minute lockout after 5 failures (MAX_ATTEMPTS/LOCK_MS)."
+    },
+    "15": {
+      "score": 5,
+      "why": "rotateSession issues a fresh identifier on sign-in and on identity completion, getSession enforces 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session server-side and clears the cookie."
+    }
+  },
+  "cost_usd": 0.088803,
+  "generation_id": "gen-1786388029-FN3FjyRXJL3VMYNtJMdy",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": true
+}

@@ -1,0 +1,126 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:09:15.534073+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "7ebb89de2c28ee4cfb4fb0889f4e47067302d1f742dc82ebf6e93b4fdeb4bc17",
+  "app_ts_sha256": "765fe1151228e724636d2f0b669a13b658ec30f5d90c64866be8eec351d8ce4d",
+  "screenshot_count": 16,
+  "screenshots_available": 16,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_authenticator_setup.png",
+    "step_04_save_recovery_codes.png",
+    "step_05_mfa_settings.png",
+    "step_06_recovery_verification.png",
+    "step_07_regenerate_recovery_codes_confirmation.png",
+    "step_08_replacement_recovery_codes.png",
+    "step_09_replacement_codes_saved.png",
+    "step_10_replacement_recovery_verification.png",
+    "step_11_return_to_mfa_settings.png",
+    "step_12_signed_out.png",
+    "step_13_explored.png",
+    "step_14_explored.png",
+    "step_15_explored.png",
+    "step_16_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The UI uses a clean sans-serif typeface with comfortable line spacing and clear headings throughout, though the monospaced setup key and recovery codes are tightly letter-spaced dense strings."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps sentences appear and paragraphs are one to two lines, though the raw otpauth:// provisioning URI on step 3 is a dense, small-text block."
+    },
+    "3": {
+      "score": 3,
+      "why": "The layout is a single centred narrow card that would reflow acceptably on a phone, but the screenshots are all desktop-width and the long setup key/URI would likely overflow or shrink at mobile size; no mobile rendering is evidenced."
+    },
+    "4": {
+      "score": 4,
+      "why": "Instructions such as 'Enter one stored recovery code' and 'Store these now. They will not be shown again.' are short and plain, though step 3 uses jargon like 'TOTP SHA-256, six digits, and a 30-second period.'"
+    },
+    "5": {
+      "score": 3,
+      "why": "The recovery code field shows a format placeholder 'ABCD-EFGH-JKLM', but the verification code field on the identity step has no example or hint of the expected six-digit format."
+    },
+    "6": {
+      "score": 5,
+      "why": "Every screen contains only a few short lines of text, so no long block of prose must be read to proceed."
+    },
+    "7": {
+      "score": 1,
+      "why": "No copy button or copy affordance appears next to the manual setup key or any of the recovery codes, so they must be transcribed by hand."
+    },
+    "8": {
+      "score": 1,
+      "why": "Step 3 offers only a 'Manual setup key' plus a raw text provisioning URI; no QR code or scannable equivalent is displayed."
+    },
+    "9": {
+      "score": 3,
+      "why": "The sign-in page shows standard email and password fields with prefilled values consistent with autofill, but no explicit autocomplete support or password-manager affordance is observable in the screenshots."
+    },
+    "10": {
+      "score": 3,
+      "why": "Each page has a bold heading and one clearly styled primary blue button, but there is no step indicator (e.g. 'Step 2 of 4') showing where the user is in the enrolment flow."
+    },
+    "11": {
+      "score": 4,
+      "why": "Most screens ask for a single action, though step 2 presents two fields and steps 3, 5 and 6 offer two or three competing buttons."
+    },
+    "12": {
+      "score": 3,
+      "why": "Some outcomes are stated ('MFA is active.', 'Authenticator MFA is enabled.', 'Your secure session has been invalidated.'), but the screens do not say what comes next, and step 6 shows a success message 'Recovery code accepted' rendered in red error styling, contradicting what happened."
+    },
+    "13": {
+      "score": 3,
+      "why": "Codes can be regenerated and recovery verification retried, and 'Create a new setup key' exists, but recovery codes are shown once only with 'They will not be shown again', there is no reveal/hide toggle, and regeneration penalises the user by invalidating all existing codes."
+    },
+    "14": {
+      "score": 2,
+      "why": "The error 'We could not complete that request. Please try again.' is non-blaming but generic, stating neither the actual problem nor how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "No reading time limit is imposed, but the TOTP code rotates every 30 seconds and five unsuccessful submissions lock verification for five minutes, so entry time is not generous."
+    }
+  },
+  "cost_usd": 0.14532,
+  "generation_id": "gen-1786388936-Ts3vysfzORCvWsEUO0Lk",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 4,
+    "5": 3,
+    "6": 5,
+    "7": 1,
+    "8": 1,
+    "9": 3,
+    "10": 3,
+    "11": 4,
+    "12": 3,
+    "13": 3,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 4.0,
+    "comprehension": 1.6667,
+    "decision_making": 3.3333,
+    "learning": 2.3333
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

@@ -1,0 +1,132 @@
+{
+  "variables": {
+    "email": "marcus@northstar.demo",
+    "phone": "+15550123456"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "let csrf = \"([^\"]*)\"",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "start identity check",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "mockCode"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "create authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "totp_code": "mockCurrentCode"
+      }
+    },
+    {
+      "name": "activate authenticator",
+      "method": "POST",
+      "path": "/api/mfa/activate",
+      "body": {
+        "code": "${totp_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "backup_code": "backupCodes.0"
+      }
+    },
+    {
+      "name": "acknowledge initial recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/backup/acknowledge",
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "verify a recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "body": {
+        "code": "${backup_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/backup/regenerate",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "regenerated_backup_code": "backupCodes.0"
+      }
+    },
+    {
+      "name": "acknowledge regenerated recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/backup/acknowledge",
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid sign-in identity rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "not-an-email",
+        "phone": "invalid"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "incorrect identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "body": {
+        "code": "${backup_code}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

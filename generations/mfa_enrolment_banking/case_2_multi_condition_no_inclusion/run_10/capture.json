@@ -1,0 +1,66 @@
+{
+  "ok": false,
+  "explored_steps": 1,
+  "stage": "partial",
+  "steps_planned": 10,
+  "steps_captured": 4,
+  "screenshots": [
+    {
+      "index": 1,
+      "name": "login_page",
+      "file": "step_01_login_page.png",
+      "incomplete": false
+    },
+    {
+      "index": 2,
+      "name": "verify_identity_code",
+      "file": "step_02_verify_identity_code.png",
+      "incomplete": false
+    },
+    {
+      "index": 3,
+      "name": "authenticator_setup_introduction",
+      "file": "step_03_authenticator_setup_introduction_INCOMPLETE.png",
+      "incomplete": true
+    },
+    {
+      "index": 4,
+      "name": "explored",
+      "file": "step_04_explored.png",
+      "incomplete": false,
+      "explored": true
+    }
+  ],
+  "console_errors": [],
+  "failure": {
+    "step": "authenticator_setup_introduction",
+    "index": 3,
+    "action": {
+      "do": "read",
+      "selector": "#logs",
+      "regex": "Simulated identity verification code: (\\d{6})",
+      "into": "identity_code"
+    },
+    "error": "RuntimeError: regex 'Simulated identity verification code: (\\\\d{6})' found nothing in '#logs' (text: 'No simulated delivery yet.')",
+    "html": "<!DOCTYPE html><html lang=\"en\"><head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\">\n<meta name=\"color-scheme\" content=\"light\">\n<title>Northstar Bank · Security</title>\n<style nonce=\"\">\n:root{--ink:#12213a;--muted:#536278;--blue:#0759c7;--dark:#034494;--pale:#eef5ff;--line:#cad5e4;--good:#087443;--danger:#a91d35;--focus:#f1a500}*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:var(--ink);font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.shell{width:min(100%,520px);min-height:100vh;margin:auto;background:#fff;box-shadow:0 0 24px #11224412}header{padding:20px;border-bottom:1px solid var(--line)}.brand{display:flex;gap:10px;align-items:center;font-weight:800}.mark{display:grid;place-items:center;width:31px;height:31px;border-radius:9px;background:var(--blue);color:#fff}header p{margin:4px 0 0 41px;color:var(--muted);font-size:.9rem}main{padding:22px 20px 32px}h1{font-size:1.5rem;line-height:1.2;margin:0 0 10px}h2{font-size:1.1rem;margin:0 0 8px}p{margin:0 0 16px}.muted{color:var(--muted)}.card{border:1px solid var(--line);border-radius:13px;padding:16px;margin:16px 0}.notice{background:var(--pale);border-left:4px solid var(--blue);border-radius:7px;padding:12px;margin:15px 0}.success{background:#edf9f2;border-left-color:var(--good)}.error{background:#fff0f2;border-left-color:var(--danger)}label{display:block;font-weight:700;margin:15px 0 6px}input{width:100%;min-height:48px;padding:11px 12px;border:1px solid #8998ac;border-radius:8px;color:var(--ink);font:inherit}input:focus,button:focus{outline:3px solid var(--focus);outline-offset:2px}.otp{letter-spacing:.22em;font-size:1.2rem;text-align:center}button{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:48px;border:0;border-radius:8px;padding:10px 16px;background:var(--blue);color:#fff;font:700 1rem system-ui,sans-serif;cursor:pointer}button:hover{background:var(--dark)}button.secondary{background:#fff;color:var(--blue);border:1px solid var(--blue);margin-top:10px}button.danger{background:var(--danger)}.actions{margin-top:22px}.text-link{width:auto;min-height:auto;padding:8px 0;color:var(--blue);background:transparent;text-decoration:underline}.setup-code{word-break:break-all;letter-spacing:.1em;font:700 1.05rem ui-monospace,monospace;color:#072b62;background:#f5f8fc;padding:13px;border-radius:8px}.codes{list-style:none;margin:12px 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}.codes li{padding:10px 8px;background:#f5f8fc;border-radius:6px;text-align:center;font:700 .88rem ui-monospace,monospace}.small{font-size:.88rem}.log-panel{margin:24px -20px -32px;padding:16px 20px max(18px,env(safe-area-inset-bottom));background:#13243e;color:#ecf5ff}.log-panel h2{font-size:1rem}#logs{max-height:150px;overflow:auto;margin:0;white-space:pre-wrap;font:.78rem/1.45 ui-monospace,monospace}@media(max-width:360px){main{padding-left:16px;padding-right:16px}.codes{grid-template-columns:1fr}.log-panel{margin-left:-16px;margin-right:-16px}}\n</style></head><body><div class=\"shell\">\n<header><div class=\"brand\"><span class=\"mark\" aria-hidden=\"true\">N</span><span>Northstar Bank</span></div><p>Security centre · MFA enrolment</p></header>\n<main id=\"app\" aria-live=\"polite\"><div class=\"notice error\" id=\"form-message\">We could not complete that request. Please try again.</div><section><h1>Sign in to continue</h1><p class=\"muted\">Confirm your account details before setting up payment security.</p><form id=\"f\" novalidate=\"\"><label for=\"email\">Email address</label><input id=\"email\" name=\"email\" type=\"email\" autocomplete=\"email\" placeholder=\"marcus@example.com\" required=\"\" style=\"\"><label for=\"phone\">Mobile number</label><input id=\"phone\" name=\"phone\" type=\"tel\" autocomplete=\"tel\" placeholder=\"+15551234567\" required=\"\" style=\"\"><div class=\"actions\"><button>Continue</button></div></form><p class=\"small muted\">For this secure demo, use the account details shown in the placeholders.</p></section></main>\n<section class=\"log-panel\" aria-label=\"Browser simulation logs\"><h2>Logs</h2><pre id=\"logs\">No simulated delivery yet.</pre></section>\n</div><script nonce=\"\">\n(()=>{\"use strict\";\nconst app=document.getElementById(\"app\"),logs=document.getElementById(\"logs\");let csrf=\"\",setupSecret=\"\",codes=[];\nfunction log(label,value){console.log(\"[MFA simulation] \"+label,value);logs.textContent=\"[\"+new Date().toLocaleTimeString()+\"] \"+label+\": \"+(Array.isArray(value)?value.join(\", \"):String(value))+\"\\n\"+logs.textContent}\nfunction note(text,type=\"notice\"){const n=document.createElement(\"div\");n.className=\"notice \"+type;n.textContent=text;return n}\nfunction showError(text){document.getElementById(\"form-message\")?.remove();const n=note(text,\"error\");n.id=\"form-message\";app.prepend(n)}\nasync function api(path,opts={}){const headers=Object.assign({\"Content-Type\":\"application/json\",\"X-CSRF-Token\":csrf},opts.headers||{});const r=await fetch(path,Object.assign({credentials:\"same-origin\",headers},opts));let d;try{d=await r.json()}catch{d={ok:false,message:\"We could not complete that request.\"}}if(!r.ok||!d.ok)throw Error(d.message||\"We could not complete that request.\");return d}\nfunction signIn(){app.innerHTML='<section><h1>Sign in to continue</h1><p class=\"muted\">Confirm your account details before setting up payment security.</p><form id=\"f\" novalidate><label for=\"email\">Email address</label><input id=\"email\" name=\"email\" type=\"email\" autocomplete=\"email\" placeholder=\"marcus@example.com\" required><label for=\"phone\">Mobile number</label><input id=\"phone\" name=\"phone\" type=\"tel\" autocomplete=\"tel\" placeholder=\"+15551234567\" required><div class=\"actions\"><button>Continue</button></div></form><p class=\"small muted\">For this secure demo, use the account details shown in the placeholders.</p></section>';document.getElementById(\"f\").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{const d=await api(\"/api/auth/start\",{method"
+  },
+  "chosen_attempt": "initial",
+  "attempts": [
+    {
+      "label": "initial",
+      "ok": false,
+      "captured": 4
+    },
+    {
+      "label": "repaired",
+      "ok": false,
+      "captured": 3
+    },
+    {
+      "label": "rederived",
+      "ok": false,
+      "captured": 3
+    }
+  ],
+  "output_dir": "/Users/japskua/projects/lut/paper_llm_for_secure_inclusive_auth/generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_10/screenshots"
+}

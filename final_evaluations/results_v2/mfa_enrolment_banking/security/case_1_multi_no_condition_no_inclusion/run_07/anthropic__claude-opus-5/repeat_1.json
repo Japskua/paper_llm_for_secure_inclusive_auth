@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:15:45.687949+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint resolves the account solely from the `bank_session` cookie via `auth()`, which verifies the session exists and that `s.userId === account.id`, and any client-supplied identifier is rejected by `suppliedIdentifier()` with 403."
+    },
+    "2": {
+      "score": 1,
+      "why": "The TOTP is derived from a per-enrolment secret held in `account.pending` and recovery codes are matched against that account's stored hashes, so a code cannot be reused for another account (and only one account exists) — the statement is false of this system."
+    },
+    "3": {
+      "score": 4,
+      "why": "`/api/mfa/verify` sets `account.enabled = true` but performs no session rotation or invalidation of other entries in the `sessions` map, so sessions created before MFA enablement remain valid — the statement holds true here."
+    },
+    "4": {
+      "score": 5,
+      "why": "The pending/active OTP secret is stored as AES-GCM ciphertext (`account.pending.secret = await encrypt(secret)`) and recovery codes are stored as SHA-256 hashes plus AES-GCM ciphertext, never as bare plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session tokens, CSRF tokens, the Base32 TOTP seed, AES keys/IVs and recovery codes are all produced from `crypto.getRandomValues`, a CSPRNG."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and the session cookie is `HttpOnly; Secure; SameSite=Strict`; only the CSRF token lives in JS memory, though the provisioning secret/OTP are rendered and console-logged (not persisted storage)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation covers content-type/length, JSON shape, email (`emailOK`), phone (`phoneOK`), OTP (`/^\\d{6}$/`) and recovery code format, with rejection of any request carrying identifier-like keys; no SQL is used at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values injected into the DOM pass through `esc()` (textContent → innerHTML encoding) and a per-response nonce CSP with `default-src 'self'`, `base-uri 'none'`, `frame-ancestors 'none'` blocks inline script execution."
+    },
+    "9": {
+      "score": 4,
+      "why": "The server issues no redirect responses at all and client navigation is limited to a fixed set of internal hash routes (`login`, `identity`, `provision`, `verify`, `recovery`, `complete`), so destinations are effectively an internal allow-list."
+    },
+    "10": {
+      "score": 5,
+      "why": "`headers()` sets Content-Security-Policy (nonce-based, `frame-ancestors 'none'`), Strict-Transport-Security with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Permissions-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "Both the session-issuing and logout Set-Cookie headers use `HttpOnly; Secure; SameSite=Strict` with an explicit Path and Max-Age."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client explicitly logs the Base32 secret, the test OTP and all recovery codes to `console.log` and to a visible on-page `#logs` panel (`log(\"...Secret: \"+x.j.secret+\" Test OTP: \"+x.j.testOtp)`, `\"Recovery codes generated for test display: \"+x.j.codes.join(\", \")`), so the statement fails even though errors are generic and stack traces are suppressed."
+    },
+    "13": {
+      "score": 5,
+      "why": "The pending enrolment carries `used` and `expires` (OTP_LIFE = 5 min) checked before verification, the TOTP window is limited to the current and previous 30-second step, and each recovery code is flagged `found.used = true` after redemption."
+    },
+    "14": {
+      "score": 5,
+      "why": "Both OTP verification and recovery-code redemption increment an attempt counter and impose a 10-minute lockout (`LOCK`) after 5 failures, and login responses are padded to a fixed 180 ms floor."
+    },
+    "15": {
+      "score": 4,
+      "why": "Login deletes any presented session and issues a fresh random token (rotation), `auth()` enforces 15-minute idle and 8-hour absolute timeouts, and `/api/logout` deletes the session and clears the cookie; the only gap is no re-rotation after MFA verification."
+    }
+  },
+  "cost_usd": 0.14149,
+  "generation_id": "gen-1786385707-DcDjmkZQFsYUW7MQYe98",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:22:22.630908+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "a5196aab32aaa319fd3fb877c6c9d448e815221b7a562eee9e06d60e5f91be42",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls authenticated() and operates only on the session tied to the signed-in user's accountId, with no user-supplied account identifier allowing access to another user's settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Unknown sign-ins are bound to a dummy pending challenge and verification explicitly fails for dummy sessions, so the same verification code does not work for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA mutates only the current session and there is no account-wide session revocation, so previously created authenticated sessions would remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP shared secret is stored as AES-256-GCM ciphertext and backup codes are stored as SHA-256 hashes rather than plaintext."
+    },
+    "5": {
+      "score": 3,
+      "why": "OTP secrets, session identifiers, CSRF tokens, and backup codes are generated with randomBytes, but the identity and dummy verification codes are hard-coded constants rather than CSPRNG-generated values."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session cookies are HttpOnly and the client does not write secrets, OTPs, or session tokens to localStorage, sessionStorage, or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators restrict email, phone, OTP, redirect, recovery-code, secret, CSRF, and JSON body formats before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent or static markup, while CSP nonce usage and lack of user-controlled innerHTML prevent injected markup or script from executing."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirect values are accepted only if they exactly match the allow-list in safeInternalPath, preventing open redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and CSP frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "The cookie helper sets HttpOnly, Secure, and SameSite=Strict on both session and bootstrap cookies."
+    },
+    "12": {
+      "score": 2,
+      "why": "Generic errors avoid stack traces and session tokens are not logged, but the client-side log explicitly records the provisioning secret and recovery codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges expire and are marked used, TOTP windows are recorded to prevent reuse, and redeemed backup codes are deleted."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, and recovery tracks count failures and lock for 10 minutes after five failures, returning 429 while locked."
+    },
+    "15": {
+      "score": 5,
+      "why": "The pending session is deleted and replaced with a new authenticated session ID on verification, idle and absolute timeouts are enforced, and logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.07071,
+  "generation_id": "gen-1786389490-9aYSXuXPRSa5iFgX79XN",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 3,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

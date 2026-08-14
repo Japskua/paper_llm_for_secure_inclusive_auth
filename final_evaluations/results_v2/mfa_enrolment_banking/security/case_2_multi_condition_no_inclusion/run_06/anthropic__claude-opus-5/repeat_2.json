@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:02:19.757144+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "31d216139647b7d620ecbca0d7a59e1098b895c1f19b7446fcd16d88225bb6cd",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint passes through `authorized(request)` and mutates only `auth.user`, which is resolved from the server-side session, and any body containing userId/accountId/ownerId is rejected by `invalidIdentifierAttempt`."
+    },
+    "2": {
+      "score": 1,
+      "why": "OTPs are computed from the per-user provisioned secret (`auth.user.provision`) and recovery codes are hashed per-user with a pepper, so a code valid for one account cannot authenticate another; the statement is false of this system."
+    },
+    "3": {
+      "score": 5,
+      "why": "`/api/verify-authenticator` sets `mfaActive` and clears failures but never deletes or rotates the session identifier, so any pre-existing session in the `sessions` map remains valid after MFA is enabled — the statement is literally true."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext with a random IV (`encryptSecret`) and backup codes are stored only as SHA-256 digests salted with a random `recoveryPepper`."
+    },
+    "5": {
+      "score": 5,
+      "why": "Master key, pepper, session/CSRF tokens, provisioning secret and recovery codes are all derived from `crypto.getRandomValues` (only a minor modulo bias in `randomFromAlphabet`)."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and both `mfa_session` and `mfa_preauth` are HttpOnly; Secure; SameSite=Strict, though the provisioning secret and recovery codes do live transiently in client JS state and the on-page log panel."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (`validEmail`, `validPhone`, `validOtp`, `validSecret`, `validRecovery`, length caps, JSON shape check) gate every endpoint, and there is no SQL layer to inject into."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (secret, recovery codes, error messages, log lines) are inserted via `textContent`, with `innerHTML` used only for static template strings, so injected markup cannot execute."
+    },
+    "9": {
+      "score": 5,
+      "why": "`safeInternalPath` enforces a fixed allow-list of internal hash routes and falls back to `#/dashboard`; no user-controlled Location redirects exist."
+    },
+    "10": {
+      "score": 4,
+      "why": "`standardHeaders` sets HSTS, CSP with `frame-ancestors 'none'`, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control, although the CSP permits `script-src 'unsafe-inline'`."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie` and `preAuthCookie` both emit `HttpOnly; Secure; SameSite=Strict` with Path and Max-Age."
+    },
+    "12": {
+      "score": 2,
+      "why": "Errors are generic and no stack traces or server logs leak secrets, but `mockLog` deliberately writes the provisioning secret, the current test OTP and all backup recovery codes to the browser console and a visible log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTP is bound to a 30s step with a `usedSteps` replay set and a 15-minute provisioning window, and each recovery code is spliced out of `user.backups` once accepted."
+    },
+    "14": {
+      "score": 5,
+      "why": "`recordFailure`/`failureBlocked` enforce a 5-attempt, 10-minute lockout for login (keyed by hashed email), authenticator verification and recovery codes, plus a 60s throttle on backup-code regeneration."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes any old session cookie value and issues a freshly random session id, with a 20-minute idle timeout, 8-hour absolute expiry, and `/api/logout` deleting the session and clearing the cookie."
+    }
+  },
+  "cost_usd": 0.14748,
+  "generation_id": "gen-1786388507-FBigif75VqqTOcYDuNev",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 4,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

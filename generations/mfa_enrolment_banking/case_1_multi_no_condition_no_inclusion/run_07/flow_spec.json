@@ -1,0 +1,112 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+15551234567"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "confirm identity",
+      "method": "POST",
+      "path": "/api/mfa/identity",
+      "body": {
+        "confirmation": "confirm"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "create authenticator secret",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {},
+      "capture": {
+        "otp": "testOtp"
+      }
+    },
+    {
+      "name": "verify authenticator",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "body": {
+        "otp": "${otp}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/generate",
+      "body": {},
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "confirm recovery codes saved",
+      "method": "POST",
+      "path": "/api/mfa/recovery/confirm-saved",
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "view remaining recovery codes",
+      "method": "GET",
+      "path": "/api/mfa/recovery"
+    },
+    {
+      "name": "redeem a recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong phone rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "email": "${email}",
+        "phone": "+15550000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

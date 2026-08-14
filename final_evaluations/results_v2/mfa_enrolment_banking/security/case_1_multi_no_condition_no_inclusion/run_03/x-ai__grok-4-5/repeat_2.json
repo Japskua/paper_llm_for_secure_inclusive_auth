@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:54:42.992186+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints use required()/getSession() and index mfas solely by s.userId from the session, never from client-supplied identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "OTP/identity/recovery material is bound to the session user (per-user encrypted secret, identityHash, and recovery verifiers), so a code does not authenticate a different user."
+    },
+    "3": {
+      "score": 5,
+      "why": "confirm() enables MFA on the account but does not invalidate or rotate other existing sessions for that userId; those sessions remain usable."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secret is stored via AES-GCM encrypt() as encryptedSecret; backup codes are stored only as PBKDF2 salt+verifier pairs."
+    },
+    "5": {
+      "score": 5,
+      "why": "bytes(), token(), recoveryCode(), and secret generation all use crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session is only in an HttpOnly cookie; no localStorage/sessionStorage or non-HttpOnly cookie writes of secrets/OTPs/tokens appear in the code."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email/phone format and length, OTP as /^\\d{6}$/, recovery code pattern, JSON shape/keys, and uses constant-time compares where needed."
+    },
+    "8": {
+      "score": 5,
+      "why": "UI sets untrusted values with textContent; API is JSON; HTML is server-built with CSP nonces and no innerHTML of user input."
+    },
+    "9": {
+      "score": 5,
+      "why": "signin only accepts b.redirect === '/' and does not perform open redirects elsewhere."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Errors omit stack traces and tokens are not put in URLs, but TEST_MODE returns OTP secrets/codes in JSON and the client logs them into the on-page log panel."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity codes are single-use with CODE_LIFE expiry and recovery codes are removed on use; TOTP is time-bound to the 30s period but not invalidated after first success within that period."
+    },
+    "14": {
+      "score": 5,
+      "why": "identity/auth/recovery failures increment counters and lock for LOCK after MAX attempts via addFail()."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session id is replaced on signin and identity success, idle/absolute timeouts are enforced in getSession, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0344704,
+  "generation_id": "gen-1786384437-XSl5Cagdspi7ieNITjYL",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

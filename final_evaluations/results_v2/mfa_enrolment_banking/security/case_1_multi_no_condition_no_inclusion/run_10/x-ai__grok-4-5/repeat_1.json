@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:33:58.853419+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA settings and recovery endpoints require sessionFrom plus authenticated(s) and stage === \"mfa\", with state bound to the server session rather than client-supplied user ids."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity OTPs are stored per identityTarget, TOTP is derived from the session’s own encrypted secret, and recovery codes are checked only against that session’s hashes—codes do not work across users."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA (authenticator/confirm) only updates the current session’s stage and does not invalidate other sessions that may exist for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secret is stored as AES-GCM encryptedSecret; recovery codes are stored only as sha256(recoveryPepper:code) hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets and codes use crypto.getRandomValues via randomBytes, randomDecimalCode, randomRecoveryCode, and base32(randomBytes(20))."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session id is only in an HttpOnly cookie; client script never writes localStorage/sessionStorage and does not put tokens in non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email/phone (validatedIdentity), OTP (validOtp), secret (validSecret), and recovery format (validRecovery) before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "HTML is a fixed template with nonce CSP; dynamic values are applied with textContent/JSON, not unescaped HTML injection."
+    },
+    "9": {
+      "score": 4,
+      "why": "The app issues no open redirects (no Location-based redirect flow); navigation is client-side view switching to fixed internal routes only."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieFor sets mfa_session with HttpOnly; Secure; SameSite=Strict."
+    },
+    "12": {
+      "score": 4,
+      "why": "fetchHandler returns generic errors without stack traces and tokens are not placed in URLs; mock testOtp/codes are returned in API JSON for the evaluation UI but not in server error output."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenge has used + expiresAt; TOTP is time-windowed with authenticatorUsed; recovery codes are removed on use and recoveryVerifiedUntil is time-bound."
+    },
+    "14": {
+      "score": 5,
+      "why": "failedAttempt increments and after 5 failures sets lockedUntil (LOCKOUT_MS) for identity, authenticator, and recovery attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session id is rotated on sign-in and identity verify, idle/absolute timeouts are enforced in sessionFrom, and logout deletes the session and sets an expired cookie."
+    }
+  },
+  "cost_usd": 0.0392544,
+  "generation_id": "gen-1786386780-7hXgHFCTcWiubYUAdyIk",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6667,
+  "capture_complete": true
+}

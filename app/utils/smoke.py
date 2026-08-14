@@ -34,6 +34,8 @@ BOOT_TIMEOUT_S = 30.0
 PROBE_TIMEOUT_S = 10.0
 POLL_INTERVAL_S = 0.25
 LOCK_TIMEOUT_S = 900.0
+# Mobile viewport: these artifacts are specified as mobile web applications.
+CLIENT_VIEWPORT = {"width": 390, "height": 844}
 
 # Generated apps frequently hardcode a port (443, 80, 8441, 8443 have all been
 # observed), so two smoke tests running at once would fight over the same
@@ -163,6 +165,43 @@ def _ensure_certs(run_dir: pathlib.Path, certs_src: Optional[pathlib.Path]) -> b
             shutil.copy2(src, dest / name)
             ok = True
     return ok
+
+
+def _client_health(url: str) -> Dict[str, Any]:
+    """
+    Load the page in a real browser and report whether its client script runs.
+
+    An HTTP 200 is not liveness for these artifacts. The client JavaScript lives
+    in a template string inside app.ts, so Bun never parses it: a fatal syntax
+    error there still compiles, still boots, and still serves 200, while the
+    browser renders nothing. One artifact passed LLM review and the HTTP smoke
+    test in exactly that state. Only a browser catches it.
+    """
+    result: Dict[str, Any] = {"client_ok": None, "page_errors": [], "interactive_elements": None}
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return result
+    try:
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch()
+            ctx = browser.new_context(viewport=CLIENT_VIEWPORT, ignore_https_errors=True)
+            page = ctx.new_page()
+            errors: List[str] = []
+            page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+            page.goto(url, timeout=20000, wait_until="domcontentloaded")
+            page.wait_for_timeout(1200)
+            count = page.eval_on_selector_all(
+                "button,input,a,h1,h2,h3",
+                "els=>els.filter(e=>e.offsetWidth||e.offsetHeight).length")
+            browser.close()
+        result["page_errors"] = errors[:5]
+        result["interactive_elements"] = count
+        result["client_ok"] = not errors and count > 0
+    except Exception as e:
+        result["page_errors"] = [f"{type(e).__name__}: {e}"[:200]]
+        result["client_ok"] = False
+    return result
 
 
 def _probe(ports: List[int]) -> Dict[str, Any]:
@@ -365,6 +404,12 @@ def smoke_test(
                         error=probe["error"],
                         stage="served" if probe["ok"] else "no_response",
                     )
+                    if probe["ok"]:
+                        # HTTP liveness is not enough; check the client script too.
+                        result.update(_client_health(probe["url"]))
+                        if result.get("client_ok") is False:
+                            result["stage"] = "client_script_error"
+
                     if probe["ok"] and on_ready is not None:
                         base = f"{probe['scheme']}://{probe['host']}:{probe['port']}"
                         try:

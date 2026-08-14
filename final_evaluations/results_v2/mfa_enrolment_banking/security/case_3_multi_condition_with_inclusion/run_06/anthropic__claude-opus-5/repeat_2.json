@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:46:25.655160+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "6d39d515364379a85979f05bdba4088e9c91f5547fdc46b6b25e253a3375adab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint goes through owner()/verified(), which resolves the account solely from the server-side session's `user` field (accounts.get(s.user)), never from client-supplied identifiers, so settings always belong to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Codes are bound per-principal — the email OTP hash lives on the individual session (s.identityCode) and TOTP/recovery hashes live on the specific account record — so a code issued to one user cannot verify another; the statement is false of this system."
+    },
+    "3": {
+      "score": 4,
+      "why": "Session rotation only happens at /api/login (old session deleted, new one created); /api/authenticator/confirm merely sets a.mfa = true and leaves all existing session entries in the `sessions` map valid, so pre-existing sessions do continue to work after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext (r.a.otp = await encrypt(secret)) and recovery codes are stored only as peppered SHA-256 hashes (recovery = new Set(await Promise.all(codes.map(hash)))), never in plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session IDs, CSRF tokens, OTPs, base32 seeds and recovery codes derive from bytes()/randomFrom() built on crypto.getRandomValues, with modulo-bias rejection (limit = 256 - 256 % chars.length)."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and the only cookie (mfa_session) is HttpOnly; Secure; SameSite=Strict — the CSRF token and demo codes live only in JS memory/DOM, so the literal claim about browser storage and non-HttpOnly cookies holds."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation is strict and typed: body() rejects non-objects, email is trimmed/lowercased and regex+length checked, OTPs must match /^\\d{6}$/ (six()) and recovery codes /^[A-Z2-7]{4}-[A-Z2-7]{4}-[A-Z2-7]{4}$/ (rec()); there is no database, so no SQL injection surface."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (error messages, secret, practice codes, recovery codes) are injected via textContent, innerHTML is only used with server-authored literal templates, and a strict nonce-based CSP (script-src 'nonce-...') blocks injected script."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application implements no redirect mechanism at all — every route returns JSON or the single HTML page — so there is no open-redirect path, though there is also no explicit allow-list to inspect."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, a nonce CSP with frame-ancestors 'none', Referrer-Policy, Cache-Control: no-store and Permissions-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits `mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=...` for both issuance and logout clearing."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server-side error output is generic and no stack traces or secrets are logged there, but the API deliberately returns the provisioning secret, otpauth URI, practice TOTPs, email OTP and all backup codes to the client, which prints them to console.log and into an on-page 'Logs' panel (e.g. 'TESTING ONLY — provisioning secret: ...'), so seeds/codes are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity OTP has expires = now + 10 min plus a `used` flag; TOTP confirmation accepts a counter once via acceptedTotpCounters within a ±1 step (30 s) window; recovery codes are deleted from the set on use and carry recoveryExpires."
+    },
+    "14": {
+      "score": 5,
+      "why": "Login, identity verification, authenticator confirmation and recovery verification each increment a failure counter and impose a 5-minute lockout with HTTP 429 after MAX_FAILURES = 5 (loginFailures, identityLocked, authLocked, recoveryLocked)."
+    },
+    "15": {
+      "score": 4,
+      "why": "On successful login the old session is deleted and a fresh ID/CSRF pair issued, idle (20 min) and absolute (8 h) timeouts are enforced in current(), and logout deletes the session and clears the cookie; the only gap is no re-rotation after the identity/MFA step."
+    }
+  },
+  "cost_usd": 0.15538,
+  "generation_id": "gen-1786391144-Kl0hIN0jat2tBvilqlNA",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

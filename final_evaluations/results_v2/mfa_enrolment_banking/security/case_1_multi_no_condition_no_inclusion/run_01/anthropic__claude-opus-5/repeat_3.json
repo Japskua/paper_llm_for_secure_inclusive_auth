@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:43:45.693294+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "`authorizedMfa` derives the account solely from the server-side session (`session.value.accountId !== account.id` check) and never accepts a client-supplied account identifier, so MFA settings are always scoped to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are hashed and bound to a specific HttpOnly `preauth` cookie entry with its own expiry/used flag, and TOTP/recovery verification is bound to the session's own encrypted provision or the account's hashes, so a code cannot be reused for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "`/api/mfa/verify-enrollment` sets `account.mfaEnabled = true` but never clears or rotates other entries in the `sessions` map, so any pre-existing sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored via AES-GCM `encryptAtRest` and recovery codes are stored only as `Bun.password.hash(..., argon2id)` digests, never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, OTP digits, recovery codes, base32 secrets, and the AES key are produced with `crypto.getRandomValues`, a CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "`sid` and `preauth` cookies are HttpOnly/Secure/SameSite=Strict, and the client keeps the CSRF token, secret, and codes only in transient page memory with no localStorage/sessionStorage use."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, 6-digit OTP, and recovery-code format with strict regexes plus length caps, and rejects non-object JSON bodies; no SQL/database interpolation exists at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client builds the DOM exclusively with `document.createElement`, `textContent`, and `createTextNode` (no `innerHTML`), so returned values cannot execute as markup."
+    },
+    "9": {
+      "score": 3,
+      "why": "The application implements no redirect functionality whatsoever (no `Location` header or client navigation), so there is neither an open redirect nor an actual allow-list to satisfy the statement."
+    },
+    "10": {
+      "score": 5,
+      "why": "`headersFor` sets CSP with `frame-ancestors 'none'`, HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy, and Permissions-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie`, `pendingCookie`, and `clearCookie` all emit `HttpOnly; Secure; SameSite=Strict`."
+    },
+    "12": {
+      "score": 2,
+      "why": "The server side is clean (generic errors, no secret logging, no query-string secrets), but the client deliberately `console.log`s and renders the mock OTP, identity code, and full recovery-code list into a visible Logs panel, so codes do reach logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have a 5-minute `expiresAt`, a `used` flag and are deleted on success; enrollment provisions expire in 5 minutes and are deleted after use; recovery codes are spliced out once consumed."
+    },
+    "14": {
+      "score": 5,
+      "why": "`recordFailure`/`isLocked` enforce a 5-attempt limit with a 10-minute lockout for sign-in, enrollment OTP, and recovery codes, and the pending identity challenge has its own attempt counter and lockout."
+    },
+    "15": {
+      "score": 5,
+      "why": "A brand-new `sid` and CSRF token are issued at `/api/verify-identity` while the `preauth` cookie is cleared, sessions enforce 15-minute idle and 8-hour absolute timeouts, and `/api/logout` deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.150915,
+  "generation_id": "gen-1786383790-0CYvRfOcniAbfOddKlEA",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

@@ -1,0 +1,144 @@
+
+==============================================================================
+DATASET
+==============================================================================
+  judgements            : 1218
+  artifacts             : 30
+  judges                : 7
+  repeats per judge     : [np.int64(1), np.int64(2), np.int64(3)]
+  generator lab         : openai (generated the artifacts under test)
+  independent           : 6 judge(s) — claude-opus-5, gemini-3.6-flash, mistral-medium-3-5, kimi-k3, qwen3.8-max, grok-4.5
+  generator_lab         : 1 judge(s) — gpt-5.6-sol
+
+==============================================================================
+CASE MEANS  (artifact score = median across judges, mean across repeats)
+==============================================================================
+  case                    track           n    mean     SD  median    min    max
+  1 no condition          security       10    4.48   0.12    4.49   4.23   4.64
+  2 ADHD mentioned        security       10    4.51   0.14    4.51   4.20   4.68
+  3 detailed guidance     security       10    4.45   0.27    4.51   3.72   4.67
+
+  1 no condition          inclusivity    10    3.35   0.14    3.39   3.12   3.52
+  2 ADHD mentioned        inclusivity    10    3.40   0.15    3.39   3.18   3.69
+  3 detailed guidance     inclusivity     8    3.55   1.01    3.78   1.98   4.59
+
+
+==============================================================================
+CONSTRUCT BREAKDOWN  (mean across judgements)
+==============================================================================
+
+  security
+                     A01_broken_access_control  A02_cryptographic_failures  A03_injection  A05_security_misconfiguration  A07_authentication_failures
+  1 no condition                            3.77                        4.85           4.88                           4.14                         4.88
+  2 ADHD mentioned                          3.86                        4.87           4.90                           4.17                         4.94
+  3 detailed guidance                       3.80                        4.69           4.80                           4.27                         4.72
+
+  inclusivity
+                     readability  reading_load  transcription  orientation  recovery
+  1 no condition              4.18          3.82           1.90         3.74      2.82
+  2 ADHD mentioned            4.19          3.91           1.85         3.85      2.98
+  3 detailed guidance         4.10          4.20           2.26         3.60      3.49
+
+==============================================================================
+JUDGE RELIABILITY
+==============================================================================
+
+  security
+    ICC(2,k) agreement of the 7-judge mean : 0.721
+    Krippendorff alpha (interval)          : 0.199
+    mean pairwise Spearman between judges  : 0.364
+    within-judge SD across 3 repeats       : 0.073
+
+  inclusivity
+    ICC(2,k) agreement of the 7-judge mean : 0.951
+    Krippendorff alpha (interval)          : 0.722
+    mean pairwise Spearman between judges  : 0.659
+    within-judge SD across 3 repeats       : 0.133
+
+==============================================================================
+JUDGE SEVERITY  (mean overall by judge)
+==============================================================================
+track                         inclusivity  security
+  judge                                              
+  anthropic/claude-opus-5              3.04      4.34
+  google/gemini-3.6-flash              3.55      4.54
+  mistralai/mistral-medium-3-5         3.20      4.96
+  moonshotai/kimi-k3                   3.51      4.48
+  openai/gpt-5.6-sol                   3.34      4.38
+  qwen/qwen3.8-max                     3.40      4.30
+  x-ai/grok-4.5                        3.65      4.53
+
+==============================================================================
+SELF-PREFERENCE  (generator's lab vs the independent panel)
+==============================================================================
+  Positive bias = the generator's lab scores its own lab's output
+  higher than the independent panel does.
+
+  track            n  independent  generator    bias  Wilcoxon p    rho
+  security        30         4.48       4.38   -0.10      0.0000   0.43 *
+  inclusivity     28         3.43       3.34   -0.09      0.0342   0.69 *
+
+  Does the bias vary by case? A bias that grows with the
+  manipulation would inflate the very comparison being tested.
+  track         case                      mean bias
+  security      1 no condition                -0.12
+  security      2 ADHD mentioned              -0.07
+  security      3 detailed guidance           -0.12
+  security      -> bias differs by case?   p=0.3473
+  inclusivity   1 no condition                -0.19
+  inclusivity   2 ADHD mentioned              -0.10
+  inclusivity   3 detailed guidance            0.05
+  inclusivity   -> bias differs by case?   p=0.0859
+
+==============================================================================
+CASE COMPARISON  (primary test — independent panel, n=10 per case)
+==============================================================================
+
+  SECURITY — Kruskal-Wallis across the three cases
+    H = 0.601, p = 0.7404, epsilon^2 = 0.021 (small effect)
+    n per case: [10, 10, 10]
+    pair                                          p (Holm)   Cliff d
+    1 no condition       vs 2 ADHD mentioned        1.0000     -0.18
+    1 no condition       vs 3 detailed guidance     1.0000     -0.16
+    2 ADHD mentioned     vs 3 detailed guidance     1.0000      0.07
+
+  INCLUSIVITY — Kruskal-Wallis across the three cases
+    H = 3.465, p = 0.1769, epsilon^2 = 0.128 (medium effect)
+    n per case: [10, 10, 8]
+    pair                                          p (Holm)   Cliff d
+    1 no condition       vs 2 ADHD mentioned        0.5452     -0.17
+    1 no condition       vs 3 detailed guidance     0.3033     -0.47
+    2 ADHD mentioned     vs 3 detailed guidance     0.3456     -0.40
+
+==============================================================================
+CASE COMPARISON  (generator's lab alone — reported, not pooled)
+==============================================================================
+
+  SECURITY (generator lab) — Kruskal-Wallis across the three cases
+    H = 1.902, p = 0.3863, epsilon^2 = 0.066 (small effect)
+    n per case: [10, 10, 10]
+    pair                                          p (Holm)   Cliff d
+    1 no condition       vs 2 ADHD mentioned        0.6550     -0.22
+    1 no condition       vs 3 detailed guidance     0.7211      0.10
+    2 ADHD mentioned     vs 3 detailed guidance     0.5983      0.32
+
+  INCLUSIVITY (generator lab) — Kruskal-Wallis across the three cases
+    H = 4.265, p = 0.1185, epsilon^2 = 0.158 (medium effect)
+    n per case: [10, 10, 8]
+    pair                                          p (Holm)   Cliff d
+    1 no condition       vs 2 ADHD mentioned        0.3115     -0.44
+    1 no condition       vs 3 detailed guidance     0.3115     -0.45
+    2 ADHD mentioned     vs 3 detailed guidance     0.3115     -0.33
+
+==============================================================================
+FILES
+==============================================================================
+  final_evaluations/results_v2/mfa_enrolment_banking/analysis/artifact_scores.csv
+  final_evaluations/results_v2/mfa_enrolment_banking/analysis/case_comparisons.csv
+  final_evaluations/results_v2/mfa_enrolment_banking/analysis/case_comparisons_generator_lab.csv
+  final_evaluations/results_v2/mfa_enrolment_banking/analysis/case_summary.csv
+  final_evaluations/results_v2/mfa_enrolment_banking/analysis/constructs_inclusivity.csv
+  final_evaluations/results_v2/mfa_enrolment_banking/analysis/constructs_security.csv
+  final_evaluations/results_v2/mfa_enrolment_banking/analysis/judge_severity.csv
+  final_evaluations/results_v2/mfa_enrolment_banking/analysis/reliability.csv
+  final_evaluations/results_v2/mfa_enrolment_banking/analysis/self_preference.csv

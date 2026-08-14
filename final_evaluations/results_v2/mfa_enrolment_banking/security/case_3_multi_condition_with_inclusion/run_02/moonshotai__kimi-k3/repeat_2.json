@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:33:25.157950+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "8c8e2b8bff5b5766fd0e1b65a04d06dcd989e190bf5b129b0024d646e7ea4504",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint derives the user from the server-side session (session.userId) and getSession rejects sessions whose userId does not match the account, so records.get(session.userId) is always the signed-in owner's settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored as a per-session pending digest and TOTP secrets are per-user records, so a code issued in one session cannot be verified against another session/user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/totp/verify only flips record.enabled and never invalidates other entries in the sessions map, so previously issued sessions remain usable until idle/absolute expiry."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is AES-GCM encrypted before storage, backup codes are PBKDF2-SHA-256 (120k iterations, salted) hashed, and identity codes are stored only as SHA-256 digests."
+    },
+    "5": {
+      "score": 5,
+      "why": "token() and randomFrom() use crypto.getRandomValues with rejection sampling for codes, secrets, salts, and backup codes; only the explicit MFA_TEST_MODE harness substitutes fixed fixtures."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie is mfa_session with HttpOnly/Secure/SameSite=Strict, and the client keeps the CSRF token and codes in in-memory variables with no localStorage/sessionStorage use."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation enforces an email regex, password length, /^\\d{6}$/ for OTPs, the recovery-code format, JSON content-type, and trims extracted string fields (no phone field exists)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are passed through esc() before innerHTML insertion, secret/log output uses textContent, and a nonce-based CSP blocks any injected inline script."
+    },
+    "9": {
+      "score": 5,
+      "why": "safePath() restricts the post-login 'next' value to a fixed allow-list of internal routes and the client-side router also whitelists hash routes, with no external redirect possible."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets a nonce-based CSP with frame-ancestors 'none', HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and no-store."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits 'mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=1800' and the clear cookie keeps the same attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client writes the mock identity code, the TOTP secret, the provisioning URI and the recovery codes to the browser console and the on-page log panel, so seeds and backup codes are not kept out of logs, even though server errors are generic and stack traces are hidden."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity pendings carry a used flag and 20-minute expiry, TOTP accepts only the current/previous counter and records usedCounters to block replay, and backup codes are marked used on redemption."
+    },
+    "14": {
+      "score": 5,
+      "why": "failed() locks the user for five minutes after five failures and locked() is checked on identity request/verify, TOTP verify, and recovery use."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes the old session and issues a fresh 32-byte token, idle (30 min) and absolute (8 h) timeouts are enforced in getSession, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.098334,
+  "generation_id": "gen-1786390357-TbyaNtkf3LgKzf4vSD67",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": false
+}

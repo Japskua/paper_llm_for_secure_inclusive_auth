@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:46:29.383996+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "3660c58d77176efc41a4305442d5742218dc8e1980c5da8b1ced6271c38fcbd7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every /api/mfa/ endpoint goes through requireSession(request, true) and the account is resolved solely from session.userId — no client-supplied identifier can select another user's MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity code is stored per-session (auth.session.identityCode) and the TOTP is derived from the account's own secret, so a code is only ever checked against the owning session/account."
+    },
+    "3": {
+      "score": 5,
+      "why": "The /api/mfa/enrol/verify handler sets mfaEnabled without deleting or rotating any existing entries in the sessions map, so prior sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored AES-GCM encrypted (encryptAtRest/otpSecretEncrypted) and recovery codes are stored only as SHA-256 hashes in recoveryHashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets and codes originate from crypto.getRandomValues via bytes()/randomToken()/randomSixDigitCode(), including the TOTP seed, session IDs, CSRF tokens, and recovery codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie set is bank_session with HttpOnly; Secure; SameSite=Strict, and the client keeps CSRF tokens and codes only in in-memory JS variables with no localStorage/sessionStorage use."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators validEmail, validPhone, validOtp and normalizeRecovery enforce strict formats on all submitted fields, and storage is in-memory Maps so no SQL injection surface exists."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are rendered via textContent (text(), status(), recovery-code list items) and a strict nonce-based CSP (script-src 'self' 'nonce-…') blocks injected markup from executing."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application implements no redirect functionality at all — no Location headers or redirect parameters exist — so no redirect can leave an internal allow-list."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders sets a strict CSP with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, plus Referrer-Policy and Permissions-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits 'bank_session=…; Path=/; HttpOnly; Secure; SameSite=Strict' and the clear-cookie mirrors the same attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Stack traces and error output are generic, but the client's testLog() writes the real identity code, TOTP seed, provisioning URI, current OTP, and recovery codes to console.log and a visible on-page logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code carries consumed/expiresAt flags checked before acceptance, and TOTP verification is limited to the current 30-second period with usedOtpPeriods blocking replay after success."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity, OTP, and recovery verification each track failure counters and impose a 10-minute lockout (lockedUntil) after MAX_FAILURES=5, with lockout checked before verification."
+    },
+    "15": {
+      "score": 5,
+      "why": "Signin issues a fresh randomToken(32) session ID per authentication, requireSession enforces 20-minute idle and 8-hour absolute timeouts, and logout deletes the server-side session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.1023696,
+  "generation_id": "gen-1786387425-FMzKPyeIoPYhA395ZHuF",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

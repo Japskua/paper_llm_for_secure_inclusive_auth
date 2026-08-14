@@ -1,0 +1,122 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:56:28.999918+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+  "screenshot_count": 12,
+  "screenshots_available": 12,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_authenticator_setup.png",
+    "step_04_authenticator_code_ready.png",
+    "step_05_save_initial_recovery_codes.png",
+    "step_06_mfa_enabled_dashboard.png",
+    "step_07_recovery_code_accepted.png",
+    "step_08_save_regenerated_recovery_codes.png",
+    "step_09_mfa_enabled_after_recovery_code_regeneration.png",
+    "step_10_logged_out_login_page.png",
+    "step_11_explored.png",
+    "step_12_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "The UI uses a clean sans-serif typeface with clear headings and reasonable line spacing in the cards, though the monospace log block and code lists are tighter and less generously spaced."
+    },
+    "2": {
+      "score": 4,
+      "why": "Instructions are short single sentences with no italics and no dense paragraphs, but the header 'NORTHSTAR BANK' and the placeholder 'ABCDE-FGHIJ' are in all-caps."
+    },
+    "3": {
+      "score": 3,
+      "why": "The layout is a single narrow centred column that would likely reflow acceptably on mobile, but the long manual secret string and wide monospace log lines already wrap awkwardly at desktop width, suggesting cramping on a phone."
+    },
+    "4": {
+      "score": 5,
+      "why": "Every step uses one short plain-language sentence, e.g. 'Enter the delivered six-digit code.' and 'Store these codes somewhere safe. Each code can be used once.'"
+    },
+    "5": {
+      "score": 2,
+      "why": "Only the recovery-code field on the MFA-enabled screen shows a format example ('ABCDE-FGHIJ'); the email, phone, verification-code and authenticator-code fields have no example or placeholder."
+    },
+    "6": {
+      "score": 4,
+      "why": "No step requires reading a long passage to proceed; the only bulky text is the optional dark Logs panel, which is not needed to advance."
+    },
+    "7": {
+      "score": 1,
+      "why": "No copy buttons, download or 'copy to clipboard' affordances appear next to the TOTP manual secret or the eight recovery codes, so they must be selected/typed manually."
+    },
+    "8": {
+      "score": 1,
+      "why": "The Authenticator step offers only a text 'Manual secret' string; no QR code or scan option is displayed anywhere."
+    },
+    "9": {
+      "score": 2,
+      "why": "Fields are plain inputs with visible labels but there is no evidence of autocomplete attributes, no password field, and the code fields give no autofill/one-time-code affordance."
+    },
+    "10": {
+      "score": 3,
+      "why": "Each screen has a clear heading and a prominent blue primary button, but there is no step indicator or progress marker, and on the MFA-enabled screen three same-styled blue/grey buttons compete for attention."
+    },
+    "11": {
+      "score": 3,
+      "why": "Most screens ask for one action, but the login page asks for two fields, the Authenticator step combines 'Generate secret' and 'Confirm code' in one card, and the final dashboard presents verify, regenerate and log out together."
+    },
+    "12": {
+      "score": 3,
+      "why": "Some confirmations exist ('MFA enabled — Your authenticator is now enrolled.', 'Recovery code accepted. Remaining unused codes: 7.') but they do not state what comes next, and steps like generating the secret produce no explicit next-step guidance."
+    },
+    "13": {
+      "score": 3,
+      "why": "Codes can be regenerated and recovery codes re-verified without visible penalty, but there is no reveal/hide toggle for the secret, no 'resend code' option on the verification step, and no way to re-display codes after confirming storage."
+    },
+    "14": {
+      "score": 1,
+      "why": "The only error shown is 'We could not complete that request.', which states neither the actual problem nor how to fix it, and it appears without field-level guidance."
+    },
+    "15": {
+      "score": 2,
+      "why": "No reading timer is imposed, but the authenticator screen shows a hard expiry ('Current test code: 130841 (expires at 19:55:30)') with no countdown, warning, or extend/refresh option, so entry time is not generous."
+    }
+  },
+  "cost_usd": 0.12004,
+  "generation_id": "gen-1786384569-WfBqTUF2c1lbRBn9e4tx",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 5,
+    "5": 2,
+    "6": 4,
+    "7": 1,
+    "8": 1,
+    "9": 2,
+    "10": 3,
+    "11": 3,
+    "12": 3,
+    "13": 3,
+    "14": 1,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 3.6667,
+    "comprehension": 1.3333,
+    "decision_making": 3.0,
+    "learning": 2.0
+  },
+  "overall": 2.7333,
+  "capture_complete": true
+}

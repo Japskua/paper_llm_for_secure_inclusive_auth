@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:23:43.688066+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "b55abc4a79cf3d67ef963185b565c940df7fe619c2829f582b705e1f4531b230",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints gate on owner(), which requires an authenticated session whose userId equals ACCOUNT.id, so settings are only reachable for the signed-in account owner."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity OTPs are bound to the pre-auth session that issued them and TOTP/backup checks use the account’s own secret/hashes, so the same code does not authenticate as another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/mfa/confirm only writes mfaRecords and does not invalidate or rotate any other existing authenticated sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are stored with AES-GCM (encryptedSecret) and backup codes are stored only as HMAC digests in backupHashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session ids, CSRF tokens, OTP seeds, and backup codes are produced with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is __Host- with HttpOnly; client code keeps secrets only in in-memory JS variables, not localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validators (validEmail, validPhone, validOtp, validBackup) reject malformed input before auth/MFA logic runs."
+    },
+    "8": {
+      "score": 5,
+      "why": "User- and API-derived values are applied via textContent (and JSON APIs), not unescaped HTML insertion, blocking markup/script execution."
+    },
+    "9": {
+      "score": 4,
+      "why": "The app performs no HTTP redirects at all, so open redirects are absent even though no explicit redirect allow-list is implemented."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP (with frame-ancestors 'none'), HSTS, X-Content-Type-Options, and X-Frame-Options: DENY on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() sets HttpOnly, Secure, and SameSite=Strict on the __Host-mfa_session cookie."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server errors are generic with no stack traces and tokens stay out of URLs, but demo API fields and the client log panel deliberately surface OTPs and backup codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire via identityExpiresAt and are consumed with the session; TOTP counters are recorded as used; backup codes are removed from the hash set after success."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, and recovery paths use attempt counters with lockout after MAX_FAILURES for LOCK_MS (429 when locked)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful /api/auth/verify deletes the pre-auth session and issues a new id; idle/absolute timeouts are enforced; logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0358684,
+  "generation_id": "gen-1786389786-u7ShdMMlaXvEEm01tssc",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": false
+}

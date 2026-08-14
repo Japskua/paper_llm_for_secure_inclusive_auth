@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:35:27.394716+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "94a7c6dc5c1188ebf19fbb712d6c94f4fc46d3f25e16a20977597cf5afc48305",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every state-changing endpoint goes through access(), which resolves the account only from the server-side session (sessions.get(cookie) → accounts.get(s.userId)) and rejects any client-supplied userId/accountId/emailOwner fields via noId()."
+    },
+    "2": {
+      "score": 1,
+      "why": "TOTP verification decrypts the per-account provision.secret and marks provision.used=true after success, and recovery codes are matched only against that account's own hashes, so a code cannot be used for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing in /api/mfa/verify or elsewhere invalidates or rotates other existing sessions when MFA is enabled — only the pre-signin cookie session is deleted at login, so prior sessions continue to work."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted (encrypt()/provision.secret) and recovery codes are stored only as salted PBKDF2-SHA256 hashes (codeHash, 210k iterations)."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, tokens, salts, IVs, base32 secrets and recovery codes are generated with crypto.getRandomValues, a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie (mfa_session) is HttpOnly/Secure/SameSite=Strict, and the client keeps csrf, key and codes only in in-memory JS variables — no localStorage/sessionStorage or non-HttpOnly cookies are used."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators email(), phone(), otp() and recovery() strictly check formats, bodies are size-capped and type-checked, and inputs are normalised (trim/lowercase/digit-strip) before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are rendered via textContent (message, log, status, setupKey, codeList) with no innerHTML insertion of user or server data, backed by a nonce-based CSP."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application issues no redirects at all and access() even rejects any 'redirect' field in request bodies, so no open redirect is possible, though no explicit allow-list mechanism exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP (with frame-ancestors 'none'), Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, plus Referrer-Policy and no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie is set as 'mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=28800', carrying all three required attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces, but the client deliberately writes the mock OTP and the real recovery codes to console.log and the on-page #logs panel ('Mock MFA OTP delivered', 'Recovery codes delivered'), so secrets are not kept out of logs."
+    },
+    "13": {
+      "score": 4,
+      "why": "Recovery codes are spliced out after use and the provisioning secret expires after 10 minutes with provision.used blocking re-verification, though individual TOTP codes are not tracked per-counter for replay within their window before first success."
+    },
+    "14": {
+      "score": 5,
+      "why": "Both OTP and recovery verification use wrong()/locked() with MAX=5 failures triggering a 5-minute lockout returning 429, and reissue is capped at 3 per 10 minutes."
+    },
+    "15": {
+      "score": 5,
+      "why": "Signin deletes the previous session and issues a fresh token() identifier, session() enforces 20-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.0793728,
+  "generation_id": "gen-1786390483-X1eWeVFGLBSUyaknIu4A",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

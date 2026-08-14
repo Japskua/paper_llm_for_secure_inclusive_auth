@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:12:32.168846+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "3d09bd0257e9941bea9ed673158f55946146901e5fa8fb38fe05ada4ea49310d",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls authorize(), which resolves the user solely from the opaque mfa_session cookie, and bodyObject/authorize explicitly reject any client-supplied id/uid/userId/accountId fields, so only the session owner can access their own MFA state."
+    },
+    "2": {
+      "score": 1,
+      "why": "Codes are derived from a per-user random secret (randomBase32(32)) and verified only against the session user's own encrypted secret; there is no shared code and only one account exists, so the statement is false."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/mfa/enable only mutates user fields and never touches the sessions map, so any previously issued session tokens remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted via encryptSecret() and recovery codes are stored only as peppered SHA-256 hashes via hashRecoveryCode(); plaintext appears solely in one-time responses."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session tokens, CSRF tokens, and recovery codes are generated with crypto.getRandomValues through randomToken() and randomBase32()."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict, and the client keeps the CSRF token, secret, and codes only in in-memory JS variables with no use of localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators validEmail, validPhone, validOtp, and validRecoveryCode enforce strict patterns, and bodyObject verifies content-type and JSON structure before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client writes all dynamic values (secret, codes, messages, audit lines) via textContent, innerHTML templates contain only static markup, APIs return JSON, and a nonce-based CSP blocks injected script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application contains no redirect logic whatsoever—responses are only JSON or the single page—so no open redirect can occur."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders() sets CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy, and Permissions-Policy on every response including errors."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits 'mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict', and the clearing cookie mirrors the same attributes."
+    },
+    "12": {
+      "score": 4,
+      "why": "The server logs nothing sensitive, returns generic error messages with no stack traces, and never places secrets in URLs, but the client deliberately writes the setup secret, current OTP, and recovery codes to the browser console via testConsole()."
+    },
+    "13": {
+      "score": 5,
+      "why": "Enrollment verification is marked used after a single success and TOTP is accepted only for the current 30-second step, while recovery codes are spliced out of the hash list upon use, making all codes single-use and time-bound."
+    },
+    "14": {
+      "score": 5,
+      "why": "MFA verification locks for 15 minutes after 5 failures, recovery verification locks after 5 failures, and sign-in applies a rolling 15-minute failure window with a 15-minute lockout plus minimum response timing."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the old token and issues a fresh 32-byte random token (rotation), authorize() enforces 15-minute idle and 8-hour absolute expiry, and logout deletes the session server-side and clears the cookie."
+    }
+  },
+  "cost_usd": 0.084855,
+  "generation_id": "gen-1786385436-FsOQU5skpJIBTTBFRZ4l",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6667,
+  "capture_complete": true
+}

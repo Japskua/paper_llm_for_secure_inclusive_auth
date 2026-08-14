@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:38:46.725458+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "c08fd9d85e429c55d45db1aac6ad59f72dd588811e3b858c08385d4e6ba1851e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization is enforced via the owner() helper function on all MFA management endpoints."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes and secrets are stored per session state and cannot be used interchangeably across different account sessions."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the current session state but does not invalidate or revoke any other existing active sessions for the user."
+    },
+    "4": {
+      "score": 5,
+      "why": "Authenticator secrets are stored encrypted with AES-GCM and backup codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session tokens, and one-time codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session identifiers are placed in HttpOnly cookies and secrets are kept in server memory or rendered in DOM memory rather than browser web storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side functions validate and sanitize input lengths and formats for email, passwords, OTPs, and recovery codes."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic HTML output is consistently sanitized using the client-side e() HTML entity encoding function."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not take user-controlled redirect parameters and restricts navigation to internal application states."
+    },
+    "10": {
+      "score": 5,
+      "why": "HTTP response headers explicitly include Content-Security-Policy, HSTS, X-Content-Type-Options, and X-Frame-Options."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are explicitly configured with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Sensitive tokens and seeds are omitted from logs and URLs, and server error handling returns generic responses without stack traces."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes have strict expiration timestamps and are invalidated immediately after consumption."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed authentication, identity, and recovery attempts are limited to 5 tries before triggering a 10-minute lockout."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are deleted and recreated on authentication, enforced with absolute/idle timeouts, and destroyed on logout."
+    }
+  },
+  "cost_usd": 0.0409995,
+  "generation_id": "gen-1786390712-0G9OwURWiZnhqwdOsWgY",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:12:45.143927+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "d8c5dbd5061e8b177d6cbb2c854604d59d269a0a9fe64507809dadc323e1593e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server retrieves the account ID directly from the authenticated session on every MFA endpoint, ensuring settings belong to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are bound to individual account objects in memory and do not authorize other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the account state but does not iterate through or revoke other existing active sessions in the session store."
+    },
+    "4": {
+      "score": 5,
+      "why": "The MFA secret is stored encrypted using AES-GCM and backup codes are stored hashed with SHA-256 and a pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, tokens, and verification codes are generated using Web Crypto's cryptographically secure random number generator."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are managed in HttpOnly cookies and sensitive secrets are kept in JS memory rather than Web Storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates all user inputs against strict regular expressions for emails, phone numbers, numeric codes, and recovery keys."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic content is assigned safely via textContent and response pages enforce a strict Content Security Policy with nonces."
+    },
+    "9": {
+      "score": 5,
+      "why": "Client dynamic routing and server route matching are restricted strictly to hardcoded internal path allow-lists."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include security headers such as CSP, HSTS, X-Content-Type-Options, Referrer-Policy, and X-Frame-Options."
+    },
+    "11": {
+      "score": 5,
+      "why": "The application issues session cookies explicitly configured with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "OTP provisioning secrets and generated backup codes are explicitly emitted into browser console logs and DOM log panels."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity and MFA verification codes enforce expiration timestamps and are invalidated upon use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed identity, login, and MFA attempts increment failure counters that enforce a 15-minute lockout after 5 consecutive failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are regenerated upon sign-in, enforced with idle and absolute expiration timeouts, and deleted on logout."
+    }
+  },
+  "cost_usd": 0.0479205,
+  "generation_id": "gen-1786389144-GdPTlZCAksrxunAGniRu",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:43:45.595699+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "3660c58d77176efc41a4305442d5742218dc8e1980c5da8b1ced6271c38fcbd7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA routes use requireSession(request, true) and bind solely to session.userId with no client-supplied account id."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are per-session, TOTP is tied to the account secret, and recovery codes are per-account hashes, so codes do not work across users."
+    },
+    "3": {
+      "score": 5,
+      "why": "enrol/verify sets mfaEnabled and secrets on the account but never deletes or invalidates other existing sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are stored via AES-GCM encryptAtRest and recovery codes are stored only as SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Tokens, OTP secrets, recovery codes, and six-digit codes are produced with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session id is only in an HttpOnly cookie; no secrets/OTPs/session tokens are written to localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, recovery code, and password with strict validators before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client assigns untrusted values with textContent and the shell HTML is static/nonce-based, so markup is not interpreted as HTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "No redirect responses or open redirect parameters exist; navigation stays on same-origin API/page routes."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie sets HttpOnly, Secure, and SameSite=Strict on bank_session."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic and avoid stack traces, but the UI testLog/API mocks deliberately surface identity codes, OTP secrets, and recovery codes in page logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have expiresAt and consumed; TOTP periods are time-bound and recorded in usedOtpPeriods; recovery codes are removed on redeem."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity, OTP, and recovery paths increment failure counters and apply LOCKOUT_MS after MAX_FAILURES."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in mints a new session id, idle/absolute timeouts are enforced in requireSession, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.017796,
+  "generation_id": "gen-1786387390-ckoZnjIAooi81LyRzfJ8",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

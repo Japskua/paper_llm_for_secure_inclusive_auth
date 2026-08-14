@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:26:56.756171+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "e2523743e6748e8fa4d2c78a75fe0c8f0d4948d3cb707513e4d7acf4307a964a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints derive the account exclusively from the authenticated session through owner() or pendingOwner(), with no client-supplied user identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are bound to the email hash stored in the requesting session and cannot authenticate another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA does not invalidate or rotate other existing authenticated sessions for the account, so those sessions remain usable."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted with AES-256-GCM and backup codes are stored as salted PBKDF2 hashes with a pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "Identity codes, session tokens, CSRF tokens, OTP secrets, and backup codes are generated using Node cryptographic randomBytes or randomInt."
+    },
+    "6": {
+      "score": 5,
+      "why": "Sensitive client values remain only in JavaScript memory, while the session identifier is stored exclusively in an HttpOnly cookie."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates email and all submitted code formats, and the application uses no database queries susceptible to SQL injection."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic page values are inserted using textContent or text nodes rather than HTML interpretation, and CSP further restricts script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application implements no user-controlled redirects, so no unapproved redirect destination can be selected."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors none."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies consistently include HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Identity codes, authenticator OTPs, and backup codes are explicitly written to the browser console, and the provisioning URI contains the OTP secret in its query component."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity and recovery codes are marked used and expire, while TOTP steps are tracked against replay, although the enrollment TOTP history is reset when MFA is enabled."
+    },
+    "14": {
+      "score": 5,
+      "why": "Repeated incorrect identity, authenticator, enrollment, and recovery-code attempts trigger a ten-minute lock after five recorded failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sessions are replaced after identity and MFA authentication, enforce thirty-minute idle and eight-hour absolute limits, and are deleted on logout."
+    }
+  },
+  "cost_usd": 0.052948,
+  "generation_id": "gen-1786389977-cO5hhvmPF7XXjFRaQ937",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

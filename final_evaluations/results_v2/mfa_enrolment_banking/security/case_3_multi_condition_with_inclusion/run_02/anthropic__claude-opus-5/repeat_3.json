@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:31:49.529966+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "8c8e2b8bff5b5766fd0e1b65a04d06dcd989e190bf5b129b0024d646e7ea4504",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint resolves the record via `records.get(session.userId)` derived from the server-side session, and `getSession` rejects any session whose userId is not the signed-in account, so settings can only belong to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are hashed and stored per-session (`session.identity`), TOTP is verified against the session owner's encrypted secret, and backup codes are PBKDF2-verified per record, so a code cannot work for another account (only one account exists at all)."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA in `/api/totp/verify` only sets `record.enabled = true` and never clears other entries in the `sessions` map, so any other pre-existing session cookie continues to authenticate (only the login handler deletes the presenting cookie's session)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext with a random IV (`encrypt`), and backup codes are stored as PBKDF2-SHA256 (120k iterations) verifiers with per-code random salts; no plaintext is retained."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, salts, IVs, identity codes, secrets and backup codes come from `crypto.getRandomValues` via `token`/`randomFrom` with modulo-bias rejection; fixtures are used only when the explicit MFA_TEST_MODE env flag is set."
+    },
+    "6": {
+      "score": 4,
+      "why": "The only cookie is `mfa_session` set HttpOnly; Secure; SameSite=Strict, the CSRF token lives in a closure variable, and no localStorage/sessionStorage is used, though secrets/codes are held transiently in JS memory and offered as a file download."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation enforces JSON object bodies, an email regex with length bounds, `^\\d{6}$` for identity and TOTP codes and `^[A-Z0-9]{5}-[A-Z0-9]{5}$` for recovery codes, with trimming via `stringField`; there is no SQL layer at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic client output is escaped with the `esc()` HTML entity function (messages, code lists) or injected via `textContent` for the secret, and CSP is nonce-based with no inline/eval sources."
+    },
+    "9": {
+      "score": 4,
+      "why": "The server's only navigation value passes through `safePath`'s explicit allow-list and the client route handler validates `location.hash` against a fixed list; there are no HTTP redirects taking user-controlled URLs."
+    },
+    "10": {
+      "score": 5,
+      "why": "`headers()` sets a nonce-based CSP with `frame-ancestors 'none'` and `base-uri 'none'`, HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()` and `clearSessionCookie()` both emit `Path=/; HttpOnly; Secure; SameSite=Strict`."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and nothing sensitive appears in URLs, but the API deliberately returns the identity code, TOTP secret, provisioning URI and recovery codes in response bodies and the client writes them to `console.log` and a visible on-page 'Logs' panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes carry a 20-minute `expires` plus a `used` flag checked in `matches`, TOTP counters are recorded in `usedCounters` to block replay within the ±1 step window, and backup codes are marked `used` on first successful use."
+    },
+    "14": {
+      "score": 4,
+      "why": "`locked`/`failed` enforce a 5-attempt threshold with a 5-minute lockout on identity verification, TOTP verification and recovery-code use, though the `/api/login` password endpoint itself increments no failure counter."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes the presented old session and issues a fresh 32-byte identifier and CSRF token, `getSession` enforces a 30-minute idle and 8-hour absolute timeout, and `/api/logout` deletes the session and clears the cookie; login errors are the same generic message regardless of account existence."
+    }
+  },
+  "cost_usd": 0.152875,
+  "generation_id": "gen-1786390272-qONgbgKL8Y0udj7vznAV",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4,
+  "capture_complete": false
+}

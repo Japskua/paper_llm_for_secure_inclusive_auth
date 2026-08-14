@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:46:48.080113+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "authorizedMfa derives the account exclusively from the server-side session (session.value.accountId !== account.id) and every MFA endpoint goes through it, with no client-supplied user identifier accepted."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are bound to a specific pending identity/account, hashed, marked used and deleted on success, so the same code cannot work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "verify-enrollment sets account.mfaEnabled = true without deleting any entries from the sessions map, so any previously issued sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted (encryptAtRest/authenticatorSecretEncrypted) and recovery codes are stored as argon2id hashes via strongHash."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, codes, tokens and the encryption key are generated with crypto.getRandomValues, a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "No localStorage/sessionStorage is used anywhere; sid and preauth cookies are HttpOnly/Secure/SameSite=Strict, and the CSRF token and codes live only in in-memory JS state."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates email, phone, OTP and recovery code inputs with strict regexes (isValidEmail/isValidPhone/isOtp/isRecovery) and rejects malformed bodies."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are rendered via textContent/createTextNode with no innerHTML sinks, reinforced by a nonce-based CSP with object-src 'none' and base-uri 'none'."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application performs no redirects at all (JSON API plus internal single-page screen transitions), so redirection to any non-internal destination is impossible."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor applies CSP (with per-response nonce), HSTS, X-Content-Type-Options: nosniff, X-Frame-Options: DENY and frame-ancestors 'none' to every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie issues the sid cookie with HttpOnly, Secure and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 4,
+      "why": "The server never logs secrets, uses no URL query secrets, and returns generic errors with no stack traces, but the academic mock deliberately echoes mock OTPs and recovery codes into the browser console and 'Logs' panel as simulated delivery."
+    },
+    "13": {
+      "score": 5,
+      "why": "Sign-in codes are marked used, deleted and expire after 5 minutes, TOTP acceptance is bounded to the current ±1 30-second step with the provision deleted after use, and recovery codes are spliced out on use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, enrollment OTP and recovery attempts all increment failure trackers that lock the account for 10 minutes after 5 failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "A fresh random SID is issued on successful authentication, sessions enforce 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0941766,
+  "generation_id": "gen-1786383826-c3HPlholMeJa3W3ixKm2",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6667,
+  "capture_complete": true
+}

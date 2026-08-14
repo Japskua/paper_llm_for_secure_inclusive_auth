@@ -1,0 +1,39 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "new_password": "ValidPassword123!"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "request_identity_verification",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#phone",
+          "value": "+15550101954"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h2:has-text('Verify your identity')"
+        }
+      ]
+    },
+    {
+      "name": "verify_identity",
+      "actions": []
+    }
+  ]
+}

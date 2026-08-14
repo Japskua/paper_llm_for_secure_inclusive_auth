@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:02:34.405920+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "09fdd56138de07d37e0eeceb5b77a462484d946b26840067cc508ef31c4e45d7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls authorized(), which resolves the account solely from the server-side session's userId, so a user can only touch their own MFA state (no user identifier is accepted from the client)."
+    },
+    "2": {
+      "score": 3,
+      "why": "Identity codes are hashed into the requesting user's own session so cross-user reuse fails in production, but with DEMO_MODE on by default the identity code is the fixed '123456' and recovery codes are a fixed shared list, which would validate for any account."
+    },
+    "3": {
+      "score": 4,
+      "why": "The session identifier is rotated only at sign-in; confirming the authenticator (/api/authenticator/verify) merely changes session.stage and never deletes or invalidates other existing sessions for that account, so earlier sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored only as AES-256-GCM ciphertext (encrypt/pendingSecret → account.secret) and backup codes are kept as peppered SHA-256 hashes in the backups Map, never as plaintext."
+    },
+    "5": {
+      "score": 4,
+      "why": "randomBytes/randomInt (CSPRNG) are used for session IDs, CSRF tokens, keys, secrets and codes, but in the default DEMO_MODE the identity code, authenticator code and recovery codes are hard-coded constants."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie is mfa_session with HttpOnly; Secure; SameSite=Strict, and the client keeps the CSRF token/secret/codes in transient JS variables and DOM only — there is no localStorage or sessionStorage use."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation exists for every input: emailOK regex with length cap, otpOK /^[0-9]{6}$/, codeOK format regex, a method allow-list of email|phone, password length cap, JSON-object type checks and a 10 KB body limit; no SQL is used at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are inserted with textContent/createElement (no innerHTML), the HTML shell contains no interpolated user data, and a strict nonce-based CSP with base-uri 'none' blocks injected script."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application issues no redirects whatsoever (all responses are JSON, HTML, or fixed status codes) and CSP sets form-action 'self', so no open-redirect surface exists, though there is also no explicit allow-list implementation."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders() sets a nonce-based CSP with frame-ancestors 'none', Strict-Transport-Security max-age=31536000; includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieValue() emits 'HttpOnly; Secure; SameSite=Strict' with Path=/ and Max-Age, and the clear cookie on logout carries the same attributes."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server-side logging is limited to a startup line and the catch-all returns only a generic 500 message with no stack trace, but in the default DEMO_MODE the identity code, authenticator fixture code and full recovery-code list are returned in API bodies and written to the browser console via simulatedDelivery()."
+    },
+    "13": {
+      "score": 4,
+      "why": "Identity codes are marked used:true and expire after LIFE=10 minutes, recovery codes flip to true after one successful use, and TOTP is time-bound to 30 s with ±1 step; however a valid TOTP code can be replayed within its window as no last-used counter is stored."
+    },
+    "14": {
+      "score": 5,
+      "why": "Separate Failures counters for sign-in, identity, authenticator and recovery lock out for 15 minutes after 5 failures, plus a 3-per-15-minutes cap on identity code requests, all returning 429."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful sign-in deletes the pre-auth session and issues a brand-new ID and CSRF token, getSession() enforces a 20-minute idle and 8-hour absolute timeout, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.17909,
+  "generation_id": "gen-1786392108-TPyUWd3ifDwecugZUzl6",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 3,
+    "3": 2,
+    "4": 5,
+    "5": 4,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.3333,
+  "capture_complete": false
+}

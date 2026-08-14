@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:26:43.566081+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system enforces server-side authorization by verifying the session and account ownership for MFA endpoints (e.g., `/api/mfa/provision`, `/api/mfa/verify-otp`)."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same verification code (e.g., `TEST_AUTHENTICATOR_MOCK_CODE`) can be reused for any user in test mode, violating uniqueness."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are not invalidated when MFA is enabled; old sessions remain active (no explicit session rotation/invalidation)."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets and backup codes are encrypted (AES-GCM) or hashed (PBKDF2) at rest, not stored in plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using `crypto.getRandomValues()` (cryptographically secure RNG)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are stored in `HttpOnly`, `Secure`, `SameSite=Strict` cookies, not in browser storage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is performed for email, phone, OTP, and recovery codes (e.g., `emailOK`, `phoneOK`, `otpOK`)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Contextual output encoding is applied (e.g., `page(nonce)` uses a nonce for CSP, and dynamic content is escaped in HTML templates)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are restricted to an allow-list (`ROUTES`) of internal paths (e.g., `redirect` in `/api/signin` is validated against `ROUTES`)."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options) are set in `secureHeaders()` for all responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with `HttpOnly`, `Secure`, and `SameSite=Strict` attributes (see `sessionCookie()`)."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never exposed in logs, URLs, or error output (e.g., mock codes are only logged in test mode)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes (OTP) are single-use and time-bound (e.g., TOTP window of ±30s, and codes are invalidated after use)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is enforced for failed attempts (e.g., `MAX_FAILURES` and `LOCK_MS` for identity, OTP, and recovery attempts)."
+    },
+    "15": {
+      "score": 4,
+      "why": "Session identifiers are rotated on authentication (new session created in `/api/signin`), but idle/absolute timeouts are enforced, and logout invalidates sessions. However, session rotation on re-authentication is not explicitly shown."
+    }
+  },
+  "cost_usd": 0.021129,
+  "generation_id": "gen-1786386391-2Z51AFedg3OAt2Fmz8SH",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.9333,
+  "capture_complete": true
+}

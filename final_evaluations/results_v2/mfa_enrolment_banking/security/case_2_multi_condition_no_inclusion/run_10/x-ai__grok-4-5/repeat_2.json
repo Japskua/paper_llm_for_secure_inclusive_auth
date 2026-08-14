@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:24:10.098790+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "b55abc4a79cf3d67ef963185b565c940df7fe619c2829f582b705e1f4531b230",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA routes gate on owner(), which requires an authenticated session whose userId equals ACCOUNT.id, not a client-supplied id."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored on the caller’s session and TOTP/backup checks use that account’s secrets; the same code is not accepted for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/mfa/confirm only writes mfaRecords and does not invalidate or rotate any other existing authenticated sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are stored with AES-GCM encryptSecret and backup codes are stored as HMAC digests via backupHash, not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session ids, CSRF tokens, OTP seeds, and backup codes are produced with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session is a __Host- HttpOnly Secure cookie; client code keeps csrf/setup material in memory only, not localStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, and backup code with strict validators and rejects oversized/non-JSON bodies."
+    },
+    "8": {
+      "score": 5,
+      "why": "UI writes dynamic values with textContent and APIs return JSON; no unencoded reflection of user input into HTML."
+    },
+    "9": {
+      "score": 2,
+      "why": "The app never issues redirects and implements no allow-list; the claimed redirect control is simply absent."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP (with frame-ancestors 'none'), HSTS, X-Content-Type-Options, and X-Frame-Options DENY on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() sets __Host-mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic without stack traces, but demo API fields and the client log panel expose test OTPs, secrets, and backup codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire (VERIFY_WINDOW_MS), TOTP counters are marked used, and backup codes are removed from the set after success."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, and recovery paths throttle and lock after MAX_FAILURES (5) for LOCK_MS."
+    },
+    "15": {
+      "score": 5,
+      "why": "Auth success deletes the pre-auth session and issues a new id; idle/absolute timeouts are enforced; logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.0241868,
+  "generation_id": "gen-1786389789-CcYHPb2VRIYhEIEdFah9",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 2,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.3333,
+  "capture_complete": false
+}

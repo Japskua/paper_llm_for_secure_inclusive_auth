@@ -43,31 +43,66 @@ from typing import Any, Dict, List, Optional
 
 from app.utils.parsing import extract_json_object
 
-# item -> construct, verified against the rubric files
-CONSTRUCTS: Dict[str, Dict[str, List[int]]] = {
-    "security": {
-        "A01_broken_access_control": [1, 2, 3],
-        "A02_cryptographic_failures": [4, 5, 6],
-        "A03_injection": [7, 8, 9],
-        "A05_security_misconfiguration": [10, 11, 12],
-        "A07_authentication_failures": [13, 14, 15],
-    },
-    "inclusivity": {
+# item -> construct, verified against the rubric files.
+#
+# Security constructs are identical across studies — same OWASP codes, names,
+# order and item ranges — so security is comparable between them. Inclusivity
+# constructs are NOT: the two studies target different cognitive conditions and
+# their rubrics name different dimensions. The item ranges match (1-3, 4-6, ...)
+# so the numbers aggregate the same way, but the labels differ and inclusivity
+# construct scores must not be compared across studies.
+SECURITY_CONSTRUCTS: Dict[str, List[int]] = {
+    "A01_broken_access_control": [1, 2, 3],
+    "A02_cryptographic_failures": [4, 5, 6],
+    "A03_injection": [7, 8, 9],
+    "A05_security_misconfiguration": [10, 11, 12],
+    "A07_authentication_failures": [13, 14, 15],
+}
+
+INCLUSIVITY_CONSTRUCTS_BY_SOFTWARE: Dict[str, Dict[str, List[int]]] = {
+    # ADHD: attention, memory, comprehension, decision making, learning
+    "password_recovery_health": {
         "attention": [1, 2, 3],
         "memory": [4, 5, 6],
         "comprehension": [7, 8, 9],
         "decision_making": [10, 11, 12],
         "learning": [13, 14, 15],
     },
+    # Dyslexia: readability, reading load, transcription, orientation, recovery
+    "mfa_enrolment_banking": {
+        "readability": [1, 2, 3],
+        "reading_load": [4, 5, 6],
+        "transcription": [7, 8, 9],
+        "orientation": [10, 11, 12],
+        "recovery": [13, 14, 15],
+    },
+}
+DEFAULT_SOFTWARE = "password_recovery_health"
+
+CONSTRUCTS: Dict[str, Dict[str, List[int]]] = {
+    "security": SECURITY_CONSTRUCTS,
+    "inclusivity": INCLUSIVITY_CONSTRUCTS_BY_SOFTWARE[DEFAULT_SOFTWARE],
 }
 
+
+def set_software(software: str) -> None:
+    """Point the inclusivity construct labels at the right study's rubric."""
+    CONSTRUCTS["inclusivity"] = INCLUSIVITY_CONSTRUCTS_BY_SOFTWARE.get(
+        software, INCLUSIVITY_CONSTRUCTS_BY_SOFTWARE[DEFAULT_SOFTWARE])
+
+
 # Statements where agreement indicates a WORSE system; inverted at aggregation.
+#
+# Identical across studies by design. Both rubrics place the reverse-worded
+# statements at items 2 and 3 of A01 ("the same code works for any other user",
+# "previous sessions still work after ..."), so one rule serves both and the
+# construct scores stay comparable between them.
 REVERSE_CODED: Dict[str, set] = {"security": {2, 3}, "inclusivity": set()}
 
 # Per-provider limits on images in a single request. Mistral rejects more than
 # eight outright ("Total number of images exceeds the maximum allowed of 8"),
-# which would otherwise lose that judge on the 9 of 30 artifacts with longer
-# journeys. Judges absent from this map receive every screenshot.
+# which would otherwise lose that judge on every artifact with a longer journey.
+# Judges absent from this map receive every screenshot.
 MAX_IMAGES: Dict[str, int] = {"mistralai/mistral-medium-3-5": 8}
 
 
@@ -85,6 +120,7 @@ def sample_evenly(items: List[Any], k: int) -> List[Any]:
         return [items[0]]
     idx = sorted({round(i * (len(items) - 1) / (k - 1)) for i in range(k)})
     return [items[i] for i in idx]
+
 
 SCORING_PROTOCOL = """\
 

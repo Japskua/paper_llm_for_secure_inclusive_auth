@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:34:30.842818+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "8c8e2b8bff5b5766fd0e1b65a04d06dcd989e190bf5b129b0024d646e7ea4504",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every /api route after login goes through requireSession, and MFA records are read via records.get(session.userId) with getSession additionally verifying session.userId === USER.id, so MFA settings are bound to the server-side session owner with no client-supplied identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored per-session as a single-use digest in session.identity and TOTP secrets live in the per-user record, so a code issued to one session cannot verify another session or user."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/totp/verify sets record.enabled = true but never removes other entries from the sessions map, so previously issued sessions remain valid until logout or timeout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is AES-GCM encrypted via encrypt() and backup codes are stored only as PBKDF2-SHA256 verifiers with per-code salts, never in plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "token() and randomFrom() use crypto.getRandomValues with rejection sampling for codes, secrets, and salts; only the opt-in MFA_TEST_MODE substitutes fixed fixtures."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie is mfa_session with HttpOnly, Secure and SameSite=Strict, and the client holds the CSRF token and recovery codes solely in JS variables, never in localStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates all input: email regex plus length bounds, password length limits, ^\\d{6}$ for OTPs, a strict recovery-code pattern, and JSON content-type/shape checks in body()."
+    },
+    "8": {
+      "score": 5,
+      "why": "All client-side rendering of dynamic values passes through esc() or textContent, and the nonce-based CSP (script-src 'nonce-…', base-uri 'none') prevents execution of injected markup or script."
+    },
+    "9": {
+      "score": 5,
+      "why": "safePath() limits the post-login 'next' value to a fixed allow-list of internal paths, and the client router whitelists hash routes, so no open redirect exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS (max-age=31536000; includeSubDomains), X-Content-Type-Options: nosniff, X-Frame-Options: DENY and frame-ancestors 'none' on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() and clearSessionCookie() both emit HttpOnly, Secure and SameSite=Strict attributes on the session cookie."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces, but the client log() function and on-page Logs panel print the identity code, authenticator secret, provisioning URI and recovery codes to the browser console, so secrets do end up in logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes carry an expires timestamp (20 min) and used flag enforced in matches(), TOTP replay is blocked via usedCounters, and backup codes are marked used on consumption."
+    },
+    "14": {
+      "score": 5,
+      "why": "failed() counts failures and locked() imposes a 5-minute lockout after 5 failures on the identity, TOTP and recovery verification endpoints."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes the old session and issues a fresh token(32) identifier, getSession enforces 30-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.099915,
+  "generation_id": "gen-1786390353-Jiabb4demndqBVRltRDe",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": false
+}

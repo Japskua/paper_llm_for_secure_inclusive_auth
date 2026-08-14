@@ -1,0 +1,146 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 13,
+  "steps_passed": 5,
+  "happy_path_passed": 1,
+  "happy_path_total": 9,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load MFA sign-in page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'stage' from 'stage'"
+      ],
+      "response_message": "Check your email and password, then try again."
+    },
+    {
+      "name": "send identity code",
+      "method": "POST",
+      "path": "/api/identity/send",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'identity_code' from 'simulationCode'"
+      ],
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "create authenticator setup key",
+      "method": "POST",
+      "path": "/api/authenticator/setup",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'setup_secret' from 'secret'",
+        "could not capture 'setup_uri' from 'uri'"
+      ],
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "confirm authenticator added",
+      "method": "POST",
+      "path": "/api/authenticator/confirm",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'authenticator_code' from 'simulationCode'"
+      ],
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "verify authenticator code",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "create recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/create",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "warnings": [
+        "could not capture 'recovery_codes' from 'codes'",
+        "could not capture 'recovery_code' from 'codes.0'"
+      ],
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "finish MFA enrolment",
+      "method": "POST",
+      "path": "/api/recovery/finish",
+      "expect_failure": false,
+      "status_code": 401,
+      "ok": false,
+      "response_message": "Please sign in again to continue."
+    },
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "sign-in request with mismatched CSRF rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "invalid identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "invalid authenticator code rejected",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 13
+}

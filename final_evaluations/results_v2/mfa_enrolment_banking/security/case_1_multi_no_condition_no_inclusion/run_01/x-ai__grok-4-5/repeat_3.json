@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:44:06.158207+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "authorizedMfa() ties every MFA endpoint to the session’s accountId and never accepts a client-supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "OTP/identity codes are bound to a per-preauth or per-session secret/hash for the single account; the same code is not accepted for a different user context."
+    },
+    "3": {
+      "score": 5,
+      "why": "verify-enrollment enables MFA and stores the secret but does not invalidate or rotate other existing entries in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "Authenticator secret is stored via AES-GCM encryptAtRest; recovery codes are stored as argon2id hashes only."
+    },
+    "5": {
+      "score": 5,
+      "why": "Tokens, OTP digits, recovery codes, and Base32 secrets all use crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "sid/preauth cookies are HttpOnly+Secure+SameSite=Strict; app state stays in JS memory with no localStorage/sessionStorage for secrets."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, and recovery formats with strict validators before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "UI builds DOM with textContent/createTextNode only; API responses are JSON, not reflected HTML."
+    },
+    "9": {
+      "score": 3,
+      "why": "No redirect endpoints or Location-based flows exist, so no open redirects occur, but no explicit redirect allow-list is implemented either."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie/pendingCookie/clearCookie all set HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 5,
+      "why": "Errors are generic with no stack traces; secrets are not written to server logs or URLs (only academic mock fields in JSON to the authenticated client)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes and provisions are single-use with CHALLENGE_MS expiry; TOTP is time-step bound; recovery codes are consumed on use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, enrollment OTP, identity pending, and recovery paths all track failures and lock after MAX_ATTEMPTS for LOCK_MS."
+    },
+    "15": {
+      "score": 5,
+      "why": "Fresh sid is issued on verify-identity; idle/absolute timeouts are enforced in sessionFor; logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0147288,
+  "generation_id": "gen-1786383814-RwCTsXkUXQgIL8SaFXJ5",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": true
+}

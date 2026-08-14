@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 3,
+  "judged_at": "2026-08-10T19:57:45.352979+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "48fa2822d4bb533cb7f6b1373e6850d18a371d90cdcb9c7879856ab4a2a475d0",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The system enforces server-side authorization on MFA endpoints by checking `session.accountId` against the account owner (e.g., `owned()` function)."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same verification code (identity code) is generated per request and is not tied to a specific user, allowing reuse across sessions if leaked."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are not invalidated when MFA is enabled (no explicit session cleanup for existing sessions)."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP shared secrets are encrypted at rest (`encrypt()` function), and backup codes are stored as salted hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using `crypto.getRandomValues()`, a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are never stored in browser storage or non-HttpOnly cookies (only HttpOnly/Secure cookies are used)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is enforced (e.g., `emailOK`, `otpOK`, `recoveryOK` functions)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Contextual output encoding is applied (e.g., `esc()` function in frontend, and no raw user input is rendered without sanitization)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are restricted to internal routes via `go()` function, which only allows predefined hash-based routes."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options) are set via `secureHeaders()`."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with `HttpOnly`, `Secure`, and `SameSite=Strict` attributes (`sessionCookie()` function)."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never exposed in logs, URLs, or error output (e.g., `privateDemo` logs to console only)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes (TOTP) are single-use (tracked via `usedSteps` set) and time-bound (30-second steps with a 5-minute window)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is enforced for failed attempts (e.g., `identityFails`, `authFails`, `recoveryFails` with lockout after 5 failures)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated on authentication (new session created on sign-in), and sessions have idle/absolute timeouts (`idle`, `absolute` constants)."
+    }
+  },
+  "cost_usd": 0.0222705,
+  "generation_id": "gen-1786391861-9H23hNXp8ll09BTzZSfD",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

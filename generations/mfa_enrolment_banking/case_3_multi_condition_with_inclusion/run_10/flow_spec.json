@@ -1,0 +1,214 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "new_password": "NewPassword!42"
+  },
+  "html_variables": {},
+  "csrf": {
+    "endpoint": "/api/bootstrap",
+    "method": "GET",
+    "field": "csrf",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "bootstrap pre-auth session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign in with demo account",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "MarcusDemo!42"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request identity code",
+      "method": "POST",
+      "path": "/api/identity/request",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "phone": "+15551234567"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "identity_code": "testingCode"
+      }
+    },
+    {
+      "name": "confirm identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "provision authenticator",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "provision_secret": "secret",
+        "authenticator_code": "testingCode"
+      }
+    },
+    {
+      "name": "verify authenticator",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${authenticator_code}",
+        "manualSecret": "${provision_secret}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "acknowledge saved recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/acknowledge",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/regenerate",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "replacement_recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "acknowledge regenerated recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/acknowledge",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "WrongPassword!42"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong account phone rejected",
+      "method": "POST",
+      "path": "/api/identity/request",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "phone": "+15557654321"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "incorrect identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "ZZZZ-ZZZZ"
+      },
+      "expect_failure": true
+    }
+  ]
+}

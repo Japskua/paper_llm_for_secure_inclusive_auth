@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:16:24.044310+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "a5196aab32aaa319fd3fb877c6c9d448e815221b7a562eee9e06d60e5f91be42",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint derives the account from an authenticated or pending HttpOnly session cookie and accepts no client-supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Unknown identities are bound to a non-authenticating dummy challenge, and the real identity code cannot authenticate them or another account through the implemented flow."
+    },
+    "3": {
+      "score": 5,
+      "why": "Authenticator verification and backup confirmation do not rotate or invalidate other authenticated sessions for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "Authenticator secrets are encrypted with AES-256-GCM and backup codes are retained only as SHA-256 hashes."
+    },
+    "5": {
+      "score": 2,
+      "why": "Most secrets and backup codes use randomBytes, but the identity verification codes are hard-coded deterministic constants."
+    },
+    "6": {
+      "score": 5,
+      "why": "No browser storage is used, and session identifiers are stored only in cookies carrying the HttpOnly attribute."
+    },
+    "7": {
+      "score": 4,
+      "why": "The server validates types, lengths, formats, CSRF tokens, and redirect values, although email input is validated rather than explicitly sanitized."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent or DOM text nodes, while CSP nonces restrict executable scripts."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirect input is accepted only when it exactly matches one of four allow-listed internal fragment paths."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "Both session and bootstrap cookies are consistently created with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "Identity codes, authenticator secrets and OTPs, and recovery codes are explicitly written to the browser console and the page's simulated log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges expire after five minutes and are marked used, TOTP windows are time-bound and tracked against reuse, and recovery codes are deleted when redeemed."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, and recovery verification tracks lock for ten minutes after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful identity authentication replaces and deletes the pending session, sessions enforce idle and absolute expiry, and logout deletes the server-side session."
+    }
+  },
+  "cost_usd": 0.09914375,
+  "generation_id": "gen-1786389349-CPl3jm03Z3kf5qBvIBfT",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 5,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

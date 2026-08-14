@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:26:47.831900+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization is enforced per request by retrieving MFA state directly via the authenticated session's account ID."
+    },
+    "2": {
+      "score": 5,
+      "why": "In default test mode, fixed mock verification codes ('246810' and '135790') work for any user during identity and OTP verification."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in verify-otp does not rotate or invalidate existing sessions for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP seeds are stored AES-GCM encrypted and backup codes are saved using PBKDF2-SHA256 hashing with salt."
+    },
+    "5": {
+      "score": 5,
+      "why": "Cryptographic tokens, AES keys, salts, and codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session and challenge identifiers are stored exclusively in HttpOnly, Secure, SameSite=Strict cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, phone, and OTP inputs are validated on the server using strict regex and length limits."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic user data is inserted into the UI using DOM textContent rather than unsafe HTML parsing, bound by a strict nonced CSP."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirect parameters are checked against an explicit internal route allow-list."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers including CSP, HSTS, X-Content-Type-Options, and X-Frame-Options/frame-ancestors are set on HTTP responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are configured with HttpOnly, Secure, and SameSite=Strict flags."
+    },
+    "12": {
+      "score": 1,
+      "why": "Manual authenticator setup secrets, mock verification codes, and newly generated backup recovery codes are printed directly to client logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges, TOTP provisioning requests, and recovery codes enforce single-use state flags and expiration timeouts."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed verification attempts across identity challenges, OTP entries, and recovery codes trigger lockout counters."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session tokens are rotated upon sign-in, enforced with idle/absolute timeouts, and deleted from memory on logout."
+    }
+  },
+  "cost_usd": 0.0339321,
+  "generation_id": "gen-1786386386-FBuQQTDVuNEm3q9hxPro",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

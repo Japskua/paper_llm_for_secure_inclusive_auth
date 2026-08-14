@@ -1,0 +1,95 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 9,
+  "steps_passed": 8,
+  "happy_path_passed": 6,
+  "happy_path_total": 7,
+  "negative_passed": 2,
+  "negative_total": 2,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "sign in and create session",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "provision authenticator",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify authenticator code",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "enable MFA and generate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/enable",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'initial_recovery_code' from 'codes.0'"
+      ]
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'recovery_code' from 'codes.0'"
+      ]
+    },
+    {
+      "name": "verify and consume recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "{'ok': False, 'error': 'Unable to process this request.'}"
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong phone rejected",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "provisioning without authenticated session rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 9
+}

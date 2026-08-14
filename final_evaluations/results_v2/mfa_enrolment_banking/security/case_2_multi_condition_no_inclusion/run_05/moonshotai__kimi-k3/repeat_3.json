@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:04:25.794416+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "0f3d6292f9e220cbdffca811d0ddd5f705ab37cb33484e66ff4136891f7e4a0f",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint requires an authenticated session plus CSRF validation and resolves the account exclusively from the server-side session via accountForSession(session.accountId), with no client-supplied account identifiers accepted."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored as per-session hashes (identityCodeHash) verified only against the owning pending session, and TOTP secrets and backup codes are bound to the individual account, so a code issued to one user cannot verify another."
+    },
+    "3": {
+      "score": 2,
+      "why": "The prior pending session is invalidated at authentication (sessions.delete(pending.id) with ID rotation), so earlier sessions do not remain usable, although MFA activation itself performs no additional invalidation of other concurrent sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM-encrypted (encryptSecret/encryptedTotpSecret) and backup codes are stored only as peppered SHA-256 hashes, never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "All keys, session IDs, CSRF tokens, identity codes, TOTP secrets, and recovery codes are generated via crypto.getRandomValues, with secureInt using rejection sampling to avoid modulo bias."
+    },
+    "6": {
+      "score": 5,
+      "why": "The client keeps CSRF tokens, secrets, and codes only in in-memory JavaScript variables with no localStorage/sessionStorage use, and the only cookie (__Host-mfa_session) is HttpOnly."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates email, phone, OTP, and recovery-code formats with strict regexes, enforces JSON-only bodies with a 10KB streamed cap, and uses in-memory Maps so there is no SQL injection surface."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (codes, secrets, messages) are rendered via textContent or createElement, and innerHTML is used only with static template strings, so injected markup cannot execute."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server issues no redirects whatsoever, serves only the allow-listed paths in allowedPaths, and rejects any request with a query string, eliminating open-redirect risk."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor sets CSP (including frame-ancestors 'none'), Strict-Transport-Security, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on every response, including errors."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieHeader sets the session cookie with HttpOnly, Secure, and SameSite=Strict attributes (using the __Host- prefix and Path=/)."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server-side there is no logging, errors are generic with no stack traces, and query strings are rejected, but the client explicitly console.logs the identity code, TOTP manual secret, current TOTP, and backup codes ('TEST ONLY' disclosures), so seeds and codes are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after five minutes and are single-use (identityUsed flag), TOTP codes are replay-protected via lastTotpCounter, and backup codes are marked used upon redemption."
+    },
+    "14": {
+      "score": 5,
+      "why": "Five failed attempts trigger a ten-minute lockout independently for identity verification (identityLockUntil), TOTP activation (totpLockUntil), and recovery codes (recoveryLockUntil)."
+    },
+    "15": {
+      "score": 5,
+      "why": "The session identifier is rotated on authentication (rotateAuthenticatedSession), idle (15 min) and absolute (8 h) timeouts are enforced in getSession, and logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.1825866,
+  "generation_id": "gen-1786388336-vWPvZEHh2OU1VsMcoUMe",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 4,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:30:51.019287+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint derives the account solely from the server-side session (mfa(s.accountId)) with no client-supplied identifier, and signin verifies challenge-to-account ownership via ctHash comparisons."
+    },
+    "2": {
+      "score": 4,
+      "why": "TEST_MODE defaults on (MFA_TEST_MODE !== \"0\") and the constant mock code \"246810\" is accepted as the identity code for any user holding a valid challenge, although the real per-challenge codes are identity- and ownership-bound."
+    },
+    "3": {
+      "score": 5,
+      "why": "verify-otp enables MFA without touching the sessions map, so any sessions existing before enrolment (other than the one replaced at signin) remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted (encrypt()) and recovery codes are stored as PBKDF2-SHA-256 hashes with per-code salts and 210,000 iterations, never in plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, codes, tokens, and salts are produced from crypto.getRandomValues via bytes()/token()/digits()/base32(), with rejection sampling for digits."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session and challenge cookies are HttpOnly/Secure/SameSite=Strict, and the client keeps the CSRF token, manual secret, and backup codes only in JS variables and the DOM—no localStorage, sessionStorage, or readable cookies are used."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates email (emailOK), phone (phoneOK), OTP (otpOK), recovery-code format (recoveryInput), and the redirect allow-list before any processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (titles, secret, codes, logs) are rendered via textContent with only static innerHTML templates, reinforced by a nonce-based CSP with object-src 'none' and base-uri 'none'."
+    },
+    "9": {
+      "score": 5,
+      "why": "The redirect parameter is validated against the fixed ROUTES allow-list on the server, and client-side navigation is hash-based against the same fixed route set."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders() sets HSTS, a strict CSP including frame-ancestors 'none', X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on every response including errors."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits a __Host-prefixed cookie with HttpOnly, Secure, SameSite=Strict, Path=/, and a bounded Max-Age."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client log() function writes the OTP manual secret and every backup code to console.log and a visible on-page 'Logs' panel, though server errors are generic, no stack traces are shown, and nothing sensitive appears in URLs."
+    },
+    "13": {
+      "score": 4,
+      "why": "Generated codes are single-use and time-bound (2-min challenges consumed on use, 5-min provisioning window, TOTP replay blocked via v.accepted, recovery codes marked used), but the default-on mock codes are static constants that never expire and can be reused across challenges."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, OTP, and recovery verification each track failures with failed()/isLocked(), locking for 10 minutes after 5 failures and returning 429 while locked."
+    },
+    "15": {
+      "score": 5,
+      "why": "Signin deletes the old session and issues a fresh 32-byte random ID, getSession enforces 15-minute idle and 8-hour absolute timeouts, and logout deletes the session server-side and clears the cookie."
+    }
+  },
+  "cost_usd": 0.141321,
+  "generation_id": "gen-1786386448-Tbg1U3sO6vdYwgaZHAR9",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 2,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

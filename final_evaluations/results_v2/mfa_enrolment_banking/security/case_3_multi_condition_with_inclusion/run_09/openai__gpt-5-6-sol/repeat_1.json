@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:01:41.458799+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "09fdd56138de07d37e0eeceb5b77a462484d946b26840067cc508ef31c4e45d7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint derives the account from the authenticated server-side session rather than accepting a user identifier from the client."
+    },
+    "2": {
+      "score": 4,
+      "why": "When demo mode is enabled, fixed identity and authenticator codes are reused and would work for every account issued the corresponding demo challenge."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA changes only the current session stage and does not invalidate this session or any other existing sessions for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted with AES-256-GCM and backup codes are retained only as peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 3,
+      "why": "Production secrets and codes use randomBytes or randomInt, but demo mode substitutes fixed verification and recovery codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "Sensitive values remain in transient JavaScript memory while the session identifier is stored only in an HttpOnly cookie, with no browser-storage use."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates email, password length, delivery method, OTP format, recovery-code format, JSON shape, and request size, and it performs no SQL queries."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic client values are inserted using textContent or text nodes, JSON responses are serialized safely, and the page uses a nonce-based CSP."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application implements no client-controlled redirect destination or redirect response."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options along with additional defensive headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie and its clearing variant explicitly include HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "Demo identity, authenticator, and recovery codes are explicitly written to the browser console, despite generic server errors suppressing stack traces."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity and demo authenticator challenges expire after ten minutes and are marked used after successful verification, while recovery codes are also one-use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity, authenticator, and recovery failures are locked for fifteen minutes after five failed attempts, and identity-code requests are separately throttled."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful authentication replaces the pre-authentication session, sessions enforce twenty-minute idle and eight-hour absolute limits, and logout deletes the server session and cookie."
+    }
+  },
+  "cost_usd": 0.1193,
+  "generation_id": "gen-1786392075-rQt5IKz56O20Hc8S1T2H",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 2,
+    "3": 1,
+    "4": 5,
+    "5": 3,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.1333,
+  "capture_complete": false
+}

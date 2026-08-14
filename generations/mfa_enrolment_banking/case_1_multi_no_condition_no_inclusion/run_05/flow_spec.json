@@ -1,0 +1,113 @@
+{
+  "variables": {
+    "email": "marcus",
+    "new_password": "Northstar!2026"
+  },
+  "html_variables": {},
+  "csrf": null,
+  "steps": [
+    {
+      "name": "bootstrap anonymous session",
+      "method": "POST",
+      "path": "/api/bootstrap",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "check signed-out status",
+      "method": "POST",
+      "path": "/api/status",
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign in with demo account",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "login": "${email}",
+        "password": "Northstar!2025",
+        "csrf": "${csrf}",
+        "redirect": "#/identity"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "testCode"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "${identity_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "provision authenticator",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "manual_secret": "manualSecret",
+        "provisioning_uri": "provisioningUri"
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "login": "${email}",
+        "password": "WrongPassword!2025",
+        "csrf": "${csrf}",
+        "redirect": "#/identity"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid csrf rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "login": "${email}",
+        "password": "Northstar!2025",
+        "csrf": "0000000000000000000000000000000000000000000000000000000000000000",
+        "redirect": "#/identity"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "identity code rejected when invalid",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "000000",
+        "csrf": "${csrf}"
+      },
+      "expect_failure": true
+    }
+  ],
+  "blocking_issue": {
+    "route": "/api/mfa/verify",
+    "required_field": "otp",
+    "missing_test_response_field": "mockAuthenticatorOtp",
+    "available_response_field": "manualSecret",
+    "reason": "The server returns only the TOTP shared secret and no current mock TOTP value. The page computes the time-based code locally with WebCrypto, but the requested HTTP test rules prohibit computing a TOTP from a shared secret."
+  }
+}

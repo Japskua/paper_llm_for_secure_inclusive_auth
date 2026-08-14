@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:32:33.686064+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints call getSession and then mfa(s.accountId), with no client-supplied user identifier controlling access."
+    },
+    "2": {
+      "score": 2,
+      "why": "Although TEST_MODE defines fixed mock codes, successful sign-in still requires account existence and challenge identity/ownership matches, so I did not observe a code that works for arbitrary other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/mfa/verify-otp updates the MFA record but does not clear other entries from the sessions map, so existing sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored using AES-GCM encryption and backup codes are stored as PBKDF2-derived hashes rather than plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "base32, token, digits, and recoveryRaw all derive values from crypto.getRandomValues."
+    },
+    "6": {
+      "score": 2,
+      "why": "Session identifiers are only placed in HttpOnly cookies and no localStorage/sessionStorage is used, but manual secrets and backup codes are written into DOM logs, so browser-side exposure is not fully avoided."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side emailOK, phoneOK, otpOK, and recoveryInput validate the main user-supplied inputs before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values such as logs, secrets, backup codes, and errors are inserted using textContent, while innerHTML is only used for static markup."
+    },
+    "9": {
+      "score": 5,
+      "why": "The client route function only allows the ROUTES values and the signin redirect field is checked against ROUTES, with no server-side open redirect observed."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders sets HSTS, CSP with frame-ancestors 'none', X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie and challengeCookie include HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client log function writes manual OTP secrets and backup recovery codes to console and visible logs, so secrets are not kept out of logs."
+    },
+    "13": {
+      "score": 2,
+      "why": "Real challenge codes are used once and expire, but active TEST_MODE mock codes are constant and reusable across challenges, weakening the universal claim."
+    },
+    "14": {
+      "score": 5,
+      "why": "identityAttempts, otpAttempts, and recoveryAttempts use failed() and isLocked() with MAX_FAILURES=5 and LOCK_MS=10 minutes."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes an old session cookie and creates a new session id, getSession enforces idle and absolute expiry, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.11567,
+  "generation_id": "gen-1786386407-DEHhSehzY8dAm1vidlUR",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 2,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 2,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 4.0,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:16:08.832537+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The `auth` function enforces session ownership by checking `s.userId === account.id` for every request, ensuring only the authenticated account owner can access MFA endpoints."
+    },
+    "2": {
+      "score": 1,
+      "why": "The same verification code (TOTP) can be reused for any user if the secret is compromised, as the code is not tied to a specific user in the verification logic."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions remain valid after MFA is enabled, as there is no explicit invalidation of existing sessions upon MFA activation."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP shared secret is stored encrypted (`account.pending.secret` is encrypted via `encrypt(secret)`), and backup codes are stored hashed and encrypted (`account.recovery` uses `hash` and `encrypt`)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using `crypto.getRandomValues`, a cryptographically secure RNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are never stored in browser storage or non-HttpOnly cookies; session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is enforced (e.g., `emailOK`, `phoneOK`, and regex checks for OTP/recovery codes), and `suppliedIdentifier` blocks user-supplied identifiers in requests."
+    },
+    "8": {
+      "score": 5,
+      "why": "Contextual output encoding is applied via the `esc` function in the frontend, which prevents XSS by escaping dynamic content."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are not explicitly handled in the code, but the frontend uses `location.hash` for navigation, and no open redirects are present in the API logic."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options) are set in the `headers` function and applied to all responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with `HttpOnly`, `Secure`, and `SameSite=Strict` attributes in the `/api/login` endpoint."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never exposed in logs, URLs, or error output; stack traces are not shown to users."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes (TOTP) are single-use (marked `used: true` after validation) and time-bound (expire after `OTP_LIFE`)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is implemented for failed verification attempts (5 attempts lock the OTP for `LOCK` time) and recovery code attempts (5 failures lock for `LOCK` time)."
+    },
+    "15": {
+      "score": 4,
+      "why": "Session identifiers are rotated on login (new token generated), but there is no explicit rotation on authentication state changes (e.g., MFA enablement). Timeouts (idle/absolute) and invalidation on logout are enforced."
+    }
+  },
+  "cost_usd": 0.018684,
+  "generation_id": "gen-1786385764-zWUnFs7i9pSoiRRe00bK",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.9333,
+  "capture_complete": true
+}

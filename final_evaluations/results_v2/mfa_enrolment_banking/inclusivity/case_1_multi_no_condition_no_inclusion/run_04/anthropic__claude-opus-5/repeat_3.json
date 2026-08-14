@@ -1,0 +1,128 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:01:37.447566+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 18,
+  "screenshots_available": 18,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_authenticator_provisioning.png",
+    "step_05_store_recovery_codes.png",
+    "step_06_mfa_settings.png",
+    "step_07_authenticator_verification_form.png",
+    "step_08_authenticator_verification_succeeded.png",
+    "step_09_recovery_code_form.png",
+    "step_10_recovery_code_accepted.png",
+    "step_11_regenerate_recovery_codes.png",
+    "step_12_regeneration_challenge_ready.png",
+    "step_13_regenerated_recovery_codes.png",
+    "step_14_mfa_settings_after_storing_regenerated_codes.png",
+    "step_15_logged_out.png",
+    "step_16_explored.png",
+    "step_17_explored.png",
+    "step_18_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Sans-serif type with clear headings, comfortable line spacing and high contrast is used throughout, though the Logs panel uses small dense monospace text."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps are used and body copy is limited to one or two short sentences per screen, but the Logs panel presents dense unbroken monospace blocks."
+    },
+    "3": {
+      "score": 3,
+      "why": "The single-column card layout with full-width buttons would likely reflow acceptably, but only desktop-width screenshots are shown and the recovery-code two-column grid and long secret string risk cramping on a phone."
+    },
+    "4": {
+      "score": 4,
+      "why": "Each screen has a one- or two-sentence plain-language instruction such as 'Enter the six-digit identity code' and 'Each recovery code works once.'"
+    },
+    "5": {
+      "score": 4,
+      "why": "Placeholders show expected formats (marcus@example.com, 15551234567, '6 digits', ABCD-1234-EF56-7890), though the identity verification and authenticator verification fields on steps 2 and 7 are empty with no example."
+    },
+    "6": {
+      "score": 4,
+      "why": "Progression only ever requires reading a short heading plus one or two sentences; no long text blocks gate any action, although users must scan the Logs panel to find simulated codes."
+    },
+    "7": {
+      "score": 1,
+      "why": "No copy button or copy affordance appears anywhere; the authenticator secret, recovery codes and log values must all be read and retyped by hand."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code is displayed — step 4 offers only a plain text 'Provisioning information' string and explicitly says manual entry is available instead of scanning."
+    },
+    "9": {
+      "score": 2,
+      "why": "Fields have visible labels which may help heuristics, but there is no evidence of autocomplete attributes, no password field, and the one-time-code inputs give no sign of autofill/password-manager support."
+    },
+    "10": {
+      "score": 3,
+      "why": "Each screen has a prominent heading and a primary blue button, but there is no step indicator or progress marker, and on steps 7–10 several equally sized buttons compete above the actual input."
+    },
+    "11": {
+      "score": 2,
+      "why": "Step 4 asks for the manual secret and the authenticator code at once, step 11 presents two optional code fields plus a challenge button, and the MFA settings screen exposes four actions simultaneously."
+    },
+    "12": {
+      "score": 3,
+      "why": "Confirmations such as 'Authenticator verification succeeded', 'Recovery code accepted and permanently consumed' and 'Authenticator MFA is enabled' are shown, but they do not state what comes next."
+    },
+    "13": {
+      "score": 3,
+      "why": "Users can retry entries, 'Start over', and regenerate recovery codes, but there is no reveal/hide toggle and codes are explicitly 'displayed once' and cannot be re-requested without invalidating the old set."
+    },
+    "14": {
+      "score": 1,
+      "why": "The error on steps 17–18 reads only 'The request could not be completed.', which states neither the specific problem nor how to fix it."
+    },
+    "15": {
+      "score": 3,
+      "why": "No countdown timers or session-expiry warnings are visible in any screenshot, but the TOTP design implies time-limited codes and nothing explicitly grants extra time."
+    }
+  },
+  "cost_usd": 0.17399,
+  "generation_id": "gen-1786384878-u5yupSdmTS09o32GAUw8",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 1,
+    "8": 1,
+    "9": 2,
+    "10": 3,
+    "11": 2,
+    "12": 3,
+    "13": 3,
+    "14": 1,
+    "15": 3
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 4.0,
+    "comprehension": 1.3333,
+    "decision_making": 2.6667,
+    "learning": 2.3333
+  },
+  "overall": 2.8,
+  "capture_complete": true
+}

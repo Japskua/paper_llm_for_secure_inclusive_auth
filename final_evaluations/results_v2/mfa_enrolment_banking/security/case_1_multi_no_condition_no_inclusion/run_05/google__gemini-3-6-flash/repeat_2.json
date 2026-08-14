@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:05:27.190332+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ea5bab4b0d6539028296220e344d7db471d5a50ff1c6cc99aaff0f369372e18a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA settings are retrieved exclusively using the account bound to the authenticated session's user ID, and custom account identifiers in request bodies are explicitly forbidden."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are tied specifically to the individual user's session or account secret, so a code generated for one account will not work for another."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA via the verify endpoint updates the account's MFA state without invalidating or destroying other existing sessions in the session store."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored encrypted using AES-GCM and backup codes are stored as salted SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, tokens, peppers, and OTP verification codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored exclusively in HttpOnly cookies, while CSRF and verification state are stored in JavaScript memory rather than local/session storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server endpoints strictly validate input types, lengths, and regex patterns for logins, OTPs, recovery codes, and CSRF tokens."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic content is assigned using DOM textContent properties rather than innerHTML, preventing injected scripts from executing."
+    },
+    "9": {
+      "score": 5,
+      "why": "The sign-in endpoint validates redirect parameters against a strict allow-list of internal hash routes."
+    },
+    "10": {
+      "score": 5,
+      "why": "The application sets HTTP headers including CSP with frame-ancestors, Strict-Transport-Security, X-Content-Type-Options, and X-Frame-Options."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are issued with HttpOnly, Secure, and SameSite=Strict directives."
+    },
+    "12": {
+      "score": 5,
+      "why": "The server catches exceptions to return generic error messages, avoiding verbose stack traces, URL parameters, or server log leaks of sensitive tokens."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 5 minutes and are marked used, TOTP time steps are tracked against reuse, and recovery codes are marked as used upon redemption."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, TOTP, and recovery code endpoints all enforce attempt counting and lockouts after 5 consecutive failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Authentication destroys old session IDs and creates new ones, while readSession enforces 20-minute idle and 8-hour absolute timeouts and logout explicitly destroys sessions."
+    }
+  },
+  "cost_usd": 0.0494295,
+  "generation_id": "gen-1786385108-k0hcxDmP3w51nAwSVpQg",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

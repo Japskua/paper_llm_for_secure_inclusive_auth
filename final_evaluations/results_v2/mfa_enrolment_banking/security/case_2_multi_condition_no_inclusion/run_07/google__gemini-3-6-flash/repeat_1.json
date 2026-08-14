@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:07:44.467018+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "765fe1151228e724636d2f0b669a13b658ec30f5d90c64866be8eec351d8ce4d",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization derives the target user strictly from the authenticated session cookie rather than request parameters."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are uniquely bound to individual user sessions or encrypted user secrets and do not work across accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Activating MFA updates the user record without invalidating or purging other pre-existing sessions from the session store."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored encrypted with AES-GCM and backup codes are stored as salted SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, tokens, IVs, and verification codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session identifiers are restricted to HttpOnly cookies and sensitive secrets are kept out of Web Storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server endpoints strictly validate input formats for email, phone numbers, verification codes, and CSRF tokens."
+    },
+    "8": {
+      "score": 5,
+      "why": "Values dynamic rendered into HTML templates are sanitized through contextual HTML entity encoding."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application contains only hardcoded internal redirects and accepts no user-controlled redirect destinations."
+    },
+    "10": {
+      "score": 5,
+      "why": "Response headers enforce Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options, and Content-Security-Policy."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie explicitly includes HttpOnly, Secure, and SameSite=Strict directives."
+    },
+    "12": {
+      "score": 1,
+      "why": "The simulated test environment explicitly outputs sensitive verification codes, OTPs, and backup recovery codes to console logs and the UI."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes expire within 5 minutes, backup codes are marked used upon consumption, and TOTP checks prevent counter reuse."
+    },
+    "14": {
+      "score": 5,
+      "why": "Verification endpoints track failure counts and enforce a 5-minute lock period after 5 consecutive invalid submissions."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session tokens are rotated during phase transitions, enforce idle and absolute timeouts, and are deleted from memory on logout."
+    }
+  },
+  "cost_usd": 0.051432,
+  "generation_id": "gen-1786388842-RGjRYJGiuseseer4pEWP",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

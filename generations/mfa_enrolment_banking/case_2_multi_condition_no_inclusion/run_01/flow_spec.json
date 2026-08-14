@@ -1,0 +1,101 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "phone": "+447700900000"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source": "Captured from the csrf field in the successful POST /api/identity/verify response; refreshed by GET /api/mfa."
+  },
+  "steps": [
+    {
+      "name": "start identity sign-in",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "identity_code": "mockCode"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "load MFA status",
+      "method": "GET",
+      "path": "/api/mfa",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "begin authenticator enrolment",
+      "method": "POST",
+      "path": "/api/mfa/enrol",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "setup_secret": "secret",
+        "provisioning_uri": "provisioningUri"
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong phone rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "+447700900099"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "wrong identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "protected enrolment without CSRF rejected",
+      "method": "POST",
+      "path": "/api/mfa/enrol",
+      "body": {},
+      "expect_failure": true
+    }
+  ],
+  "blockers": [
+    {
+      "stage": "POST /api/mfa/confirm",
+      "reason": "The route requires a current TOTP in the otp JSON field, but no response exposes a mockOtp, currentOtp, mockAuthenticatorOtp, mockCode, or equivalent current authenticator code. POST /api/mfa/enrol returns secret and provisioningUri only. Per the test constraints, the test must not derive a TOTP from the returned secret, so the remaining happy-path stages cannot be automated."
+    },
+    {
+      "stage": "remaining journey",
+      "reason": "Because MFA confirmation cannot be completed without an externally generated TOTP, recovery-code issuance, recovery-code use, recovery-code regeneration, and final logout cannot be reached in a compliant automated HTTP test."
+    }
+  ]
+}

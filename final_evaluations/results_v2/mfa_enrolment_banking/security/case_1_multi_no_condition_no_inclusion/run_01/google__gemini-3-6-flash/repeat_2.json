@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:43:24.847244+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The authorizedMfa helper enforces that every MFA endpoint verifies the session account ID matches the target account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are strictly bound to a specific pending identity and account ID, preventing them from working for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA via the enrollment endpoint does not revoke or clear other pre-existing sessions stored in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are encrypted at rest using AES-GCM and recovery codes are hashed using Argon2id."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, tokens, OTPs, and recovery codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session and pre-auth tokens are stored exclusively in HttpOnly, Secure, SameSite cookies and kept out of browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side helper functions strictly validate input types, lengths, and regex patterns for email, phone, OTP, and recovery codes."
+    },
+    "8": {
+      "score": 5,
+      "why": "The frontend dynamically renders output using textContent and createTextNode, preventing injected scripts from executing."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server does not implement any HTTP redirects, eliminating open redirect vulnerabilities."
+    },
+    "10": {
+      "score": 5,
+      "why": "Comprehensive security headers including CSP, HSTS, X-Content-Type-Options, and X-Frame-Options/frame-ancestors are set on all responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Both sid and preauth cookies explicitly configure HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "The server returns generic error messages and catches exceptions without writing sensitive tokens or stack traces to logs or output."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity tokens, TOTP provisions, and recovery codes expire after strict time limits and are invalidated upon single use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Account-scoped failure trackers enforce a 10-minute lockout after 5 consecutive failed verification or sign-in attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "A fresh session identifier is generated upon identity verification, sessions enforce idle and absolute timeouts, and sessions are deleted on logout."
+    }
+  },
+  "cost_usd": 0.0397155,
+  "generation_id": "gen-1786383790-IvuXP9pBj6L9rTdHqWot",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

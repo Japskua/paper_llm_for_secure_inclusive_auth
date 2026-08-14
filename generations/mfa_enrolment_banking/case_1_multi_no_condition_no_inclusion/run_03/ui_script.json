@@ -1,0 +1,178 @@
+{
+  "variables": {
+    "email": "marcus@northstar.test",
+    "phone": "+447700900000"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_identity",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name='email']",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "input[name='phone']",
+          "value": "${phone}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Verify identity"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_setup",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#log",
+          "regex": "Identity simulation code: (\\d{6})",
+          "into": "identity_code"
+        },
+        {
+          "do": "fill",
+          "selector": "input[name='code']",
+          "value": "${identity_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Authenticator"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_code_ready",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button[data-action='generate']"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Manual secret:"
+        },
+        {
+          "do": "read",
+          "selector": "#log",
+          "regex": "Authenticator current TOTP fixture: (\\d{6})",
+          "into": "authenticator_code"
+        }
+      ]
+    },
+    {
+      "name": "save_initial_recovery_codes",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name='otp']",
+          "value": "${authenticator_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Save recovery codes"
+        },
+        {
+          "do": "read",
+          "selector": "#log",
+          "regex": "Recovery codes: ([A-HJ-NP-Z2-9]{5}-[A-HJ-NP-Z2-9]{5})",
+          "into": "initial_recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "mfa_enabled_dashboard",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('I have stored my codes')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=MFA enabled"
+        }
+      ]
+    },
+    {
+      "name": "recovery_code_accepted",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "form[data-action='recovery'] input[name='code']",
+          "value": "${initial_recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "form[data-action='recovery'] button:has-text('Verify recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Recovery code accepted."
+        }
+      ]
+    },
+    {
+      "name": "save_regenerated_recovery_codes",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "form[data-action='regenerate'] button:has-text('Regenerate recovery codes')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Save recovery codes"
+        },
+        {
+          "do": "read",
+          "selector": "#log",
+          "regex": "Regenerated recovery codes: ([A-HJ-NP-Z2-9]{5}-[A-HJ-NP-Z2-9]{5})",
+          "into": "regenerated_recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "mfa_enabled_after_recovery_code_regeneration",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('I have stored my codes')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=MFA enabled"
+        }
+      ]
+    },
+    {
+      "name": "logged_out_login_page",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "form[data-action='logout'] button:has-text('Log out')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Sign in"
+        }
+      ]
+    }
+  ]
+}

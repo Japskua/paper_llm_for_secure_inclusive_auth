@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 3,
+  "judged_at": "2026-08-10T18:31:38.652446+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "auth() derives identity solely from the bank_session cookie and rejects any session whose userId is not the account, while suppliedIdentifier() rejects client-supplied user IDs, so MFA endpoints only ever touch the signed-in owner's settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are TOTP values bound to the session owner's pending secret and marked used on success; no other user context exists in which the same code could be redeemed."
+    },
+    "3": {
+      "score": 4,
+      "why": "/api/mfa/verify sets account.enabled without invalidating or rotating any sessions, so the enabling session and any other concurrent sessions continue to work after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The pending secret is stored AES-GCM encrypted via encrypt(), account.secret retains that ciphertext, and recovery codes are stored as SHA-256 hash plus AES-GCM ciphertext, never plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "token(), base32() secret generation, and recoveryCode() all use crypto.getRandomValues, and TOTP codes derive via HMAC-SHA1 from that CSPRNG-generated secret."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie (bank_session) is HttpOnly, Secure, SameSite=Strict, and the client keeps the CSRF token and secrets only in JS variables/DOM, never in localStorage or readable cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates email (emailOK), phone (phoneOK), OTP (/^\\d{6}$/), recovery code format, JSON content-type, and a 4KB body cap before using any input."
+    },
+    "8": {
+      "score": 5,
+      "why": "All client-side rendering of server values passes through esc() (textContent to innerHTML encoding), and the per-response nonce CSP blocks any injected inline script."
+    },
+    "9": {
+      "score": 4,
+      "why": "There are no server-side redirects and client navigation is hash routing constrained to the fixed internal views returned by needed(), so no open redirect is possible."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets a nonce-based CSP, Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, and frame-ancestors 'none' on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "The Set-Cookie for bank_session includes HttpOnly, Secure, and SameSite=Strict both when issued at login and when cleared at logout."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client log() function writes the provisioning secret, testOtp, and all recovery codes to console and the on-page #logs panel, so seeds and codes are not kept out of logs, though server errors are generic with no stack traces."
+    },
+    "13": {
+      "score": 5,
+      "why": "The pending enrollment expires after OTP_LIFE (5 minutes) and is marked used on success, recovery codes are marked used on redeem, and TOTP codes are inherently time-stepped."
+    },
+    "14": {
+      "score": 5,
+      "why": "Five failed OTP attempts set p.locked for LOCK (10 minutes) and five failed recovery attempts set account.recoveryLocked similarly."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes the prior session and issues a fresh token, auth() enforces 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.097371,
+  "generation_id": "gen-1786386506-qXKU3dCs1UBjltgHU4bL",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

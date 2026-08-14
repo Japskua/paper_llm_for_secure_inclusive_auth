@@ -1,0 +1,163 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "password": "DemoPass123!",
+    "new_password": "NewDemoPass123!"
+  },
+  "html_variables": {
+    "initial_pre_auth_csrf": "preAuth:\"([^\"]+)\""
+  },
+  "csrf": {
+    "html_regex": "preAuth:\"([^\"]+)\"",
+    "field": "preAuthCsrf",
+    "in": "body"
+  },
+  "steps": [
+    {
+      "name": "load MFA enrolment application",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "prepare sign-in context",
+      "method": "GET",
+      "path": "/api/pre-auth",
+      "capture": {
+        "pre_auth_csrf": "preAuthCsrf"
+      }
+    },
+    {
+      "name": "sign in with demo account",
+      "method": "POST",
+      "path": "/api/login",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Sec-Fetch-Site": "same-origin"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "${password}",
+        "preAuthCsrf": "${pre_auth_csrf}"
+      },
+      "expect_json_true": "authenticated",
+      "capture": {
+        "session_csrf": "csrf"
+      }
+    },
+    {
+      "name": "confirm identity and mobile number",
+      "method": "POST",
+      "path": "/api/identity",
+      "headers": {
+        "X-CSRF-Token": "${session_csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "+44 7700 900000",
+        "next": "#/provision"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "create authenticator setup secret",
+      "method": "POST",
+      "path": "/api/provision",
+      "headers": {
+        "X-CSRF-Token": "${session_csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "manual_secret": "manualSecret",
+        "authenticator_otp": "testOtp"
+      }
+    },
+    {
+      "name": "verify authenticator and enable MFA",
+      "method": "POST",
+      "path": "/api/verify-authenticator",
+      "headers": {
+        "X-CSRF-Token": "${session_csrf}"
+      },
+      "body": {
+        "manualSecret": "${manual_secret}",
+        "otp": "${authenticator_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "test one-time recovery code",
+      "method": "POST",
+      "path": "/api/verify-recovery",
+      "headers": {
+        "X-CSRF-Token": "${session_csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/regenerate-backups",
+      "headers": {
+        "X-CSRF-Token": "${session_csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "regenerated_recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "headers": {
+        "X-CSRF-Token": "${session_csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "Sec-Fetch-Site": "same-origin"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "WrongPassword123!",
+        "preAuthCsrf": "${initial_pre_auth_csrf}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid recovery code rejected",
+      "method": "POST",
+      "path": "/api/verify-recovery",
+      "headers": {
+        "X-CSRF-Token": "${session_csrf}"
+      },
+      "body": {
+        "code": "ABCDE-23456"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "state change without session CSRF rejected",
+      "method": "POST",
+      "path": "/api/regenerate-backups",
+      "body": {},
+      "expect_failure": true
+    }
+  ]
+}

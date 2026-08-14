@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:51:58.307077+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "580b4044089c77727fe040f6ea0000c6d5f83948bf6204c54696c4d059d00f19",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Every MFA endpoint goes through protect()/session(), which resolves the caller's server-side session cookie and never accepts a client-supplied user identifier, so the settings acted on are those of the signed-in session (though there is only one hardcoded account object)."
+    },
+    "2": {
+      "score": 2,
+      "why": "There is a single hardcoded account and no multi-user identifiers at all, so no other user's session can consume a code — codes are bound to the one account's state and no cross-user reuse path exists."
+    },
+    "3": {
+      "score": 4,
+      "why": "Completing /api/recovery/finish sets account.enabled and s.stage='complete' but never clears or re-issues entries in the sessions map, so any pre-existing session cookie remains valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "account.secret is stored as AES-GCM ciphertext via encrypt() and account.backups holds SHA-256 digests of the recovery codes, not plaintext."
+    },
+    "5": {
+      "score": 3,
+      "why": "The production paths use crypto.getRandomValues (token(), random(20), sixDigitCode()), but with the default ACADEMIC=true the app actually uses the hardcoded TEST_SECRET, TEST_ID and TEST_CODES constants."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and mfa_session is HttpOnly; only the CSRF token sits in a readable cookie, although the setup secret and simulation codes are rendered into the DOM and console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators validEmail, validPassword and the /^\\d{6}$/ otp check gate all inputs, JSON parsing is wrapped in try/catch, and there is no SQL/database layer at all (in-memory Map)."
+    },
+    "8": {
+      "score": 4,
+      "why": "All client rendering uses createElement/textContent/setAttribute with no innerHTML, so injected markup cannot execute, though the CSP still allows 'unsafe-inline' scripts."
+    },
+    "9": {
+      "score": 3,
+      "why": "The application performs no redirects whatsoever, so there is no open-redirect risk but equally no allow-list mechanism as described."
+    },
+    "10": {
+      "score": 5,
+      "why": "The shared headers object sets Content-Security-Policy with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY and Referrer-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "mfa_session is issued as 'HttpOnly; Secure; SameSite=Strict' with Path=/ and Max-Age, and cleared with the same attributes on logout."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors return generic messages with no stack traces, but the app deliberately returns simulationCode values and recovery codes in responses and writes them to the browser console and the visible on-page 'Logs' pane."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity code carries expires=now+10min plus a used flag enforced in /api/identity/verify, and TOTP counters are tracked in q.used so a step cannot be replayed."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification and TOTP verification each increment a failure counter and set a 15-minute lock after MAX=5 failures, returning HTTP 429."
+    },
+    "15": {
+      "score": 3,
+      "why": "A fresh session id is minted at sign-in with idle (20 min) and absolute (8 h) timeouts and logout deletes it from the sessions map, but the identifier is never rotated after the MFA verification steps complete."
+    }
+  },
+  "cost_usd": 0.14815,
+  "generation_id": "gen-1786391481-FD8M9v0zID7N0bdBaMzr",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 2,
+    "4": 5,
+    "5": 3,
+    "6": 4,
+    "7": 5,
+    "8": 4,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.9333,
+  "capture_complete": false
+}

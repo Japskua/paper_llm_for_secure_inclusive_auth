@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:41:33.744905+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "b94e9bf6be546bd722ad6952f8bb406c950155f6c9bedb310317adeda7c7e386",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint derives the account exclusively from the authenticated session via recordFor(session.accountId), with no client-supplied account identifier accepted anywhere."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are generated per pre-auth session and checked only against that session's own stored identityCode, so a code issued for one account cannot verify another."
+    },
+    "3": {
+      "score": 5,
+      "why": "The /api/mfa/confirm handler does not delete or rotate any existing sessions, so all prior sessions in the sessions map keep working until idle/absolute timeout or explicit logout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-256-GCM encrypted (encryptSecret) and recovery codes are stored as peppered HMAC-SHA-256 hashes (recoveryHash), never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, identity codes, TOTP secrets, recovery codes, keys, and IVs are generated with crypto.getRandomValues or crypto.subtle.generateKey, which are cryptographically secure."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session and pre-auth tokens exist only in HttpOnly+Secure+SameSite=Strict cookies, the CSRF token and provisioning secret live only in JS memory/DOM, and no localStorage or sessionStorage is used."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates and normalises all inputs with strict regexes and type checks (validEmail, validPhone, validOtp, normaliseRecovery, apiBody shape check) and there are no SQL queries to inject."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are rendered with textContent while innerHTML is assigned only static markup, and the nonce-based CSP without unsafe-inline prevents injected script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application performs no HTTP redirects at all and the client navigates only between fixed internal views and hardcoded API paths, so no open redirect is possible."
+    },
+    "10": {
+      "score": 5,
+      "why": "Every response sets Content-Security-Policy (including frame-ancestors 'none'), Strict-Transport-Security, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "secureCookie applies HttpOnly, Secure, and SameSite=Strict to both the __Host-session and __Host-preauth cookies."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server-side logging is clean and errors are generic with no stack traces, but in the default TEST_MODE the identity code and recovery codes are deliberately written to the browser console and the on-page Logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 10 minutes and are marked used then deleted on success, TOTP setup counters are recorded to block replay, and recovery codes are invalidated after a single use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Five failed attempts trigger a 10-minute lockout (MAX_FAILURES/LOCK_MS with failAttempt/locked) on identity verification, MFA confirm, and recovery endpoints."
+    },
+    "15": {
+      "score": 5,
+      "why": "A fresh random session token is issued at authentication with the pre-auth cookie expired, sessions enforce 15-minute idle and 8-hour absolute timeouts, and logout deletes the server-side session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.0911196,
+  "generation_id": "gen-1786387150-cd2lPo190AA41tBrQ6eq",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": true
+}

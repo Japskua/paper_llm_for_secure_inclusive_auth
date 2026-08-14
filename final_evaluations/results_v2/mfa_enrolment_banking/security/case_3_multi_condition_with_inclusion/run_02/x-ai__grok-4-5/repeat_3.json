@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_02",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:32:37.350645+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "8c8e2b8bff5b5766fd0e1b65a04d06dcd989e190bf5b129b0024d646e7ea4504",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints resolve the record via session.userId from the HttpOnly session cookie and getSession rejects mismatched or missing sessions."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity digests are stored on the session, TOTP/backup verification uses the signed-in user's record only, so a code does not authenticate a different user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA sets record.enabled but never deletes or invalidates other entries in the sessions map, so prior sessions keep working."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored AES-GCM encrypted and recovery codes are stored as PBKDF2 verifiers with per-code salts, not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "token/randomFrom/newSecret/newBackups all use crypto.getRandomValues for generation."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session id is only in an HttpOnly Secure SameSite cookie; no localStorage/sessionStorage or non-HttpOnly cookie holds secrets, OTPs, or session tokens."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email/password shape and enforces strict regex/format checks on identity, TOTP, and recovery code inputs before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "API responses are JSON and the client escapes dynamic text with esc() before innerHTML insertion, blocking markup/script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "safePath allow-lists internal routes for next redirects and the client hash router similarly restricts destinations."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets nonce CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie sets mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Errors are generic without stack traces and tokens are not in URLs, but mock identity codes, authenticator secrets, and recovery codes are returned and written to the on-page logs UI."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have expires/used, TOTP counters are consumed to stop replay, and backup codes are marked used after success."
+    },
+    "14": {
+      "score": 5,
+      "why": "failed() locks the user for LOCK_MS after MAX_FAILURES on identity, TOTP, and recovery verification paths."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login issues a new session id and drops the old cookie session; idle/absolute timeouts are enforced in getSession; logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0182356,
+  "generation_id": "gen-1786390313-Qr0mfYyVrND6ja8cj3mQ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": false
+}

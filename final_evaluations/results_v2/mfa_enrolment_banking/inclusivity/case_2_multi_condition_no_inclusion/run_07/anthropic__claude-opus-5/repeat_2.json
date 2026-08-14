@@ -1,0 +1,126 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:09:33.192645+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "7ebb89de2c28ee4cfb4fb0889f4e47067302d1f742dc82ebf6e93b4fdeb4bc17",
+  "app_ts_sha256": "765fe1151228e724636d2f0b669a13b658ec30f5d90c64866be8eec351d8ce4d",
+  "screenshot_count": 16,
+  "screenshots_available": 16,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_authenticator_setup.png",
+    "step_04_save_recovery_codes.png",
+    "step_05_mfa_settings.png",
+    "step_06_recovery_verification.png",
+    "step_07_regenerate_recovery_codes_confirmation.png",
+    "step_08_replacement_recovery_codes.png",
+    "step_09_replacement_codes_saved.png",
+    "step_10_replacement_recovery_verification.png",
+    "step_11_return_to_mfa_settings.png",
+    "step_12_signed_out.png",
+    "step_13_explored.png",
+    "step_14_explored.png",
+    "step_15_explored.png",
+    "step_16_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Clean sans-serif type with comfortable line spacing and letter-spaced monospace for codes, though body text size and spacing are standard rather than notably generous."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps are used and paragraphs are one or two lines, but step 3 includes a dense, wrapped otpauth:// provisioning string in small grey text."
+    },
+    "3": {
+      "score": 3,
+      "why": "All screenshots are captured at 1280px desktop width in a fixed centred card, so mobile-size readability and layout cannot be confirmed from the evidence provided."
+    },
+    "4": {
+      "score": 3,
+      "why": "Most instructions are short, but the authenticator step uses technical jargon ('TOTP SHA-256, six digits, and a 30-second period') that is not plain language."
+    },
+    "5": {
+      "score": 3,
+      "why": "The recovery code field shows a format placeholder 'ABCD-EFGH-JKLM', but the verification code and setup key steps provide no example of expected input."
+    },
+    "6": {
+      "score": 4,
+      "why": "Every screen keeps text to a few short lines; the only long text is the optional provisioning URI, which is not required reading to proceed."
+    },
+    "7": {
+      "score": 2,
+      "why": "No copy button, download, or print option is offered for the 32-character setup key or the eight recovery codes, so they must be transcribed by hand."
+    },
+    "8": {
+      "score": 1,
+      "why": "Step 3 offers only a 'Manual setup key' plus a raw otpauth URI in text; no QR code or scannable equivalent is displayed."
+    },
+    "9": {
+      "score": 3,
+      "why": "Login fields are prefilled demo values and no autocomplete/one-time-code affordances or password-manager support are visible or stated in any screenshot."
+    },
+    "10": {
+      "score": 3,
+      "why": "Headings and a single blue primary button are visually prominent, but there is no step indicator or progress marker showing where the user is in the enrolment flow."
+    },
+    "11": {
+      "score": 4,
+      "why": "Each enrolment screen centres on one task, though step 3 pairs 'Create a new setup key' with 'I entered the key' and the settings hub presents three competing buttons."
+    },
+    "12": {
+      "score": 3,
+      "why": "Some outcomes are confirmed ('MFA is active', 'You are signed out'), but 'Recovery code accepted. 7 recovery codes remain' is rendered in red error styling and no screen states what comes next."
+    },
+    "13": {
+      "score": 2,
+      "why": "Retry and 'Regenerate recovery codes' exist, but recovery codes are shown once only ('They will not be shown again'), there is no reveal/hide control, and five failed submissions lock verification for five minutes."
+    },
+    "14": {
+      "score": 2,
+      "why": "The only error shown, 'We could not complete that request. Please try again.', is non-blaming but does not state the actual problem or how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "The TOTP code rotates every 30 seconds and verification locks for five minutes after five failed attempts, and no extension or generous-time provision is offered."
+    }
+  },
+  "cost_usd": 0.167645,
+  "generation_id": "gen-1786388944-MKRqg9JOiJXcfCS4Riyh",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 3,
+    "5": 3,
+    "6": 4,
+    "7": 2,
+    "8": 1,
+    "9": 3,
+    "10": 3,
+    "11": 4,
+    "12": 3,
+    "13": 2,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 3.3333,
+    "comprehension": 2.0,
+    "decision_making": 3.3333,
+    "learning": 2.0
+  },
+  "overall": 2.8667,
+  "capture_complete": true
+}

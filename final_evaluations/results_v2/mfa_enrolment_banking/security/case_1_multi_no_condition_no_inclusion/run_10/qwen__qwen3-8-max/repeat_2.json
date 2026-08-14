@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:37:09.765300+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The settings endpoint only returns data when the request has an authenticated session whose stage is mfa, and all MFA state is scoped to that session."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification challenges are stored per identity target and compared against the session's target, so a code issued for one target is not valid for another."
+    },
+    "3": {
+      "score": 5,
+      "why": "Authenticator confirmation only mutates the current session and does not revoke other stored sessions, so previously issued valid sessions can remain usable."
+    },
+    "4": {
+      "score": 4,
+      "why": "The OTP secret is AES-GCM encrypted and recovery codes are stored as SHA-256 hashes, but freshly generated recovery codes are temporarily held in plaintext for one-time display."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session IDs, CSRF tokens, OTP secrets, identity codes, and recovery codes are all generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The client code does not use localStorage, sessionStorage, or non-HttpOnly cookies for secrets or tokens, and the session identifier is set only as an HttpOnly cookie."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators enforce strict regex formats for email, phone, OTP, secret, and recovery-code inputs before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent rather than innerHTML, and API responses are JSON rather than HTML."
+    },
+    "9": {
+      "score": 4,
+      "why": "No server-side Location redirects are implemented and navigation is same-document with CSP form-action self, though there is no explicit redirect allow-list because redirects are absent."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders sets Content-Security-Policy with frame-ancestors none, Strict-Transport-Security, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookieFor sets the session cookie with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client logs identity OTPs, authenticator OTPs, and recovery codes to the console and visible Logs panel, so those values are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges have expiresAt and used flags, recovery hashes are removed after successful use, and the enrollment OTP is accepted only once."
+    },
+    "14": {
+      "score": 5,
+      "why": "failedAttempt locks identity, authenticator, and recovery verification for ten minutes after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sessions are rotated during sign-in and identity verification, enforce idle and absolute timeouts, and are deleted on logout."
+    }
+  },
+  "cost_usd": 0.071674,
+  "generation_id": "gen-1786386789-rVAHwW2fHTayidxinHTX",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.3334,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:25:21.091988+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "e75c5e1f2640b1b5327f2decd8300f8832941a1fa4252cfc26f15807ec177e22",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints call requireAuth, and authenticatedSession only accepts sessions whose accountId matches the single account id."
+    },
+    "2": {
+      "score": 1,
+      "why": "There is no multi-user support, and OTP/recovery verification is tied to the single account's encrypted secret or recovery records."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA does not invalidate existing sessions; the session map retains prior sessions and logout only deletes the current session."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret and recovery codes are stored via encrypt(), using AES-256-GCM, rather than plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "The secret, recovery codes, session ids, and CSRF tokens are generated with node:crypto randomBytes."
+    },
+    "6": {
+      "score": 4,
+      "why": "Session identifiers are only placed in HttpOnly cookies and no localStorage/sessionStorage is used, although the setup secret and codes are shown in client-side DOM/logs."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, phone, OTP, and recovery-code inputs are server-side regex validated, and the JSON body parser rejects unexpected accountId/userId fields."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent or createTextNode, and CSP nonces restrict inline script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server does not issue redirects or Location headers, so no open redirect path is present."
+    },
+    "10": {
+      "score": 5,
+      "why": "Every response headers include HSTS, CSP, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie is set with HttpOnly, Secure, SameSite=Strict, and Max-Age."
+    },
+    "12": {
+      "score": 2,
+      "why": "Client-side logs explicitly output the TOTP secret and recovery codes, although error responses avoid stack traces and URLs do not expose secrets."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTP verification uses a time window and acceptedCounter to prevent replay, and recovery codes are removed on use and have expiry timestamps."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed OTP and recovery-code verifications increment a failure counter that locks the account for 10 minutes after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the preauth session and issues a new session id, sessions have idle and absolute expiry checks, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.057994,
+  "generation_id": "gen-1786386103-WRmpyElS6jxFvJg0q1ar",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

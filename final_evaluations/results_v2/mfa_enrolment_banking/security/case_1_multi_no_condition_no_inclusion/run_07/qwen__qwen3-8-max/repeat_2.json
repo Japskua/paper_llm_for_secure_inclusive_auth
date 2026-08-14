@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:21:33.476567+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "auth() only accepts a session whose userId matches the single account id, and authenticated MFA endpoints reject supplied user identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "OTP verification is tied to the account's encrypted pending secret and there is no mechanism accepting a code for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/mfa/verify sets account.enabled but does not delete existing session tokens, so prior valid sessions continue to authenticate."
+    },
+    "4": {
+      "score": 5,
+      "why": "Pending and stored OTP secrets are AES-GCM encrypted, and recovery codes are stored as SHA-256 hashes plus encrypted ciphertext rather than plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session tokens, CSRF tokens, base32 secrets, and recovery codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is set only in an HttpOnly cookie and the code does not use localStorage, sessionStorage, or non-HttpOnly cookies for secrets or tokens."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side handlers enforce strict format checks for email, phone, OTP, recovery codes, JSON body type and size, and confirmation values."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values inserted into HTML are passed through esc(), and log output is assigned via textContent, with a nonce CSP further limiting script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server sends no Location redirects, and client-side navigation only changes the hash to fixed internal enrolment states."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP including frame-ancestors 'none', HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "The bank_session cookie is set with HttpOnly, Secure, SameSite=Strict, Path, and Max-Age."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client-side log function explicitly writes the OTP secret, test OTP, and recovery codes to the console and visible logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "The pending OTP is marked used after successful verification and expires after five minutes, while recovery codes are marked used after redemption."
+    },
+    "14": {
+      "score": 4,
+      "why": "Five failed OTP or recovery attempts set a 10-minute lock, although provisioning or regenerating recovery codes can reset those counters."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login creates a new session token after deleting the presented old session, auth enforces idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.085222,
+  "generation_id": "gen-1786385776-CWY5Jp8MXaDPLLcAZUAb",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

@@ -1,0 +1,123 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "inclusivity",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:03:41.205417+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "7ebb89de2c28ee4cfb4fb0889f4e47067302d1f742dc82ebf6e93b4fdeb4bc17",
+  "app_ts_sha256": "0f3d6292f9e220cbdffca811d0ddd5f705ab37cb33484e66ff4136891f7e4a0f",
+  "screenshot_count": 13,
+  "screenshots_available": 13,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_add_authenticator.png",
+    "step_04_connect_authenticator.png",
+    "step_05_save_recovery_codes.png",
+    "step_06_mfa_active.png",
+    "step_07_recovery_code_accepted.png",
+    "step_08_regenerated_recovery_codes.png",
+    "step_09_mfa_active_after_saving_regenerated_codes.png",
+    "step_10_logged_out.png",
+    "step_11_explored.png",
+    "step_12_explored.png",
+    "step_13_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a clean sans-serif typeface with comfortable line height and no cramped text, though letter spacing appears default rather than expanded."
+    },
+    "2": {
+      "score": 5,
+      "why": "No italics, all-caps prose, or dense paragraphs appear in any instruction; only the codes themselves are rendered in uppercase monospace."
+    },
+    "3": {
+      "score": 4,
+      "why": "Only a desktop viewport was captured, but the single-column ~560px card with large text and no wide tables should reflow readably to phone width."
+    },
+    "4": {
+      "score": 4,
+      "why": "Instructions are one or two short sentences in plain language (e.g., 'Enter the six-digit code sent to your phone.'), with only occasional jargon such as 'authenticator' and 'MFA'."
+    },
+    "5": {
+      "score": 4,
+      "why": "The recovery-code field shows an example placeholder 'ABCD-EFGH-IJKL-MNPQ' and on-screen sample codes demonstrate the expected format, though the email and phone fields have no examples."
+    },
+    "6": {
+      "score": 5,
+      "why": "The longest text on any screen is a two-sentence note, so the user never has to read a long block of text to proceed."
+    },
+    "7": {
+      "score": 4,
+      "why": "The setup secret and recovery codes are rendered as plain selectable text rather than images so they can be copied, but no explicit copy button is provided."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code is presented anywhere; step 3 explicitly offers manual secret entry only ('A QR code is not required'), so no QR alternative to manual entry exists."
+    },
+    "9": {
+      "score": 3,
+      "why": "The screenshots show only standard text inputs with no visible autofill affordances or any evidence of password-manager or OTP-autofill support."
+    },
+    "10": {
+      "score": 5,
+      "why": "Each screen has a bold heading naming the current step and a single high-contrast blue primary button that clearly stands out from secondary grey/red buttons."
+    },
+    "11": {
+      "score": 4,
+      "why": "Every screen requests a single primary action via one blue button, although step 1 collects two fields at once and the final screen adds secondary 'Generate new recovery codes' and 'Log out' options."
+    },
+    "12": {
+      "score": 4,
+      "why": "After actions the system states outcomes plainly ('Recovery code accepted. It cannot be used again.', 'MFA is active'), and each subsequent page explains what to do next."
+    },
+    "13": {
+      "score": 4,
+      "why": "A failed verification shows a retryable error with 'Start again' available, recovery codes can be regenerated, and code inputs are unmasked so entries are always visible, all with no observed lockout penalty."
+    },
+    "14": {
+      "score": 3,
+      "why": "The error 'We could not complete that request. Please try again.' is non-blaming and suggests a retry but does not state what the actual problem was (wrong versus expired code)."
+    },
+    "15": {
+      "score": 3,
+      "why": "Pages can be read without a timer, but the verification code 'expires in five minutes' and authenticator codes rotate every 30 seconds, imposing time limits on code entry."
+    }
+  },
+  "cost_usd": 0.061926,
+  "generation_id": "gen-1786388403-gBMB1U5JVrEqusp6ltb6",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 4,
+    "4": 4,
+    "5": 4,
+    "6": 5,
+    "7": 4,
+    "8": 1,
+    "9": 3,
+    "10": 5,
+    "11": 4,
+    "12": 4,
+    "13": 4,
+    "14": 3,
+    "15": 3
+  },
+  "constructs": {
+    "attention": 4.3333,
+    "memory": 4.3333,
+    "comprehension": 2.6667,
+    "decision_making": 4.3333,
+    "learning": 3.3333
+  },
+  "overall": 3.8,
+  "capture_complete": true
+}

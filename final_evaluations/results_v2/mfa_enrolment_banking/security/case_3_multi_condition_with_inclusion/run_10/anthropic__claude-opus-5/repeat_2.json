@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:08:00.443843+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "dd1c9201f3d2704d9a0e18cf89bf577bc13685e7b79911478303ad462c640bd6",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The `owner()` helper resolves the account solely from `session.userId` (server-side session map) and every MFA endpoint goes through it, so settings always belong to the signed-in user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity OTPs are stored on the individual session object and TOTP codes are derived from the account's own encrypted secret with a monotonic counter, so a code cannot be reused for another user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA in `/api/mfa/verify` only rotates the CSRF token and stage; it never deletes or invalidates other entries in the `sessions` map, so pre-existing sessions for the account remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext (`mfaSecretEncrypted`) and backup codes are stored only as PBKDF2-SHA256 (210k iterations) salted hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, OTPs, base32 secrets and recovery codes come from `crypto.getRandomValues` via `bytes()`/`randomChars()` with modulo-bias rejection."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and the session cookie is HttpOnly/Secure/SameSite=Strict, though the CSRF token, setup key and recovery codes live in JS memory and are echoed to the console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates every input with strict regex/type checks (`validEmail`, `phone`, `validOtp`, `validSecret`, `validRecovery`) and rejects non-object JSON bodies; there is no SQL layer."
+    },
+    "8": {
+      "score": 5,
+      "why": "The SPA builds all DOM nodes with `textContent`/`createElement`, and the only `innerHTML` use injects programmatically generated `<rect>` numbers for the QR code, so no user data reaches HTML sinks."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application implements no redirects at all (all responses are JSON or the single HTML page), so there is no open-redirect surface, but also no explicit allow-list."
+    },
+    "10": {
+      "score": 5,
+      "why": "`headers()` sets a nonce-based CSP with `frame-ancestors 'none'`, HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()` emits `Path=/; HttpOnly; Secure; SameSite=Strict` (only nit: the name is `Host-mfa_session` without the real `__Host-` prefix)."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces, but the provisioning response returns the plaintext secret and `testingCode` OTPs, and the client explicitly `console.log`s the setup key, identity OTPs and all recovery codes via `consoleSecret`."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have `identityCodeUsed` plus a 10-minute `identityCodeExpires`, TOTP replay is blocked by the monotonic `mfaLastCounter`, and recovery codes are spliced out of the array once consumed."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, TOTP and recovery paths each count failures and set a 10-minute lockout after 5 attempts, and code requests are additionally throttled to one per 20 seconds."
+    },
+    "15": {
+      "score": 4,
+      "why": "Sign-in deletes the pre-auth session and issues a new token (rotation), idle (20 min) and absolute (8 h) timeouts are enforced in `current()`, and logout invalidates/deletes plus clears the cookie — though the token is not rotated again after MFA completion."
+    }
+  },
+  "cost_usd": 0.163435,
+  "generation_id": "gen-1786392442-akmr62CyegtxL0EWJQsO",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

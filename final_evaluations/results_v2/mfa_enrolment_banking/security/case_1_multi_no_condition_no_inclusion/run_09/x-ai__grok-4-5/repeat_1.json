@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:27:24.902595+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints load the session via getSession and only operate on mfa(s.accountId), with no client-supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity challenges bind code, identityKey, and accountId, and OTP/recovery checks use the session account’s own secret/codes, so one user’s code does not authenticate another."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in verify-otp updates only that account’s Mfa record and does not invalidate or revoke any other existing sessions in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored AES-GCM encrypted (encrypt/decrypt) and backup codes are stored as PBKDF2 hashes via protect(), not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "tokens, digits, base32 secrets, recovery codes, and keys are all produced with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session and challenge cookies are HttpOnly; there is no localStorage/sessionStorage use for secrets, OTPs, or session tokens."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, and recovery input with emailOK/phoneOK/otpOK/recoveryInput before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are applied with textContent/JSON responses and a nonce-based CSP, not unescaped HTML interpolation of user input."
+    },
+    "9": {
+      "score": 5,
+      "why": "Sign-in accepts redirect only when it is in the ROUTES allow-list (signin/setup/verify/backup/confirmed/settings); no open external redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie and challengeCookie set HttpOnly, Secure, and SameSite=Strict (with __Host- prefix)."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client explicitly log()s manual setup secrets and backup recovery codes into the on-page Logs panel and console, so they are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges are single-use with CHALLENGE_MS expiry; provisioning is time-bound; TOTP acceptance is window-bound; backup codes are marked used after success."
+    },
+    "14": {
+      "score": 5,
+      "why": "identityAttempts, otpAttempts, and recoveryAttempts lock out after MAX_FAILURES (5) for LOCK_MS (10 minutes)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in issues a new session id and deletes the prior cookie session; getSession enforces idle/absolute timeouts; logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0348084,
+  "generation_id": "gen-1786386403-yZrcdedT6ObsIdwwIStj",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

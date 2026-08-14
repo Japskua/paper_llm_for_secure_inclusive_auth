@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_01",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:41:32.360989+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "b94e9bf6be546bd722ad6952f8bb406c950155f6c9bedb310317adeda7c7e386",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA record is keyed solely by session.accountId and no endpoint accepts a user-supplied identifier, so only the authenticated owner can view or modify their own MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are bound to a per-signin preToken and its specific accountId, and TOTP secrets are per-account, so a code issued for one user cannot authenticate any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/mfa/confirm sets record.active = true but never deletes or rotates other entries in the sessions map, so any prior sessions for that account continue to work after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-256-GCM encrypted (encryptSecret) and recovery codes are stored only as peppered HMAC-SHA-256 hashes (recoveryHash)."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, six-digit codes, TOTP secrets, recovery codes, IVs, the pepper, and the AES key are produced by crypto.getRandomValues or crypto.subtle.generateKey."
+    },
+    "6": {
+      "score": 5,
+      "why": "The client uses no localStorage/sessionStorage, keeps the CSRF token and provisioning secret only in JS memory/DOM, and both cookies (__Host-session, __Host-preauth) are HttpOnly."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, phone, OTP, and recovery code inputs are all validated server-side with strict allow-list regexes (validEmail, validPhone, validOtp, normaliseRecovery) plus typed JSON body checks."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are rendered via textContent (the only innerHTML assignments use static strings), and a per-response nonce CSP without unsafe-inline blocks injected script execution."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application issues no HTTP redirects at all and navigation is confined to internal SPA view switches, so no open redirect is possible, though no explicit allow-list mechanism exists to inspect."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders sets CSP (nonce-based, frame-ancestors 'none'), HSTS, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "secureCookie applies HttpOnly, Secure, and SameSite=Strict to both the session and pre-auth cookies."
+    },
+    "12": {
+      "score": 2,
+      "why": "In the default TEST_MODE (NODE_ENV !== 'production') the mock identity code and newly issued recovery codes are deliberately written to the browser console and the on-page Logs panel, even though seeds, session tokens, URLs, and error output are kept clean and stack traces are suppressed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 10 minutes and are marked used then deleted, TOTP codes are confined to a 30-second window with usedSetupCounters replay protection, and recovery codes are single-use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Both identity verification and the MFA endpoints track failedAttempts and impose a 10-minute lockout (429) after 5 consecutive failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "A fresh randomToken session identifier is issued upon authentication while the pre-auth cookie is expired, idle (15 min) and absolute (8 h) timeouts are enforced, and logout deletes the session server-side."
+    }
+  },
+  "cost_usd": 0.119358,
+  "generation_id": "gen-1786387137-9diobkZ78NNmEy1jVzbd",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

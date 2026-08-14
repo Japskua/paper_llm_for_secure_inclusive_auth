@@ -1,0 +1,102 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+1 555 123 4567"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source": "/api/auth/signin JSON response field csrf"
+  },
+  "steps": [
+    {
+      "name": "sign in and create session",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "provision authenticator",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "otp": "testOtp"
+      }
+    },
+    {
+      "name": "verify authenticator code",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "body": {
+        "otp": "${otp}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "enable MFA and generate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/enable",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "initial_recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "verify and consume recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong phone rejected",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "+1 555 000 0000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "provisioning without authenticated session rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {},
+      "expect_failure": true
+    }
+  ]
+}

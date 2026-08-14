@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:02:11.436786+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA route goes through authenticated(), which resolves the account solely from the session's userId, and hasForeignIdentity() rejects any client-supplied userId/accountId/ownerId."
+    },
+    "2": {
+      "score": 1,
+      "why": "Codes are checked only against per-session, single-use, expiring challenge objects (identity, enrollment, mfaChallenge) and only one account exists, so no code can be used for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/mfa/confirm merely sets session.enrollment = null and never deletes or rotates the session, so the existing authenticated session (and any prior ones) keeps working after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored AES-GCM-encrypted via encryptSecret() and recovery codes are stored as salted SHA-256 hashes via storeRecoveryCodes(), never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session IDs, CSRF tokens, TOTP secrets, and recovery codes are all generated with crypto.getRandomValues, a CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is set HttpOnly; Secure; SameSite=Strict and the client keeps secrets and codes only in in-memory JS variables, with no localStorage/sessionStorage usage."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates all input with isEmail/isPhone/isOtp/isRecovery/isSecret allow-regex checks plus JSON shape and 4KB body-size limits."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (secret, label, codes, messages) are rendered via textContent in escText(), and CSP restricts script/style execution to per-response nonces."
+    },
+    "9": {
+      "score": 5,
+      "why": "allowedRedirect() permits only undefined, \"/\", or \"/mfa\", rejecting any external redirect target."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders() sets CSP (including frame-ancestors 'none'), HSTS, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() emits the mfa_session cookie with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client-side log() function writes the authenticator secret, test OTPs, and recovery codes to console and a visible Logs panel, so secrets are not kept out of logs, although URLs are clean, errors are generic, and no stack traces are shown."
+    },
+    "13": {
+      "score": 5,
+      "why": "Every challenge is marked used on success and expires after CHALLENGE_MS (5 minutes), and recovery codes are permanently consumed on use."
+    },
+    "14": {
+      "score": 5,
+      "why": "failed() locks the relevant record for LOCK_MS (10 minutes) after 5 failures, enforced on identity checks, enrollment, MFA challenges, and the recovery guard."
+    },
+    "15": {
+      "score": 5,
+      "why": "rotateAuthenticated() deletes the pending session and issues a fresh ID upon authentication, sessions enforce 15-minute idle and 8-hour absolute expiry, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.096648,
+  "generation_id": "gen-1786384813-t8cyuOUvcEqgSOkik8HL",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

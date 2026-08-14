@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:11:50.468675+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "d8c5dbd5061e8b177d6cbb2c854604d59d269a0a9fe64507809dadc323e1593e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints derive the account exclusively from the authenticated session through auth() or verified(), with no client-supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity verification codes are stored on a specific account and verification is bound to that account through the authenticated session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA does not invalidate any other existing sessions associated with the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted with AES-256-GCM and backup codes are stored as SHA-256 digests combined with a random server-side pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "OTP secrets, backup codes, session identifiers, CSRF tokens, and verification codes are generated from crypto.getRandomValues()."
+    },
+    "6": {
+      "score": 5,
+      "why": "The application does not use browser storage for secrets or tokens, and the session identifier is held only in an HttpOnly cookie."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators constrain email, phone, OTP, recovery-code, password, and manual-secret inputs, and the application uses no SQL queries."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are rendered with textContent or createElement rather than interpolated into executable HTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server accepts no redirect destination and implements no redirect functionality."
+    },
+    "10": {
+      "score": 5,
+      "why": "Response headers include CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie is consistently set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Provisioning secrets, current OTPs, and recovery codes are deliberately written to the browser console and visible Logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after five minutes and are cleared after use, pending MFA enrollment expires and is consumption-guarded, and recovery codes are marked used."
+    },
+    "14": {
+      "score": 5,
+      "why": "Login, identity, MFA, and recovery verification failures are counted and locked for fifteen minutes after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in replaces the pre-authentication session, sessions enforce idle and absolute expiration, and logout deletes the server-side session and clears its cookie."
+    }
+  },
+  "cost_usd": 0.0442775,
+  "generation_id": "gen-1786389082-avFUjEVZzP01tw5fSBFa",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

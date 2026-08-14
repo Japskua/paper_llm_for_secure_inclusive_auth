@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:04:52.885409+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints require authenticated(request) and act only on auth.account, while rejecting request bodies containing userId, accountId, or ownerId."
+    },
+    "2": {
+      "score": 5,
+      "why": "TEST_IDENTITY_CODE and TEST_AUTHENTICATOR_CODE are global constants accepted for verification rather than user-specific codes."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only sets auth.account.mfa and does not invalidate existing sessions or force re-authentication."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as AES-GCM encryptedSecret and recovery codes are stored as salted SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "The OTP secret and recovery codes are generated with crypto.getRandomValues via randomToken, base32, and newRecoveryCodes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is placed only in an HttpOnly cookie and sensitive values are kept in in-memory JavaScript variables rather than browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server handlers validate email, phone, OTP, recovery code, secret, and redirect values with strict regexes and reject unexpected identity fields."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with escText/textContent and no user-controlled data is concatenated into innerHTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "allowedRedirect permits only \"/\" or \"/mfa\", and navigation uses internal hash routes rather than external redirect targets."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders sets CSP, HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY/frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets mfa_session with Path=/, HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "The front-end log() writes provisioning.secret and recovery codes to console.log and the visible logs panel."
+    },
+    "13": {
+      "score": 3,
+      "why": "Challenge objects include used and expires fields, but the accepted OTP values are fixed constants that can be reused with newly created challenges."
+    },
+    "14": {
+      "score": 3,
+      "why": "Failure counters lock individual challenge/session records after five failures, but new sign-in sessions or new MFA challenges can reset or avoid those locks."
+    },
+    "15": {
+      "score": 5,
+      "why": "rotateAuthenticated deletes the old session and issues a new session ID, sessionFrom enforces idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.111994,
+  "generation_id": "gen-1786384791-mnfXRF2LFVYmIvldlY23",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 3,
+    "14": 3,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

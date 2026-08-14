@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:58:39.804645+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint uses required() and accesses mfas/security via s.userId taken solely from the session cookie, and the body() key allow-list prevents any client-supplied user identifier."
+    },
+    "2": {
+      "score": 2,
+      "why": "Only one account exists and TOTP/recovery codes are verified against the session-bound account's own secret/verifiers, though the identity code is a hardcoded constant ('135790') checked against a single global record rather than a per-user one."
+    },
+    "3": {
+      "score": 5,
+      "why": "confirm() enables MFA without deleting or rotating the current session and performs no invalidation of any other existing sessions, so prior sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-256-GCM encrypted (encryptedSecret) and backup codes are stored only as salted PBKDF2-SHA-256 verifiers (120k iterations), never in plaintext."
+    },
+    "5": {
+      "score": 4,
+      "why": "Session ids, CSRF tokens, the TOTP secret, and recovery codes all come from crypto.getRandomValues, but the identity verification code is the fixed constant IDENTITY_CODE, not CSPRNG-generated."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie is mfa_session with HttpOnly, and the client keeps the CSRF token and recovery codes in JS variables, never touching localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates and bounds email (regex, 256-char cap), phone (regex, 64-char cap), OTP (/^\\d{6}$/), and recovery codes (strict charset pattern), and enforces JSON content-type plus a strict body-key allow-list."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are rendered via textContent (innerHTML is used only with static templates), APIs return JSON, and a nonce-based CSP blocks any injected script."
+    },
+    "9": {
+      "score": 5,
+      "why": "signin rejects the request unless b.redirect === '/', an allow-list of exactly one internal destination."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets Content-Security-Policy (including frame-ancestors 'none'), Strict-Transport-Security, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on all responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() issues mfa_session with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "TEST_MODE returns the identity code, provisioning secret, and live TOTP in API responses and the client writes these plus recovery codes into the on-page 'Logs' panel and console, although server errors are generic and secrets stay out of URLs."
+    },
+    "13": {
+      "score": 4,
+      "why": "The identity code is single-use (identityUsed) and expires after 5 minutes, recovery codes are spliced out on use, and TOTPs are valid only in their 30-second window with one-shot confirm, but recovery codes have no expiry and TOTP replay within a window is not explicitly tracked."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed identity, authenticator-confirm, and recovery attempts are counted via addFail, with 5 failures triggering a 10-minute lockout (MAX/LOCK)."
+    },
+    "15": {
+      "score": 5,
+      "why": "The session id is rotated at signin and identity verification (old id deleted, fresh id issued), idle (20 min) and absolute (8 h) timeouts are enforced in getSession, and logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.152667,
+  "generation_id": "gen-1786384488-Lpzipdf4jieVXUg3LjXN",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 1,
+    "4": 5,
+    "5": 4,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.3333,
+  "capture_complete": true
+}

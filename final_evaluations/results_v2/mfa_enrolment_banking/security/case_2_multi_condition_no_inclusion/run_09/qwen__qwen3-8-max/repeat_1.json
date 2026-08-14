@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_09",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:22:16.729978+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "a5196aab32aaa319fd3fb877c6c9d448e815221b7a562eee9e06d60e5f91be42",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints retrieve the session from the HttpOnly cookie and require an authenticated session plus CSRF token, with no user-supplied account identifier that could access another user's settings."
+    },
+    "2": {
+      "score": 2,
+      "why": "Only one real account exists and unknown identities receive a dummy non-authenticating challenge, so a code does not actually work for any other user, although recognized accounts would share the deterministic identity code."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA mutates the current session but does not revoke or rotate other existing sessions, so previously created authenticated sessions remain valid until expiry."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as AES-256-GCM encryptedSecret and backup codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 2,
+      "why": "OTP secrets, backup codes, and session tokens use node:crypto randomBytes, but the identity verification code is a fixed deterministic constant and TOTP codes are derived rather than CSPRNG-generated."
+    },
+    "6": {
+      "score": 2,
+      "why": "Session identifiers are in an HttpOnly cookie and no localStorage is used, but the provisioning secret, test OTP, and backup codes are sent to the browser and written into DOM/console logs."
+    },
+    "7": {
+      "score": 4,
+      "why": "The server validates email, phone, OTP, redirect, and recovery inputs with strict patterns and normalizes phone numbers, but it mainly rejects invalid input rather than applying separate sanitisation transforms."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent or createElement/textContent, and CSP uses nonces, so injected markup is not executed."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirect values are accepted only if safeInternalPath matches the fixed internal allow-list '/#verify', '/#setup', '/#backup', or '/#settings'."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor sets CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "The cookie helper sets mfa_session and mfa_boot with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "Client-side log statements write the provisioning secret, test OTP, and recovery codes to the page logs/console, although errors are generic and stack traces are not exposed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges expire after five minutes and are marked used after verification, backup codes are deleted on redemption, and TOTP windows are recorded to prevent reuse."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, and recovery tracks count failures and lock for ten minutes after five failures, returning 429 while locked."
+    },
+    "15": {
+      "score": 5,
+      "why": "Identity verification creates a new authenticated session and deletes the pending session, sessions have absolute/idle timeouts, and logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.086014,
+  "generation_id": "gen-1786389478-TglSmVOfNUbdyntAuYvk",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 3.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 3.9333,
+  "capture_complete": true
+}

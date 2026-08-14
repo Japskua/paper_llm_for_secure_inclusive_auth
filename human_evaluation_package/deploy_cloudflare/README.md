@@ -1,0 +1,191 @@
+# Deploying the six artifacts for inclusivity evaluation
+
+Puts each of the six evaluated applications on a public URL, giving every human
+judge their own private instance, without modifying a single byte of any
+`app.ts`.
+
+## Why not Cloudflare Pages
+
+Pages serves static assets and Workers-runtime functions. All six artifacts are
+**Bun HTTP servers**: `Bun.serve()` with mandatory TLS, `Bun.password`
+(argon2id), `node:fs`, and `node:crypto` calls such as `createCipheriv` and
+`pbkdf2Sync`. None of that exists on the Workers runtime, and none of the
+artifacts fall back to plain HTTP. Making them run on Pages would mean rewriting
+them, at which point the judges would be evaluating the rewrite rather than the
+model's output — and the security experts reading `source_code/` would be
+reading different software from the one the inclusivity experts clicked through.
+
+Cloudflare **Containers** runs the real thing. Each artifact runs under Bun, in
+its own VM, exactly as generated.
+
+## Architecture
+
+```
+   judge's browser
+        │  https, public URL
+        ▼
+   Cloudflare Worker            worker/index.ts
+        │  routes by judge id → getByName("judge-<id>")
+        ▼
+   Container instance, one per judge
+        │  http :8080
+        ▼
+   proxy.ts   ← harness: presents the request as https://localhost:8443
+        │  https :8443 (loopback, self-signed)
+        ▼
+   artifacts/<name>.ts          ← UNMODIFIED, sha256 matches batch_manifest.json
+```
+
+### The two problems this solves
+
+**1. TLS.** The artifacts refuse to start without `certs/cert.pem` and
+`certs/key.pem` and serve HTTPS only. Cloudflare reaches a container over plain
+HTTP. The image mints a self-signed certificate at build time for the loopback
+hop; the certificate the judge's browser sees is Cloudflare's, and is real.
+
+**2. Origin pinning.** Three of the six accept state-changing requests only from
+a localhost origin, and two of those hardcode it with no environment override:
+
+| Artifact | Origin rule |
+|---|---|
+| `story2 … case1_no_spec` | `TRUSTED_ORIGINS` env var, defaults to localhost |
+| `story2 … case2_condition_named` | hardcoded: `Origin` must equal the request origin **and** be localhost / 127.0.0.1 / `[::1]` |
+| `story2 … case3_detailed_guidance` | hardcoded: https, localhost family, **and** the port must equal `PORT` |
+
+Served from `https://something.workers.dev`, those two would reject every POST
+and a judge could not get past the first screen. `proxy.ts` therefore rewrites
+`Host`, `Origin` and `Referer` on the inbound hop so the artifact sees a request
+from `https://localhost:8443`, which is the only origin it trusts.
+
+Measured, on the strictest of the six:
+
+```
+POST /api/signin, Origin: https://llm-auth-s2-case2.example.workers.dev
+  straight to the artifact   -> 403   the origin check, working as designed
+  through proxy.ts           -> 200
+```
+
+**This is a deployment shim, not a patch.** The origin check is fully intact in
+the source the security experts read, and the artifact hash is unchanged. What
+the shim does is satisfy that check from outside the loopback interface. It must
+be disclosed in any write-up of the inclusivity evaluation, in the same way the
+smoke test's `PORT` hint is disclosed.
+
+### Why one instance per judge
+
+Every artifact keeps its state in process memory, and several key it globally
+rather than per session. Measured on `story2 … case1_no_spec`:
+
+```
+judge A completes enrolment       -> /api/mfa/status = enabled:true
+judge B, brand-new browser        -> /api/mfa/status = enabled:true
+                                     B never sees the enrolment flow at all
+
+judge C types a wrong password 5x -> account locked for 10 minutes
+judge D, correct password         -> 401
+```
+
+`getByName("judge-<id>")` gives each judge a separate container, so none of that
+can happen. The isolation costs nothing beyond the instances themselves.
+
+## Deploying
+
+Requirements: a Cloudflare account with Workers **paid** plan (Containers is not
+on the free tier), Node.js, and `wrangler` logged in.
+
+```bash
+cd human_evaluation_package/deploy_cloudflare
+npm install
+npx wrangler login
+
+./deploy.sh --dry-run      # render the six configs, print the artifact hashes
+./deploy.sh                # deploy all six
+./deploy.sh s2_case3       # or just one
+```
+
+This creates six Workers:
+
+| Worker | Artifact |
+|---|---|
+| `llm-auth-s1-case1` | Password recovery — no inclusivity specification |
+| `llm-auth-s1-case2` | Password recovery — condition named |
+| `llm-auth-s1-case3` | Password recovery — detailed guidance |
+| `llm-auth-s2-case1` | MFA enrolment — no inclusivity specification |
+| `llm-auth-s2-case2` | MFA enrolment — condition named |
+| `llm-auth-s2-case3` | MFA enrolment — detailed guidance |
+
+Set `WORKER_PREFIX` to rename them. First deploy builds and pushes a container
+image per Worker, which takes a few minutes; later deploys are quicker.
+
+### Verifying a deployment
+
+```bash
+curl https://llm-auth-s2-case3.<your-subdomain>.workers.dev/healthz
+# {"ok":true,"artifact":"story2_mfa_enrolment_dyslexia__case3_detailed_guidance"}
+```
+
+Then open `/?judge=smoketest` in a browser and walk one journey end to end
+before sending any URL to a judge. Container cold start is 1–3 seconds, so the
+first request after an idle period is slow; `sleepAfter` is 30 minutes.
+
+## Handing URLs to judges
+
+Each judge gets an ID and one link per artifact:
+
+```
+https://llm-auth-s1-case1.<subdomain>.workers.dev/?judge=evaluator_3
+https://llm-auth-s1-case2.<subdomain>.workers.dev/?judge=evaluator_3
+...
+```
+
+The Worker stores the ID in a cookie and redirects to `/`, so the judge's
+address bar stays clean and the artifact's own client-side routing is
+unaffected. Opening the bare URL without `?judge=` shows a short page telling
+them to use their assigned link.
+
+IDs must match `[A-Za-z0-9_-]{1,32}`. Anything else is ignored, which prevents a
+malformed link from silently sharing one instance between two judges.
+
+To give a judge a clean slate, issue a new ID: `evaluator_3b` is a brand-new
+container with no state from `evaluator_3`.
+
+**Randomise presentation order per judge.** The URLs say which case each
+artifact is, and a judge who works through case 1 → 2 → 3 in order may score
+the later ones differently for that reason alone.
+
+## What runs where
+
+| File | Role |
+|---|---|
+| `artifacts/*.ts` | the six evaluated applications, unmodified |
+| `proxy.ts` | harness: TLS termination and origin rewriting |
+| `entrypoint.sh` | harness: starts one artifact, waits for it to bind, starts the proxy, exits if either dies |
+| `worker/index.ts` | harness: per-judge routing |
+| `Dockerfile` | Bun 1.3.14, openssl for the loopback certificate |
+| `wrangler.template.jsonc` | rendered per artifact by `deploy.sh` |
+
+## Local check without Cloudflare
+
+The container contents can be exercised directly:
+
+```bash
+mkdir -p /tmp/check/certs && cd /tmp/check
+cp -r <repo>/human_evaluation_package/deploy_cloudflare/{artifacts,proxy.ts,entrypoint.sh} .
+openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+  -keyout certs/key.pem -out certs/cert.pem -subj "/CN=localhost" \
+  -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+
+APP_PORT=8443 PROXY_PORT=8090 \
+  ARTIFACT=story2_mfa_enrolment_dyslexia__case3_detailed_guidance ./entrypoint.sh
+# then: curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8090/
+```
+
+All six were verified this way: each boots and serves 200 through the proxy, and
+the two origin-pinned artifacts accept POSTs from a public origin only when the
+proxy is in front of them.
+
+> Not yet deployed to Cloudflare. The container contents, the proxy and the
+> entrypoint are tested locally; the Worker routing and the wrangler
+> configuration are written from the current Containers documentation but have
+> not been run against a live account. Deploy one artifact first and walk it
+> end to end before sending anything to a judge.

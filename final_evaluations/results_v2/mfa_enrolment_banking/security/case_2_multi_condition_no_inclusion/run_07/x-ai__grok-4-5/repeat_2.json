@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:08:23.589890+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "765fe1151228e724636d2f0b669a13b658ec30f5d90c64866be8eec351d8ce4d",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint uses authorized() which binds the session cookie to session.userId and never accepts a client-supplied user identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity and TOTP codes are bound to the caller’s session/user secret, so the same verification code does not work for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only sets mfa.enabled and issues backups; no code invalidates or revisits other existing sessions for that user."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored with AES-GCM encrypt(), and backup codes are stored only as salt plus SHA-256 hash."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session ids, CSRF tokens, identity codes, and recovery codes all use crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is HttpOnly and the client script never writes secrets, OTPs, or tokens to localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validators (validEmail, validPhone, validOTP, validRecovery, validCSRF) gate sign-in, identity, authenticator, and recovery inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "UI rendering runs through the esc() HTML encoder before innerHTML insertion, blocking markup/script injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only redirect is a fixed HTTP 308 to https://localhost:3000/; no user-controlled redirect targets exist."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders/pageResponse set CSP, HSTS, X-Content-Type-Options, and X-Frame-Options/frame-ancestors DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic without stack traces, but the client deliberately console-logs and displays identity OTPs and backup codes in the on-page logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire in 5 minutes and set identityUsed; TOTP rejects reused counters; backup codes flip used after success."
+    },
+    "14": {
+      "score": 5,
+      "why": "fail() locks identity, TOTP, and recovery after 5 failures for LOCK_MS (5 minutes) with 429 responses."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in and identity success mint fresh session ids, idle/absolute timeouts are enforced in authorized(), and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0318488,
+  "generation_id": "gen-1786388865-j1Z5m7K6xB7PQyb1rmSI",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

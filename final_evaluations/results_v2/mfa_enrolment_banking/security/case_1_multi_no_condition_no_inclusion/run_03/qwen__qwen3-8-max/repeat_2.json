@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_03",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:57:59.865060+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints use required(r, true) and access mfas.get(s.userId), so MFA settings are derived from the authenticated session’s user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Only one hardcoded account exists and verification data is stored per MARCUS.id, so a verification code cannot work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "confirm() enables MFA without invalidating or rotating other existing sessions, so prior valid sessions remain usable."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as encryptedSecret using AES-GCM, and recovery codes are stored as salted PBKDF2 verifiers."
+    },
+    "5": {
+      "score": 5,
+      "why": "bytes() uses crypto.getRandomValues to generate the OTP secret, session tokens, and recovery codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The client does not use localStorage or sessionStorage, and the session cookie is HttpOnly rather than script-accessible."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side checks constrain email, phone, OTP, and recovery-code inputs with length limits and regular-expression validation."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent rather than innerHTML, preventing injected markup from executing."
+    },
+    "9": {
+      "score": 5,
+      "why": "signin() fails unless b.redirect is exactly '/', so only that internal destination is accepted."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets mfa_session with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client-side say() function writes the provisioning secret and recovery codes to console.log, so they are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are marked used and expire, TOTP is accepted only for the current 30-second period, and recovery codes are removed after successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "addFail() locks identity, auth, and recovery verification after MAX failed attempts for LOCK milliseconds."
+    },
+    "15": {
+      "score": 5,
+      "why": "signin() and identity() delete the old session and issue a new session identifier, getSession() enforces idle and absolute timeouts, and logout() deletes the session."
+    }
+  },
+  "cost_usd": 0.063818,
+  "generation_id": "gen-1786384469-WWHzmB20Y8pBtiTCgPom",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

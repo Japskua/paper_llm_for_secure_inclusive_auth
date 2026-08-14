@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:59:40.353667+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server derives user account identity directly from the authenticated session context rather than accepting client-supplied user identifiers."
+    },
+    "2": {
+      "score": 5,
+      "why": "Global static verification codes (246810 and 135790) are defined as constants and accepted for any session."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates account flags but does not iterate through or invalidate pre-existing active sessions in memory."
+    },
+    "4": {
+      "score": 5,
+      "why": "MFA secrets are encrypted using AES-GCM with a master key, and recovery codes are hashed using SHA-256 with salts."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, secrets, salts, and recovery codes are generated using Web Crypto's crypto.getRandomValues()."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored in HttpOnly cookies, and sensitive values are maintained in memory without being written to Web Storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side functions enforce strict structural and format validation via regular expressions on input strings."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic page content is rendered via textContent assignments alongside CSP nonce protections to prevent script injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirect parameters are validated against a strict internal URL allow-list."
+    },
+    "10": {
+      "score": 5,
+      "why": "HTTP responses include CSP, HSTS, X-Content-Type-Options, X-Frame-Options, and frame-ancestors headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are generated with the HttpOnly, Secure, and SameSite=Strict directives."
+    },
+    "12": {
+      "score": 1,
+      "why": "OTP secrets, test verification codes, and generated recovery codes are explicitly emitted in simulation logs rendered on screen."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification and recovery codes enforce single-use state flags and strict expiration timestamps."
+    },
+    "14": {
+      "score": 5,
+      "why": "Verification routines track failure counts and enforce a 10-minute lockout after 5 consecutive failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated upon successful identity verification, enforce idle and absolute expiration, and are removed from memory on logout."
+    }
+  },
+  "cost_usd": 0.0456885,
+  "generation_id": "gen-1786384762-7lej1uPUWEhPuopSPW5r",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

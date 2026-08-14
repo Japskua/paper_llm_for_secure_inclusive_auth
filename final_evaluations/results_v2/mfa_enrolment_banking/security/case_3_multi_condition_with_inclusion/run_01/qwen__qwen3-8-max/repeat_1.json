@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_01",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:32:21.794665+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "e2523743e6748e8fa4d2c78a75fe0c8f0d4948d3cb707513e4d7acf4307a964a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "owner() and pendingOwner() derive the account from the authenticated session, and all protected MFA endpoints require that session-bound account rather than a user-supplied identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification is bound to the session email hash or the account-specific TOTP secret or backup-code hash, so no single verification code works for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA sets account.mfa but does not invalidate other existing authenticated sessions, so prior sessions remain usable."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as an AES-256-GCM encrypted Protected object, and backup codes are stored as salted PBKDF2 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session tokens, identity codes, and backup codes are generated with crypto.randomBytes or crypto.randomInt."
+    },
+    "6": {
+      "score": 3,
+      "why": "No localStorage/sessionStorage or non-HttpOnly cookie is used, but the enrollment secret, mock OTP, and backup codes are sent to and held in client-side UI state."
+    },
+    "7": {
+      "score": 4,
+      "why": "Email, identity code, TOTP, and recovery-code inputs are validated with strict server-side regex and body-size limits, although there is no phone field and the handling is mainly validation."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client renders values with textContent rather than innerHTML, and the server-rendered page does not embed user-controlled markup."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application issues no HTTP redirects or client-side navigation to external destinations, so no open redirect exists, though no explicit redirect allow-list is implemented."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and CSP frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() sets the session cookie with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 2,
+      "why": "Client-side code console.logs the mock OTP and backup recovery codes, although error output is generic and stack traces are not exposed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire and are marked used, TOTP time steps are recorded to prevent reuse, and backup codes are single-use with expiry timestamps."
+    },
+    "14": {
+      "score": 5,
+      "why": "recordFailure() locks the relevant identity, source, account, or enrollment limit after five failures, and code requests also have cooldown limits."
+    },
+    "15": {
+      "score": 5,
+      "why": "Authentication deletes the prior session and creates a new session ID, getSession() enforces idle and absolute timeouts, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.099904,
+  "generation_id": "gen-1786390052-n4WUvfb9Cfnqfud1wUHV",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 3,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

@@ -1,0 +1,115 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "inclusivity",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:55:45.078379+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 5,
+  "screenshots_available": 5,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_mfa_security_settings.png",
+    "step_04_set_up_authenticator.png",
+    "step_05_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a clean, high-contrast sans-serif typeface with comfortable line height in headings, banners, and body text, though letter spacing is default rather than notably generous."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps instructions appear anywhere; the only uppercase text is the monospace setup secret itself (data, not instruction), and text blocks remain short."
+    },
+    "3": {
+      "score": 4,
+      "why": "Content is confined to a narrow single-column card with full-width fields and buttons, so the layout reads well at mobile width."
+    },
+    "4": {
+      "score": 3,
+      "why": "Most prompts are short and plain, but the authenticator step introduces technical jargon such as 'time-based TOTP codes (30-second windows)' and 'Time-based / TOTP'."
+    },
+    "5": {
+      "score": 2,
+      "why": "Only the phone field shows an example placeholder (+1 555 010 0184); the email, verification-code, and six-digit TOTP fields display no example of the expected input format."
+    },
+    "6": {
+      "score": 4,
+      "why": "The longest required reading is the four-sentence paragraph on the setup screen, so no screen gates progress behind a long block of text."
+    },
+    "7": {
+      "score": 2,
+      "why": "The 16-character secret is shown as static text labelled 'Manual setup secret' with no copy button or affordance, implying hand transcription into the authenticator app."
+    },
+    "8": {
+      "score": 1,
+      "why": "The setup screen offers only the manual secret string; no QR code or equivalent alternative to manual entry is presented at any step."
+    },
+    "9": {
+      "score": 2,
+      "why": "Nothing observed indicates autofill or password-manager support: plain custom inputs, an email-plus-phone login pair that password managers do not fill, and code fields with no one-time-code affordance."
+    },
+    "10": {
+      "score": 4,
+      "why": "Each screen pairs a bold heading ('Verify your identity', 'Set up your authenticator') with a full-width blue primary button, though the settings screen adds an equally large red 'Sign out' button that slightly competes."
+    },
+    "11": {
+      "score": 4,
+      "why": "Every screen requests a single primary action (Continue, Verify identity, Set up authenticator, Activate authenticator) with secondary navigation like 'Back to settings' visually demoted."
+    },
+    "12": {
+      "score": 3,
+      "why": "Success steps state what happened and what comes next ('We sent a six-digit verification code… It expires in five minutes'), but after a wrong code the system only says 'Verification could not be completed.' with no next step."
+    },
+    "13": {
+      "score": 3,
+      "why": "A rejected code leaves the form editable so retry is possible without penalty, but there is no resend/re-request control on the verification screen and no reveal/hide toggle for any code."
+    },
+    "14": {
+      "score": 2,
+      "why": "The only error shown, 'Verification could not be completed.', avoids blaming the user but neither states the problem (code rejected) nor how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "Explicit time limits are imposed: the verification code 'expires in five minutes' and TOTP codes rotate on 30-second windows, so entry time is standard-to-tight rather than generous."
+    }
+  },
+  "cost_usd": 0.058936,
+  "generation_id": "gen-1786384328-gliYTSiK7PrTqddGwX8j",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 3,
+    "5": 2,
+    "6": 4,
+    "7": 2,
+    "8": 1,
+    "9": 2,
+    "10": 4,
+    "11": 4,
+    "12": 3,
+    "13": 3,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 4.0,
+    "memory": 3.0,
+    "comprehension": 1.6667,
+    "decision_making": 3.6667,
+    "learning": 2.3333
+  },
+  "overall": 2.9333,
+  "capture_complete": true
+}

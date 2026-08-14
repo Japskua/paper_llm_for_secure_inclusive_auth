@@ -1,0 +1,163 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": false,
+  "steps_total": 14,
+  "steps_passed": 5,
+  "happy_path_passed": 1,
+  "happy_path_total": 10,
+  "negative_passed": 4,
+  "negative_total": 4,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "bootstrap anonymous session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "submit account ownership proof",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'identity_code' from 'testCode'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/auth/identity",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/begin",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'manual_secret' from 'manualSecret'",
+        "could not capture 'authenticator_code' from 'testCode'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'backup_code' from 'codes.0'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "check active MFA status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "use a recovery code",
+      "method": "POST",
+      "path": "/api/backup/verify",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/backup/regenerate",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "warnings": [
+        "could not capture 'csrf' from 'csrf'",
+        "could not capture 'regenerated_backup_code' from 'codes.0'"
+      ],
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 403,
+      "ok": false,
+      "response_message": "We could not complete that request. Please try again."
+    },
+    {
+      "name": "bootstrap session for failed ownership attempt",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "start identity challenge with wrong password",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "wrong password cannot complete identity verification",
+      "method": "POST",
+      "path": "/api/auth/identity",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "MFA status unavailable after logout",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 14
+}

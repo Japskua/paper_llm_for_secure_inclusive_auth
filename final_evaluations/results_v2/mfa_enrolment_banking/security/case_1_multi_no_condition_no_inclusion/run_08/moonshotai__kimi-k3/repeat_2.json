@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:23:41.510013+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "e75c5e1f2640b1b5327f2decd8300f8832941a1fa4252cfc26f15807ec177e22",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "authenticatedSession() enforces session.accountId === account.id via requireAuth on every MFA endpoint, and body() rejects any client-supplied accountId/userId."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification only checks the single account's encryptedSecret with acceptedCounter replay protection, so no code can be validated against any other user's context."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/mfa/verify sets mfaEnabled=true without rotating or invalidating the existing session, which is then reused for subsequent /api/mfa/recovery calls."
+    },
+    "4": {
+      "score": 5,
+      "why": "Both the TOTP secret and recovery codes are stored only via encrypt() (AES-256-GCM) in account.encryptedSecret and account.encryptedRecoveryCodes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session ids, CSRF tokens, the Base32 secret, and recovery codes are all derived from node:crypto randomBytes, a CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and the client keeps CSRF tokens and secrets only in JS variables, with no localStorage, sessionStorage, or document.cookie use."
+    },
+    "7": {
+      "score": 5,
+      "why": "validEmail, validPhone, validOtp, and validCode are applied server-side, and body() enforces JSON content-type, a 4096-byte limit, and rejects unexpected identity fields."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are inserted via textContent/createTextNode into static innerHTML templates, and a nonce-based CSP blocks inline script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The handler contains no redirect logic or Location headers at all, so no open redirect is possible."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets HSTS, CSP with frame-ancestors 'none', X-Content-Type-Options: nosniff, and X-Frame-Options: DENY on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() emits 'mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=...' including all three required attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client log() function writes the TOTP secret, the current TOTP code, and all recovery codes to the on-page Logs output and console, and the setup API returns manualSecret and testOtp."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTPs are bound to 30-second windows with acceptedCounter blocking replay, and recovery codes carry 30-day expiresAt values and are spliced out upon successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "The failures map with MAX_FAILURES=5 triggers a 10-minute LOCKOUT returning HTTP 429 on both /api/mfa/verify and /api/mfa/recovery/verify."
+    },
+    "15": {
+      "score": 5,
+      "why": "Signin deletes the preauth session and issues a fresh session id, IDLE (20 min) and ABSOLUTE (8 h) timeouts are enforced, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0714594,
+  "generation_id": "gen-1786386132-nqtJppjlE9fyhBfDXi6s",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

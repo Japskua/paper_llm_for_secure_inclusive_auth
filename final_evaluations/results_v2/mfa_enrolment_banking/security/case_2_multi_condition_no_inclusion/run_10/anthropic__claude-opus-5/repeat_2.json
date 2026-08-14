@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_10",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:23:17.529610+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "b55abc4a79cf3d67ef963185b565c940df7fe619c2829f582b705e1f4531b230",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls owner(), which resolves identity solely from the server-side HttpOnly session and requires session.authenticated && session.userId === ACCOUNT.id before reading or changing MFA state."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity verification code is stored only on the specific pre-auth session (session.identityCode) and TOTP/backup values are bound to the account record, so a code issued for one session/account cannot be used by another; the statement is false of this system."
+    },
+    "3": {
+      "score": 4,
+      "why": "/api/mfa/confirm enables MFA without rotating or invalidating any existing session, so the authenticated session (and any other live session) continues to work after enrolment — only /api/auth/verify and logout touch session lifecycle."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is encrypted with AES-GCM (encryptSecret) both while pending and in mfaRecords, and backup codes are stored only as HMAC-SHA256 digests in backupHashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session IDs, CSRF tokens, identity codes and backup codes come from crypto.getRandomValues (only minor modulo bias in digits()/backupCodes)."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and the session cookie is __Host- prefixed with HttpOnly/Secure/SameSite=Strict; the CSRF token and setup secret only live in JS memory/DOM, which is a minor deviation from strict secret hygiene."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation exists for content-type, body size, JSON object shape, email, E.164 phone, 6-digit OTP and backup-code format, plus rejection of client-supplied identity keys via manipulated()."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values on the client are inserted with textContent (secret, display name, logs, backup code list items); innerHTML is used only with static literals, and the CSP uses nonces with no unsafe-inline."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application performs no HTTP redirects at all and CSP sets form-action 'self' and base-uri 'none', so no open-redirect path exists, though there is also no explicit allow-list implementation to point to."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets a nonce-based CSP with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie()/expiredCookie() emit __Host-mfa_session with Path=/, HttpOnly, Secure and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Error output is generic and stack traces are suppressed, but the server deliberately returns the identity verification code (testCode), the TOTP seed test code (testOtp) and plaintext backup codes in JSON, and the client writes the codes and backup codes to console.log and a visible on-page log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after VERIFY_WINDOW_MS and their session is deleted on success, TOTP counters are recorded in usedCounters to block replay within the 30s/60s window, and backup code hashes are deleted after use."
+    },
+    "14": {
+      "score": 5,
+      "why": "identityThrottles (keyed by submitted details so new sessions cannot evade it), authenticatorThrottles and per-record recovery counters all lock for LOCK_MS after MAX_FAILURES=5 and return 429."
+    },
+    "15": {
+      "score": 5,
+      "why": "On successful identity verification the old session is deleted and a brand-new session ID/CSRF is issued, sessions enforce 15-minute idle and 8-hour absolute expiry in currentSession(), and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.153135,
+  "generation_id": "gen-1786389759-tjqcE03CMDYx17ZZHOMD",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": false
+}

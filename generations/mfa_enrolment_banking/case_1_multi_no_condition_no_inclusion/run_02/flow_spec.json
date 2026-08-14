@@ -1,0 +1,128 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+1 555 010 0184"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "json_source": {
+      "path": "/api/signin",
+      "field": "csrf"
+    }
+  },
+  "steps": [
+    {
+      "name": "start identity verification",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "redirect": "/verify-identity"
+      },
+      "capture": {
+        "csrf": "csrf",
+        "identity_otp": "testCode"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${identity_otp}"
+      },
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "load MFA settings",
+      "method": "GET",
+      "path": "/api/me",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "begin authenticator provisioning",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "capture": {
+        "csrf": "csrf",
+        "manual_secret": "secret"
+      }
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "incorrect registered phone rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "+1 555 010 9999",
+        "redirect": "/verify-identity"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "incorrect identity redirect rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "redirect": "/settings"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "MFA settings unavailable without authenticated session",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_failure": true
+    },
+    {
+      "name": "malformed authenticator code rejected",
+      "method": "POST",
+      "path": "/api/mfa/activate",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "invalid",
+        "manualSecret": "${manual_secret}"
+      },
+      "expect_failure": true
+    }
+  ],
+  "limitations": [
+    "The application has no password field, password credential, password policy, password-reset route, or valid new-password value.",
+    "GET / contains no CSRF token. The client obtains csrf from the JSON response to POST /api/signin and sends it in the X-CSRF-Token header.",
+    "The full post-provisioning journey cannot be automated under the stated no-TOTP-computation rule: POST /api/mfa/provision returns secret but no current mock TOTP code field. POST /api/mfa/activate and POST /api/mfa/check require a current six-digit TOTP derived from that secret, and no response exposes mockOtp, currentOtp, mockAuthenticatorOtp, mockCode, or equivalent.",
+    "Consequently, /api/mfa/activate, /api/mfa/check, /api/mfa/recovery, /api/mfa/backup/regenerate, and /api/logout cannot be reached as a complete happy-path sequence without an external authenticator or an application change that returns the current test TOTP."
+  ]
+}

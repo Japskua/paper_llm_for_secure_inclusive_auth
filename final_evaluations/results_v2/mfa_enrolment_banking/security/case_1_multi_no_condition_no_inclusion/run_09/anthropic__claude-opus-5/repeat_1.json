@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:26:11.630182+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint derives state via mfa(s.accountId) from the server-side session record, so no client-supplied user identifier can be used to reach another account's settings."
+    },
+    "2": {
+      "score": 2,
+      "why": "Real challenge codes are bound to a per-challenge cookie plus constant-time identityKey/accountId ownership checks, so codes are not interchangeable — the only exception is the hard-coded TEST_MODE mock code (246810/135790) that is accepted for any session while test mode is on by default."
+    },
+    "3": {
+      "score": 4,
+      "why": "The session identifier is only rotated at /api/signin; /api/mfa/verify-otp flips v.enabled without deleting or re-issuing sessions, so any pre-existing session remains valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext with a random IV, and backup codes are stored as PBKDF2-SHA256 (210k iterations, per-code salt) hashes rather than plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, tokens, salts, IVs, OTP digits and recovery codes come from crypto.getRandomValues via bytes()/digit()/base32(), with modulo-bias rejection in digit()."
+    },
+    "6": {
+      "score": 4,
+      "why": "Both cookies use __Host- prefix with HttpOnly, Secure, SameSite=Strict and nothing is written to localStorage/sessionStorage; the CSRF token, manual secret and backup codes only live in JS memory and the on-page log element."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators emailOK, phoneOK, otpOK, recoveryInput and the ROUTES allow-list check every field, and there is no SQL layer (in-memory Maps) so no query concatenation exists."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (secret, codes, logs, error text) are injected with textContent/createElement, innerHTML only receives static markup, and the strict CSP with a random nonce blocks inline injection."
+    },
+    "9": {
+      "score": 4,
+      "why": "The only redirect-like parameter (input.redirect) is checked against the fixed ROUTES set and client navigation uses fixed hash routes validated by route(), so no open redirect exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders sets CSP with frame-ancestors 'none', base-uri 'none', object-src 'none', HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie/challengeCookie/clearCookie all emit HttpOnly; Secure; SameSite=Strict with Path=/ and the __Host- prefix."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic ('The request could not be completed.') with no stack traces or secrets in URLs, but the client deliberately console.logs and renders the manual TOTP secret, the identity/authenticator mock codes and every issued backup recovery code into a visible log pane."
+    },
+    "13": {
+      "score": 4,
+      "why": "Challenges carry a 2-minute expiry and are marked used and deleted on success, provisioning has a 5-minute window with a used flag and replay guard (v.accepted), and recovery codes are single-use — but the static TEST_MODE mock codes are indefinitely reusable while enabled."
+    },
+    "14": {
+      "score": 5,
+      "why": "identityAttempts, otpAttempts and recoveryAttempts all use failed()/isLocked() with MAX_FAILURES=5 and a 10-minute lockout returning HTTP 429."
+    },
+    "15": {
+      "score": 5,
+      "why": "On successful sign-in the old session cookie entry is deleted and a fresh 32-byte session id and CSRF token are issued, getSession enforces a 15-minute idle and 8-hour absolute timeout, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.14981,
+  "generation_id": "gen-1786386335-VAnDLDCKSw5HUVJWCyzl",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.3334,
+  "capture_complete": true
+}

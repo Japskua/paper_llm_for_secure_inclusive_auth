@@ -1,0 +1,168 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "password": "BankingDemo!54",
+    "new_password": "NewPassword!54"
+  },
+  "html_variables": {},
+  "csrf": {
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source_step": "sign in",
+    "source_field": "csrf"
+  },
+  "steps": [
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "${password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "mockIdentityCode"
+      }
+    },
+    {
+      "name": "confirm identity",
+      "method": "POST",
+      "path": "/api/auth/identity",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "phone": "+44 7700 900000",
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "start authenticator enrolment",
+      "method": "POST",
+      "path": "/api/mfa/enrol/start",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "authenticator_otp": "mockAuthenticatorOtp"
+      }
+    },
+    {
+      "name": "verify authenticator",
+      "method": "POST",
+      "path": "/api/mfa/enrol/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${authenticator_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "initial_recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "view MFA settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "redeem recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm recovery code count",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "WrongPassword!54"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "identity confirmation without CSRF rejected",
+      "method": "POST",
+      "path": "/api/auth/identity",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "phone": "+44 7700 900000",
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "spent recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "${recovery_code}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

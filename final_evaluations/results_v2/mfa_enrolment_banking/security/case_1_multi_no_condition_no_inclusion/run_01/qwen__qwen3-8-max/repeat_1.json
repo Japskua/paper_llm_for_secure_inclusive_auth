@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_01",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_01",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:47:03.538615+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "authorizedMfa verifies the session exists and session.accountId matches the account before MFA status or changes are allowed."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity verification checks the pending record bound to the account and cookie, not a code accepted for arbitrary users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA does not invalidate existing session records, so any still-valid prior session would continue to authorize MFA endpoints."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted and recovery codes are stored as Argon2id hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session IDs, verification codes, recovery codes, and TOTP secrets are generated with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage or non-HttpOnly cookie persistence is used, although secrets and codes are temporarily present in client page state for display."
+    },
+    "7": {
+      "score": 4,
+      "why": "The server validates email, phone, OTP, recovery code, and password length formats, but no separate sanitisation routine is visible beyond rejection of invalid input."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client rendering uses textContent/createTextNode rather than innerHTML, and the page uses a CSP nonce, preventing injected markup from executing."
+    },
+    "9": {
+      "score": 4,
+      "why": "No redirect or Location header handling is present, so there is no open redirect surface, though no explicit redirect allow-list is implemented."
+    },
+    "10": {
+      "score": 5,
+      "why": "headersFor sets CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options DENY on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie, pendingCookie, and clearCookie all include HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client logMock writes recovery codes and mock OTPs to console/DOM logs, although server errors are generic and stack traces are not exposed."
+    },
+    "13": {
+      "score": 5,
+      "why": "Pending identity codes expire and are marked used/deleted after verification, provisioning expires, and recovery codes are removed after use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, enrollment OTP, and recovery-code attempts use failure trackers that lock after MAX_ATTEMPTS."
+    },
+    "15": {
+      "score": 4,
+      "why": "A new random session ID is issued after authentication, sessions expire by idle/absolute timeouts, and logout deletes the session, but pre-existing sessions are not invalidated on re-authentication."
+    }
+  },
+  "cost_usd": 0.081494,
+  "generation_id": "gen-1786383814-MDJr7EIahd5bt2lt934G",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

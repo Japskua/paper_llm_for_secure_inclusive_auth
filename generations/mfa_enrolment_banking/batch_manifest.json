@@ -1,0 +1,3048 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-10T17:26:31.465598+00:00",
+  "software": "mfa_enrolment_banking",
+  "output_root": "generations",
+  "config": {
+    "model": "openai/gpt-5.6-terra",
+    "reasoning_effort": "medium",
+    "temperature_requested": null,
+    "seed": null,
+    "max_iters": 12,
+    "runs_per_case": 10,
+    "concurrency": 6,
+    "retries": 2,
+    "smoke_test": true,
+    "flow_test": true
+  },
+  "batch_wall_seconds": 0.02,
+  "summary": {
+    "runs_total": 30,
+    "runs_completed": 30,
+    "runs_converged": 24,
+    "runs_smoke_ok": 28,
+    "runs_flow_ok": 2,
+    "runs_failed": 0,
+    "failures_by_cause": {},
+    "retried_runs": 0,
+    "tasker_json_parse_failures": 0,
+    "tasker_json_hard_failures": 0,
+    "total_cost_usd": 22.362168,
+    "total_input_tokens": 4585248,
+    "total_output_tokens": 2802834,
+    "total_reasoning_tokens": 693133,
+    "by_case": {
+      "case_1_multi_no_condition_no_inclusion": {
+        "runs": 10,
+        "completed": 10,
+        "converged": 10,
+        "smoke_ok": 10,
+        "flow_ok": 2,
+        "failed": 0,
+        "json_violations": 0,
+        "iterations": [
+          3,
+          2,
+          10,
+          1,
+          4,
+          4,
+          7,
+          5,
+          8,
+          6
+        ],
+        "cost_usd": 5.074697,
+        "mean_iterations": 5.0
+      },
+      "case_2_multi_condition_no_inclusion": {
+        "runs": 10,
+        "completed": 10,
+        "converged": 10,
+        "smoke_ok": 10,
+        "flow_ok": 0,
+        "failed": 0,
+        "json_violations": 0,
+        "iterations": [
+          3,
+          2,
+          5,
+          10,
+          3,
+          5,
+          3,
+          7,
+          4,
+          4
+        ],
+        "cost_usd": 4.813005,
+        "mean_iterations": 4.6
+      },
+      "case_3_multi_condition_with_inclusion": {
+        "runs": 10,
+        "completed": 10,
+        "converged": 4,
+        "smoke_ok": 8,
+        "flow_ok": 0,
+        "failed": 0,
+        "json_violations": 0,
+        "iterations": [
+          12,
+          12,
+          9,
+          12,
+          12,
+          12,
+          12,
+          12,
+          8,
+          9
+        ],
+        "cost_usd": 12.474468,
+        "mean_iterations": 11.0
+      }
+    }
+  },
+  "runs": [
+    {
+      "run_id": "case_1_multi_no_condition_no_inclusion/run_01",
+      "case": "case_1_multi_no_condition_no_inclusion",
+      "run_index": 1,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity_no_condition.md",
+      "requirements_sha256": "d06ca308657d01d8a6927d3850b5f1dc0527e5a53c67e2915671257ade57d2aa",
+      "output_dir": "generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_01",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 3,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 9
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 7
+      },
+      "providers_seen": {
+        "OpenAI": 7
+      },
+      "tokens": {
+        "input": 55207,
+        "output": 38824,
+        "reasoning": 10102,
+        "cached_input": 1828,
+        "calls": 9
+      },
+      "cost_usd": 0.2998438,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "8bc53cae8942e3434619dfbc1959c6a9ae1ffebede51fe946e91eca93618bb98",
+      "app_ts_bytes": 31772,
+      "app_ts_lines": 624,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 65165,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 6,
+        "happy_path_total": 8,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_1_multi_no_condition_no_inclusion/run_02",
+      "case": "case_1_multi_no_condition_no_inclusion",
+      "run_index": 2,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity_no_condition.md",
+      "requirements_sha256": "d06ca308657d01d8a6927d3850b5f1dc0527e5a53c67e2915671257ade57d2aa",
+      "output_dir": "generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_02",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 2,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 6
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 5
+      },
+      "providers_seen": {
+        "OpenAI": 5
+      },
+      "tokens": {
+        "input": 34960,
+        "output": 27769,
+        "reasoning": 8262,
+        "cached_input": 1828,
+        "calls": 6
+      },
+      "cost_usd": 0.2082073,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+      "app_ts_bytes": 31317,
+      "app_ts_lines": 516,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": true,
+        "stage": "executed",
+        "happy_path_passed": 4,
+        "happy_path_total": 4,
+        "negative_passed": 3,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_1_multi_no_condition_no_inclusion/run_03",
+      "case": "case_1_multi_no_condition_no_inclusion",
+      "run_index": 3,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity_no_condition.md",
+      "requirements_sha256": "d06ca308657d01d8a6927d3850b5f1dc0527e5a53c67e2915671257ade57d2aa",
+      "output_dir": "generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_03",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 10,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 30
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 28
+      },
+      "providers_seen": {
+        "OpenAI": 28
+      },
+      "tokens": {
+        "input": 202706,
+        "output": 124300,
+        "reasoning": 32096,
+        "cached_input": 1828,
+        "calls": 30
+      },
+      "cost_usd": 0.9970578,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "1f5e23cb45b2237379d953e8e8a452454ee819c9a0b12f521792daaa3fc4d722",
+      "app_ts_bytes": 27672,
+      "app_ts_lines": 437,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 65169,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 10,
+        "happy_path_total": 11,
+        "negative_passed": 2,
+        "negative_total": 2,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_1_multi_no_condition_no_inclusion/run_04",
+      "case": "case_1_multi_no_condition_no_inclusion",
+      "run_index": 4,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity_no_condition.md",
+      "requirements_sha256": "d06ca308657d01d8a6927d3850b5f1dc0527e5a53c67e2915671257ade57d2aa",
+      "output_dir": "generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_04",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 1,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 3
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 2
+      },
+      "providers_seen": {
+        "OpenAI": 2
+      },
+      "tokens": {
+        "input": 13426,
+        "output": 15548,
+        "reasoning": 5509,
+        "cached_input": 0,
+        "calls": 3
+      },
+      "cost_usd": 0.11006825,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+      "app_ts_bytes": 33457,
+      "app_ts_lines": 692,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 12,
+        "happy_path_total": 13,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_1_multi_no_condition_no_inclusion/run_05",
+      "case": "case_1_multi_no_condition_no_inclusion",
+      "run_index": 5,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity_no_condition.md",
+      "requirements_sha256": "d06ca308657d01d8a6927d3850b5f1dc0527e5a53c67e2915671257ade57d2aa",
+      "output_dir": "generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_05",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 4,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 12
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 11
+      },
+      "providers_seen": {
+        "OpenAI": 11
+      },
+      "tokens": {
+        "input": 80638,
+        "output": 57672,
+        "reasoning": 17945,
+        "cached_input": 1828,
+        "calls": 12
+      },
+      "cost_usd": 0.4447183,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "ea5bab4b0d6539028296220e344d7db471d5a50ff1c6cc99aaff0f369372e18a",
+      "app_ts_bytes": 32035,
+      "app_ts_lines": 425,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 65166,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": true,
+        "stage": "executed",
+        "happy_path_passed": 5,
+        "happy_path_total": 5,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_1_multi_no_condition_no_inclusion/run_06",
+      "case": "case_1_multi_no_condition_no_inclusion",
+      "run_index": 6,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity_no_condition.md",
+      "requirements_sha256": "d06ca308657d01d8a6927d3850b5f1dc0527e5a53c67e2915671257ade57d2aa",
+      "output_dir": "generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_06",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 4,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 12
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 11
+      },
+      "providers_seen": {
+        "OpenAI": 11
+      },
+      "tokens": {
+        "input": 73293,
+        "output": 50636,
+        "reasoning": 15025,
+        "cached_input": 1828,
+        "calls": 12
+      },
+      "cost_usd": 0.39332105,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "3d09bd0257e9941bea9ed673158f55946146901e5fa8fb38fe05ada4ea49310d",
+      "app_ts_bytes": 26782,
+      "app_ts_lines": 519,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 65175,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 6,
+        "happy_path_total": 7,
+        "negative_passed": 2,
+        "negative_total": 2,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_1_multi_no_condition_no_inclusion/run_07",
+      "case": "case_1_multi_no_condition_no_inclusion",
+      "run_index": 7,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity_no_condition.md",
+      "requirements_sha256": "d06ca308657d01d8a6927d3850b5f1dc0527e5a53c67e2915671257ade57d2aa",
+      "output_dir": "generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_07",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 7,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 21
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 19
+      },
+      "providers_seen": {
+        "OpenAI": 19
+      },
+      "tokens": {
+        "input": 130027,
+        "output": 78867,
+        "reasoning": 20199,
+        "cached_input": 1828,
+        "calls": 21
+      },
+      "cost_usd": 0.6336178,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+      "app_ts_bytes": 23710,
+      "app_ts_lines": 526,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 65271,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 8,
+        "happy_path_total": 9,
+        "negative_passed": 2,
+        "negative_total": 2,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_1_multi_no_condition_no_inclusion/run_08",
+      "case": "case_1_multi_no_condition_no_inclusion",
+      "run_index": 8,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity_no_condition.md",
+      "requirements_sha256": "d06ca308657d01d8a6927d3850b5f1dc0527e5a53c67e2915671257ade57d2aa",
+      "output_dir": "generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_08",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 5,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 15
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 13
+      },
+      "providers_seen": {
+        "OpenAI": 13
+      },
+      "tokens": {
+        "input": 104537,
+        "output": 63845,
+        "reasoning": 14470,
+        "cached_input": 1828,
+        "calls": 15
+      },
+      "cost_usd": 0.5116278,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "e75c5e1f2640b1b5327f2decd8300f8832941a1fa4252cfc26f15807ec177e22",
+      "app_ts_bytes": 24275,
+      "app_ts_lines": 250,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 65294,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 10,
+        "happy_path_total": 11,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_1_multi_no_condition_no_inclusion/run_09",
+      "case": "case_1_multi_no_condition_no_inclusion",
+      "run_index": 9,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity_no_condition.md",
+      "requirements_sha256": "d06ca308657d01d8a6927d3850b5f1dc0527e5a53c67e2915671257ade57d2aa",
+      "output_dir": "generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_09",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 8,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 24
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 22
+      },
+      "providers_seen": {
+        "OpenAI": 22
+      },
+      "tokens": {
+        "input": 172952,
+        "output": 109367,
+        "reasoning": 28651,
+        "cached_input": 1828,
+        "calls": 24
+      },
+      "cost_usd": 0.8702718,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+      "app_ts_bytes": 30359,
+      "app_ts_lines": 366,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 8,
+        "happy_path_total": 9,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_1_multi_no_condition_no_inclusion/run_10",
+      "case": "case_1_multi_no_condition_no_inclusion",
+      "run_index": 10,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity_no_condition.md",
+      "requirements_sha256": "d06ca308657d01d8a6927d3850b5f1dc0527e5a53c67e2915671257ade57d2aa",
+      "output_dir": "generations/mfa_enrolment_banking/case_1_multi_no_condition_no_inclusion/run_10",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 6,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 18
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 16
+      },
+      "providers_seen": {
+        "OpenAI": 16
+      },
+      "tokens": {
+        "input": 122445,
+        "output": 75837,
+        "reasoning": 18378,
+        "cached_input": 1828,
+        "calls": 18
+      },
+      "cost_usd": 0.60596255,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+      "app_ts_bytes": 26892,
+      "app_ts_lines": 249,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 65336,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 9,
+        "happy_path_total": 12,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_2_multi_condition_no_inclusion/run_01",
+      "case": "case_2_multi_condition_no_inclusion",
+      "run_index": 1,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity.md",
+      "requirements_sha256": "1dfce8ee9f62ac23eb4a5f41f40a34ea63ace043a9b0f3f9d71e5faf7ac33645",
+      "output_dir": "generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_01",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 3,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 9
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 8
+      },
+      "providers_seen": {
+        "OpenAI": 8
+      },
+      "tokens": {
+        "input": 59339,
+        "output": 41377,
+        "reasoning": 10497,
+        "cached_input": 0,
+        "calls": 9
+      },
+      "cost_usd": 0.322429,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "b94e9bf6be546bd722ad6952f8bb406c950155f6c9bedb310317adeda7c7e386",
+      "app_ts_bytes": 34539,
+      "app_ts_lines": 819,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 1,
+        "happy_path_total": 4,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_2_multi_condition_no_inclusion/run_02",
+      "case": "case_2_multi_condition_no_inclusion",
+      "run_index": 2,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity.md",
+      "requirements_sha256": "1dfce8ee9f62ac23eb4a5f41f40a34ea63ace043a9b0f3f9d71e5faf7ac33645",
+      "output_dir": "generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_02",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 2,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 6
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 4
+      },
+      "providers_seen": {
+        "OpenAI": 4
+      },
+      "tokens": {
+        "input": 36208,
+        "output": 28543,
+        "reasoning": 8149,
+        "cached_input": 1833,
+        "calls": 6
+      },
+      "cost_usd": 0.21440555,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "3660c58d77176efc41a4305442d5742218dc8e1980c5da8b1ced6271c38fcbd7",
+      "app_ts_bytes": 32418,
+      "app_ts_lines": 568,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 8,
+        "happy_path_total": 9,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_2_multi_condition_no_inclusion/run_03",
+      "case": "case_2_multi_condition_no_inclusion",
+      "run_index": 3,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity.md",
+      "requirements_sha256": "1dfce8ee9f62ac23eb4a5f41f40a34ea63ace043a9b0f3f9d71e5faf7ac33645",
+      "output_dir": "generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_03",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 5,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 15
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 11
+      },
+      "providers_seen": {
+        "OpenAI": 11
+      },
+      "tokens": {
+        "input": 101151,
+        "output": 68566,
+        "reasoning": 20649,
+        "cached_input": 1833,
+        "calls": 15
+      },
+      "cost_usd": 0.53571555,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "652bf86f5783a50ebf90d322da5510ea9fa899a6e4f41ad87fa0fc835067602a",
+      "app_ts_bytes": 24868,
+      "app_ts_lines": 219,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 65424,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 1,
+        "happy_path_total": 10,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_2_multi_condition_no_inclusion/run_04",
+      "case": "case_2_multi_condition_no_inclusion",
+      "run_index": 4,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity.md",
+      "requirements_sha256": "1dfce8ee9f62ac23eb4a5f41f40a34ea63ace043a9b0f3f9d71e5faf7ac33645",
+      "output_dir": "generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_04",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 10,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 30
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 28
+      },
+      "providers_seen": {
+        "OpenAI": 28
+      },
+      "tokens": {
+        "input": 216600,
+        "output": 138304,
+        "reasoning": 37773,
+        "cached_input": 1833,
+        "calls": 30
+      },
+      "cost_usd": 1.09844355,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "95a3e86296de0b7988f870a2cdac6ff7f3e0d9e93db206d586fb6fd059d8e0d1",
+      "app_ts_bytes": 36212,
+      "app_ts_lines": 592,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 65444,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 3,
+        "happy_path_total": 8,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_2_multi_condition_no_inclusion/run_05",
+      "case": "case_2_multi_condition_no_inclusion",
+      "run_index": 5,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity.md",
+      "requirements_sha256": "1dfce8ee9f62ac23eb4a5f41f40a34ea63ace043a9b0f3f9d71e5faf7ac33645",
+      "output_dir": "generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_05",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 3,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 9
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 8
+      },
+      "providers_seen": {
+        "OpenAI": 8
+      },
+      "tokens": {
+        "input": 59810,
+        "output": 42520,
+        "reasoning": 11551,
+        "cached_input": 1833,
+        "calls": 9
+      },
+      "cost_usd": 0.3277678,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "0f3d6292f9e220cbdffca811d0ddd5f705ab37cb33484e66ff4136891f7e4a0f",
+      "app_ts_bytes": 32116,
+      "app_ts_lines": 674,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 65472,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 8,
+        "happy_path_total": 9,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_2_multi_condition_no_inclusion/run_06",
+      "case": "case_2_multi_condition_no_inclusion",
+      "run_index": 6,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity.md",
+      "requirements_sha256": "1dfce8ee9f62ac23eb4a5f41f40a34ea63ace043a9b0f3f9d71e5faf7ac33645",
+      "output_dir": "generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_06",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 5,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 15
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 11
+      },
+      "providers_seen": {
+        "OpenAI": 11
+      },
+      "tokens": {
+        "input": 99860,
+        "output": 66476,
+        "reasoning": 18258,
+        "cached_input": 1833,
+        "calls": 15
+      },
+      "cost_usd": 0.5215618,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "31d216139647b7d620ecbca0d7a59e1098b895c1f19b7446fcd16d88225bb6cd",
+      "app_ts_bytes": 33058,
+      "app_ts_lines": 610,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 2,
+        "happy_path_total": 9,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_2_multi_condition_no_inclusion/run_07",
+      "case": "case_2_multi_condition_no_inclusion",
+      "run_index": 7,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity.md",
+      "requirements_sha256": "1dfce8ee9f62ac23eb4a5f41f40a34ea63ace043a9b0f3f9d71e5faf7ac33645",
+      "output_dir": "generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_07",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 3,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 9
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 5
+      },
+      "providers_seen": {
+        "OpenAI": 5
+      },
+      "tokens": {
+        "input": 58225,
+        "output": 38763,
+        "reasoning": 9178,
+        "cached_input": 1833,
+        "calls": 9
+      },
+      "cost_usd": 0.30324455,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "765fe1151228e724636d2f0b669a13b658ec30f5d90c64866be8eec351d8ce4d",
+      "app_ts_bytes": 29468,
+      "app_ts_lines": 469,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 11,
+        "happy_path_total": 12,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_2_multi_condition_no_inclusion/run_08",
+      "case": "case_2_multi_condition_no_inclusion",
+      "run_index": 8,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity.md",
+      "requirements_sha256": "1dfce8ee9f62ac23eb4a5f41f40a34ea63ace043a9b0f3f9d71e5faf7ac33645",
+      "output_dir": "generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_08",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 7,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 21
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 19
+      },
+      "providers_seen": {
+        "OpenAI": 19
+      },
+      "tokens": {
+        "input": 129415,
+        "output": 84650,
+        "reasoning": 25447,
+        "cached_input": 1833,
+        "calls": 21
+      },
+      "cost_usd": 0.66754505,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "d8c5dbd5061e8b177d6cbb2c854604d59d269a0a9fe64507809dadc323e1593e",
+      "app_ts_bytes": 24171,
+      "app_ts_lines": 166,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 49168,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 9,
+        "happy_path_total": 11,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_2_multi_condition_no_inclusion/run_09",
+      "case": "case_2_multi_condition_no_inclusion",
+      "run_index": 9,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity.md",
+      "requirements_sha256": "1dfce8ee9f62ac23eb4a5f41f40a34ea63ace043a9b0f3f9d71e5faf7ac33645",
+      "output_dir": "generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_09",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 4,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 12
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 8
+      },
+      "providers_seen": {
+        "OpenAI": 8
+      },
+      "tokens": {
+        "input": 74001,
+        "output": 48691,
+        "reasoning": 13189,
+        "cached_input": 1833,
+        "calls": 12
+      },
+      "cost_usd": 0.3825303,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "a5196aab32aaa319fd3fb877c6c9d448e815221b7a562eee9e06d60e5f91be42",
+      "app_ts_bytes": 25461,
+      "app_ts_lines": 511,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 49193,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 11,
+        "happy_path_total": 12,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_2_multi_condition_no_inclusion/run_10",
+      "case": "case_2_multi_condition_no_inclusion",
+      "run_index": 10,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_no_inclusivity.md",
+      "requirements_sha256": "1dfce8ee9f62ac23eb4a5f41f40a34ea63ace043a9b0f3f9d71e5faf7ac33645",
+      "output_dir": "generations/mfa_enrolment_banking/case_2_multi_condition_no_inclusion/run_10",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 4,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 12
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 10
+      },
+      "providers_seen": {
+        "OpenAI": 10
+      },
+      "tokens": {
+        "input": 85375,
+        "output": 55793,
+        "reasoning": 13569,
+        "cached_input": 1833,
+        "calls": 12
+      },
+      "cost_usd": 0.4393598,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "b55abc4a79cf3d67ef963185b565c940df7fe619c2829f582b705e1f4531b230",
+      "app_ts_bytes": 33773,
+      "app_ts_lines": 647,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 1,
+        "happy_path_total": 11,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_3_multi_condition_with_inclusion/run_01",
+      "case": "case_3_multi_condition_with_inclusion",
+      "run_index": 1,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_with_inclusivity.md",
+      "requirements_sha256": "29455216e22abca209a606ea20230be5ff7aa2910bea90d2c6de5135ee9843ce",
+      "output_dir": "generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_01",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 12,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 36
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 32
+      },
+      "providers_seen": {
+        "OpenAI": 32
+      },
+      "tokens": {
+        "input": 297951,
+        "output": 174635,
+        "reasoning": 42905,
+        "cached_input": 2182,
+        "calls": 36
+      },
+      "cost_usd": 1.41771245,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "e2523743e6748e8fa4d2c78a75fe0c8f0d4948d3cb707513e4d7acf4307a964a",
+      "app_ts_bytes": 36349,
+      "app_ts_lines": 500,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 59261,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 7,
+        "happy_path_total": 8,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_3_multi_condition_with_inclusion/run_02",
+      "case": "case_3_multi_condition_with_inclusion",
+      "run_index": 2,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_with_inclusivity.md",
+      "requirements_sha256": "29455216e22abca209a606ea20230be5ff7aa2910bea90d2c6de5135ee9843ce",
+      "output_dir": "generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_02",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": false,
+      "iterations": 12,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 36
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 35
+      },
+      "providers_seen": {
+        "OpenAI": 35
+      },
+      "tokens": {
+        "input": 269901,
+        "output": 156415,
+        "reasoning": 36287,
+        "cached_input": 2182,
+        "calls": 36
+      },
+      "cost_usd": 1.22104195,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "8c8e2b8bff5b5766fd0e1b65a04d06dcd989e190bf5b129b0024d646e7ea4504",
+      "app_ts_bytes": 33988,
+      "app_ts_lines": 632,
+      "smoke": {
+        "ok": false,
+        "stage": "exited_early",
+        "port": null,
+        "status_code": null,
+        "error": "process exited with code 1 during boot"
+      },
+      "flow": {
+        "ok": false,
+        "stage": "server_exited_early",
+        "happy_path_passed": null,
+        "happy_path_total": null,
+        "negative_passed": null,
+        "negative_total": null,
+        "error": "process exited with code 1 during boot"
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_3_multi_condition_with_inclusion/run_03",
+      "case": "case_3_multi_condition_with_inclusion",
+      "run_index": 3,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_with_inclusivity.md",
+      "requirements_sha256": "29455216e22abca209a606ea20230be5ff7aa2910bea90d2c6de5135ee9843ce",
+      "output_dir": "generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_03",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 9,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 27
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 25
+      },
+      "providers_seen": {
+        "OpenAI": 25
+      },
+      "tokens": {
+        "input": 218520,
+        "output": 127222,
+        "reasoning": 28770,
+        "cached_input": 2182,
+        "calls": 27
+      },
+      "cost_usd": 1.03395245,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "94a7c6dc5c1188ebf19fbb712d6c94f4fc46d3f25e16a20977597cf5afc48305",
+      "app_ts_bytes": 33123,
+      "app_ts_lines": 296,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 58715,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 7,
+        "happy_path_total": 10,
+        "negative_passed": 2,
+        "negative_total": 2,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_3_multi_condition_with_inclusion/run_04",
+      "case": "case_3_multi_condition_with_inclusion",
+      "run_index": 4,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_with_inclusivity.md",
+      "requirements_sha256": "29455216e22abca209a606ea20230be5ff7aa2910bea90d2c6de5135ee9843ce",
+      "output_dir": "generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_04",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": false,
+      "iterations": 12,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 36
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 34
+      },
+      "providers_seen": {
+        "OpenAI": 34
+      },
+      "tokens": {
+        "input": 278630,
+        "output": 167694,
+        "reasoning": 44293,
+        "cached_input": 0,
+        "calls": 36
+      },
+      "cost_usd": 1.3544245,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "c08fd9d85e429c55d45db1aac6ad59f72dd588811e3b858c08385d4e6ba1851e",
+      "app_ts_bytes": 31084,
+      "app_ts_lines": 484,
+      "smoke": {
+        "ok": true,
+        "stage": "client_script_error",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 3,
+        "happy_path_total": 13,
+        "negative_passed": 3,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_3_multi_condition_with_inclusion/run_05",
+      "case": "case_3_multi_condition_with_inclusion",
+      "run_index": 5,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_with_inclusivity.md",
+      "requirements_sha256": "29455216e22abca209a606ea20230be5ff7aa2910bea90d2c6de5135ee9843ce",
+      "output_dir": "generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_05",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": false,
+      "iterations": 12,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 36
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 34
+      },
+      "providers_seen": {
+        "OpenAI": 34
+      },
+      "tokens": {
+        "input": 283931,
+        "output": 156250,
+        "reasoning": 32232,
+        "cached_input": 2182,
+        "calls": 36
+      },
+      "cost_usd": 1.21670795,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+      "app_ts_bytes": 14930,
+      "app_ts_lines": 343,
+      "smoke": {
+        "ok": false,
+        "stage": "exited_early",
+        "port": null,
+        "status_code": null,
+        "error": "process exited with code 1 during boot"
+      },
+      "flow": {
+        "ok": false,
+        "stage": "server_exited_early",
+        "happy_path_passed": null,
+        "happy_path_total": null,
+        "negative_passed": null,
+        "negative_total": null,
+        "error": "process exited with code 1 during boot"
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_3_multi_condition_with_inclusion/run_06",
+      "case": "case_3_multi_condition_with_inclusion",
+      "run_index": 6,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_with_inclusivity.md",
+      "requirements_sha256": "29455216e22abca209a606ea20230be5ff7aa2910bea90d2c6de5135ee9843ce",
+      "output_dir": "generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_06",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": false,
+      "iterations": 12,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 36
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 34
+      },
+      "providers_seen": {
+        "OpenAI": 34
+      },
+      "tokens": {
+        "input": 300892,
+        "output": 172521,
+        "reasoning": 39463,
+        "cached_input": 2182,
+        "calls": 36
+      },
+      "cost_usd": 1.4087047,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "6d39d515364379a85979f05bdba4088e9c91f5547fdc46b6b25e253a3375adab",
+      "app_ts_bytes": 32255,
+      "app_ts_lines": 313,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 10,
+        "happy_path_total": 11,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_3_multi_condition_with_inclusion/run_07",
+      "case": "case_3_multi_condition_with_inclusion",
+      "run_index": 7,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_with_inclusivity.md",
+      "requirements_sha256": "29455216e22abca209a606ea20230be5ff7aa2910bea90d2c6de5135ee9843ce",
+      "output_dir": "generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_07",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": false,
+      "iterations": 12,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 36
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 34
+      },
+      "providers_seen": {
+        "OpenAI": 34
+      },
+      "tokens": {
+        "input": 291565,
+        "output": 167533,
+        "reasoning": 37796,
+        "cached_input": 2182,
+        "calls": 36
+      },
+      "cost_usd": 1.36711795,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "580b4044089c77727fe040f6ea0000c6d5f83948bf6204c54696c4d059d00f19",
+      "app_ts_bytes": 27691,
+      "app_ts_lines": 485,
+      "smoke": {
+        "ok": true,
+        "stage": "client_script_error",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 1,
+        "happy_path_total": 9,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_3_multi_condition_with_inclusion/run_08",
+      "case": "case_3_multi_condition_with_inclusion",
+      "run_index": 8,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_with_inclusivity.md",
+      "requirements_sha256": "29455216e22abca209a606ea20230be5ff7aa2910bea90d2c6de5135ee9843ce",
+      "output_dir": "generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_08",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": false,
+      "iterations": 12,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 36
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 36
+      },
+      "providers_seen": {
+        "OpenAI": 36
+      },
+      "tokens": {
+        "input": 304502,
+        "output": 170956,
+        "reasoning": 35229,
+        "cached_input": 2182,
+        "calls": 36
+      },
+      "cost_usd": 1.4038272,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "48fa2822d4bb533cb7f6b1373e6850d18a371d90cdcb9c7879856ab4a2a475d0",
+      "app_ts_bytes": 34990,
+      "app_ts_lines": 319,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 1,
+        "happy_path_total": 9,
+        "negative_passed": 2,
+        "negative_total": 3,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_3_multi_condition_with_inclusion/run_09",
+      "case": "case_3_multi_condition_with_inclusion",
+      "run_index": 9,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_with_inclusivity.md",
+      "requirements_sha256": "29455216e22abca209a606ea20230be5ff7aa2910bea90d2c6de5135ee9843ce",
+      "output_dir": "generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_09",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 8,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 24
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 23
+      },
+      "providers_seen": {
+        "OpenAI": 23
+      },
+      "tokens": {
+        "input": 205278,
+        "output": 120847,
+        "reasoning": 26680,
+        "cached_input": 2182,
+        "calls": 24
+      },
+      "cost_usd": 0.9791522,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "09fdd56138de07d37e0eeceb5b77a462484d946b26840067cc508ef31c4e45d7",
+      "app_ts_bytes": 41390,
+      "app_ts_lines": 761,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 4,
+        "happy_path_total": 10,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    },
+    {
+      "run_id": "case_3_multi_condition_with_inclusion/run_10",
+      "case": "case_3_multi_condition_with_inclusion",
+      "run_index": 10,
+      "requirements": "requirements/mfa_enrolment_banking/mfa_enrolment_banking_with_inclusivity.md",
+      "requirements_sha256": "29455216e22abca209a606ea20230be5ff7aa2910bea90d2c6de5135ee9843ce",
+      "output_dir": "generations/mfa_enrolment_banking/case_3_multi_condition_with_inclusion/run_10",
+      "status": "completed",
+      "exit_code": 0,
+      "attempts": 0,
+      "wall_seconds": 0.0,
+      "converged": true,
+      "iterations": 9,
+      "max_iters": 12,
+      "models": [
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "tasker",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "coder",
+          "llm_provider": "openrouter"
+        },
+        {
+          "model": "openai/gpt-5.6-terra",
+          "temperature": null,
+          "temperature_supported": false,
+          "reasoning_effort": "medium",
+          "seed": null,
+          "provider_order": [
+            "openai"
+          ],
+          "role": "evaluator",
+          "llm_provider": "openrouter"
+        }
+      ],
+      "protocol_violations": {
+        "tasker_json_parse_failures": 0,
+        "tasker_json_recovered_by_retry": 0,
+        "tasker_json_hard_failures": 0
+      },
+      "models_served": {
+        "openai/gpt-5.6-terra": 27
+      },
+      "model_versions": {
+        "openai/gpt-5.6-terra-20260709": 25
+      },
+      "providers_seen": {
+        "OpenAI": 25
+      },
+      "tokens": {
+        "input": 223903,
+        "output": 132413,
+        "reasoning": 30581,
+        "cached_input": 2182,
+        "calls": 27
+      },
+      "cost_usd": 1.0718272,
+      "cost_source": "reported_by_provider",
+      "app_ts_sha256": "dd1c9201f3d2704d9a0e18cf89bf577bc13685e7b79911478303ad462c640bd6",
+      "app_ts_bytes": 38677,
+      "app_ts_lines": 477,
+      "smoke": {
+        "ok": true,
+        "stage": "served",
+        "port": 3000,
+        "status_code": 200,
+        "error": null
+      },
+      "flow": {
+        "ok": false,
+        "stage": "executed",
+        "happy_path_passed": 10,
+        "happy_path_total": 11,
+        "negative_passed": 4,
+        "negative_total": 4,
+        "error": null
+      },
+      "reused": true,
+      "failed_attempts": [],
+      "failure_cause": null
+    }
+  ]
+}

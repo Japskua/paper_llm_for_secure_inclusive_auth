@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:04:34.184282+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ea5bab4b0d6539028296220e344d7db471d5a50ff1c6cc99aaff0f369372e18a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA operation derives the account from the authenticated server-side session and rejects client-supplied identity fields."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are bound to individual sessions, while TOTP and recovery codes are validated against the authenticated session's account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA sets the account flag but does not destroy or rotate any existing authenticated sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are encrypted with AES-GCM, and recovery codes are stored as peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, tokens, identity codes, and recovery codes are generated from crypto.getRandomValues with rejection sampling where needed."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session token is held only in an HttpOnly cookie, while secrets and codes remain in transient JavaScript memory rather than browser storage or cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server enforces strict formats, body-size limits, allowed fields, and typed validation, and the application performs no database queries."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic client values are rendered using textContent or text-node creation, and the static page is protected by a nonce-based CSP."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only accepted redirect values are undefined or members of a fixed allow-list of internal hash routes."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set CSP, HSTS, X-Content-Type-Options, X-Frame-Options, and frame-ancestors protection."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies consistently include HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Identity codes and recovery codes are explicitly written to the browser console and Logs panel, and the provisioning URI contains the TOTP secret in its query string."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire and become used after acceptance, TOTP steps cannot be reused, and recovery codes are permanently marked used."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity, TOTP, and recovery-code failures are tracked and locked for ten minutes after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "The session is rotated after authentication, enforces idle and absolute timeouts, and is deleted and expired on logout."
+    }
+  },
+  "cost_usd": 0.093805,
+  "generation_id": "gen-1786385052-v6wFQNb9kaBP3tDbAlNU",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

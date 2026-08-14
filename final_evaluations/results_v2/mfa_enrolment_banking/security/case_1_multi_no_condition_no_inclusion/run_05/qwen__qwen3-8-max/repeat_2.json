@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:09:30.879704+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ea5bab4b0d6539028296220e344d7db471d5a50ff1c6cc99aaff0f369372e18a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints use active.account derived from the session userId and reject identity fields in the request body, so MFA settings are scoped to the signed-in session."
+    },
+    "2": {
+      "score": 1,
+      "why": "/api/identity/verify checks the submitted code only against the current session's identityHash, so a verification code is not shared across users or sessions."
+    },
+    "3": {
+      "score": 5,
+      "why": "Setting mfaEnabled in /api/mfa/verify does not destroy or rotate existing sessions, so any unexpired prior session remains valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as an AES-GCM EncryptedValue and recovery codes are stored as peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, tokens, identity codes, and recovery codes are generated with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is set only in an HttpOnly cookie and the code does not use localStorage, sessionStorage, or non-HttpOnly cookies for secrets or tokens."
+    },
+    "7": {
+      "score": 4,
+      "why": "Server-side regex and allow-list validation is applied to login, OTP, recovery codes, redirect, and CSRF, but email and phone inputs are absent and non-identity extra fields are not fully whitelisted."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic UI values are inserted with textContent and the page uses nonce-based CSP, so rendered values are not interpreted as markup or script."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirect values are accepted only from a fixed internal hash allow-list via validRedirect, and no open server-side redirects are issued."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include CSP, HSTS, X-Content-Type-Options: nosniff, and X-Frame-Options DENY with frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie sets Path=/; HttpOnly; Secure; SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Generic errors and no stack traces are returned, but the client explicitly logs identity codes, authenticator codes, and recovery codes, so backup codes are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after OTP_LIFETIME_MS and are marked identityUsed after successful use, while TOTP steps are recorded in totpUsedSteps."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity, TOTP, and recovery attempts use AttemptState with MAX_FAILURES and LOCK_MS lockouts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in destroys the existing session and creates a new one, readSession enforces idle and absolute timeouts, and logout destroys the session."
+    }
+  },
+  "cost_usd": 0.063524,
+  "generation_id": "gen-1786385159-rrLsBYS5n5GOCDbn4qDM",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

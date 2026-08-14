@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_04",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:59:06.492269+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "005ec0bfcb2f343ba53ee4e63f21e634ca72ec7b22fbc9f019356e98d28b7571",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint obtains the account exclusively from the authenticated server-side session and rejects supplied user, account, or owner identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "The application contains only the Marcus account, and identity verification additionally requires a session whose candidate flag was set by matching Marcus's contact details."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA does not invalidate or rotate any authenticated sessions, so previously established sessions remain usable."
+    },
+    "4": {
+      "score": 5,
+      "why": "MFA secrets are encrypted with AES-GCM and recovery codes are stored only as salted SHA-256 hashes."
+    },
+    "5": {
+      "score": 2,
+      "why": "Secrets and recovery codes use crypto.getRandomValues, but the identity and authenticator verification codes are fixed constants rather than securely generated values."
+    },
+    "6": {
+      "score": 5,
+      "why": "Sensitive client values remain in memory and the only session cookie is HttpOnly, with no use of localStorage or sessionStorage."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server applies type, length, and format validation to email, phone, OTP, recovery-code, secret, action, redirect, and identity-related input."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted using textContent while innerHTML assignments contain controlled templates, and CSP further restricts script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The allowedRedirect function accepts only an absent redirect, '/', or '/mfa'."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "The mfa_session cookie is consistently created with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Although server errors are generic, the browser console and on-page simulation log explicitly record OTPs, the MFA secret, and recovery codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity, enrollment, and MFA challenges carry expiration and used fields that enforce limited lifetimes and one successful use."
+    },
+    "14": {
+      "score": 4,
+      "why": "Challenge and recovery records lock for ten minutes after five failures, although starting a fresh session or challenge can create a new failure counter."
+    },
+    "15": {
+      "score": 5,
+      "why": "The session ID is rotated after identity authentication, idle and absolute expiry are enforced server-side, and logout deletes the session and clears its cookie."
+    }
+  },
+  "cost_usd": 0.04012,
+  "generation_id": "gen-1786384717-wyx0Lec7WpzZ4mFTCGb4",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 4,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

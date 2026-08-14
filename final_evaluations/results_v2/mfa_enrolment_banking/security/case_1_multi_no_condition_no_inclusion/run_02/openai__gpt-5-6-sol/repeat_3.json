@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:44:42.723959+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every protected MFA route uses authenticatedSession to verify the server-side session belongs to the sole authoritative account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are hashed within a specific session, and MFA verification is available only through sessions bound to the authoritative account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA does not revoke or rotate existing authenticated sessions, so previously established sessions remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are encrypted with AES-256-GCM, while backup codes are stored as salted and peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 2,
+      "why": "Identity and backup codes use randomBytes, but the TOTP shared secret is a fixed deterministic constant rather than securely generated."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is stored only in an HttpOnly cookie, while OTPs, secrets, and CSRF values are not persisted in browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, phone, OTP, recovery-code, secret, and redirect inputs are validated server-side, and the application uses no database queries."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are rendered with textContent, while the only innerHTML assignment contains static markup."
+    },
+    "9": {
+      "score": 5,
+      "why": "The supplied redirect value is accepted only when it exactly equals the internal path /verify-identity."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses consistently include CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are explicitly set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client explicitly logs the identity code, TOTP provisioning secret, and generated backup codes to the browser console and visible log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after five minutes and are marked used, TOTP counters reject replay, and recovery codes are invalidated after use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed verification attempts are counted and trigger a ten-minute session and account lockout after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "The session is rotated after identity authentication, enforces idle and absolute expiration, and is deleted and cleared on logout."
+    }
+  },
+  "cost_usd": 0.0387065,
+  "generation_id": "gen-1786383847-VBCj32JOV4YSuJtsDn29",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 2,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

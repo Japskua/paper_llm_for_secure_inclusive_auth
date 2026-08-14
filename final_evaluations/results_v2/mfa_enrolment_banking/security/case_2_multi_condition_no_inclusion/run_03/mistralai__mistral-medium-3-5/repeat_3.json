@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_03",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:47:58.475680+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "652bf86f5783a50ebf90d322da5510ea9fa899a6e4f41ad87fa0fc835067602a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization checks that MFA settings belong to the signed-in user (e.g., `auth.session.userId === auth.user.id` in `/api/mfa/verify` and `/api/backup/verify`)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are session-bound and single-use (e.g., `identityUsed` flag), but the statement claims the same code works for any user, which is false."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are invalidated on logout (`sessions.delete(auth.session.id)`), but enabling MFA does not explicitly invalidate old sessions. The statement claims they 'still work,' which is false."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP shared secrets are encrypted (`encryptedTotp` via `encrypt()`), and backup codes are stored as hashes (`backupHashes` via `hash()`)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated with `crypto.getRandomValues()` (e.g., `base32(crypto.getRandomValues(...))` for TOTP secrets)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are never stored in browser storage or non-HttpOnly cookies (session cookies are `HttpOnly; Secure; SameSite=Strict`)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is enforced (e.g., `email()`, `phone()`, `otp()`, `backup()` functions sanitize and validate all inputs)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Output encoding is applied via `JSON.stringify()` and CSP headers prevent script execution, though no explicit contextual encoding is shown for HTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are not open; the only redirect is HTTPS enforcement (`HTTP_PORT` to `PORT` with `308`), and no user-controlled redirects exist."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers are set: CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options: DENY`, and `frame-ancestors 'none'`."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with `HttpOnly`, `Secure`, and `SameSite=Strict` attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never logged, exposed in URLs, or error output (e.g., `testCode` is only for demo logs, not production)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes are single-use (e.g., `identityUsed`, `pendingTotpUsed`) and time-bound (e.g., `identityExpires`, `pendingTotpExpires`)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is implemented: after `MAX` (5) failures, accounts are locked for `LOCK` (10 minutes) for identity, TOTP, and backup codes."
+    },
+    "15": {
+      "score": 4,
+      "why": "Session identifiers are rotated on authentication (e.g., `rotate()` in `/api/auth/identity`), but idle/absolute timeouts are enforced only for sessions, not explicitly tied to MFA state changes. Logout invalidates sessions."
+    }
+  },
+  "cost_usd": 0.0194685,
+  "generation_id": "gen-1786387670-ym5yyyfbrifoSx4xGHNc",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.9333,
+  "capture_complete": true
+}

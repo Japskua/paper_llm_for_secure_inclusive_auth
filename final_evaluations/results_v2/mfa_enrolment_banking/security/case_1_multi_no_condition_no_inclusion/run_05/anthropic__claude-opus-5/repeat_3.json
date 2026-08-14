@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:05:28.674969+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ea5bab4b0d6539028296220e344d7db471d5a50ff1c6cc99aaff0f369372e18a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint resolves the account solely from `active.session.userId` via `authenticated(request)`/`accountFor`, and `forbiddenIdentity` rejects any client-supplied userId/accountId/email fields, so settings are always tied to the signed-in session owner."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored per-session as a peppered hash with a global `activeIdentityHashes` uniqueness set, and TOTP secrets are per-account, so a code cannot be reused against another user's session."
+    },
+    "3": {
+      "score": 4,
+      "why": "`/api/mfa/verify` only sets `account.mfaEnabled = true` and never iterates the `sessions` map, so any other pre-existing sessions for that account continue to work after MFA is enabled (only the sign-in step rotates a session)."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext (`encryptValue`) and recovery/identity codes are stored only as peppered SHA-256 digests (`protectedHash`), never plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session ids, CSRF tokens, OTPs and recovery codes come from `crypto.getRandomValues` with rejection sampling (`sixDigits`, `recoveryCode`) to avoid modulo bias."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is `HttpOnly; Secure; SameSite=Strict` and no localStorage/sessionStorage is used; only transient in-memory JS variables hold the CSRF token and the just-provisioned secret/codes for display, which slightly weakens a perfect score."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates strictly: JSON body size/shape check, allow-listed keys on sign-in, `normalizedLogin` regex, `safeOtp` (`^\\d{6}$`), `safeRecovery` format regex, and all state is in-memory maps so no SQL injection surface exists."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client builds DOM exclusively with `document.createElement` and `textContent` (no innerHTML), and responses carry a strict nonce-based CSP with `object-src 'none'` and `base-uri 'none'`."
+    },
+    "9": {
+      "score": 5,
+      "why": "`validRedirect` restricts the `redirect` parameter to a fixed allow-list of five internal hash routes, and the server issues no Location-based redirects at all."
+    },
+    "10": {
+      "score": 5,
+      "why": "`headers()` sets nonce-based CSP with `frame-ancestors 'none'`, HSTS `max-age=31536000; includeSubDomains`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer` and `Cache-Control: no-store`."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()` and `expiredCookie()` both emit `HttpOnly; Secure; SameSite=Strict` with `Path=/` and a Max-Age matching the idle timeout."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server-side responses are generic and the top-level catch returns a bare 500 with no stack trace, and nothing sensitive appears in URLs; however the identity `testCode` is returned in the sign-in JSON and the client deliberately writes the verification code, current TOTP code and all recovery codes to `console.log` and a visible 'Logs' panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after `OTP_LIFETIME_MS` (5 min) and are marked `identityUsed`/removed from the active set on success, while TOTP steps are recorded in `totpUsedSteps` to prevent replay within the ±1 window."
+    },
+    "14": {
+      "score": 5,
+      "why": "`AttemptState` with `MAX_FAILURES = 5` and `LOCK_MS = 10 min` is applied separately to sign-in (keyed by client IP bucket + login), identity verification, TOTP verification and recovery-code use."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful sign-in calls `destroySession(existing.id)` then `createSession(...)` (rotation), `readSession` enforces 20-minute idle and 8-hour absolute timeouts, and `/api/logout` destroys the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.151525,
+  "generation_id": "gen-1786385092-konHrbaxFNqtPABr1eEO",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": true
+}

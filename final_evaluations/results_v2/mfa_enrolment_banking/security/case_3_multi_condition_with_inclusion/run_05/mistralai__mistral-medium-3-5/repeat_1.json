@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:44:15.723797+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization checks account ownership for MFA endpoints (e.g., `/api/provision` requires `account.identityVerified`)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes (e.g., `MOCK_AUTHENTICATOR_CODE`) are hardcoded and reusable across users, violating single-use uniqueness."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions remain valid after MFA is enabled (no session invalidation on MFA state change)."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets and backup codes are encrypted (AES-GCM) or hashed (PBKDF2) before storage."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets/codes use `crypto.getRandomValues()` for generation (e.g., `token()` function)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets/tokens are never stored in browser storage or non-HttpOnly cookies (only in server-side `Map` or encrypted)."
+    },
+    "7": {
+      "score": 4,
+      "why": "Input validation exists (e.g., `otpOk()`, `recoveryCodeOk()`), but some fields (e.g., `email`) lack strict sanitization."
+    },
+    "8": {
+      "score": 3,
+      "why": "No explicit output encoding for dynamic content, but CSP headers mitigate XSS risk."
+    },
+    "9": {
+      "score": 5,
+      "why": "No open redirects; all endpoints are hardcoded or validated (e.g., `safe()` checks origin)."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers (CSP, HSTS, X-Frame-Options, etc.) are set in `headers()` function."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies use `HttpOnly`, `Secure`, and `SameSite=Strict` (see `cookie()` function)."
+    },
+    "12": {
+      "score": 5,
+      "why": "Secrets/tokens are never logged or exposed in errors (e.g., mock codes are only returned in responses)."
+    },
+    "13": {
+      "score": 1,
+      "why": "Verification codes (e.g., `MOCK_IDENTITY_CODE`) are hardcoded and do not expire (mock documentation overrides)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is implemented (e.g., `MAX` attempts, `LOCK` duration) for failed verifications."
+    },
+    "15": {
+      "score": 3,
+      "why": "Session rotation occurs on login, but idle/absolute timeouts are enforced without explicit invalidation on logout."
+    }
+  },
+  "cost_usd": 0.0131745,
+  "generation_id": "gen-1786391049-nmx7DYgIHwBGErYa5aeu",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 4,
+    "8": 3,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 1,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 3.0
+  },
+  "overall": 4.4,
+  "capture_complete": false
+}

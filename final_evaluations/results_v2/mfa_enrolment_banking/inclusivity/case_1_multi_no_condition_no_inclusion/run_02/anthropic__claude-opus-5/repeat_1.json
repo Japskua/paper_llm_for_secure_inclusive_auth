@@ -1,0 +1,115 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:51:50.901708+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 5,
+  "screenshots_available": 5,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_mfa_security_settings.png",
+    "step_04_set_up_authenticator.png",
+    "step_05_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a clean sans-serif face with clear bold headings and comfortable line spacing, though letter spacing is default rather than notably generous."
+    },
+    "2": {
+      "score": 3,
+      "why": "No italics or all-caps are used, but step 4/5 contains a dense four-line 'Evaluation behavior…' paragraph plus a monospaced log block, so the 'avoid dense blocks' part does not fully hold."
+    },
+    "3": {
+      "score": 3,
+      "why": "The centred single-column card would likely reflow on a phone, but all supplied screenshots are 1280px desktop views with no evidence of mobile-size layout or touch-sized targets being verified."
+    },
+    "4": {
+      "score": 3,
+      "why": "Most instructions are one short sentence, but the authenticator step uses technical wording ('Time-based / TOTP', '30-second windows', 'deterministic evaluation secret') that is not plain language."
+    },
+    "5": {
+      "score": 3,
+      "why": "The phone field shows a placeholder example (+1 555 010 0184) and step 2 shows a mock code, but the email field and the six-digit authenticator field give no example of the expected input format."
+    },
+    "6": {
+      "score": 2,
+      "why": "To activate the authenticator the user must read a long explanatory paragraph about the test secret and TOTP behaviour, so reading a long block is required to proceed."
+    },
+    "7": {
+      "score": 2,
+      "why": "The manual setup secret JBSWY3DPEHPK3PXP is displayed in a plain grey box with no visible copy button or copy affordance, implying hand transcription."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code or equivalent scan option appears anywhere; only a 'Manual setup secret' string is offered."
+    },
+    "9": {
+      "score": 2,
+      "why": "There is no password field, no visible autocomplete support, and the instruction 'Do not save it in this browser' actively discourages password-manager storage."
+    },
+    "10": {
+      "score": 3,
+      "why": "Each screen has one prominent blue primary button and a bold title, but there is no step indicator or progress marker showing which step of enrolment the user is on."
+    },
+    "11": {
+      "score": 4,
+      "why": "Each screen requests a single primary action (continue, verify, set up, activate), with only secondary links such as 'Sign out' or 'Back to settings' alongside."
+    },
+    "12": {
+      "score": 2,
+      "why": "After the failed activation the only feedback is the vague 'Verification could not be completed.' plus a technical log line, and no screen states plainly what happened and what comes next."
+    },
+    "13": {
+      "score": 2,
+      "why": "The form can be resubmitted, but there is no resend/re-request code option, no reveal/hide control for the secret, and the recovery codes step never appears (0 codes remaining)."
+    },
+    "14": {
+      "score": 2,
+      "why": "'Verification could not be completed.' does not blame the user but also fails to state the actual problem or how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "Step 2 imposes a five-minute expiry on the verification code and step 4 relies on 30-second TOTP windows, with no option to extend or pause, so no generous, limit-free timing is provided."
+    }
+  },
+  "cost_usd": 0.09403,
+  "generation_id": "gen-1786384281-h3d6IvZs2qSbVKXRlE4b",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 3,
+    "3": 3,
+    "4": 3,
+    "5": 3,
+    "6": 2,
+    "7": 2,
+    "8": 1,
+    "9": 2,
+    "10": 3,
+    "11": 4,
+    "12": 2,
+    "13": 2,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.3333,
+    "memory": 2.6667,
+    "comprehension": 1.6667,
+    "decision_making": 3.0,
+    "learning": 2.0
+  },
+  "overall": 2.5333,
+  "capture_complete": true
+}

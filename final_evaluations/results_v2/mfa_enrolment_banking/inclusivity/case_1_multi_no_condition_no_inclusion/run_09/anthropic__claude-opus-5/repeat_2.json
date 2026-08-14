@@ -1,0 +1,124 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_09",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_09",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:29:03.288274+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "fb21f348cce9e4575e4eaebe551af20a5c668f50c720b14c85b3c71926eb2643",
+  "screenshot_count": 14,
+  "screenshots_available": 14,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_identity_challenge_sent.png",
+    "step_03_identity_code_entered.png",
+    "step_04_authenticator_setup.png",
+    "step_05_setup_secret_generated.png",
+    "step_06_verify_authenticator.png",
+    "step_07_backup_codes_issued.png",
+    "step_08_enrolment_confirmed.png",
+    "step_09_mfa_settings.png",
+    "step_10_replacement_backup_codes_issued.png",
+    "step_11_replacement_codes_stored.png",
+    "step_12_recovery_code_ready.png",
+    "step_13_recovery_code_accepted.png",
+    "step_14_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Screens use a clean sans-serif face with clear headings, comfortable line spacing and roomy inputs, though the monospace Logs block and the code lists are denser and smaller."
+    },
+    "2": {
+      "score": 3,
+      "why": "No italics are used and text is mostly short, but 'NORTHSTAR BANK' and 'SECURITY CENTRE' are all-caps and the Logs panel is a dense monospace block that grows to ~25 lines by step 14."
+    },
+    "3": {
+      "score": 3,
+      "why": "The layout is a single narrow column that would reflow acceptably on a phone, but the two-column code grid and the wide monospace log lines (which already wrap awkwardly at this width) would be cramped on a small screen."
+    },
+    "4": {
+      "score": 4,
+      "why": "Instructions such as 'Enter the six-digit code generated during setup.' and 'These codes can help you recover access.' are short and plain, with only mild jargon ('short-lived challenge', 'controlled test mode')."
+    },
+    "5": {
+      "score": 3,
+      "why": "Placeholders show expected format for mobile number (+15551234567) and recovery code (ABCD-EFGH-JKLM), but the email, identity verification code and authenticator code fields show no example."
+    },
+    "6": {
+      "score": 3,
+      "why": "Most steps require reading only one or two sentences, but the login screen's demo notice is a four-line paragraph and the ever-growing Logs panel presents a long block of text on every screen."
+    },
+    "7": {
+      "score": 1,
+      "why": "No copy button or copy affordance appears next to the manual setup secret (QC6ROCEUHT3NFV5NVPLT4SJ5RCZERH2J) or the eight recovery codes, so they must be transcribed by hand."
+    },
+    "8": {
+      "score": 1,
+      "why": "Step 4/5 explicitly offers only a 'Manual setup secret' to 'add it manually to your authenticator app' — no QR code or equivalent alternative is provided."
+    },
+    "9": {
+      "score": 2,
+      "why": "Fields are standard labelled inputs so basic autofill might work, but there is no visible evidence of autocomplete support (e.g. one-time-code hints) and no password/credential manager integration is shown."
+    },
+    "10": {
+      "score": 4,
+      "why": "Each screen has one bold heading and a single filled blue primary button (e.g. 'Verify authenticator', 'I have stored my codes'), though there is no step counter or progress indicator showing where the user is in the flow."
+    },
+    "11": {
+      "score": 4,
+      "why": "Most screens present one action, though the login screen asks for three fields plus two competing buttons, and the MFA settings screen offers generate/verify/log out at once."
+    },
+    "12": {
+      "score": 4,
+      "why": "Confirmation banners state outcomes plainly ('Setup secret generated. Enter it manually in your authenticator app.', 'Enrolment confirmed. Your authenticator and recovery codes are active.'), and the Logs mirror each result, though 'what comes next' is not always stated."
+    },
+    "13": {
+      "score": 3,
+      "why": "The user can regenerate replacement codes, test a recovery code and use 'Back to setup'/'Back to MFA settings' links, but there is no reveal/hide toggle for codes and regeneration permanently invalidates all previous codes — a real penalty."
+    },
+    "14": {
+      "score": 3,
+      "why": "No error state is shown in any of the 14 screenshots, so the quality and phrasing of error messages cannot be confirmed as stating the problem and its fix."
+    },
+    "15": {
+      "score": 3,
+      "why": "No countdown timer or expiry warning is visible on any screen, but the flow relies on 'short-lived' challenges and time-based OTP codes, and no generous-time or extension affordance is offered."
+    }
+  },
+  "cost_usd": 0.16811,
+  "generation_id": "gen-1786386520-9obsOzfvEbq3VbaSQo6b",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 3,
+    "3": 3,
+    "4": 4,
+    "5": 3,
+    "6": 3,
+    "7": 1,
+    "8": 1,
+    "9": 2,
+    "10": 4,
+    "11": 4,
+    "12": 4,
+    "13": 3,
+    "14": 3,
+    "15": 3
+  },
+  "constructs": {
+    "attention": 3.3333,
+    "memory": 3.3333,
+    "comprehension": 1.3333,
+    "decision_making": 4.0,
+    "learning": 3.0
+  },
+  "overall": 3.0,
+  "capture_complete": true
+}

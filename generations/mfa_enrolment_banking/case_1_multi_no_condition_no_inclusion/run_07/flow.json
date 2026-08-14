@@ -1,0 +1,108 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 11,
+  "steps_passed": 10,
+  "happy_path_passed": 8,
+  "happy_path_total": 9,
+  "negative_passed": 2,
+  "negative_total": 2,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm identity",
+      "method": "POST",
+      "path": "/api/mfa/identity",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "create authenticator secret",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify authenticator",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/generate",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'recovery_code' from 'codes.0'"
+      ]
+    },
+    {
+      "name": "confirm recovery codes saved",
+      "method": "POST",
+      "path": "/api/mfa/recovery/confirm-saved",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "view remaining recovery codes",
+      "method": "GET",
+      "path": "/api/mfa/recovery",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "redeem a recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "{'error': 'Invalid or already used recovery code.'}"
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "wrong phone rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/redeem",
+      "expect_failure": true,
+      "status_code": 401,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 11
+}

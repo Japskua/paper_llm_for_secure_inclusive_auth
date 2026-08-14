@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:53:03.673010+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "95a3e86296de0b7988f870a2cdac6ff7f3e0d9e93db206d586fb6fd059d8e0d1",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint gates on `authenticated(session)` (state==='authenticated' && userId===ACCOUNT_ID) and derives the record via `accountRecord(session)` from server-side session state only."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity OTP is stored on the individual session (`session.identityCode`) and compared only against that session's pending code, so a code cannot be reused by another user/session; client-supplied account identifiers are also rejected by `manipulated()`."
+    },
+    "3": {
+      "score": 4,
+      "why": "Session rotation only occurs at identity authentication (`completeIdentity`/`rotateSession`); `/api/mfa/confirm` does not invalidate other sessions for the account, so pre-existing sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored as AES-GCM ciphertext (`encryptAtRest`) and recovery codes only as salted SHA-256 digests (`{salt, digest, used}`); no plaintext is persisted."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session IDs, CSRF tokens, digits, base32 seeds and recovery codes derive from `crypto.getRandomValues` via `randomBytes`."
+    },
+    "6": {
+      "score": 5,
+      "why": "The client never touches localStorage/sessionStorage; the session ID lives in a `__Host-` cookie with HttpOnly/Secure/SameSite=Strict, and the CSRF token is held only in a JS closure variable."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side allow-list validators (`email`, `phone`, `otp`, `secret`, `recovery`) apply strict regexes with length caps, and JSON body type/shape is verified in `bodyObject`; there is no SQL layer at all (in-memory Maps)."
+    },
+    "8": {
+      "score": 4,
+      "why": "Values injected into `innerHTML` pass through `escapeHTML`, which neutralises `<`, `>`, `&`, quotes (though `<` is mistakenly mapped to `&gt;`, it still prevents markup/script execution), and a strict nonce-based CSP blocks inline script."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application performs no HTTP redirects and never reflects a user-supplied destination, so there is no redirect surface outside internal SPA state changes."
+    },
+    "10": {
+      "score": 5,
+      "why": "`headers()` sets a strict nonce CSP with `frame-ancestors 'none'`, HSTS with includeSubDomains, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, Referrer-Policy and Permissions-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "`sessionCookie()` emits `__Host-mfa_session ... Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=...` and `clearCookie()` keeps the same attributes."
+    },
+    "12": {
+      "score": 4,
+      "why": "Server-side there is no logging and all errors return a single generic message with no stack traces or query-string secrets, but in evaluation mode the browser client `console.log`s the identity code, setup secret, TOTP and recovery codes via `sensitiveLog`."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 3 minutes and are cleared on success, provisioning drafts expire in 5 minutes and are marked `used`, TOTP uses a ±1 30-second step window, and recovery entries are flagged `used` once matched."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity verification, draft confirmation and recovery verification each increment failure counters and set a 10-minute lockout after 5 attempts (`MAX_ATTEMPTS`/`LOCK_MS`), with identity lockout persisted at account level across sessions."
+    },
+    "15": {
+      "score": 5,
+      "why": "`rotateSession` issues a new ID and CSRF token on sign-in and on successful identity verification, `getSession` enforces 15-minute idle and 8-hour absolute timeouts, and `/api/logout` deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.155,
+  "generation_id": "gen-1786387950-z4GuiVHwhU1xNVYf59iH",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": true
+}

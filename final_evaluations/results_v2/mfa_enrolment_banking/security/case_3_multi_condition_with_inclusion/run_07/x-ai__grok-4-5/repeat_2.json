@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:52:57.499801+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "580b4044089c77727fe040f6ea0000c6d5f83948bf6204c54696c4d059d00f19",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints go through protect()/session(), which binds actions to the single signed-in session with no user-id parameters to tamper with."
+    },
+    "2": {
+      "score": 1,
+      "why": "There is only one hard-coded account; codes are checked against that account’s hashed state under a valid session, so the claim that the same code works for any other user does not hold."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only flips account.enabled and the current session’s stage; other entries in the sessions Map are neither deleted nor rotated, so prior sessions keep working."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored via AES-GCM encrypt() and recovery codes are stored as SHA-256 hashes, not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Tokens, seeds, and codes are produced with crypto.getRandomValues (CSPRNG); academic fixtures are only used when ACADEMIC is set."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session id is in an HttpOnly cookie; no secrets/OTPs/session tokens are written to localStorage/sessionStorage or non-HttpOnly cookies (only the non-secret CSRF value is JS-readable)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, password, and OTP with strict helpers (validEmail/validPassword/otp) before use; body parsing failures yield null."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client rendering uses textContent/element attributes rather than innerHTML, so API messages and values are not interpreted as markup."
+    },
+    "9": {
+      "score": 5,
+      "why": "The app issues no open redirects at all; navigation is client-side only with no user-controlled redirect targets."
+    },
+    "10": {
+      "score": 5,
+      "why": "Every response sets CSP, HSTS, X-Content-Type-Options, and X-Frame-Options/frame-ancestors DENY/none."
+    },
+    "11": {
+      "score": 5,
+      "why": "mfa_session is set with HttpOnly; Secure; SameSite=Strict on sign-in and cleared the same way on logout."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server errors are generic with no stack traces and tokens are not put in URLs, but academic mode returns simulation codes and the client logs them to the on-page log/console."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity OTPs are marked used and expire after LIFE (10 minutes); TOTP counters are consumed via totp.used so codes are single-use within the time window."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity, and TOTP paths increment failures and lock for LOCK (15 minutes) after MAX (5) attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in mints a fresh session id, idle/absolute timeouts are enforced in session(), and logout deletes the session and expires the cookies."
+    }
+  },
+  "cost_usd": 0.0210836,
+  "generation_id": "gen-1786391528-O5HvO5EINzSilaWcuyEq",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": false
+}

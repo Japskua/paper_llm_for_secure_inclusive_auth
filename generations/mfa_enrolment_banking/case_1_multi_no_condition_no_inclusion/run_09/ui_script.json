@@ -1,0 +1,212 @@
+{
+  "variables": {
+    "email": "marcus.contractor@example.test"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "identity_challenge_sent",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#phone",
+          "value": "+15551234567"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Get a simulation challenge')"
+        },
+        {
+          "do": "wait_ms",
+          "ms": 500
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Test-mode identity verification mock code: (\\d{6})",
+          "into": "identity_code"
+        }
+      ]
+    },
+    {
+      "name": "identity_code_entered",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#identity",
+          "value": "${identity_code}"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_setup",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify and continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Set up your authenticator"
+        }
+      ]
+    },
+    {
+      "name": "setup_secret_generated",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Generate setup secret')"
+        },
+        {
+          "do": "wait_ms",
+          "ms": 500
+        },
+        {
+          "do": "wait_for",
+          "selector": "#secret"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Test-mode authenticator mock code: (\\d{6})",
+          "into": "authenticator_code"
+        }
+      ]
+    },
+    {
+      "name": "verify_authenticator",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=I have added the secret"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Confirm your authenticator"
+        },
+        {
+          "do": "fill",
+          "selector": "#otp",
+          "value": "${authenticator_code}"
+        }
+      ]
+    },
+    {
+      "name": "backup_codes_issued",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify authenticator')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Save your backup codes"
+        },
+        {
+          "do": "read",
+          "selector": "#codes",
+          "regex": "([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})",
+          "into": "initial_backup_code"
+        }
+      ]
+    },
+    {
+      "name": "enrolment_confirmed",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=I have stored my codes"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=MFA is active"
+        }
+      ]
+    },
+    {
+      "name": "mfa_settings",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=View MFA settings"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Generate replacement codes"
+        }
+      ]
+    },
+    {
+      "name": "replacement_backup_codes_issued",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Generate replacement codes')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Your newly issued recovery codes"
+        },
+        {
+          "do": "read",
+          "selector": "#codes",
+          "regex": "([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})",
+          "into": "replacement_backup_code"
+        }
+      ]
+    },
+    {
+      "name": "replacement_codes_stored",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=I have stored my codes"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=MFA is active"
+        }
+      ]
+    },
+    {
+      "name": "recovery_code_ready",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "text=View MFA settings"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#recovery"
+        },
+        {
+          "do": "fill",
+          "selector": "#recovery",
+          "value": "${replacement_backup_code}"
+        }
+      ]
+    },
+    {
+      "name": "recovery_code_accepted",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#rf button:has-text('Verify recovery code')"
+        },
+        {
+          "do": "wait_ms",
+          "ms": 500
+        }
+      ]
+    }
+  ]
+}

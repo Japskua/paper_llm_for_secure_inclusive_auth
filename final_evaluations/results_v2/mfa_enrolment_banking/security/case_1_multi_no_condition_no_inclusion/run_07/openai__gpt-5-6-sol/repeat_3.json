@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:15:27.756245+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint uses auth(), which requires the session userId to equal account.id, while supplied user identifiers are rejected."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification is tied to the authenticated account's pending encrypted secret, and the application has no mechanism for applying that code to another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA sets account.enabled but does not rotate or invalidate any existing sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted with AES-GCM, and recovery codes are stored both as SHA-256 hashes and AES-GCM ciphertext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session tokens, CSRF tokens, OTP secrets, encryption keys, IVs, nonces, and recovery codes are generated with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The code does not use browser storage, and the session token is stored only in a cookie carrying the HttpOnly attribute."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server validates email, phone, OTP, recovery-code, confirmation, content-type, body shape, and body size before processing them."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values inserted into HTML are encoded through esc(), log output uses textContent, and JSON responses are serialized with JSON.stringify."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application performs no user-controlled redirects, and client-side navigation is limited to fixed internal hash routes."
+    },
+    "10": {
+      "score": 5,
+      "why": "All responses receive CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options through headers()."
+    },
+    "11": {
+      "score": 5,
+      "why": "The bank_session cookie is consistently set and cleared with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client explicitly writes the OTP secret, test OTP, and recovery codes to console output and the visible Logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "The pending OTP enrollment expires after five minutes and is marked used after successful verification, while redeemed recovery codes are also marked used."
+    },
+    "14": {
+      "score": 5,
+      "why": "Five failed OTP or recovery-code attempts trigger a ten-minute lockout."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login creates a fresh random session identifier, auth() enforces idle and absolute timeouts, and logout deletes the server-side session."
+    }
+  },
+  "cost_usd": 0.0372375,
+  "generation_id": "gen-1786385706-m24Q5pZvDerOZ4U2d2BQ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

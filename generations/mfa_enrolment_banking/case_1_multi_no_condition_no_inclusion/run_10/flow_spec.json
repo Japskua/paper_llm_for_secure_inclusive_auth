@@ -1,0 +1,180 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+447700900123",
+    "new_password": "CorrectHorseBatteryStaple1!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "let csrf=\"([^\"]*)\"",
+    "field": "csrf",
+    "in": "body"
+  },
+  "steps": [
+    {
+      "name": "bootstrap session and CSRF",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start identity verification",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "csrf": "${csrf}",
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "capture": {
+        "csrf": "csrf",
+        "identity_otp": "testOtp"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "csrf": "${csrf}",
+        "otp": "${identity_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "create authenticator setup",
+      "method": "POST",
+      "path": "/api/authenticator/provision",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "capture": {
+        "csrf": "csrf",
+        "authenticator_secret": "secret",
+        "authenticator_otp": "testOtp"
+      }
+    },
+    {
+      "name": "confirm authenticator MFA",
+      "method": "POST",
+      "path": "/api/authenticator/confirm",
+      "body": {
+        "csrf": "${csrf}",
+        "secret": "${authenticator_secret}",
+        "otp": "${authenticator_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "display initial recovery codes",
+      "method": "GET",
+      "path": "/api/recovery-codes",
+      "capture": {
+        "csrf": "csrf",
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "view MFA settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "enabled",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "verify recovery code for regeneration",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "csrf": "${csrf}",
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "generate replacement recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/regenerate",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "display replacement recovery codes",
+      "method": "GET",
+      "path": "/api/recovery-codes",
+      "capture": {
+        "csrf": "csrf",
+        "replacement_recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "confirm active MFA settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "enabled",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid CSRF token rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "csrf": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "csrf": "${csrf}",
+        "otp": "12345"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "consumed recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "csrf": "${csrf}",
+        "code": "${recovery_code}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

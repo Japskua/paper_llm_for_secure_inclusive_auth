@@ -1,0 +1,176 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "phone": "+15551234567"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "let csrf=\"([^\"]*)\"",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/",
+      "expect_status": 200
+    },
+    {
+      "name": "start identity verification",
+      "method": "POST",
+      "path": "/api/auth/start",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "testCode"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "open security settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/setup",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "manual_secret": "manualSecret",
+        "authenticator_otp": "testOtp"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${authenticator_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "backupCodes.0"
+      }
+    },
+    {
+      "name": "confirm MFA is active",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "use saved recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "return to security settings",
+      "method": "GET",
+      "path": "/api/mfa/settings",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/backup/regenerate",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "regenerated_recovery_code": "backupCodes.0"
+      }
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "invalid identity details rejected",
+      "method": "POST",
+      "path": "/api/auth/start",
+      "body": {
+        "email": "not-an-email",
+        "phone": "12345"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "identity verification without CSRF rejected",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "manipulated MFA setup request rejected",
+      "method": "POST",
+      "path": "/api/mfa/setup",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "attacker@example.com"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "consumed recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

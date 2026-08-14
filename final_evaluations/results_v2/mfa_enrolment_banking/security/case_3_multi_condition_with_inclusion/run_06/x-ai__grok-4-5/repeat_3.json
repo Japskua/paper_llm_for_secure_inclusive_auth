@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:47:30.104063+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "6d39d515364379a85979f05bdba4088e9c91f5547fdc46b6b25e253a3375adab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints use owner()/verified() so actions apply only to the account bound to the signed-in session user, with no client-supplied account id."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity OTPs are stored on the session, TOTP/recovery secrets are per-account, and verification is performed only for the authenticated user, so codes do not work for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only sets a.mfa/setup flags on the account and never deletes or invalidates other existing sessions in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secret is stored via AES-GCM encrypt(); recovery codes are stored as peppered SHA-256 hashes, not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "bytes()/secureHex()/randomFrom() all use crypto.getRandomValues for secrets, OTPs, recovery codes, and session ids."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session id is only in an HttpOnly cookie; no localStorage/sessionStorage and no non-HttpOnly cookie holds secrets, OTPs, or session tokens."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email format/length, six-digit OTPs via six(), and recovery format via rec() before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are applied with textContent; API responses are JSON; server error strings are fixed and not reflected as raw HTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "No redirect responses or user-controlled redirect targets exist in the app, so open redirects are not possible."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS, X-Content-Type-Options, and X-Frame-Options/frame-ancestors DENY/none on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() sets mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic without stack traces and secrets are not put in URLs, but the client deliberately logs provisioning secrets and backup codes into the on-page log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges have expires/used; TOTP counters are accepted once; recovery codes are removed after success; CODE_LIFE bounds email OTPs."
+    },
+    "14": {
+      "score": 5,
+      "why": "Login, identity, authenticator, and recovery paths lock out after MAX_FAILURES (5) for LOCK (5 minutes)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes the old session and issues a new id; idle/absolute timeouts are enforced in current(); logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0238944,
+  "generation_id": "gen-1786391185-ttAqikw1rp7fxiZGBVTl",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

@@ -1,0 +1,81 @@
+{
+  "ok": true,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 8,
+  "steps_passed": 7,
+  "happy_path_passed": 4,
+  "happy_path_total": 4,
+  "negative_passed": 3,
+  "negative_total": 4,
+  "negatives_meaningful": true,
+  "steps": [
+    {
+      "name": "start identity verification",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "load MFA settings",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "begin authenticator provisioning",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "incorrect registered phone rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 400,
+      "ok": true
+    },
+    {
+      "name": "incorrect identity redirect rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "expect_failure": true,
+      "status_code": 400,
+      "ok": true
+    },
+    {
+      "name": "MFA settings unavailable without authenticated session",
+      "method": "GET",
+      "path": "/api/me",
+      "expect_failure": true,
+      "status_code": 200,
+      "ok": false,
+      "response_message": "{'csrf': 'lyB-0IOA6LnBchGycSzy_cOt0aAwbQyB_AcIbDdEYOo', 'email': 'marcus@example.test', 'phone': '+1 ••• ••• 0184', 'mfaEnabled': False, 'backupCodesRemaining':"
+    },
+    {
+      "name": "malformed authenticator code rejected",
+      "method": "POST",
+      "path": "/api/mfa/activate",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 8
+}

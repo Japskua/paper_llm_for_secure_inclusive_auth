@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 2,
+  "judged_at": "2026-08-10T19:46:50.279956+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "6d39d515364379a85979f05bdba4088e9c91f5547fdc46b6b25e253a3375adab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server authorization checks look up the account linked directly to the session owner via owner() and verified()."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes, TOTP secrets, and recovery codes are bound to individual sessions and account records, not usable across users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the account state flag but does not iterate through or revoke other active sessions in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are stored encrypted using AES-GCM and recovery codes are stored hashed using SHA-256 with a pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, recovery codes, and session IDs are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored in HttpOnly cookies, and secrets are not placed in localStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side functions validate inputs against specific format requirements (regex rules for emails, 6-digit codes, and formatted recovery codes)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic content is set via textContent in the DOM and static HTML uses Strict CSP headers to prevent script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not implement unvalidated external redirects and only handles internal API endpoints."
+    },
+    "10": {
+      "score": 5,
+      "why": "Headers include CSP with nonces, HSTS with includeSubDomains, X-Content-Type-Options, and X-Frame-Options/frame-ancestors."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are formatted with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "The server suppress stack traces, returns generic failure messages, and does not log secrets or output them in URL parameters."
+    },
+    "13": {
+      "score": 5,
+      "why": "Email OTPs marked as used after verification, TOTP counter reuse is rejected, and recovery codes are deleted upon use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate limiting locks out further attempts for 5 minutes after 5 consecutive failures across login, identity, TOTP, and recovery endpoints."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are deleted and regenerated on login, enforced with idle/absolute timeouts, deleted on logout, and generic sign-in responses are returned."
+    }
+  },
+  "cost_usd": 0.03198765,
+  "generation_id": "gen-1786391194-TzZOxz75SMqTBp2EITqS",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

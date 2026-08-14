@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:19:56.499423+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "auth() verifies the session cookie maps to the hardcoded account ID and all MFA endpoints reject requests that supply user identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "The application has only one account and OTP verification is tied to that account's pending encrypted secret, so the statement about other users is false."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/mfa/verify sets account.enabled without clearing the sessions map, so existing unexpired session tokens remain valid."
+    },
+    "4": {
+      "score": 5,
+      "why": "The pending and final OTP secret are AES-GCM encrypted and recovery codes are stored as SHA-256 hashes plus encrypted blobs."
+    },
+    "5": {
+      "score": 5,
+      "why": "Tokens, the Base32 OTP secret, and recovery codes are generated with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is set only in an HttpOnly cookie and the code does not write secrets, OTPs, or tokens to localStorage/sessionStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, phone, OTP, and recovery-code inputs are rejected unless they match strict server-side regex and content-type/size checks."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are passed through esc(), which assigns textContent before reading innerHTML, and logs are written via textContent."
+    },
+    "9": {
+      "score": 5,
+      "why": "The server issues no Location redirects and client navigation only changes internal hash routes."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "The bank_session cookie is set with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "Client-side log messages explicitly record the OTP secret, test OTP, and recovery codes, so they are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Pending OTP state has a 5-minute expiry and is marked used after successful verification, and recovery codes are marked used."
+    },
+    "14": {
+      "score": 5,
+      "why": "Five failed OTP or recovery attempts set a 10-minute lockout timestamp."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes an existing session cookie and issues a new token, auth enforces idle/absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.076148,
+  "generation_id": "gen-1786385771-BQUsU6fyAJONLiPcEGbr",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

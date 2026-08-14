@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:22:13.643118+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "e75c5e1f2640b1b5327f2decd8300f8832941a1fa4252cfc26f15807ec177e22",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint uses authenticatedSession/requireAuth, which binds the HttpOnly session to account.id and rejects preauth or mismatched sessions."
+    },
+    "2": {
+      "score": 1,
+      "why": "OTP/recovery verification uses this account’s own encrypted secret/codes only; there is no path for one user’s code to authenticate another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in /api/mfa/verify updates account flags but does not invalidate or rotate any other existing sessions for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "encryptedSecret and encryptedRecoveryCodes are stored via AES-256-GCM encrypt(), not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session ids, CSRF tokens, and recovery codes are produced with node:crypto randomBytes()."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session id is only in an HttpOnly Secure cookie; no localStorage/sessionStorage or non-HttpOnly cookie holds secrets, OTPs, or session tokens."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, and recovery code with strict validators and rejects bodies that smuggle accountId/userId."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client renders dynamic values with textContent/createTextNode and API responses are JSON, not raw HTML interpolation."
+    },
+    "9": {
+      "score": 1,
+      "why": "The app never implements HTTP redirects or an allow-list; the claimed redirect restriction is simply absent."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options/frame-ancestors 'none' on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie() sets mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic without stack traces, but setup/verify flows return secrets/codes and the client log UI prints OTP seeds and recovery codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTP accepts a counter only once via acceptedCounter and is time-windowed; recovery codes are removed after use and carry expiresAt."
+    },
+    "14": {
+      "score": 5,
+      "why": "failed()/locked() lock out after MAX_FAILURES (5) for LOCKOUT (10 minutes) on verify and recovery verify."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in replaces the preauth session with a new id, idle/absolute timeouts are enforced, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.016986,
+  "generation_id": "gen-1786386093-73fzstjgcrIkPFApHDvq",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 1,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2667,
+  "capture_complete": false
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:45:07.113696+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server enforces account ownership on all MFA endpoints by verifying session validity against account.id in authenticatedSession()."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are checked strictly against the specific account secret or session hash and do not work for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "When MFA is activated in /api/mfa/activate, existing session objects in the server's sessions Map are not revoked or terminated."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is encrypted with AES-256-GCM at rest and backup codes are stored as salted, peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All tokens, IVs, salts, backup codes, and identity OTPs are generated using node:crypto's randomBytes."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored exclusively in HttpOnly cookies, and secrets and tokens are never stored in localStorage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "All user input fields including email, phone, OTPs, and recovery codes are validated using server-side type and regex checks."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic user data and API response values are rendered into the UI using textContent to prevent script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The sign-in API validates that the redirect body parameter strictly equals the allow-listed string '/verify-identity'."
+    },
+    "10": {
+      "score": 5,
+      "why": "Security headers including CSP with frame-ancestors 'none', HSTS, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY are included on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are constructed with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Client-side code explicitly writes OTP seeds, identity codes, and backup codes to console.log and an on-screen log history panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 5 minutes and are marked used, TOTP tracks the last accepted counter, and backup codes are marked used upon redemption."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed verification attempts are tracked per session and account, enforcing a 10-minute lockout after 5 consecutive failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "The session ID is rotated upon identity verification, enforces 15-minute idle and 8-hour absolute timeouts, and is deleted from memory on logout."
+    }
+  },
+  "cost_usd": 0.0533205,
+  "generation_id": "gen-1786383883-UQsIE6IoSyQftA6qIQ1J",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

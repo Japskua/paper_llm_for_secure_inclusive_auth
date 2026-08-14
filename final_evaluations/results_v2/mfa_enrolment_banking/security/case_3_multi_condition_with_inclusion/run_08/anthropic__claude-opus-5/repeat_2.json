@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:57:25.501650+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "48fa2822d4bb533cb7f6b1373e6850d18a371d90cdcb9c7879856ab4a2a475d0",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints resolve the account solely from the server-side session via owned()/getSession(), with no client-supplied user identifier accepted (object() even rejects bodies containing id/userId)."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity challenge is stored inside the specific session object (session.challenge) and TOTP/recovery hashes are per-account, so a code cannot be replayed by another user or session."
+    },
+    "3": {
+      "score": 4,
+      "why": "Sign-in purges other sessions for the account, but enabling MFA in /api/authenticator/confirm does not rotate or invalidate the existing session id, so the pre-MFA session continues to work unchanged."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored as AES-GCM ciphertext (encrypt/decrypt with a random 32-byte key) and recovery codes are kept only as salted SHA-256 hashes, never plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Seeds, session ids, CSRF tokens, salts, recovery codes and identity codes all come from crypto.getRandomValues (only a minor modulo bias in freshIdentityCode)."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and mfa_session is HttpOnly+Secure+SameSite=Strict, but the signin_csrf cookie is intentionally readable by script (no HttpOnly) and the provisioning secret lives in a JS variable/DOM."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates JSON shape (object()), email regex with length cap, password length, strict /^\\d{6}$/ OTP and /^[A-Z2-9]{5}-[A-Z2-9]{5}$/ recovery format before use; there is no SQL layer at all."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent or the esc() helper, and a nonce-based CSP with no unsafe-inline further blocks injected script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "Navigation uses location.hash validated against a fixed routes Set, server 'next' values are internal fragments only, and no redirect target is taken from user input."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders() sets a strict nonce CSP with frame-ancestors 'none', HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits mfa_session with Path=/, HttpOnly, Secure and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Generic error messages and no stack traces are good, but the API returns simulatedCode/simulatedOtp and full recovery-code sets, and the client console.logs them via privateDemo(), so OTPs and backup codes do reach logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "The identity challenge has a used flag plus 15-minute expiry, TOTP time-steps are recorded in usedSteps to prevent reuse within a bounded 5-minute past window, and recovery codes are marked used once accepted."
+    },
+    "14": {
+      "score": 4,
+      "why": "Identity, authenticator and recovery verification each lock out for 10 minutes after 5 failures, though the /api/signin password endpoint itself has no rate limiting."
+    },
+    "15": {
+      "score": 4,
+      "why": "A brand-new session id is minted at sign-in (old ones deleted), with 30-minute idle and 8-hour absolute timeouts and deletion plus cookie clearing on logout, but the id is not rotated again after the MFA/identity verification step."
+    }
+  },
+  "cost_usd": 0.154825,
+  "generation_id": "gen-1786391804-wtdi98LaM4BSDoe1x3RK",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 4,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

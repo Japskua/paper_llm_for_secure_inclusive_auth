@@ -1,0 +1,126 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_07",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_07",
+  "track": "inclusivity",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:14:35.189474+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "7ebb89de2c28ee4cfb4fb0889f4e47067302d1f742dc82ebf6e93b4fdeb4bc17",
+  "app_ts_sha256": "765fe1151228e724636d2f0b669a13b658ec30f5d90c64866be8eec351d8ce4d",
+  "screenshot_count": 16,
+  "screenshots_available": 16,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_authenticator_setup.png",
+    "step_04_save_recovery_codes.png",
+    "step_05_mfa_settings.png",
+    "step_06_recovery_verification.png",
+    "step_07_regenerate_recovery_codes_confirmation.png",
+    "step_08_replacement_recovery_codes.png",
+    "step_09_replacement_codes_saved.png",
+    "step_10_replacement_recovery_verification.png",
+    "step_11_return_to_mfa_settings.png",
+    "step_12_signed_out.png",
+    "step_13_explored.png",
+    "step_14_explored.png",
+    "step_15_explored.png",
+    "step_16_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "All screens use a legible sans-serif for prose and letter-spaced monospace for codes, with comfortable line spacing, though body letter spacing is default rather than notably generous."
+    },
+    "2": {
+      "score": 2,
+      "why": "No italics or all-caps prose is used, but the authenticator setup screen presents a dense three-line otpauth provisioning URI block."
+    },
+    "3": {
+      "score": 3,
+      "why": "Only desktop-width screenshots were provided; the simple single-column card should adapt to a phone, but the long unbroken otpauth URI already wraps awkwardly even at desktop width."
+    },
+    "4": {
+      "score": 4,
+      "why": "Instructions are one or two short plain sentences such as 'Store these now. They will not be shown again.', with only occasional technical jargon like 'TOTP SHA-256'."
+    },
+    "5": {
+      "score": 3,
+      "why": "The recovery code field shows an 'ABCD-EFGH-JKLM' placeholder and email/phone are prefilled, but the six-digit verification code field shows no example of the expected input."
+    },
+    "6": {
+      "score": 4,
+      "why": "No step requires reading long prose to proceed—the mandatory reading is a sentence or two—although a long optional otpauth URI block is present on the setup page."
+    },
+    "7": {
+      "score": 2,
+      "why": "No copy-to-clipboard or download control is offered for the 32-character setup key or the recovery codes, so users must select or transcribe them by hand."
+    },
+    "8": {
+      "score": 1,
+      "why": "The setup screen shows no QR code; the only alternatives are the manual key and a plain-text otpauth URI, both of which still require manual entry."
+    },
+    "9": {
+      "score": 3,
+      "why": "Standard email and password inputs should work with password managers, but nothing visible (such as one-time-code autocomplete) indicates autofill support for the code fields."
+    },
+    "10": {
+      "score": 4,
+      "why": "Every screen has a bold heading naming the current step and a single blue primary button that clearly dominates the grey or red secondary buttons."
+    },
+    "11": {
+      "score": 4,
+      "why": "Each step asks for one primary action (continue, verify, confirm) while secondary options like 'Cancel', 'Back to settings', or 'Create a new setup key' are visually demoted."
+    },
+    "12": {
+      "score": 4,
+      "why": "Outcome banners plainly state what happened and what to do next, e.g. 'MFA is active.', 'Recovery code accepted. 7 recovery codes remain.', and 'Store these now.'"
+    },
+    "13": {
+      "score": 2,
+      "why": "Retries are penalised by a five-minute lockout after five failed submissions, there is no resend or reveal control for the verification code, and the password has no reveal toggle."
+    },
+    "14": {
+      "score": 2,
+      "why": "The observed error 'We could not complete that request. Please try again.' is non-blaming but does not state what the problem was or how to fix it."
+    },
+    "15": {
+      "score": 2,
+      "why": "Reading is untimed, but the one-time code must be entered within a 30-second window and five failures lock verification for five minutes, so code-entry time is not generous."
+    }
+  },
+  "cost_usd": 0.079434,
+  "generation_id": "gen-1786388993-nfmbSd6aTKB0cbiU6viA",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 3,
+    "6": 4,
+    "7": 2,
+    "8": 1,
+    "9": 3,
+    "10": 4,
+    "11": 4,
+    "12": 4,
+    "13": 2,
+    "14": 2,
+    "15": 2
+  },
+  "constructs": {
+    "attention": 3.0,
+    "memory": 3.6667,
+    "comprehension": 2.0,
+    "decision_making": 4.0,
+    "learning": 2.0
+  },
+  "overall": 2.9333,
+  "capture_complete": true
+}

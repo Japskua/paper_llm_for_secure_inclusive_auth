@@ -1,0 +1,136 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "phone": "+15551234567"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_identity_code",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#phone",
+          "value": "${phone}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue')"
+        }
+      ]
+    },
+    {
+      "name": "authenticator_setup_introduction",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated identity verification code: (\\d{6})",
+          "into": "identity_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${identity_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify identity')"
+        }
+      ]
+    },
+    {
+      "name": "enter_authenticator_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Set up authenticator')"
+        }
+      ]
+    },
+    {
+      "name": "save_recovery_codes",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Simulated current authenticator code: (\\d{6})",
+          "into": "authenticator_code"
+        },
+        {
+          "do": "fill",
+          "selector": "#otp",
+          "value": "${authenticator_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm authenticator')"
+        }
+      ]
+    },
+    {
+      "name": "security_settings",
+      "actions": [
+        {
+          "do": "read",
+          "selector": "#list",
+          "regex": "([A-HJ-NP-Z2-9]{5}-[A-HJ-NP-Z2-9]{5})",
+          "into": "recovery_code"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('I have saved these codes')"
+        }
+      ]
+    },
+    {
+      "name": "enter_recovery_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify a recovery code')"
+        }
+      ]
+    },
+    {
+      "name": "recovery_code_accepted",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#code",
+          "value": "${recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify recovery code')"
+        }
+      ]
+    },
+    {
+      "name": "security_settings_after_recovery",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Return to settings')"
+        }
+      ]
+    },
+    {
+      "name": "signed_out",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "button:has-text('Sign out')"
+        }
+      ]
+    }
+  ]
+}

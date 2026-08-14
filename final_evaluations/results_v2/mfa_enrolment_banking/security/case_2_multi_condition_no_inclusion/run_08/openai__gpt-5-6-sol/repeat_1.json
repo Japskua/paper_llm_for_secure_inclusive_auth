@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:10:35.803228+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "d8c5dbd5061e8b177d6cbb2c854604d59d269a0a9fe64507809dadc323e1593e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA routes derive the account exclusively from the authenticated session through auth() or verified(), with no client-supplied account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes and MFA secrets are stored and verified against the session-bound account rather than being accepted globally for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA sets mfaEnabled but does not rotate or invalidate the current session or any other existing sessions for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted using AES-256-GCM, while backup codes are stored as SHA-256 digests combined with a random pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "OTP secrets, session values, identity codes, and backup codes are generated from crypto.getRandomValues()."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is stored only in a Secure HttpOnly cookie, while secrets and codes are kept in transient JavaScript memory rather than browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server applies type, format, and length validation to email, password, phone, OTP, recovery-code, and manual-secret inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic server-derived values are inserted using textContent or createElement rather than being concatenated into executable HTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application accepts no redirect destination input and implements no user-controlled redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "The __Host-mfa_session cookie is consistently set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Provisioning secrets, current OTPs, identity codes, and recovery codes are explicitly written to the browser console and visible Logs panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity verification codes expire after five minutes and are cleared and marked used after successful verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "Login, identity, MFA, and recovery verification failures are counted and locked for 15 minutes after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Successful authentication replaces the pre-authentication session, sessions enforce 20-minute idle and eight-hour absolute limits, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.08553625,
+  "generation_id": "gen-1786389013-poqkmSu2cQ5KW2jbenS1",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

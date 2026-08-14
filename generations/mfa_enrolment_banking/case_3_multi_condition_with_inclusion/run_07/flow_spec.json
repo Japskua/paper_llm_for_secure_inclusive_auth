@@ -1,0 +1,180 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "password": "BankPass!42",
+    "new_password": "NewPass!42"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "csrf=(crypto\\.randomUUID\\(\\)\\.replace\\(/-/g,\"\"\\))",
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "bootstrap": {
+    "required_client_behavior": "Execute the inline script from GET / in a browser context before POST /api/signin. It generates a random mfa_csrf cookie and sends that same value in the X-CSRF-Token header. The initial token is not present as a literal value in the HTML; the html_regex captures its client-side generator expression."
+  },
+  "steps": [
+    {
+      "name": "load MFA sign-in page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "sign in",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "${password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "stage": "stage"
+      }
+    },
+    {
+      "name": "send identity code",
+      "method": "POST",
+      "path": "/api/identity/send",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "identity_code": "simulationCode"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "create authenticator setup key",
+      "method": "POST",
+      "path": "/api/authenticator/setup",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "setup_secret": "secret",
+        "setup_uri": "uri"
+      }
+    },
+    {
+      "name": "confirm authenticator added",
+      "method": "POST",
+      "path": "/api/authenticator/confirm",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "authenticator_code": "simulationCode"
+      }
+    },
+    {
+      "name": "verify authenticator code",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${authenticator_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "create recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/create",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_codes": "codes",
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "finish MFA enrolment",
+      "method": "POST",
+      "path": "/api/recovery/finish",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "WrongPass!42"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "sign-in request with mismatched CSRF rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "headers": {
+        "X-CSRF-Token": "invalid-csrf-token"
+      },
+      "body": {
+        "email": "${email}",
+        "password": "${password}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid authenticator code rejected",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    }
+  ]
+}

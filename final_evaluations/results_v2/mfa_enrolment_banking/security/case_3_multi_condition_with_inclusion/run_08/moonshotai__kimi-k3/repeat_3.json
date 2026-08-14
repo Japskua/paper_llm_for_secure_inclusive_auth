@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:59:53.434093+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "48fa2822d4bb533cb7f6b1373e6850d18a371d90cdcb9c7879856ab4a2a475d0",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA route resolves the account from the server-side session (owned()), and the object() guard even rejects bodies containing id/accountId/userId fields, so only the session owner's settings are touched."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are stored as a salted hash on the individual session's challenge object, so a code issued to one session/user cannot be used by another."
+    },
+    "3": {
+      "score": 1,
+      "why": "At sign-in all existing sessions for the account are deleted ('for (const [id, session] of sessions) ... sessions.delete(id)'), so no previous sessions survive to persist after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted (encrypt()/account.secret) and recovery codes are stored as salted SHA-256 hashes, never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, identity codes, recovery codes, session ids and CSRF tokens are generated with crypto.getRandomValues, a CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "No localStorage/sessionStorage is used (codes live only in JS memory), and the session cookie is HttpOnly+Secure+SameSite=Strict; only the non-secret login CSRF token sits in a non-HttpOnly cookie."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (emailOK, passwordOK, otpOK, recoveryOK) plus the strict object() body check validate all input; data lives in in-memory Maps so there is no SQL injection surface."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are rendered via textContent or the esc() helper, server messages are inserted with textContent, and a strict nonce-based CSP blocks any injected script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "Client navigation is restricted to a fixed routes allowlist defaulting to #signin, and the server rejects any request body containing 'next' or 'redirect', so no open redirect exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "secureHeaders() sets CSP (with frame-ancestors 'none'), HSTS, X-Content-Type-Options, X-Frame-Options DENY and more on every response including errors."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits 'HttpOnly; Secure; SameSite=Strict' on the mfa_session cookie."
+    },
+    "12": {
+      "score": 4,
+      "why": "Server keeps secrets out of logs, URLs and error output and returns only generic 500s without stack traces, though the demo deliberately console.logs simulated OTPs/recovery codes in the browser via privateDemo()."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges expire after 15 minutes and are marked used on success, TOTP time-steps are recorded in usedSteps for single-use, and recovery codes carry a used flag."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator and recovery verification each lock the account for 10 minutes after 5 failed attempts (identityFails/authFails/recoveryFails with clearLock)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in issues a fresh random session id while deleting all prior sessions, getSession enforces 30-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.0684276,
+  "generation_id": "gen-1786391894-ruh6XhDoWOik0GXohh4W",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.9333,
+  "capture_complete": true
+}

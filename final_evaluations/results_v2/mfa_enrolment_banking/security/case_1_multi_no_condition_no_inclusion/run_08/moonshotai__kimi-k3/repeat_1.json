@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:24:32.442756+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "e75c5e1f2640b1b5327f2decd8300f8832941a1fa4252cfc26f15807ec177e22",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint calls requireAuth, which resolves the session solely from the HttpOnly cookie and requires session.accountId to match the account, while the body parser rejects any client-supplied accountId or userId, preventing IDOR."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification is performed only against the single account's own encrypted TOTP secret and its stored recovery codes, so a code is bound to that account and there is no path for one user's code to authenticate another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The /api/mfa/verify handler sets mfaEnabled=true without invalidating or rotating any session, so the enabling session (and any other pre-existing authenticated sessions) remain fully valid after MFA is turned on."
+    },
+    "4": {
+      "score": 5,
+      "why": "Both the TOTP secret and the recovery-code set are stored via AES-256-GCM encrypt() (encryptedSecret, encryptedRecoveryCodes) and are only decrypted in memory when needed, never persisted in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session IDs, CSRF tokens, TOTP seeds (randomBytes(20)), recovery codes (randomBytes(12)), and the master key are generated with node's cryptographically secure randomBytes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict, and the client keeps the CSRF token, secret, OTP, and recovery codes only in in-memory closure variables with no use of localStorage, sessionStorage, or readable cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (validEmail, validPhone, validOtp, validCode) regex-check all inputs, the JSON body is size- and type-restricted, and the in-memory store involves no SQL, so injection via queries is not possible."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values (secrets, codes, error messages, log lines) are inserted via textContent or createTextNode, innerHTML is used only with static templates containing no user data, and a nonce-based CSP blocks unauthorized script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application implements no redirect mechanism at all—no Location headers or redirect parameters exist and navigation is purely internal view rendering, so open redirection is impossible."
+    },
+    "10": {
+      "score": 5,
+      "why": "The headers() helper applies HSTS (max-age=31536000; includeSubDomains), a strict nonce-based CSP with frame-ancestors 'none', X-Content-Type-Options: nosniff, and X-Frame-Options: DENY to every response including errors and the HTML page."
+    },
+    "11": {
+      "score": 5,
+      "why": "The cookie() builder sets 'mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=...' and clearCookie() mirrors those attributes when expiring the cookie."
+    },
+    "12": {
+      "score": 3,
+      "why": "The server itself performs no logging, returns only generic error messages, and the top-level catch hides stack traces, but the client-side 'Logs' panel deliberately prints the TOTP seed, the live six-digit OTP, and all recovery codes, so secrets are not kept out of log output."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTP codes are valid only for their 30-second window (±1 step) and the acceptedCounter check blocks reuse of the same or earlier counter, while recovery codes are spliced out upon use and carry a 30-day expiresAt that is enforced."
+    },
+    "14": {
+      "score": 5,
+      "why": "Both /api/mfa/verify and /api/mfa/recovery/verify call locked() and failed(), which lock the account for 10 minutes (HTTP 429) after 5 consecutive failures, with counters cleared on success."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the preauth session and issues a fresh session ID (rotation), sessions enforce a 20-minute idle and 8-hour absolute timeout (10-minute preauth), and /api/logout deletes the server-side session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.116943,
+  "generation_id": "gen-1786386103-xFQLKJ5bvKp7kBUhVpmH",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": false
+}

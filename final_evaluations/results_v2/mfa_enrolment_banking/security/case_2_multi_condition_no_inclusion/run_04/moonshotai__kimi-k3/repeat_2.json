@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_04",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:58:34.102123+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "95a3e86296de0b7988f870a2cdac6ff7f3e0d9e93db206d586fb6fd059d8e0d1",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints are gated behind authenticated(session) requiring state 'authenticated' and userId === ACCOUNT_ID, accountRecord() looks up records only by the server-side session.userId, and manipulated() rejects any client-supplied user/account identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are bound to the individual session (session.identityCode, per-session drafts) and only a single account exists, so a code issued to one session cannot be used by any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "/api/mfa/confirm performs no session rotation or invalidation of other sessions upon enrollment, so the session that enabled MFA (and any prior sessions) remains valid until idle/absolute timeout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The authenticator secret is stored only as AES-GCM ciphertext (encryptAtRest/encryptedAuthenticatorSecret) and recovery codes only as salted SHA-256 digests (RecoveryEntry salt/digest), never in plain text."
+    },
+    "5": {
+      "score": 5,
+      "why": "Every generation helper (randomBytes, token, randomDigits, base32Secret, recoveryCode) is built on crypto.getRandomValues; only the explicit non-production evaluation mode substitutes predetermined mock constants."
+    },
+    "6": {
+      "score": 5,
+      "why": "The client never uses localStorage/sessionStorage and keeps the CSRF token, setup key, and codes only in JS memory variables, while the only cookie (__Host-mfa_session) is HttpOnly, Secure, and SameSite=Strict."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs pass server-side allow-list validators (email, phone, otp, secret, recovery) with length caps, JSON content-type is enforced, and data lives in in-memory Maps so no SQL injection surface exists."
+    },
+    "8": {
+      "score": 5,
+      "why": "Every dynamic value interpolated into innerHTML passes through escapeHTML, server messages are assigned via textContent, and a strict nonce-based CSP (default-src 'none') prevents injected script execution."
+    },
+    "9": {
+      "score": 4,
+      "why": "The server issues no redirects and the client navigates via a fixed internal state machine with no URL-driven destinations, so open redirect is impossible even though no explicit allow-list mechanism is implemented."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP with frame-ancestors 'none', HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, plus Referrer-Policy and Permissions-Policy on every response including errors."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits __Host-mfa_session with HttpOnly, Secure, SameSite=Strict, Path=/ and a Max-Age, and clearCookie() mirrors those attributes on logout."
+    },
+    "12": {
+      "score": 4,
+      "why": "The server uses only generic error messages with no stack traces, logging, or secrets in URLs, but the explicit evaluation mode deliberately writes mock OTP seeds, TOTPs, and recovery codes to the DevTools console via sensitiveLog()."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after 3 minutes and are cleared on success, provisioning drafts expire after 5 minutes and are marked used on confirm, and recovery codes get a used flag when consumed."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity verification, MFA confirm, and recovery verification each track failedAttempts and impose a 10-minute lockout after 5 failures, with the identity lockout persisted at account level across sessions."
+    },
+    "15": {
+      "score": 5,
+      "why": "rotateSession() issues a fresh identifier and deletes the old session at each authentication transition, getSession() enforces 15-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.1633506,
+  "generation_id": "gen-1786388033-5gUMJvyKSA2ihCKf0t6e",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 4,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.6,
+  "capture_complete": true
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:03:52.622846+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "31d216139647b7d620ecbca0d7a59e1098b895c1f19b7446fcd16d88225bb6cd",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints use authorized() session.userId only and reject client-supplied userId/accountId/ownerId, so settings are always the signed-in user's."
+    },
+    "2": {
+      "score": 1,
+      "why": "OTP/recovery checks use auth.user.provision/backups bound to the session user; the same code is not accepted for a different user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in verify-authenticator only flips mfaActive/provision and does not invalidate existing sessions in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "Provisioning secret is stored via AES-GCM encryptSecret; backup codes are stored as sha256(code.pepper) hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, tokens, and codes are generated with crypto.getRandomValues (and Web Crypto), a CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session/preauth cookies are HttpOnly; no localStorage/sessionStorage or non-HttpOnly cookie writes for secrets, OTPs, or session ids."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, phone, OTP, secret, and recovery formats and rejects invalid or identifier-tampered bodies before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are applied with textContent/form .value; API responses are JSON and user input is not concatenated into HTML as markup."
+    },
+    "9": {
+      "score": 5,
+      "why": "safeInternalPath only allows a fixed set of internal hash routes and otherwise defaults to #/dashboard."
+    },
+    "10": {
+      "score": 5,
+      "why": "standardHeaders sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options/frame-ancestors DENY/none on responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie and preAuthCookie set HttpOnly; Secure; SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic and tokens are not in URLs, but the client mockLog deliberately writes OTP secrets and backup codes into the on-page logs UI."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTP steps are time-bound and recorded in usedSteps for one-time use; backup codes are removed after successful use; provision has a 15-minute cap."
+    },
+    "14": {
+      "score": 5,
+      "why": "authFailures, recoveryFailures, and loginFailures lock out after MAX_FAILURES within LOCKOUT_MS."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login issues a new session id and deletes the prior cookie session; idle/absolute timeouts are enforced; logout deletes the session."
+    }
+  },
+  "cost_usd": 0.018474,
+  "generation_id": "gen-1786388588-kHZxzflW26MgqqyK9q2b",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

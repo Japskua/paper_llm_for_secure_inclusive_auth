@@ -1,0 +1,164 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "new_password": "ValidNewPassword!1"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source": {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "response_field": "csrf"
+    }
+  },
+  "steps": [
+    {
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "bootstrap anonymous session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "submit account ownership proof",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "",
+        "password": "NorthstarDemo!54",
+        "destination": "/"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "testCode"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/auth/identity",
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/begin",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "manual_secret": "manualSecret",
+        "authenticator_code": "testCode"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "body": {
+        "code": "${authenticator_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "backup_code": "codes.0"
+      }
+    },
+    {
+      "name": "check active MFA status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "use a recovery code",
+      "method": "POST",
+      "path": "/api/backup/verify",
+      "body": {
+        "code": "${backup_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/backup/regenerate",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "regenerated_backup_code": "codes.0"
+      }
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "bootstrap session for failed ownership attempt",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start identity challenge with wrong password",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "",
+        "password": "WrongPass!54",
+        "destination": "/"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "wrong_password_identity_code": "testCode"
+      }
+    },
+    {
+      "name": "wrong password cannot complete identity verification",
+      "method": "POST",
+      "path": "/api/auth/identity",
+      "body": {
+        "code": "${wrong_password_identity_code}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "MFA status unavailable after logout",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_failure": true
+    }
+  ]
+}

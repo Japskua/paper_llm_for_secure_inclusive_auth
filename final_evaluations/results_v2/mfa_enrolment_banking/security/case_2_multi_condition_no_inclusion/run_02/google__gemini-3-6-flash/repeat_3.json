@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_02",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 3,
+  "judged_at": "2026-08-10T18:43:37.831292+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "3660c58d77176efc41a4305442d5742218dc8e1980c5da8b1ced6271c38fcbd7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints invoke requireSession with identity verification required, ensuring requests map strictly to the session owner."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes and OTP secrets are bound to individual user sessions or account objects in memory, preventing reuse across accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the account state but does not clear or invalidate existing session tokens stored in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted at rest using AES-GCM and backup codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, tokens, and verification codes are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored exclusively in HttpOnly, Secure cookies, and sensitive values are not written to browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validator functions enforce strict regex constraints on email, phone, OTP, and recovery code inputs."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side rendering uses textContent DOM assignments and HTML responses carry a strict Content-Security-Policy with nonces."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not perform dynamic redirects, eliminating open redirect vulnerabilities."
+    },
+    "10": {
+      "score": 5,
+      "why": "Base response headers set strict CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies explicitly include HttpOnly, Secure, and SameSite=Strict directives."
+    },
+    "12": {
+      "score": 5,
+      "why": "Errors return generic user-facing messages, server exceptions return status 500 without stack traces, and sensitive tokens are omitted from server logs and URLs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes, TOTP periods, and recovery hashes are time-bound and rendered single-use upon successful consumption."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in attempts, identity verification, OTP entry, and recovery redemption enforce lockouts after 5 consecutive failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "A new session ID is generated on sign-in, idle and absolute session expirations are enforced, and logout deletes the session state and clears the cookie."
+    }
+  },
+  "cost_usd": 0.0255,
+  "generation_id": "gen-1786387405-oBaIKPS3yBkQrAzU1KWp",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

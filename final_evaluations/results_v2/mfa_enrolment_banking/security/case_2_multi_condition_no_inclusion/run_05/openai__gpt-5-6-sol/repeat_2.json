@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_05",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:57:25.573050+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "0f3d6292f9e220cbdffca811d0ddd5f705ab37cb33484e66ff4136891f7e4a0f",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints resolve the account exclusively from the authenticated session via accountForSession and do not accept a user-controlled account identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each identity verification code is hashed into a specific pending session bound to the matched account, so it cannot authenticate another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Activating MFA changes the account MFA record but neither rotates nor invalidates existing authenticated sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are encrypted with AES-GCM and backup codes are stored as peppered SHA-256 hashes rather than plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session tokens, verification codes, TOTP secrets, IVs, and recovery codes are generated using crypto.getRandomValues with rejection sampling where appropriate."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets and codes remain in JavaScript memory rather than browser storage, while the session identifier is stored only in an HttpOnly cookie."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server applies explicit type, length, format, normalization, content-type, and body-size validation to submitted identity and verification values."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are serialized as JSON and inserted into the document using textContent, while innerHTML is used only with static templates."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application performs no client-controlled redirects and accepts requests only for paths in the fixed allowedPaths set."
+    },
+    "10": {
+      "score": 5,
+      "why": "Every response receives CSP, HSTS, X-Content-Type-Options, X-Frame-Options, and a CSP frame-ancestors directive through headersFor."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie is consistently created with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client deliberately logs identity codes, TOTP secrets, provisioning URIs, current OTPs, and backup codes to the browser console."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after five minutes and are marked used, TOTP counters cannot be reused during activation, and accepted recovery codes are marked used."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, TOTP activation, and recovery verification failures trigger a ten-minute lockout after five failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Authentication creates a new session identifier and deletes the pending session, sessions have idle and absolute timeouts, and logout deletes the session."
+    }
+  },
+  "cost_usd": 0.0371425,
+  "generation_id": "gen-1786388222-5QsJbhstrGVM0u5sTXdi",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

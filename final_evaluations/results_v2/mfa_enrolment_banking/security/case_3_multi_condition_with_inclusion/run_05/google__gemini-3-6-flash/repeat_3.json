@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_05",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:44:12.667729+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "919bfc249c073a4efb6cb0c5b4d3a9c2bef9bacd84849b547d97827ab6e3ffab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Session verification retrieves the account directly matching the session accountId, ensuring settings belong to the signed-in user."
+    },
+    "2": {
+      "score": 5,
+      "why": "The system relies on hardcoded practice values (e.g., '123456' and '654321') which remain uniform across accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the account flags but does not invalidate or purge existing session tokens from the session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "Authenticator secrets are encrypted with AES-GCM and backup codes are stored as salted PBKDF2 hashes."
+    },
+    "5": {
+      "score": 1,
+      "why": "Secrets and verification codes use fixed, deterministic mock string constants rather than CSPRNG-generated values."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are restricted to HttpOnly cookies and secrets are transmitted via JSON response bodies rather than non-HttpOnly browser cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side functions validate email structure via regex, enforce maximum input string lengths, and restrict OTP codes to digit patterns."
+    },
+    "8": {
+      "score": 5,
+      "why": "Outputs are served as application/json with CSP restrictions, preventing browser rendering and execution of injected markup."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application endpoints return JSON objects and do not execute or allow unvalidated HTTP redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Response headers enforce CSP, HSTS, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "The session cookie setting explicitly includes HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "Error responses yield generic client messages, stack traces are omitted, and tokens are omitted from URL parameters."
+    },
+    "13": {
+      "score": 5,
+      "why": "The verification function checks expiration times and sets the used flag to true upon successful entry."
+    },
+    "14": {
+      "score": 5,
+      "why": "Login failures and code verification attempts track failure counts and enforce a 10-minute lock after reaching maximum attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Authentication generates a fresh token via token(), and auth() enforces both idle and absolute expiration limits."
+    }
+  },
+  "cost_usd": 0.0370275,
+  "generation_id": "gen-1786391028-BKmZHkWLrE34Cb6SCxxc",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 1,
+    "3": 1,
+    "4": 5,
+    "5": 1,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.3333,
+    "A02_cryptographic_failures": 3.6667,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": false
+}

@@ -1,0 +1,123 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:18:02.671747+00:00",
+  "rubric_file": "inclusivity_eval_case_1.md",
+  "rubric_sha256": "799715917c00f59b12fdfb559c6caf3c2d99a95d119e9e6f089352c81595510c",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 13,
+  "screenshots_available": 13,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_confirm_identity.png",
+    "step_03_set_up_authenticator.png",
+    "step_04_authenticator_secret_created.png",
+    "step_05_verify_authenticator.png",
+    "step_06_generate_recovery_codes.png",
+    "step_07_recovery_codes_displayed.png",
+    "step_08_mfa_active.png",
+    "step_09_remaining_recovery_codes.png",
+    "step_10_logged_out.png",
+    "step_11_explored.png",
+    "step_12_explored.png",
+    "step_13_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "A clean sans-serif system font is used throughout with reasonable line spacing and clear headings, though letter spacing is default and the log panels use small condensed monospace text."
+    },
+    "2": {
+      "score": 4,
+      "why": "Body instructions are single short sentences with no italics or all-caps, but the 'Logs' panels are dense wrapped monospace blocks that break the pattern."
+    },
+    "3": {
+      "score": 3,
+      "why": "The layout is a single centred card that would scale, but all screenshots are desktop-width and the code/log content overflows and is visually clipped, so mobile fit is unproven."
+    },
+    "4": {
+      "score": 3,
+      "why": "Instructions are short (one line per screen) but use jargon like 'manual Base32 secret' and 'six-digit test code from Logs' rather than plain language."
+    },
+    "5": {
+      "score": 2,
+      "why": "The 'Authenticator code' field is empty with no placeholder, hint, or shown example of the expected 6-digit format; only the log panel incidentally displays a code."
+    },
+    "6": {
+      "score": 2,
+      "why": "Step 5 explicitly directs the user to find the code 'from Logs', forcing them to read a long dense simulation log block in order to proceed."
+    },
+    "7": {
+      "score": 2,
+      "why": "The Base32 secret and the eight recovery codes are shown as plain selectable text with no copy button or copy-to-clipboard affordance anywhere."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code or scan option is offered; the screen states outright that a 'manual Base32 secret' must be used in the authenticator app."
+    },
+    "9": {
+      "score": 2,
+      "why": "No evidence of autofill or password-manager support (no visible autocomplete/one-time-code hints or manager icons), and the OTP field is a bare text input."
+    },
+    "10": {
+      "score": 3,
+      "why": "Each screen has one bold heading and a prominent blue primary button, but there is no step indicator or progress marker showing where the user is in the enrolment flow."
+    },
+    "11": {
+      "score": 4,
+      "why": "Each screen asks for essentially one main action, though several screens present a second competing button (Log out, Regenerate codes, View recovery codes)."
+    },
+    "12": {
+      "score": 2,
+      "why": "Confirmations appear only as technical '[SIMULATION]' log lines; apart from the final 'MFA is active' message there is no plain statement of what just happened or what comes next."
+    },
+    "13": {
+      "score": 3,
+      "why": "'Regenerate codes' and 'View recovery codes' allow re-requesting without penalty, but there is no reveal/hide toggle for the secret or codes and no explicit retry path on the verify step."
+    },
+    "14": {
+      "score": 2,
+      "why": "No error or validation state is shown in any of the 13 screenshots, so the claim about helpful non-blaming error messages cannot be observed to hold."
+    },
+    "15": {
+      "score": 4,
+      "why": "No countdown timers, expiry warnings, or session-timeout prompts appear on any screen, so no reading or entry time limit is imposed in what is shown."
+    }
+  },
+  "cost_usd": 0.15101,
+  "generation_id": "gen-1786385855-5kyARjihcLFXNOYAV2xB",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "7": 2,
+    "8": 1,
+    "9": 2,
+    "10": 3,
+    "11": 4,
+    "12": 2,
+    "13": 3,
+    "14": 2,
+    "15": 4
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 2.3333,
+    "comprehension": 1.6667,
+    "decision_making": 3.0,
+    "learning": 3.0
+  },
+  "overall": 2.7333,
+  "capture_complete": true
+}

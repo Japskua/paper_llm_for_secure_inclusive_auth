@@ -1,0 +1,138 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "phone": "07123456789",
+    "password": "MarcusDemo!54",
+    "new_password": "NewPassword!54"
+  },
+  "html_variables": {},
+  "csrf": null,
+  "steps": [
+    {
+      "name": "load MFA setup page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "sign in with demo account",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "password": "${password}",
+        "csrf": ""
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "confirm identity",
+      "method": "POST",
+      "path": "/api/identity",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "provision authenticator",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "mock_otp": "mockOtp"
+      }
+    },
+    {
+      "name": "verify authenticator code",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "body": {
+        "otp": "${mock_otp}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/generate",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "confirm recovery codes saved",
+      "method": "POST",
+      "path": "/api/recovery/confirm",
+      "body": {
+        "saved": true,
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "open MFA settings",
+      "method": "GET",
+      "path": "/api/settings",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "verify a saved recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "${recovery_code}",
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "sign out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {
+        "csrf": "${csrf}"
+      },
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/signin",
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "password": "WrongPassword!54",
+        "csrf": ""
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "unauthenticated MFA provisioning rejected",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "body": {
+        "csrf": "invalid"
+      },
+      "expect_failure": true
+    }
+  ]
+}

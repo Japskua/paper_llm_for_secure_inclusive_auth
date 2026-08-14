@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:33:03.944386+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server checks session authentication and ensures the MFA settings request originates from an authenticated session belonging to the account owner."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are bound to specific account identity states and TOTP secrets, preventing them from working for other users."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous session identifiers are explicitly deleted from memory during authentication stage transitions."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored encrypted via AES-GCM and recovery codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All random keys, OTP secrets, recovery codes, and session IDs are generated using crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored exclusively in HttpOnly cookies and no sensitive data is placed in browser local or session storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Strict type, length, and regular expression validation is performed on email, phone, OTP, and secret inputs on the server."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values rendered in the DOM use textContent assignments, avoiding unsafe HTML execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The single-page application contains no dynamic user-supplied redirect logic or open redirect vulnerabilities."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set appropriate Content-Security-Policy, HSTS, X-Content-Type-Options, and X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies explicitly set the HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Secrets, test OTPs, and recovery codes are exposed in API JSON responses and output to the UI log display."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity verification codes expire after 5 minutes and are marked used upon verification, while recovery codes are consumed on use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed attempts across identity, authenticator, and recovery verifications are tracked and trigger a 10-minute lockout after 5 failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are replaced upon authentication stage changes, enforce 15-minute idle and 8-hour absolute timeouts, and are deleted on logout."
+    }
+  },
+  "cost_usd": 0.038889,
+  "generation_id": "gen-1786386769-ZTEYxnJQ24fICGigEoWt",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

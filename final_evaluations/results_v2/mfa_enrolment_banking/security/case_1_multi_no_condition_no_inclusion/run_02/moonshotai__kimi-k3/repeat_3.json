@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_02",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_02",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T17:53:53.072882+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "eb4f79166737e268d2530d17dd7a7b62ae8f3ffa5784906cedbd2e6436649519",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint requires authenticatedSession(request, \"authenticated\"), which validates the session server-side against account.id and never trusts client-supplied user identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity code is stored as a hash bound to the issuing session, is single-use (identityCodeUsed) and expires in 5 minutes, so it cannot be replayed by any other session or user."
+    },
+    "3": {
+      "score": 5,
+      "why": "The /api/mfa/activate handler neither invalidates nor rotates the session, so sessions that existed before MFA enablement continue to work afterward."
+    },
+    "4": {
+      "score": 4,
+      "why": "The TOTP secret is stored AES-256-GCM-encrypted and backup codes as salted, peppered SHA-256 hashes, but the secret also exists as the hardcoded plaintext constant EVALUATION_TOTP_SECRET in the source."
+    },
+    "5": {
+      "score": 3,
+      "why": "Identity codes, backup codes, session IDs, CSRF tokens, and keys use crypto.randomBytes (CSPRNG), yet the OTP shared secret itself is a fixed hardcoded constant rather than randomly generated."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie (mfa_session) is HttpOnly/Secure/SameSite=Strict and the client uses no localStorage/sessionStorage, keeping the CSRF token only in an in-memory variable."
+    },
+    "7": {
+      "score": 5,
+      "why": "All inputs are validated server-side via validEmail, validPhone, validOtp, validRecovery, a regex on manualSecret, and strict JSON body shape checks."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values (email, phone, secret, codes, messages) are rendered exclusively via textContent, the single innerHTML use is static markup, and a strict nonce-based CSP blocks inline script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The signin handler rejects any redirect value other than the single internal path \"/verify-identity\" and the server never issues redirects to user-controlled destinations."
+    },
+    "10": {
+      "score": 5,
+      "why": "securityHeaders applies CSP (including frame-ancestors 'none'), HSTS, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY consistently to HTML, API, 404, OPTIONS, and error responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits the mfa_session cookie with HttpOnly, Secure, and SameSite=Strict attributes (plus Max-Age)."
+    },
+    "12": {
+      "score": 2,
+      "why": "Although server errors are generic and stack-trace-free, the client log() function writes the identity code, the TOTP seed, and all backup codes to console.log and an on-page \"Logs\" panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are single-use with 5-minute expiry, TOTP codes are time-bound with replay blocked via lastAcceptedTotpCounter, and backup codes are marked used upon consumption."
+    },
+    "14": {
+      "score": 5,
+      "why": "failure() counts every failed or malformed attempt and locks both session and account for 10 minutes after 5 failures, with lockActive enforced on all verification endpoints."
+    },
+    "15": {
+      "score": 5,
+      "why": "On successful identity verification the old session is deleted and a fresh authenticated session ID issued, idle (15 min) and absolute (8 h) timeouts are enforced, and /api/logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.1214196,
+  "generation_id": "gen-1786384226-ZxtnLRFA9M7fN79Fuc3k",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 4,
+    "5": 3,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.3333,
+  "capture_complete": true
+}

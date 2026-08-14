@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_08",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:20:47.687100+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "e75c5e1f2640b1b5327f2decd8300f8832941a1fa4252cfc26f15807ec177e22",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA route calls requireAuth → authenticatedSession, which resolves the session solely from the HttpOnly cookie and verifies session.accountId === account.id before any settings are read or changed."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification is bound to the single account's encrypted TOTP secret / recovery-code list and no user identifier is accepted from the request body (accountId/userId keys are rejected), so a code cannot validate for another account."
+    },
+    "3": {
+      "score": 5,
+      "why": "The /api/mfa/verify handler only sets account.mfaEnabled, updates acceptedCounter and clears failures — it never rotates the session id nor deletes other entries in the sessions map, so pre-existing sessions remain valid after enabling MFA."
+    },
+    "4": {
+      "score": 5,
+      "why": "account.encryptedSecret and account.encryptedRecoveryCodes are AES-256-GCM encrypted via encrypt() with a random IV and auth tag; plaintext is never persisted server-side."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session ids, CSRF tokens, the 20-byte Base32 TOTP seed, IVs and recovery codes all derive from node:crypto randomBytes (only minor modulo bias in recoveryCode())."
+    },
+    "6": {
+      "score": 4,
+      "why": "No localStorage/sessionStorage is used and the session cookie is HttpOnly; Secure; SameSite=Strict, though the CSRF token, TOTP secret and OTP live in in-memory JS variables and are printed to the page/console."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (validEmail, validPhone, validOtp, validCode, decode32's charset check) plus content-type/length checks and rejection of unexpected keys gate every request; no SQL/string-built queries exist."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are inserted with textContent/createTextNode/replaceChildren (innerHTML only ever receives static literals) and a strict nonce-based CSP with object-src 'none' and base-uri 'none' is served."
+    },
+    "9": {
+      "score": 3,
+      "why": "The application contains no redirect logic at all (no Location headers or 30x responses), so while there is no open-redirect risk, no allow-list of internal destinations actually exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets Strict-Transport-Security, a nonce-based CSP with frame-ancestors 'none', X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "cookie()/clearCookie() emit mfa_session with Path=/; HttpOnly; Secure; SameSite=Strict and a bounded Max-Age."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and tokens never appear in URLs, but /api/mfa/setup returns the TOTP seed and a live testOtp which the client writes to console.log and an on-page log panel, along with all recovery codes."
+    },
+    "13": {
+      "score": 5,
+      "why": "TOTP acceptance is limited to a ±1 30-second window and replay is blocked by requiring found > acceptedCounter, while recovery codes are spliced out on use and carry a 30-day expiresAt that is checked."
+    },
+    "14": {
+      "score": 5,
+      "why": "failed()/locked() count failures per account and impose a 10-minute lockout after 5 failures, returning HTTP 429 for both OTP and recovery-code verification."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the pre-auth session and issues a brand-new id and CSRF token, sessions enforce 20-minute idle and 8-hour absolute expiry, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.137505,
+  "generation_id": "gen-1786386011-EFtwAC4h9RwJDxd7y5bv",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.3333,
+  "capture_complete": false
+}

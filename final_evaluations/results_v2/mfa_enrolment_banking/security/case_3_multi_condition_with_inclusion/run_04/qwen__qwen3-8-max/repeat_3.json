@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_04",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_04",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:44:16.207585+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "c08fd9d85e429c55d45db1aac6ad59f72dd588811e3b858c08385d4e6ba1851e",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "owner() gates MFA routes to a session whose stage is mfa and whose userId matches ACCOUNT.id."
+    },
+    "2": {
+      "score": 2,
+      "why": "Production verification is session-bound, but fixed TEST codes could be accepted across sessions, while the app still only defines one hardcoded user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA mutates only the current session object and does not delete other stored sessions, so another valid mfa-stage session would remain usable."
+    },
+    "4": {
+      "score": 5,
+      "why": "Pending authenticator secrets are AES-GCM encrypted and backup codes are stored as peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 3,
+      "why": "Production branches use crypto.getRandomValues and crypto.subtle, but TEST branches return fixed secrets and codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "The session identifier is only set in an HttpOnly cookie and the client does not store secrets or session tokens in localStorage or sessionStorage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, password, OTP, and recovery inputs are checked with server-side length bounds and format validation before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side rendering uses an escaping helper that encodes ampersand, angle brackets, and quotes before insertAdjacentHTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "No server endpoint issues a redirect, and the only client navigation is a same-page location.reload."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include CSP with frame-ancestors, HSTS, X-Content-Type-Options nosniff, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "secureCookie sets the session cookie with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Production error handling hides stack traces and secrets, but TEST mode logs the provisioning URI and recovery codes in the browser console and visible log area."
+    },
+    "13": {
+      "score": 3,
+      "why": "Identity and pending authenticator values expire and are cleared after success, but recovery codes lack expiry and TEST mode weakens genuine time-based OTP validation."
+    },
+    "14": {
+      "score": 4,
+      "why": "Identity, OTP, and recovery failures trigger a per-session lockout after five attempts, but there is no account-wide or IP-level throttling."
+    },
+    "15": {
+      "score": 4,
+      "why": "Sign-in rotates the session identifier, timeouts are enforced, and logout deletes the current session, but the identifier is not rotated after the second-factor verification."
+    }
+  },
+  "cost_usd": 0.091462,
+  "generation_id": "gen-1786390728-Pxen9d3y00gzTfkdDciM",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 4,
+    "3": 1,
+    "4": 5,
+    "5": 3,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 3,
+    "14": 4,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 3.6667
+  },
+  "overall": 4.0667,
+  "capture_complete": true
+}

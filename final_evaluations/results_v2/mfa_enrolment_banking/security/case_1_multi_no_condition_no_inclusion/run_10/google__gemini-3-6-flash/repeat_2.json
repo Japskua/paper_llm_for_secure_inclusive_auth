@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:33:09.049372+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server checks session authentication and account stage on protected MFA endpoints."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are uniquely generated per identity challenge and are invalidated after single use."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous session identifiers are explicitly deleted from the server session map during authentication transitions."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored encrypted with AES-GCM and recovery codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "All keys, secrets, OTPs, and tokens are generated using Web Crypto crypto.getRandomValues()."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session identifiers use HttpOnly cookies and no secrets or tokens are stored in browser localStorage or sessionStorage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side routines strictly validate email, phone number, OTP formats, and recovery code structures."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side code updates UI elements using textContent rather than innerHTML, preventing DOM-based injection."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application contains no HTTP redirect mechanisms or unvalidated external URL redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Response headers enforce CSP, HSTS, X-Content-Type-Options, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are explicitly set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "Mock OTP codes, setup secrets, and recovery codes are explicitly output to the client-side log panel and console."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes expire after 5 minutes and identity challenges enforce a single-use flag."
+    },
+    "14": {
+      "score": 5,
+      "why": "Five consecutive failed verification attempts trigger a 10-minute lockout period."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers rotate across authentication steps, enforce idle/absolute timeouts, and delete on logout."
+    }
+  },
+  "cost_usd": 0.0486525,
+  "generation_id": "gen-1786386766-H1xeKs2oVfSbfJurW3Kj",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.7333,
+  "capture_complete": true
+}

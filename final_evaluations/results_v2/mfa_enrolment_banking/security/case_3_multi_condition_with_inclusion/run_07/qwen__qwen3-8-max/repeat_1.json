@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:56:04.483481+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "580b4044089c77727fe040f6ea0000c6d5f83948bf6204c54696c4d059d00f19",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 3,
+      "why": "MFA endpoints require a valid session and CSRF token, but settings are held in a single global account with no explicit per-user ownership check."
+    },
+    "2": {
+      "score": 2,
+      "why": "The identity code is stored globally for the single account, but no multi-user path is present to demonstrate the same code working for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only sets account.enabled and the current session stage, while previously issued sessions remain valid in the sessions map."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored encrypted with AES-GCM and backup codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 3,
+      "why": "Production paths use crypto.getRandomValues, but the default ACADEMIC mode uses fixed TEST_SECRET, TEST_ID, and TEST_CODES."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is HttpOnly and no localStorage/sessionStorage persistence is visible, although the secret and recovery codes are rendered in the browser and the CSRF cookie is not HttpOnly."
+    },
+    "7": {
+      "score": 4,
+      "why": "Server-side regex validation is applied to email, password, and OTP inputs, but there is no separate sanitisation step."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side rendering uses textContent rather than innerHTML, so server-provided values are encoded as plain text."
+    },
+    "9": {
+      "score": 3,
+      "why": "No redirects are emitted by the server or client, but no explicit redirect allow-list mechanism is implemented."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 4,
+      "why": "The mfa_session cookie has HttpOnly, Secure, and SameSite=Strict, but the mfa_csrf cookie is not HttpOnly."
+    },
+    "12": {
+      "score": 2,
+      "why": "Generic error handling hides stack traces, but ACADEMIC mode logs simulation identity/TOTP codes and full recovery codes to the browser console."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have an expiry and used flag, and TOTP counters are recorded in a used set to prevent reuse."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, and TOTP verification lock for 15 minutes after five failed attempts."
+    },
+    "15": {
+      "score": 3,
+      "why": "Sign-in issues a new session identifier and idle/absolute timeouts plus logout deletion exist, but older sessions are not revoked on authentication or MFA enablement."
+    }
+  },
+  "cost_usd": 0.082832,
+  "generation_id": "gen-1786391540-WdVojX1bg6Qf94LRrW5j",
+  "adjusted_scores": {
+    "1": 3,
+    "2": 4,
+    "3": 1,
+    "4": 5,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 4,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 2.6667,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 3.7333,
+  "capture_complete": false
+}

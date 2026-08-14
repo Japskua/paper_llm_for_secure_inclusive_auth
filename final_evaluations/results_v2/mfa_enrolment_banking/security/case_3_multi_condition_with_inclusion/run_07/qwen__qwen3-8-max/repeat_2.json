@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:56:58.425232+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "580b4044089c77727fe040f6ea0000c6d5f83948bf6204c54696c4d059d00f19",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "MFA endpoints require a valid session and stage, and no user-supplied account identifier is accepted, but ownership is implicit in the single-account design rather than an explicit per-user check."
+    },
+    "2": {
+      "score": 1,
+      "why": "The identity code hash is stored on the single account object and there are no other user accounts for which the same code would work."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only changes account.enabled and the current session stage, leaving other entries in the sessions map valid until timeout or logout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as an AES-GCM ciphertext and backup codes are stored as SHA-256 hashes."
+    },
+    "5": {
+      "score": 3,
+      "why": "Non-academic paths use crypto.getRandomValues, but the default ACADEMIC mode uses fixed TEST_SECRET, TEST_ID, and TEST_CODES."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session identifier cookie is HttpOnly and no localStorage/sessionStorage is used, although a JavaScript-readable CSRF cookie and transient DOM/console exposure of setup values reduce the strength of the guarantee."
+    },
+    "7": {
+      "score": 4,
+      "why": "The server validates email, password, and OTP inputs with strict patterns, but there is no phone input and validation is mainly rejection rather than sanitisation."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client builds dynamic nodes with textContent rather than innerHTML, so rendered values are treated as text."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application does not issue HTTP redirect responses, so there is no open-redirect path."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses include CSP, Strict-Transport-Security, X-Content-Type-Options, and X-Frame-Options DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "The mfa_session cookie is set with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 2,
+      "why": "Academic-mode client code writes recovery codes and simulation identity/TOTP codes to the browser console, although error responses are generic and stack traces are hidden."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have an expiry and used flag, and TOTP verification records used time counters to prevent replay."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity verification, and TOTP verification lock out after five failed attempts for 15 minutes."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login creates a new random session identifier, session checks enforce idle and absolute timeouts, and logout deletes the current session."
+    }
+  },
+  "cost_usd": 0.076992,
+  "generation_id": "gen-1786391549-Ex5ZiAIxUPawEdPw4vgw",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 3,
+    "6": 4,
+    "7": 4,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.3333,
+    "A02_cryptographic_failures": 4.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.2,
+  "capture_complete": false
+}

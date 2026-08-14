@@ -1,0 +1,181 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "new_password": "NewPassword!9"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": "api\\(\"(\\/api\\/session)\"\\)",
+    "field": "x-csrf-token",
+    "in": "header",
+    "endpoint": "/api/session",
+    "response_field": "csrf"
+  },
+  "steps": [
+    {
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "create browser session and obtain CSRF token",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign in with seeded account",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "body": {
+        "email": "${email}",
+        "password": "BankDemo!9"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_otp": "testIdentityOtp"
+      }
+    },
+    {
+      "name": "verify identity code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "${identity_otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/authenticator/start",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "authenticator_code": "testAuthenticatorCode"
+      }
+    },
+    {
+      "name": "retrieve active authenticator setup details",
+      "method": "GET",
+      "path": "/api/authenticator/details",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "authenticator_code": "testAuthenticatorCode"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/verify",
+      "body": {
+        "code": "${authenticator_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "generate recovery codes",
+      "method": "POST",
+      "path": "/api/backup/generate",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "view completed MFA status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/backup/regenerate",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "replacement_recovery_code": "codes.0"
+      }
+    },
+    {
+      "name": "use replacement recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "${replacement_recovery_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "body": {
+        "email": "${email}",
+        "password": "WrongDemo!9"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "invalid identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "used recovery code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

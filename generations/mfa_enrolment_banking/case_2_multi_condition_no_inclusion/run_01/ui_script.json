@@ -1,0 +1,36 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "phone": "+447700900000",
+    "new_password": null
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "identity_code_sent",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "#email",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "#phone",
+          "value": "${phone}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue')"
+        }
+      ]
+    },
+    {
+      "name": "verify_identity_code",
+      "actions": []
+    }
+  ]
+}

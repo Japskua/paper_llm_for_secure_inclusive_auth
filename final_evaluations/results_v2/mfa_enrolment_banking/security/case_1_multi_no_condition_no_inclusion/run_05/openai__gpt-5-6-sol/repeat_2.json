@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_05",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_05",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:04:42.370447+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ea5bab4b0d6539028296220e344d7db471d5a50ff1c6cc99aaff0f369372e18a",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every protected MFA endpoint derives the account from the authenticated session, and supplied identity fields are explicitly rejected."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are uniquely hashed and bound to one session, while authenticator and recovery codes are validated against the session owner's account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA sets mfaEnabled but does not rotate or invalidate any previously authenticated sessions for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "Authenticator secrets are encrypted with AES-GCM, and recovery codes are retained only as peppered SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session identifiers, verification codes, and recovery codes are generated from crypto.getRandomValues with rejection sampling where needed."
+    },
+    "6": {
+      "score": 5,
+      "why": "Sensitive values are held only in page memory, while the sole session cookie is marked HttpOnly and no browser storage is used."
+    },
+    "7": {
+      "score": 5,
+      "why": "The server applies strict type, length, format, structure, and allow-list validation to login credentials, OTPs, recovery codes, CSRF values, and request bodies."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic page values are inserted with textContent or text-node creation rather than interpreted as HTML, and a nonce-based CSP further restricts script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The only accepted redirect values are undefined or entries in a fixed allow-list of internal hash routes."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "Both active and expired session cookies include HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client explicitly writes identity codes, authenticator codes, and recovery codes to the browser console and visible simulation log."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire and become used, TOTP time steps cannot be reused, and recovery-code hashes are permanently marked used after acceptance."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity, TOTP, and recovery-code failures are all tracked and locked for ten minutes after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Authentication destroys the old session and creates a new identifier, sessions enforce idle and absolute expiration, and logout deletes the server-side session."
+    }
+  },
+  "cost_usd": 0.035177,
+  "generation_id": "gen-1786385060-M0zkXyLtF57iF4GE0yGU",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

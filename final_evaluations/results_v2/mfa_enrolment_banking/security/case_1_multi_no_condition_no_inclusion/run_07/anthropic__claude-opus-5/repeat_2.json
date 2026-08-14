@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:15:49.822664+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint goes through auth(), which derives the account solely from the server-side session (s.userId must equal account.id) before any settings can be read or changed."
+    },
+    "2": {
+      "score": 1,
+      "why": "The application models a single account and each OTP is derived from a per-enrolment encrypted secret bound to the session-owned account, so a code cannot be reused for a different user (there is no other user at all)."
+    },
+    "3": {
+      "score": 4,
+      "why": "Enabling MFA in /api/mfa/verify sets account.enabled and account.secret but never rotates or clears entries in the sessions map, so any pre-existing session token remains valid afterwards."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP seed is stored only as AES-GCM ciphertext (account.pending.secret / account.secret) and recovery codes are stored as SHA-256 hashes plus AES-GCM ciphertext, never plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session tokens, CSRF tokens, CSP nonces, Base32 seeds, AES keys/IVs and recovery codes are all produced from crypto.getRandomValues."
+    },
+    "6": {
+      "score": 4,
+      "why": "The session cookie is HttpOnly/Secure/SameSite=Strict and no localStorage/sessionStorage is used; only the CSRF token and transiently displayed test values live in page JS memory."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validation includes content-type/length checks, emailOK and phoneOK regexes, /^\\d{6}$/ for OTP, a strict recovery-code pattern, and rejection of client-supplied identifiers; no SQL/database is used."
+    },
+    "8": {
+      "score": 4,
+      "why": "All dynamic values are passed through esc(), which sets textContent and reads innerHTML, and are only injected into element text contexts, so injected markup cannot execute (attribute-quote escaping is absent but unused)."
+    },
+    "9": {
+      "score": 4,
+      "why": "The server issues no redirects at all and client navigation only assigns location.hash from a fixed internal set of route names, so no external destination is reachable."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets a nonce-based CSP with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Permissions-Policy on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "bank_session is issued as `HttpOnly; Secure; SameSite=Strict` with Path=/ and Max-Age, and cleared with the same attributes at logout."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and nothing sensitive appears in URLs, but the client explicitly console.logs and renders the Base32 secret, the test OTP and all recovery codes into the visible log panel."
+    },
+    "13": {
+      "score": 4,
+      "why": "The pending enrolment carries expires = now + 5 min and a used flag set after successful verification, and recovery codes are marked used once redeemed, though the TOTP accepts the previous 30s step."
+    },
+    "14": {
+      "score": 4,
+      "why": "OTP verification locks for 10 minutes after 5 failures and recovery redemption does the same via account.failures/recoveryLocked, although /api/login itself has only a timing floor and no attempt limit."
+    },
+    "15": {
+      "score": 4,
+      "why": "Login deletes any presented old session and issues a fresh token, auth() enforces 15-minute idle and 8-hour absolute timeouts, and logout deletes the session and clears the cookie; only re-rotation at MFA enable is missing."
+    }
+  },
+  "cost_usd": 0.131765,
+  "generation_id": "gen-1786385713-fiCw718FF2TeRANneOgE",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 4,
+    "7": 5,
+    "8": 4,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 4,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.6667,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.0
+  },
+  "overall": 4.2,
+  "capture_complete": true
+}

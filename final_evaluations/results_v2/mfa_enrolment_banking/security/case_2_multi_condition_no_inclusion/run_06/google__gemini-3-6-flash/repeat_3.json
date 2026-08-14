@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 2,
+  "judged_at": "2026-08-10T19:03:26.423722+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "31d216139647b7d620ecbca0d7a59e1098b895c1f19b7446fcd16d88225bb6cd",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization is enforced on every request by binding operations strictly to the session's authenticated user account."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes and OTPs are evaluated strictly against the individual user's encrypted secret or peppered hash and cannot be used for other accounts."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the user state without invalidating or purging other active session entries from the session map."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are stored encrypted with AES-GCM and backup codes are stored as SHA-256 hashes combined with a pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "Cryptographically secure random values generated via crypto.getRandomValues are used for all secrets, tokens, and peppers."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session and pre-auth tokens are stored solely in HttpOnly cookies, and browser local/session storage is not used."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators sanitize and check formats for email, phone, OTP, and secret inputs before handling."
+    },
+    "8": {
+      "score": 5,
+      "why": "User inputs and state rendered back into the HTML document use secure textContent assignments rather than unsanitized raw HTML."
+    },
+    "9": {
+      "score": 5,
+      "why": "Internal navigation paths are validated against a strict hardcoded allow-list in safeInternalPath."
+    },
+    "10": {
+      "score": 5,
+      "why": "Standard response headers set CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are generated with explicit HttpOnly, Secure, and SameSite=Strict directives."
+    },
+    "12": {
+      "score": 1,
+      "why": "OTP seeds and backup codes are explicitly printed into the UI mock log element."
+    },
+    "13": {
+      "score": 5,
+      "why": "OTP steps are tracked to prevent reuse within the time window, and backup codes are spliced from storage upon first use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Failed attempts for login, OTP verification, and recovery codes are recorded and enforce lockouts when exceeding failure thresholds."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session IDs are re-created upon login, track idle and absolute expiry times, and are removed from the server map upon logout."
+    }
+  },
+  "cost_usd": 0.0472335,
+  "generation_id": "gen-1786388584-5JIrXlTzanD3RAzF0qJa",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

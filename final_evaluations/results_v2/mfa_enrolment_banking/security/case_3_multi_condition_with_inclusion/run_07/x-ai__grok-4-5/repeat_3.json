@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_07",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "x-ai/grok-4.5",
+  "judge_served": "x-ai/grok-4.5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:53:15.237165+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "580b4044089c77727fe040f6ea0000c6d5f83948bf6204c54696c4d059d00f19",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA endpoints go through protect()/session(), which binds actions to the signed-in session; only that session can view or change the single account’s MFA state."
+    },
+    "2": {
+      "score": 1,
+      "why": "There is only one hard-coded account and codes are bound to that account’s hashed/encrypted state, so it is false that the same code works for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only updates account.enabled and the current session’s stage; other entries in the sessions Map are not invalidated and keep working."
+    },
+    "4": {
+      "score": 5,
+      "why": "account.secret is stored via AES-GCM encrypt() and backup codes are stored as SHA-256 hashes, not plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, session IDs, CSRF tokens, OTP digits, and backup codes are produced with crypto.getRandomValues (CSPRNG), aside from fixed academic test fixtures."
+    },
+    "6": {
+      "score": 5,
+      "why": "mfa_session is HttpOnly; no secrets/OTPs/session tokens are written to localStorage/sessionStorage or non-HttpOnly cookies (only the CSRF cookie is non-HttpOnly)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email, password, and OTP with strict type/regex/length checks (validEmail, validPassword, otp) before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "DOM updates use textContent via the E() helper, so server messages and user-influenced strings are not interpreted as HTML/script."
+    },
+    "9": {
+      "score": 5,
+      "why": "The app issues no user-controlled redirects at all (no Location headers or open redirect paths), so redirects are not open."
+    },
+    "10": {
+      "score": 5,
+      "why": "Every response sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options: DENY and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "mfa_session is set with HttpOnly; Secure; SameSite=Strict (and Max-Age)."
+    },
+    "12": {
+      "score": 2,
+      "why": "Stack traces are suppressed, but default academic mode returns simulationCode and the client writes identity/TOTP/recovery codes into on-page logs and console."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are marked used and expire after LIFE (10 minutes); TOTP accepts each counter window only once via totp.used."
+    },
+    "14": {
+      "score": 5,
+      "why": "Sign-in, identity, and TOTP paths increment failures and lock for LOCK (15 minutes) after MAX (5) failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in mints a new session id, idle/absolute timeouts (IDLE/ABS) are enforced in session(), and logout deletes the session and clears cookies."
+    }
+  },
+  "cost_usd": 0.0246116,
+  "generation_id": "gen-1786391531-dS1btqwjAUYNj3zqG82U",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": false
+}

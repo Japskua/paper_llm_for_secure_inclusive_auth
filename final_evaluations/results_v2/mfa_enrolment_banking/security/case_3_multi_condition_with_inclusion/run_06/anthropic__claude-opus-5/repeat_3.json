@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:46:20.225855+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "6d39d515364379a85979f05bdba4088e9c91f5547fdc46b6b25e253a3375adab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint routes through owner()/verified(), which resolves the account solely from the server-side session's user field (accounts.get(s.user)) rather than any client-supplied identifier."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity OTPs are hashed and stored on the individual session object and TOTP counters/secrets are per-account, so a code cannot be replayed against another user."
+    },
+    "3": {
+      "score": 4,
+      "why": "Session rotation occurs only in /api/login; /api/authenticator/confirm sets a.mfa = true without deleting or rotating any existing sessions, so previously issued sessions remain valid after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as AES-GCM ciphertext (encrypt()), and recovery codes plus email OTPs are stored only as peppered SHA-256 digests."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session IDs, CSRF tokens, OTPs and recovery codes derive from crypto.getRandomValues via bytes()/secureHex()/randomFrom(), with modulo-bias rejection."
+    },
+    "6": {
+      "score": 3,
+      "why": "No localStorage/sessionStorage is used and the session cookie is HttpOnly/Secure/SameSite=Strict, but the provisioning secret, OTPs and backup codes are returned to the browser, held in JS variables, printed to console.log and rendered into the DOM log panel."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server validates email with a regex plus length caps, OTPs with /^\\d{6}$/, recovery codes with a strict base32 pattern, and rejects non-object JSON bodies; there is no SQL layer at all (in-memory Maps)."
+    },
+    "8": {
+      "score": 5,
+      "why": "All dynamic values are injected with textContent (log lines, codes, secret, error messages) and the innerHTML in shell() contains only static markup, under a nonce-based CSP with no unsafe-inline."
+    },
+    "9": {
+      "score": 3,
+      "why": "The application implements no redirect functionality whatsoever, so while no open redirect exists, there is also no redirect allow-list to speak of."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP with frame-ancestors 'none', Strict-Transport-Security with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits mfa_session with Path=/, HttpOnly, Secure, SameSite=Strict and a bounded Max-Age."
+    },
+    "12": {
+      "score": 2,
+      "why": "Server errors are generic with no stack traces and secrets never appear in URLs, but the app deliberately returns the provisioning secret, otpauth URI, live TOTP codes, email OTP and all backup codes to the client and logs them to the browser console and an on-page log panel."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes have used flags and a 10-minute expiry, confirmation TOTPs are rejected if their counter is in acceptedTotpCounters (single-use within a ±1 step window), and recovery codes are deleted on use with a 1-year expiry."
+    },
+    "14": {
+      "score": 5,
+      "why": "Login, identity verification, authenticator confirmation and recovery verification each count failures and impose a 5-minute lockout after MAX_FAILURES = 5, returning HTTP 429."
+    },
+    "15": {
+      "score": 5,
+      "why": "/api/login deletes the pre-auth session and issues a fresh ID, current() enforces a 20-minute idle and 8-hour absolute timeout, and /api/logout deletes the session and clears the cookie with Max-Age=0."
+    }
+  },
+  "cost_usd": 0.145555,
+  "generation_id": "gen-1786391145-l5JqxXcXcCEoIAhbKE0D",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 5,
+    "5": 5,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 3,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.0,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 4.3333,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.3333,
+  "capture_complete": true
+}

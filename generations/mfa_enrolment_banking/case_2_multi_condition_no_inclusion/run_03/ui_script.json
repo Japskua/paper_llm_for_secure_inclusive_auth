@@ -1,0 +1,244 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "password": "NorthstarDemo!54",
+    "new_password": "NorthstarNew!55"
+  },
+  "steps": [
+    {
+      "name": "login_page",
+      "actions": []
+    },
+    {
+      "name": "verify_identity",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name='email']",
+          "value": "${email}"
+        },
+        {
+          "do": "fill",
+          "selector": "input[name='password']",
+          "value": "${password}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Continue')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('Verify your identity')"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Mock identity verification code \\(testing only\\): (\\d{6})",
+          "into": "identity_code"
+        }
+      ]
+    },
+    {
+      "name": "set_up_authenticator",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name='code']",
+          "value": "${identity_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Verify identity')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('Set up your authenticator')"
+        }
+      ]
+    },
+    {
+      "name": "add_authenticator",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#start"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('Add authenticator')"
+        },
+        {
+          "do": "read",
+          "selector": "#logs",
+          "regex": "Mock authenticator test code for TOTP counter \\d+ \\(testing only\\): (\\d{6})",
+          "into": "totp_code"
+        }
+      ]
+    },
+    {
+      "name": "save_initial_recovery_codes",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name='code']",
+          "value": "${totp_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm authenticator')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('Save your recovery codes')"
+        },
+        {
+          "do": "read",
+          "selector": ".codes li",
+          "regex": "([A-Z2-9]{5}-[A-Z2-9]{5})",
+          "into": "initial_recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "mfa_status",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#saved"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('MFA is active')"
+        }
+      ]
+    },
+    {
+      "name": "enter_initial_recovery_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#recovery"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('Confirm recovery code')"
+        }
+      ]
+    },
+    {
+      "name": "initial_recovery_code_confirmed",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name='code']",
+          "value": "${initial_recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('Recovery code confirmed')"
+        }
+      ]
+    },
+    {
+      "name": "mfa_status_after_recovery",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#go"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('MFA is active')"
+        }
+      ]
+    },
+    {
+      "name": "save_replacement_recovery_codes",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#regen"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('Save your recovery codes')"
+        },
+        {
+          "do": "read",
+          "selector": ".codes li",
+          "regex": "([A-Z2-9]{5}-[A-Z2-9]{5})",
+          "into": "replacement_recovery_code"
+        }
+      ]
+    },
+    {
+      "name": "mfa_status_with_replacement_codes",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#saved"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('MFA is active')"
+        }
+      ]
+    },
+    {
+      "name": "enter_replacement_recovery_code",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#recovery"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('Confirm recovery code')"
+        }
+      ]
+    },
+    {
+      "name": "replacement_recovery_code_confirmed",
+      "actions": [
+        {
+          "do": "fill",
+          "selector": "input[name='code']",
+          "value": "${replacement_recovery_code}"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Confirm recovery code')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('Recovery code confirmed')"
+        }
+      ]
+    },
+    {
+      "name": "signed_out",
+      "actions": [
+        {
+          "do": "click",
+          "selector": "#go"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('MFA is active')"
+        },
+        {
+          "do": "click",
+          "selector": "#logout"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h1:has-text('Sign in to enrol MFA')"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 2,
+  "judged_at": "2026-08-10T19:57:43.973260+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "48fa2822d4bb533cb7f6b1373e6850d18a371d90cdcb9c7879856ab4a2a475d0",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side API endpoints fetch account data strictly from the authenticated session ID tied to the user."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes, TOTP secrets, and recovery codes are distinct and checked against each individual account's unique session or account records."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in the authenticator confirmation endpoint updates account state without revoking or deleting other active session tokens."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are encrypted using AES-GCM and recovery codes are stored as salted SHA-256 hashes."
+    },
+    "5": {
+      "score": 5,
+      "why": "The application consistently uses Web Crypto's getRandomValues to generate keys, seeds, salts, session tokens, and verification codes."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are delivered in HttpOnly cookies and sensitive secrets are not stored in browser Web Storage or non-HttpOnly cookies."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side functions validate email format, password constraints, OTP digit formats, and recovery code patterns before processing."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values inserted into the DOM are safely escaped using textContent or custom HTML encoding helper functions."
+    },
+    "9": {
+      "score": 5,
+      "why": "Client-side navigation checks target routes against a hardcoded Set of permitted internal hash destinations."
+    },
+    "10": {
+      "score": 5,
+      "why": "The secureHeaders helper attaches CSP with nonces, HSTS, X-Content-Type-Options, X-Frame-Options, and frame-ancestors to HTTP responses."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client code outputs sensitive identity codes, TOTP codes, and recovery codes directly to browser console logs using console.log."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire after a time limit and are marked used, TOTP steps are tracked in usedSteps, and recovery codes are marked as used upon verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, and recovery code verification endpoints enforce a 10-minute lockout after 5 failed attempts."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session IDs are re-generated upon sign-in, checked for idle and absolute expiration timeouts, and deleted from memory on logout."
+    }
+  },
+  "cost_usd": 0.048375,
+  "generation_id": "gen-1786391841-m3VUN6HvKaUIz8ZUddWz",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

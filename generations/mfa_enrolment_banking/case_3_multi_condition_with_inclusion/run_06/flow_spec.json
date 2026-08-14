@@ -1,0 +1,172 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "password": "bank-demo",
+    "new_password": "NewPassword123!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "endpoint": "/api/state"
+  },
+  "steps": [
+    {
+      "name": "open MFA enrolment page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "create session and obtain CSRF token",
+      "method": "GET",
+      "path": "/api/state",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign in with demo account",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "email": "${email}",
+        "password": "${password}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "request identity email code",
+      "method": "POST",
+      "path": "/api/identity/send",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "identity_code": "testCode",
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "verify identity email code",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start authenticator setup",
+      "method": "POST",
+      "path": "/api/authenticator/setup",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "authenticator_secret": "secret",
+        "authenticator_uri": "uri",
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "get current authenticator practice code",
+      "method": "POST",
+      "path": "/api/authenticator/practice-code",
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "authenticator_code": "testCode",
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "confirm authenticator",
+      "method": "POST",
+      "path": "/api/authenticator/confirm",
+      "body": {
+        "code": "${authenticator_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "generate backup recovery codes",
+      "method": "POST",
+      "path": "/api/recovery/generate",
+      "body": {
+        "confirmRegenerate": true
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "codes.0",
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "verify one backup recovery code",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "${recovery_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "finish securely and log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "wrong password rejected",
+      "method": "POST",
+      "path": "/api/login",
+      "body": {
+        "email": "${email}",
+        "password": "wrong-password"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed identity code rejected",
+      "method": "POST",
+      "path": "/api/identity/verify",
+      "body": {
+        "code": "ABCDEF"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed authenticator code rejected",
+      "method": "POST",
+      "path": "/api/authenticator/confirm",
+      "body": {
+        "code": "ABCDEF"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "malformed backup code rejected",
+      "method": "POST",
+      "path": "/api/recovery/verify",
+      "body": {
+        "code": "not-a-backup-code"
+      },
+      "expect_failure": true
+    }
+  ]
+}

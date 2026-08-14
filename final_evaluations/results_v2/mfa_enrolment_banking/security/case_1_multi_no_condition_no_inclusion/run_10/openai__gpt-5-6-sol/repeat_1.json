@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_10",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "openai/gpt-5.6-sol",
+  "judge_served": "openai/gpt-5.6-sol",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:31:10.889711+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "bec19fb7daa8162b90d20fb3375400aee60e34265688322c0a5822f005812e37",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "MFA endpoints derive ownership exclusively from the authenticated server-side session and do not accept user identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "Each identity challenge is bound to the session's identityTarget and verified against that target's stored challenge and account."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA changes only the current session and does not invalidate other previously authenticated sessions for the account."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted with AES-GCM and recovery codes are stored as SHA-256 hashes combined with a server-side pepper."
+    },
+    "5": {
+      "score": 5,
+      "why": "Session identifiers, CSRF tokens, OTP secrets, verification codes, and recovery codes are generated using crypto.getRandomValues with rejection sampling where needed."
+    },
+    "6": {
+      "score": 5,
+      "why": "No browser storage is used, and the session identifier is stored only in an HttpOnly cookie."
+    },
+    "7": {
+      "score": 5,
+      "why": "Email, phone, OTP, secret, recovery-code, CSRF, session-cookie, and request-body inputs undergo server-side type, length, format, and state validation."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic client values are rendered with textContent, while server JSON is serialized with JSON.stringify and protected by a nonce-based CSP."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application implements no user-controlled redirects or redirect destinations."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses set CSP with frame-ancestors, HSTS, X-Content-Type-Options, and X-Frame-Options headers."
+    },
+    "11": {
+      "score": 5,
+      "why": "The mfa_session cookie is consistently issued with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client explicitly writes identity OTPs, authenticator OTPs, and plaintext recovery codes to the on-page Logs panel and browser console."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity challenges track expiry and used state, authenticator confirmation tracks prior use, and recovery codes are removed after successful verification."
+    },
+    "14": {
+      "score": 5,
+      "why": "Identity, authenticator, and recovery verification attempts are locked for ten minutes after five failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated during sign-in and successful identity authentication, enforce idle and absolute expiration, and are deleted on logout."
+    }
+  },
+  "cost_usd": 0.087985,
+  "generation_id": "gen-1786386651-dVKZqqaGogykRfifAB4V",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

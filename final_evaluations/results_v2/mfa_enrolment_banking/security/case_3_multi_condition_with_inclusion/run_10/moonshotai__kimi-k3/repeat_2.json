@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_10",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_10",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:09:53.707121+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "dd1c9201f3d2704d9a0e18cf89bf577bc13685e7b79911478303ad462c640bd6",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint goes through owner(), which resolves the account exclusively from session.userId (accounts.get(session.userId)) and accepts no client-supplied account identifiers, so only the session owner can reach their MFA settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Identity codes are stored per-session (session.identityCode) and TOTP codes verify only against the account's own decrypted secret via acceptedCounter(), so a code is bound to its own account/session and would not work for any other user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA rotates only the CSRF token and stage while the session token is never rotated or invalidated, and no other existing sessions are revoked, so sessions that existed before MFA enablement continue to work."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored as mfaSecretEncrypted using AES-GCM-256 (encrypt()), and each recovery code is stored as a PBKDF2-SHA256 hash with 210,000 iterations and a per-code salt, never in plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, OTPs, tokens, salts, and recovery codes are produced by bytes()/randomChars() built on crypto.getRandomValues with rejection sampling, and the AES key comes from crypto.subtle.generateKey."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie is the HttpOnly, Secure, SameSite=Strict Host-mfa_session cookie, and the client keeps the CSRF token, setup secret, and codes only in in-memory JavaScript variables with no localStorage, sessionStorage, or JS-readable cookies anywhere."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators (validEmail, phone(), validOtp, validSecret, validRecovery) strictly check and normalize all user input, JSON bodies are shape-checked in body(), and the password is length-capped, with constant-time comparisons via same()."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client renders all dynamic values through textContent and DOM construction, the only innerHTML use builds QR <rect> elements from purely numeric coordinates, and a strict nonce-based CSP (script-src 'nonce-...') blocks any injected script execution."
+    },
+    "9": {
+      "score": 5,
+      "why": "The application performs no HTTP redirects at all—fetch calls target fixed internal /api/* paths and navigation is internal SPA screen transitions—so no redirect can be steered outside the application."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets Content-Security-Policy with frame-ancestors 'none', Strict-Transport-Security, X-Content-Type-Options: nosniff, and X-Frame-Options: DENY (plus Referrer-Policy and Permissions-Policy) on every response including errors and the HTML page."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() emits 'Host-mfa_session=...; Path=/; HttpOnly; Secure; SameSite=Strict' with all three required attributes present on both issuance and clearing."
+    },
+    "12": {
+      "score": 2,
+      "why": "consoleSecret() unconditionally console.logs issued and regenerated recovery codes, localhost test mode returns live OTPs in API responses, and the TOTP secret is embedded as a query parameter in the otpauth:// provisioning URI, even though error output stays generic and no stack traces are shown."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes are marked identityCodeUsed and expire after 10 minutes (codeMs), TOTP acceptance requires counters greater than mfaLastCounter preventing replay, and recovery codes are removed via splice() upon use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Five failed attempts at identity, authenticator, or recovery verification each trigger a 10-minute lockout (lockMs), and identity code requests are additionally throttled to one per 20 seconds (throttleMs)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the previous session and issues a fresh token, sessions enforce a 20-minute idle and 8-hour absolute timeout in current(), and logout sets invalidated, deletes the session from the map, and clears the cookie with Max-Age=0."
+    }
+  },
+  "cost_usd": 0.1680372,
+  "generation_id": "gen-1786392527-SRP8VnNsKWxFMMOPMRgv",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.5333,
+  "capture_complete": true
+}

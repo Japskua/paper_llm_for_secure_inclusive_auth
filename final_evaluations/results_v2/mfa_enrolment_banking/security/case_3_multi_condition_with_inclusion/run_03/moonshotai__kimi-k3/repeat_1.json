@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_03",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_03",
+  "track": "security",
+  "judge": "moonshotai/kimi-k3",
+  "judge_served": "moonshotai/kimi-k3",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:35:27.585450+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "94a7c6dc5c1188ebf19fbb712d6c94f4fc46d3f25e16a20977597cf5afc48305",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "access() resolves the account solely from the server-side session's userId and noId() rejects any body containing userId/accountId/emailOwner, so only the session owner's MFA data can be touched."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes derive from a per-account encrypted secret with a used flag, so a code from one account cannot verify another (and only the single demo account exists)."
+    },
+    "3": {
+      "score": 5,
+      "why": "Nothing in /api/mfa/verify invalidates or rotates sessions, so any pre-existing sessions (other than the cookie replaced at sign-in) continue to work after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "The TOTP secret is stored AES-GCM encrypted (encrypt()) and recovery codes are stored only as salted PBKDF2-SHA-256 hashes (210k iterations)."
+    },
+    "5": {
+      "score": 5,
+      "why": "All secrets, session tokens, CSRF tokens, base32 seeds and recovery codes come from crypto.getRandomValues, a CSPRNG."
+    },
+    "6": {
+      "score": 5,
+      "why": "The only cookie is mfa_session with HttpOnly; Secure; SameSite=Strict, and the client keeps secrets/CSRF in JS variables with no localStorage/sessionStorage use."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side validators email(), phone(), otp() and recovery() plus body-size and JSON-shape checks validate all input; data lives in Maps so no SQL injection surface exists."
+    },
+    "8": {
+      "score": 5,
+      "why": "The client renders all dynamic values via textContent (never innerHTML) and a nonce-based CSP blocks injected script execution."
+    },
+    "9": {
+      "score": 4,
+      "why": "The application issues no redirects at all and noId() explicitly rejects any 'redirect' field, so no open redirect is possible, though no formal allow-list exists."
+    },
+    "10": {
+      "score": 5,
+      "why": "headers() sets CSP with nonces and frame-ancestors 'none', HSTS, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "Set-Cookie for mfa_session includes HttpOnly, Secure and SameSite=Strict with a Max-Age, both at issuance and clearing on logout."
+    },
+    "12": {
+      "score": 2,
+      "why": "The client deliberately writes the mock OTP and all recovery codes into the on-page logs panel and console (log(\"Mock MFA OTP delivered: \"...), log(\"Recovery codes delivered: \"...)), and the seed sits in the otpauth URL query string, though server errors are generic with no stack traces."
+    },
+    "13": {
+      "score": 4,
+      "why": "TOTP codes are 30-second time-bound with a 10-minute provisioning window and the used flag blocks reuse after verification, and recovery codes are single-use (spliced on success), though recovery codes never expire and a TOTP can be retried within its window before first success."
+    },
+    "14": {
+      "score": 5,
+      "why": "wrong()/locked() lock OTP and recovery verification for 5 minutes after 5 failures, and reissue is capped at 3 per 10 minutes with 429 responses."
+    },
+    "15": {
+      "score": 5,
+      "why": "Sign-in deletes the old session and issues a fresh random identifier, sessions enforce 20-minute idle and 8-hour absolute timeouts, and /api/logout deletes the session and expires the cookie."
+    }
+  },
+  "cost_usd": 0.144747,
+  "generation_id": "gen-1786390470-aGmNbRSsifQOf1NPnTET",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 4,
+    "10": 5,
+    "11": 5,
+    "12": 2,
+    "13": 4,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 4.6667,
+    "A05_security_misconfiguration": 4.0,
+    "A07_authentication_failures": 4.6667
+  },
+  "overall": 4.4,
+  "capture_complete": true
+}

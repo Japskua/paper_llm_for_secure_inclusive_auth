@@ -1,0 +1,138 @@
+{
+  "ok": false,
+  "landing_status": 200,
+  "csrf_found": true,
+  "steps_total": 14,
+  "steps_passed": 13,
+  "happy_path_passed": 10,
+  "happy_path_total": 11,
+  "negative_passed": 3,
+  "negative_total": 3,
+  "negatives_meaningful": false,
+  "steps": [
+    {
+      "name": "bootstrap pre-authentication session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "sign in with registered contact details",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "load MFA enrolment status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "confirm identity",
+      "method": "POST",
+      "path": "/api/mfa/identity",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "generate authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/setup",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "verify authenticator and enable MFA",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'initial_recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "load issued recovery codes",
+      "method": "GET",
+      "path": "/api/mfa/recovery",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "load regenerated recovery codes",
+      "method": "GET",
+      "path": "/api/mfa/recovery",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true,
+      "warnings": [
+        "could not capture 'regenerated_recovery_code' from 'recoveryCodes.0'"
+      ]
+    },
+    {
+      "name": "use one regenerated recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "expect_failure": false,
+      "status_code": 400,
+      "ok": false,
+      "response_message": "Verification could not be completed."
+    },
+    {
+      "name": "confirm consumed code is removed",
+      "method": "GET",
+      "path": "/api/mfa/recovery",
+      "expect_failure": false,
+      "status_code": 200,
+      "ok": true
+    },
+    {
+      "name": "malformed recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "consumed recovery code cannot be reused",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    },
+    {
+      "name": "recovery regeneration without CSRF rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "expect_failure": true,
+      "status_code": 403,
+      "ok": true
+    }
+  ],
+  "stage": "executed",
+  "spec_steps": 14
+}

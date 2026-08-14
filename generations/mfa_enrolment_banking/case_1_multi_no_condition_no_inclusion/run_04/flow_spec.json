@@ -1,0 +1,245 @@
+{
+  "variables": {
+    "email": "marcus@example.com",
+    "phone": "15551234567",
+    "new_password": "CorrectHorseBatteryStaple1!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header"
+  },
+  "steps": [
+    {
+      "name": "load MFA enrolment page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "start sign-in identity flow",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}",
+        "redirect": "/"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf",
+        "identity_code": "testIdentityCode"
+      }
+    },
+    {
+      "name": "verify identity",
+      "method": "POST",
+      "path": "/api/identity-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${identity_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "check authenticated session",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "signedIn",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "create authenticator provisioning",
+      "method": "POST",
+      "path": "/api/mfa/provision",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "manual_secret": "secret",
+        "authenticator_code": "testAuthenticatorCode"
+      }
+    },
+    {
+      "name": "confirm authenticator enrolment",
+      "method": "POST",
+      "path": "/api/mfa/confirm",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "manualSecret": "${manual_secret}",
+        "otp": "${authenticator_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code_used": "recoveryCodes.0",
+        "recovery_code_discarded_on_regen": "recoveryCodes.1"
+      }
+    },
+    {
+      "name": "start authenticator verification challenge",
+      "method": "POST",
+      "path": "/api/mfa/challenge",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "action": "verify"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "verify_code": "testAuthenticatorCode"
+      }
+    },
+    {
+      "name": "verify enrolled authenticator",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${verify_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "use one recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "${recovery_code_used}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "check session before recovery regeneration",
+      "method": "GET",
+      "path": "/api/session",
+      "expect_json_true": "signedIn",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "start recovery-code regeneration challenge",
+      "method": "POST",
+      "path": "/api/mfa/challenge",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "action": "regenerate"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "regenerate_code": "testAuthenticatorCode"
+      }
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/regenerate",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${regenerate_code}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "new_recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "log out",
+      "method": "POST",
+      "path": "/api/logout",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "malformed sign-in phone rejected",
+      "method": "POST",
+      "path": "/api/sign-in",
+      "headers": {
+        "Origin": "https://localhost:3000"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "not-a-phone",
+        "redirect": "/"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "incorrect identity code rejected",
+      "method": "POST",
+      "path": "/api/identity-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "000000"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "reused recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "${recovery_code_used}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "pre-regeneration recovery code rejected after regeneration",
+      "method": "POST",
+      "path": "/api/mfa/recovery-verify",
+      "headers": {
+        "Origin": "https://localhost:3000",
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "recoveryCode": "${recovery_code_discarded_on_regen}"
+      },
+      "expect_failure": true
+    }
+  ]
+}

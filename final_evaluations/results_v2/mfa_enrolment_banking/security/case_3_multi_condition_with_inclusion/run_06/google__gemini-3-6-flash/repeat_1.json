@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_06",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:46:18.304076+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "6d39d515364379a85979f05bdba4088e9c91f5547fdc46b6b25e253a3375adab",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "The server resolves the target account directly from the authenticated session user (`s.user`) via `owner(req)` and `verified(req)`, preventing cross-account parameter tampering."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes, encrypted TOTP secrets, and recovery code hashes are bound to specific accounts and sessions, making codes invalid for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA updates the account state (`r.a.mfa = true`) without invalidating or purging other pre-existing active sessions."
+    },
+    "4": {
+      "score": 5,
+      "why": "TOTP secrets are stored AES-GCM encrypted via `encrypt()`, and backup codes are stored as SHA-256 hashes via `hash()`."
+    },
+    "5": {
+      "score": 5,
+      "why": "All cryptographic keys, IVs, secrets, and verification codes are generated using `crypto.getRandomValues()`."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session IDs are stored exclusively in `HttpOnly` cookies, while client-side application state is kept strictly in memory."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server endpoints strictly validate input types, length bounds, email formats, and string patterns using helper functions like `six()` and `rec()`."
+    },
+    "8": {
+      "score": 5,
+      "why": "Client-side rendering sets dynamic values using safe DOM properties like `textContent` rather than `innerHTML`, avoiding XSS risks."
+    },
+    "9": {
+      "score": 5,
+      "why": "The single-page application manages view states internally without executing HTTP or client-side URL redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "Responses specify HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and CSP headers with `frame-ancestors 'none'`."
+    },
+    "11": {
+      "score": 5,
+      "why": "The `mfa_session` cookie explicitly sets `HttpOnly`, `Secure`, and `SameSite=Strict` directives."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client script explicitly logs OTP secrets and generated backup codes to the browser console and the on-page log container."
+    },
+    "13": {
+      "score": 5,
+      "why": "Identity codes expire and flag as used, recovery codes are removed upon verification, and TOTP validation tracks accepted time counters to prevent reuse."
+    },
+    "14": {
+      "score": 5,
+      "why": "Authentication, identity, authenticator, and recovery endpoints track failed attempts and enforce lockouts upon reaching maximum failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "The server regenerates session tokens on sign-in, enforces idle and absolute expiration timeouts, and deletes session records on logout."
+    }
+  },
+  "cost_usd": 0.041946,
+  "generation_id": "gen-1786391163-F62PQ66chdlmo0tRg7IJ",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

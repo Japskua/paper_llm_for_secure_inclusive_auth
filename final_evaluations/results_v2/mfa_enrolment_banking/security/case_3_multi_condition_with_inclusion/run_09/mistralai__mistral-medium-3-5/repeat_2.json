@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_09",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_09",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 2,
+  "attempts": 1,
+  "judged_at": "2026-08-10T20:02:29.917972+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "09fdd56138de07d37e0eeceb5b77a462484d946b26840067cc508ef31c4e45d7",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization is enforced on MFA endpoints, ensuring only the authenticated account owner can modify their settings."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are single-use and tied to the session, but the demo mode allows the same code to work for any user if DEMO_MODE is enabled."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are not invalidated when MFA is enabled; old sessions remain active until they expire."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP shared secrets and backup codes are stored encrypted or hashed (e.g., `encrypt(secret)` and `hash(code)`)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using `randomBytes` (cryptographically secure RNG)."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are not stored in browser storage or non-HttpOnly cookies (cookies are HttpOnly, Secure, SameSite)."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is performed (e.g., `otpOK`, `codeOK`, `emailOK` functions)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Output encoding is applied in the HTML template (e.g., `nonce` for CSP, and values are escaped in the DOM)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are not explicitly handled in the code, but the system does not allow open redirects (no dynamic redirect URLs)."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options) are set in `securityHeaders`."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with HttpOnly, Secure, and SameSite=Strict attributes."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are not exposed in logs, URLs, or error output (demo mode logs are browser-console-only)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes are single-use (marked as `used` after validation) and time-bound (expire after `LIFE`)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is enforced (e.g., `MAX` attempts, `LOCK` duration, and `isLocked` checks)."
+    },
+    "15": {
+      "score": 3,
+      "why": "Session identifiers are rotated on authentication (new session created), but idle/absolute timeouts are enforced, and logout invalidates sessions. However, session rotation on re-authentication is not explicitly confirmed."
+    }
+  },
+  "cost_usd": 0.025107,
+  "generation_id": "gen-1786392144-lN6qAsurEfUXv18VVT7a",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 3
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 4.8667,
+  "capture_complete": false
+}

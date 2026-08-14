@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_06",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:09:42.374700+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "3d09bd0257e9941bea9ed673158f55946146901e5fa8fb38fe05ada4ea49310d",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Every MFA endpoint derives the user solely from the server-side session via authorize(), which looks up users.get(session.accountId), so settings always belong to the signed-in user and client-supplied id keys are rejected."
+    },
+    "2": {
+      "score": 1,
+      "why": "Statement is false: TOTP codes are derived from each user's own AES-GCM-encrypted per-account secret and verification state is per-user, so a code valid for one account will not verify another (also only one demo account exists)."
+    },
+    "3": {
+      "score": 2,
+      "why": "Statement is largely false in effect but partly true literally: the session token is not rotated when MFA is enabled (/api/mfa/enable only flips mfaActive), so the existing session persists; however no other prior sessions survive since the old cookie's session is deleted at sign-in."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP shared secret is stored as AES-GCM ciphertext (encryptSecret) and recovery codes only as peppered SHA-256 digests (hashRecoveryCode), never plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "randomToken, randomBase32, and the AES IV/master key all use crypto.getRandomValues, a CSPRNG."
+    },
+    "6": {
+      "score": 3,
+      "why": "The session cookie is HttpOnly, Secure, SameSite=Strict and nothing is written to localStorage, but the CSRF token, provisioning secret, test OTP and recovery codes are held in JS memory and deliberately printed to the browser console, so codes/OTPs are not fully kept out of the browser."
+    },
+    "7": {
+      "score": 5,
+      "why": "validEmail, validPhone, validOtp, validRecoveryCode plus normalisation and strict JSON body checks validate all server-side input; there is no SQL layer (in-memory Maps), so no injection sink."
+    },
+    "8": {
+      "score": 4,
+      "why": "Server responses are JSON only and the page's nonce is a base64url random token; client rendering uses textContent for secrets/codes, though innerHTML is used for static markup templates (no user data interpolated)."
+    },
+    "9": {
+      "score": 2,
+      "why": "The statement is not demonstrably true: the application issues no redirects at all, so there is no allow-list implemented—no open redirect exists, but no restriction mechanism is present either."
+    },
+    "10": {
+      "score": 5,
+      "why": "baseHeaders() sets a strict nonce-based CSP with frame-ancestors 'none', HSTS with includeSubDomains, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy and Cache-Control: no-store on every response."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie() and clearSessionCookie() both set HttpOnly, Secure and SameSite=Strict with Path=/ and Max-Age."
+    },
+    "12": {
+      "score": 3,
+      "why": "Server errors are generic ('Unable to process this request.') with no stack traces and no secrets in URLs or server logs, but the provisioning secret, current OTP and all recovery codes are intentionally logged to the browser console via testConsole()."
+    },
+    "13": {
+      "score": 4,
+      "why": "Enrolment verification is one-shot (verification.used) and TOTP is bound to a 30-second step with no window skew, and recovery codes are spliced out after use; there is no explicit expiry timer on the pending verification record itself."
+    },
+    "14": {
+      "score": 5,
+      "why": "MFA verification locks out after 5 failures for 15 minutes, recovery-code verification locks after 5 failures, and sign-in uses a rolling 15-minute window with a 5-failure lockout plus constant-minimum failure timing and generic 401s."
+    },
+    "15": {
+      "score": 4,
+      "why": "A fresh random token is issued and the prior session deleted on sign-in, idle (15 min) and absolute (8 h) timeouts are enforced in authorize(), and logout deletes the session and clears the cookie; however the identifier is not rotated at the MFA-enable step."
+    }
+  },
+  "cost_usd": 0.102745,
+  "generation_id": "gen-1786385363-B4t188fbHkYwSEzQbmW3",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 4,
+    "4": 5,
+    "5": 5,
+    "6": 3,
+    "7": 5,
+    "8": 4,
+    "9": 2,
+    "10": 5,
+    "11": 5,
+    "12": 3,
+    "13": 4,
+    "14": 5,
+    "15": 4
+  },
+  "constructs": {
+    "A01_broken_access_control": 4.6667,
+    "A02_cryptographic_failures": 4.3333,
+    "A03_injection": 3.6667,
+    "A05_security_misconfiguration": 4.3333,
+    "A07_authentication_failures": 4.3333
+  },
+  "overall": 4.2667,
+  "capture_complete": true
+}

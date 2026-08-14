@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_06",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_06",
+  "track": "security",
+  "judge": "qwen/qwen3.8-max",
+  "judge_served": "qwen/qwen3.8-max",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:06:49.135876+00:00",
+  "rubric_file": "security_eval_case_2.md",
+  "rubric_sha256": "cd7099709c30fa9601bc938f6bba0c5f8c626195da591c29eceb69cd8402a143",
+  "app_ts_sha256": "31d216139647b7d620ecbca0d7a59e1098b895c1f19b7446fcd16d88225bb6cd",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All authenticated MFA endpoints resolve the user from the session via authorized() and operate only on auth.user, while rejecting supplied user identifiers."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification checks the authenticated user's own provision or backup data, so a code is not accepted for another user."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA only sets mfaActive and does not revoke existing sessions, so previously issued session records remain valid until timeout or logout."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP secret is stored as AES-GCM ciphertext and backup codes are stored as peppered SHA-256 hashes rather than plaintext."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets, tokens, OTP secrets, and recovery codes are generated with crypto.getRandomValues."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session and pre-auth tokens are placed only in HttpOnly Secure SameSite cookies, and the code does not use localStorage, sessionStorage, or non-HttpOnly cookies for secrets, OTPs, or session tokens."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server handlers validate email, phone, OTP, secret, and recovery code formats and normalize or restrict inputs before use."
+    },
+    "8": {
+      "score": 5,
+      "why": "Dynamic values are inserted with textContent or form value assignment rather than being concatenated into innerHTML as markup."
+    },
+    "9": {
+      "score": 5,
+      "why": "safeInternalPath allows only a fixed set of internal hash destinations, and the server emits no arbitrary Location redirects."
+    },
+    "10": {
+      "score": 5,
+      "why": "standardHeaders sets CSP, HSTS, X-Content-Type-Options, X-Frame-Options DENY, and frame-ancestors 'none'."
+    },
+    "11": {
+      "score": 5,
+      "why": "sessionCookie sets mfa_session with HttpOnly, Secure, and SameSite=Strict."
+    },
+    "12": {
+      "score": 1,
+      "why": "The client-side mock logs explicitly write the OTP secret, current OTP, and recovery codes to the page and console, so those values are not kept out of logs."
+    },
+    "13": {
+      "score": 5,
+      "why": "Provisioning expires after 15 minutes, OTP steps are tracked in usedSteps to prevent reuse, and recovery codes are removed after successful use."
+    },
+    "14": {
+      "score": 5,
+      "why": "authFailures and recoveryFailures enforce lockout after MAX_FAILURES failed attempts for LOCKOUT_MS."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes an existing session and issues a new random session ID, getSession enforces idle and absolute expiry, and logout deletes the session and clears the cookie."
+    }
+  },
+  "cost_usd": 0.053598,
+  "generation_id": "gen-1786388617-oXTnpTwKWxL8Suc0Eodz",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}

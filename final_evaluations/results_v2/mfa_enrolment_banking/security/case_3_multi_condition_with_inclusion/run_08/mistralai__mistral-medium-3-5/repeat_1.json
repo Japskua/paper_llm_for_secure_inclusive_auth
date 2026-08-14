@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_3_multi_condition_with_inclusion/run_08",
+  "case": "case_3_multi_condition_with_inclusion",
+  "run": "run_08",
+  "track": "security",
+  "judge": "mistralai/mistral-medium-3-5",
+  "judge_served": "mistralai/mistral-medium-3-5",
+  "repeat": 1,
+  "attempts": 3,
+  "judged_at": "2026-08-10T19:57:47.785131+00:00",
+  "rubric_file": "security_eval_case_3.md",
+  "rubric_sha256": "5fa75751573a4099410a42f902c6bdfcf527979a694ff73debe13a4ef0a70586",
+  "app_ts_sha256": "48fa2822d4bb533cb7f6b1373e6850d18a371d90cdcb9c7879856ab4a2a475d0",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "Server-side authorization checks `session.accountId` against `account.id` for all MFA endpoints (e.g., `/api/authenticator/provision`, `/api/recovery/generate`)."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are single-use and time-bound, but the statement claims they work for *any other user*, which is false (codes are tied to the session)."
+    },
+    "3": {
+      "score": 1,
+      "why": "Previous sessions are explicitly invalidated on new sign-in (`for (const [id, session] of sessions) if (session.accountId === marcus.id) sessions.delete(id)`), so old sessions do not persist after MFA is enabled."
+    },
+    "4": {
+      "score": 5,
+      "why": "OTP secrets are encrypted (`await encrypt(value)`) and backup codes are stored as salted hashes (`{ salt, hash: sha(salt + code), used: false }`)."
+    },
+    "5": {
+      "score": 5,
+      "why": "Secrets and codes are generated using `crypto.getRandomValues` (CSPRNG), e.g., `seed()` and `recoveryCode()`."
+    },
+    "6": {
+      "score": 5,
+      "why": "Secrets, OTPs, and session tokens are never stored in browser storage or non-HttpOnly cookies. Session cookies are `HttpOnly`, and sensitive data is only passed via secure headers or encrypted server-side."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side input validation is enforced (e.g., `emailOK`, `otpOK`, `recoveryOK`, and `object()` checks for malformed JSON)."
+    },
+    "8": {
+      "score": 5,
+      "why": "Output encoding is applied via `esc()` in the frontend (using `textContent`), and server responses are JSON (no raw HTML injection)."
+    },
+    "9": {
+      "score": 5,
+      "why": "Redirects are hardcoded to internal routes (e.g., `#identity`, `#setup`) and not derived from user input. No open redirects exist."
+    },
+    "10": {
+      "score": 5,
+      "why": "Secure headers are set via `secureHeaders()`, including CSP, HSTS, `X-Content-Type-Options`, and `X-Frame-Options: DENY`."
+    },
+    "11": {
+      "score": 5,
+      "why": "Session cookies are set with `HttpOnly`, `Secure`, and `SameSite=Strict` attributes (`sessionCookie()`)."
+    },
+    "12": {
+      "score": 5,
+      "why": "OTP seeds, backup codes, and session tokens are never logged, exposed in URLs, or included in error output. Stack traces are suppressed (generic error messages)."
+    },
+    "13": {
+      "score": 5,
+      "why": "Verification codes (identity codes) are single-use (`check.used = true`) and time-bound (`expires: Date.now() + life`)."
+    },
+    "14": {
+      "score": 5,
+      "why": "Rate-limiting is enforced for failed attempts (e.g., `account.identityFails >= 5` triggers a lockout for `lockTime`)."
+    },
+    "15": {
+      "score": 5,
+      "why": "Session identifiers are rotated on authentication (new session created on sign-in), have idle/absolute timeouts, and are invalidated on logout (`sessions.delete(session.id)`)."
+    }
+  },
+  "cost_usd": 0.0229305,
+  "generation_id": "gen-1786391863-Q1jQaZH4AQvSAta5LnAd",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 5.0,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 5.0,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 5.0,
+  "capture_complete": true
+}

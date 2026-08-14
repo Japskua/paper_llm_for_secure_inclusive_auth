@@ -1,0 +1,168 @@
+{
+  "variables": {
+    "email": "marcus@example.test",
+    "phone": "+15551234567",
+    "new_password": "UnusedPassword123!"
+  },
+  "html_variables": {},
+  "csrf": {
+    "html_regex": null,
+    "field": "X-CSRF-Token",
+    "in": "header",
+    "source_path": "/api/bootstrap"
+  },
+  "steps": [
+    {
+      "name": "bootstrap pre-authentication session",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "sign in with registered contact details",
+      "method": "POST",
+      "path": "/api/auth/signin",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "csrf": "csrf"
+      }
+    },
+    {
+      "name": "load MFA enrolment status",
+      "method": "GET",
+      "path": "/api/mfa/status",
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm identity",
+      "method": "POST",
+      "path": "/api/mfa/identity",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "email": "${email}",
+        "phone": "${phone}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "generate authenticator setup",
+      "method": "POST",
+      "path": "/api/mfa/setup",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok",
+      "capture": {
+        "manual_secret": "manualSecret",
+        "otp": "testOtp"
+      }
+    },
+    {
+      "name": "verify authenticator and enable MFA",
+      "method": "POST",
+      "path": "/api/mfa/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "otp": "${otp}"
+      },
+      "expect_json_true": "ok",
+      "capture": {
+        "initial_recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "load issued recovery codes",
+      "method": "GET",
+      "path": "/api/mfa/recovery",
+      "expect_json_true": "ok",
+      "capture": {
+        "recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "regenerate recovery codes",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {},
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "load regenerated recovery codes",
+      "method": "GET",
+      "path": "/api/mfa/recovery",
+      "expect_json_true": "ok",
+      "capture": {
+        "regenerated_recovery_code": "recoveryCodes.0"
+      }
+    },
+    {
+      "name": "use one regenerated recovery code",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${regenerated_recovery_code}"
+      },
+      "expect_json_true": "ok"
+    },
+    {
+      "name": "confirm consumed code is removed",
+      "method": "GET",
+      "path": "/api/mfa/recovery",
+      "expect_json_true": "ok"
+    }
+  ],
+  "negative_steps": [
+    {
+      "name": "malformed recovery code rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "not-a-recovery-code"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "consumed recovery code cannot be reused",
+      "method": "POST",
+      "path": "/api/mfa/recovery/verify",
+      "headers": {
+        "X-CSRF-Token": "${csrf}"
+      },
+      "body": {
+        "code": "${regenerated_recovery_code}"
+      },
+      "expect_failure": true
+    },
+    {
+      "name": "recovery regeneration without CSRF rejected",
+      "method": "POST",
+      "path": "/api/mfa/recovery/regenerate",
+      "body": {},
+      "expect_failure": true
+    }
+  ]
+}

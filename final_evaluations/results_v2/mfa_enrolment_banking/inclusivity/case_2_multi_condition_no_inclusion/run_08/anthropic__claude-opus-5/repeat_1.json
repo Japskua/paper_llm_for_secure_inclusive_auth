@@ -1,0 +1,125 @@
+{
+  "ok": true,
+  "artifact_id": "case_2_multi_condition_no_inclusion/run_08",
+  "case": "case_2_multi_condition_no_inclusion",
+  "run": "run_08",
+  "track": "inclusivity",
+  "judge": "anthropic/claude-opus-5",
+  "judge_served": "anthropic/claude-opus-5",
+  "repeat": 1,
+  "attempts": 1,
+  "judged_at": "2026-08-10T19:14:29.658030+00:00",
+  "rubric_file": "inclusivity_eval_case_2.md",
+  "rubric_sha256": "7ebb89de2c28ee4cfb4fb0889f4e47067302d1f742dc82ebf6e93b4fdeb4bc17",
+  "app_ts_sha256": "d8c5dbd5061e8b177d6cbb2c854604d59d269a0a9fe64507809dadc323e1593e",
+  "screenshot_count": 15,
+  "screenshots_available": 15,
+  "screenshots_sampled": false,
+  "screenshots": [
+    "step_01_login_page.png",
+    "step_02_verify_identity.png",
+    "step_03_identity_code_sent.png",
+    "step_04_set_up_authenticator.png",
+    "step_05_authenticator_secret.png",
+    "step_06_verify_authenticator.png",
+    "step_07_save_recovery_codes.png",
+    "step_08_mfa_settings.png",
+    "step_09_recovery_code_accepted.png",
+    "step_10_regenerated_recovery_codes.png",
+    "step_11_settings_after_regenerating_codes.png",
+    "step_12_regenerated_recovery_code_accepted.png",
+    "step_13_logged_out.png",
+    "step_14_explored.png",
+    "step_15_explored.png"
+  ],
+  "scores": {
+    "1": {
+      "score": 4,
+      "why": "Sans-serif typeface at comfortable size with clear line spacing and generous padding in the cards, though the monospaced secret/recovery code and log blocks are tighter and denser."
+    },
+    "2": {
+      "score": 4,
+      "why": "No italics or all-caps prose is used and instruction paragraphs are one to two short sentences, but the Logs panel presents a dense unbroken block of monospaced text with literal '\\n' artefacts."
+    },
+    "3": {
+      "score": 3,
+      "why": "The single-column card layout with a max-width container would scale reasonably, but the screenshots are desktop-width only and the two-column recovery code list plus long unbroken secret string and wide log panel would be cramped on a phone."
+    },
+    "4": {
+      "score": 4,
+      "why": "Instructions such as 'Confirm your mobile number', 'Create a setup secret and add it manually to your authenticator app', and 'These codes are shown once. Store them safely.' are short and plain."
+    },
+    "5": {
+      "score": 4,
+      "why": "Placeholder examples are shown for the mobile number ('+15551234567') and recovery code ('ABCD-EFGH-IJKL'), though the OTP, password, and authenticator code fields have no example."
+    },
+    "6": {
+      "score": 4,
+      "why": "Every step can be completed by reading only a heading and one short line; the only long text is the optional Logs panel, which is not required to progress except that the test codes are only obtainable from it."
+    },
+    "7": {
+      "score": 2,
+      "why": "The setup secret and recovery codes are rendered as plain selectable text with no copy button, download, or print option, so the user must select manually or retype them."
+    },
+    "8": {
+      "score": 1,
+      "why": "No QR code is offered anywhere; step 4 explicitly says to 'add it manually to your authenticator app' and step 6 labels the field 'Manual setup secret'."
+    },
+    "9": {
+      "score": 3,
+      "why": "Standard email/password inputs are present which password managers can generally fill, but there is no visible evidence of autocomplete attributes, one-time-code autofill hints, or a show-password toggle."
+    },
+    "10": {
+      "score": 4,
+      "why": "Each screen has one bold heading and a prominent solid blue primary button, though there is no step indicator (e.g. 'Step 3 of 5') to show position in the enrolment flow."
+    },
+    "11": {
+      "score": 3,
+      "why": "Most screens ask for a single action, but step 3 shows both 'Send verification code' and 'Verify identity' at once, step 6 presents two input fields, and step 8 shows three competing buttons including a red Log out."
+    },
+    "12": {
+      "score": 3,
+      "why": "Some confirmations appear ('Recovery code accepted and used.', 'MFA is enabled. 8 recovery codes remain.'), but transitions such as after enabling MFA or after 'I have saved these codes' give no explicit statement of what happened or what comes next."
+    },
+    "13": {
+      "score": 4,
+      "why": "The user can regenerate recovery codes, re-test codes repeatedly, and retry sign-in without lockout messaging, but codes are 'shown once' with no reveal/hide toggle or way to re-display them."
+    },
+    "14": {
+      "score": 2,
+      "why": "The only error observed, 'We could not complete that request. Please try again.', is non-blaming but generic and gives no indication of the actual problem or how to fix it."
+    },
+    "15": {
+      "score": 4,
+      "why": "No countdown timers, expiry warnings, or session-timeout indicators appear on any screen, suggesting no imposed reading or entry time limit, though the TOTP code inherently rotates without any visible allowance being stated."
+    }
+  },
+  "cost_usd": 0.14413,
+  "generation_id": "gen-1786389248-bwa6c5dz3arhBnjNaCSe",
+  "adjusted_scores": {
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 2,
+    "8": 1,
+    "9": 3,
+    "10": 4,
+    "11": 3,
+    "12": 3,
+    "13": 4,
+    "14": 2,
+    "15": 4
+  },
+  "constructs": {
+    "attention": 3.6667,
+    "memory": 4.0,
+    "comprehension": 2.0,
+    "decision_making": 3.3333,
+    "learning": 3.3333
+  },
+  "overall": 3.2667,
+  "capture_complete": true
+}

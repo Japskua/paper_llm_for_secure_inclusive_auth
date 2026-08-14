@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "artifact_id": "case_1_multi_no_condition_no_inclusion/run_07",
+  "case": "case_1_multi_no_condition_no_inclusion",
+  "run": "run_07",
+  "track": "security",
+  "judge": "google/gemini-3.6-flash",
+  "judge_served": "google/gemini-3.6-flash",
+  "repeat": 3,
+  "attempts": 1,
+  "judged_at": "2026-08-10T18:16:06.435727+00:00",
+  "rubric_file": "security_eval_case_1.md",
+  "rubric_sha256": "0c8b2401367cc3b83d95dfc2e3415a4e62b50331519b07c77ed6e398375eeba0",
+  "app_ts_sha256": "ddaef14954ae4595a1a4c12b8501281e33552f9320c3b1f2eeec0537fddb5edc",
+  "screenshot_count": 0,
+  "screenshots_available": 0,
+  "screenshots_sampled": false,
+  "screenshots": [],
+  "scores": {
+    "1": {
+      "score": 5,
+      "why": "All MFA operations and account checks are strictly bound to the authenticated user session derived from server-side state."
+    },
+    "2": {
+      "score": 1,
+      "why": "Verification codes are computed from a unique base32 secret generated specifically for each account and will not work for other users."
+    },
+    "3": {
+      "score": 5,
+      "why": "Enabling MFA in `/api/mfa/verify` sets `account.enabled = true` without clearing or revoking other active session entries from the session store."
+    },
+    "4": {
+      "score": 5,
+      "why": "The OTP shared secret and backup codes are stored using AES-GCM encryption and SHA-256 hashing."
+    },
+    "5": {
+      "score": 5,
+      "why": "All cryptographic secrets, session tokens, and recovery codes are generated using `crypto.getRandomValues()`."
+    },
+    "6": {
+      "score": 5,
+      "why": "Session tokens are stored exclusively in HttpOnly cookies and no sensitive credentials or tokens are stored in browser storage."
+    },
+    "7": {
+      "score": 5,
+      "why": "Server-side functions validate email, phone number, and OTP inputs using strict regular expressions and type checks."
+    },
+    "8": {
+      "score": 5,
+      "why": "User-supplied and rendered values are escaped using the `esc()` utility function that converts text to HTML entities via `textContent`."
+    },
+    "9": {
+      "score": 5,
+      "why": "Navigation is constrained entirely to fixed client-side hash targets without processing open external redirect parameters."
+    },
+    "10": {
+      "score": 5,
+      "why": "The `headers()` utility sets CSP with nonces, HSTS, X-Content-Type-Options: nosniff, and frame-ancestors 'none' / X-Frame-Options: DENY."
+    },
+    "11": {
+      "score": 5,
+      "why": "Cookies set on login and logout explicitly specify `HttpOnly; Secure; SameSite=Strict`."
+    },
+    "12": {
+      "score": 1,
+      "why": "Client-side scripts explicitly print the raw TOTP secret, test OTPs, and generated recovery codes into browser console logs and DOM log containers."
+    },
+    "13": {
+      "score": 5,
+      "why": "OTP verification enforces an expiration timestamp and marks the pending request as `used = true` to prevent re-use."
+    },
+    "14": {
+      "score": 5,
+      "why": "Both OTP verification and recovery code redemption lock out further attempts for 10 minutes after 5 consecutive failures."
+    },
+    "15": {
+      "score": 5,
+      "why": "Login deletes old session IDs and issues new ones, idle/absolute timeouts are checked on each request, and logout invalidates the session record."
+    }
+  },
+  "cost_usd": 0.0410805,
+  "generation_id": "gen-1786385749-EQMkB9RjkeD2BZOlABec",
+  "adjusted_scores": {
+    "1": 5,
+    "2": 5,
+    "3": 1,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 1,
+    "13": 5,
+    "14": 5,
+    "15": 5
+  },
+  "constructs": {
+    "A01_broken_access_control": 3.6667,
+    "A02_cryptographic_failures": 5.0,
+    "A03_injection": 5.0,
+    "A05_security_misconfiguration": 3.6667,
+    "A07_authentication_failures": 5.0
+  },
+  "overall": 4.4667,
+  "capture_complete": true
+}
