@@ -30,8 +30,9 @@ for arg in "$@"; do
   esac
 done
 
-command -v npx >/dev/null || { echo "npx is required (install Node.js)" >&2; exit 1; }
-[ -d node_modules ] || { echo "installing dependencies..."; npm install; }
+command -v bunx >/dev/null || command -v npx >/dev/null || { echo "bunx or npx is required" >&2; exit 1; }
+RUN="$(command -v bunx >/dev/null && echo bunx || echo npx)"
+[ -d node_modules ] || { echo "installing dependencies..."; bun install; }
 
 for entry in "${ARTIFACTS[@]}"; do
   IFS='|' read -r slug artifact label <<<"$entry"
@@ -57,7 +58,7 @@ for entry in "${ARTIFACTS[@]}"; do
     continue
   fi
 
-  npx wrangler deploy --config "$config"
+  "$RUN" wrangler deploy --config "$config"
 done
 
 echo

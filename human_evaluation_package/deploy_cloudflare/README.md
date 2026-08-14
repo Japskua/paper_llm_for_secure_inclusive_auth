@@ -96,7 +96,7 @@ can happen. The isolation costs nothing beyond the instances themselves.
 |---|---|
 | **Workers Paid plan**, $5/month | Containers is not on the free tier |
 | **Docker running locally** | `wrangler deploy` builds the image on your machine and pushes it to Cloudflare's registry. It is not built in the cloud. |
-| **Node.js** | for `npx wrangler` |
+| **Bun** (or Node.js) | for `bunx wrangler`. `bun install` is used because npm hard-errors on a wrangler peer-dependency conflict. |
 
 On an Apple-silicon Mac, Docker builds arm64 by default while Cloudflare runs
 linux/amd64. The Dockerfile pins `--platform=linux/amd64` so this is handled;
@@ -106,8 +106,8 @@ the first build is slower because it runs under emulation.
 
 ```bash
 cd human_evaluation_package/deploy_cloudflare
-npm install
-npx wrangler login
+bun install
+bunx wrangler login
 
 ./deploy.sh --dry-run      # render the six configs, print the artifact hashes
 ./deploy.sh s2_case3       # one artifact, to shake out account-level problems
@@ -224,8 +224,9 @@ Built and run as a real `linux/amd64` container image:
 | Symptom | Cause and fix |
 |---|---|
 | `Cannot connect to the Docker daemon` | Docker is not running. Start Docker Desktop and retry. |
-| `containers` rejected, or a billing error | Account is on the Workers free plan. Containers needs the $5/month paid plan. |
-| Image pushes, container never becomes healthy | Check `npx wrangler tail llm-auth-s2-case3`. The entrypoint prints the artifact name, its SHA-256 and `artifact is serving`; if that last line is missing, the artifact itself failed to boot. |
+| `npm error ERESOLVE` on install | wrangler needs `@cloudflare/workers-types@5`. Use `bun install`, which resolves it. |
+| `✘ [ERROR] Unauthorized` after the image builds | The account is on the Workers **free** plan. The failing call is `GET /accounts/<id>/containers/me`. `bunx wrangler containers list` states it plainly: *"You do not have access to Cloudflare Containers. Deploying containers requires the Workers Paid plan."* Upgrade at <https://dash.cloudflare.com/?to=/:account/workers/plans> and re-run. Nothing else needs changing — the image, the config and the Worker bundle are all fine at this point. |
+| Image pushes, container never becomes healthy | Check `bunx wrangler tail llm-auth-s2-case3`. The entrypoint prints the artifact name, its SHA-256 and `artifact is serving`; if that last line is missing, the artifact itself failed to boot. |
 | `exec format error` in the container log | An arm64 image reached the platform. Confirm `--platform=linux/amd64` is still on the `FROM` line and rebuild with `--no-cache`. |
 | Container is OOM-killed | Raise `instance_type` from `basic` (1 GiB) to `standard-1` (4 GiB) in `wrangler.template.jsonc` and redeploy. |
 | Judge sees the landing page instead of the app | The link is missing `?judge=<id>`, or the ID has characters outside `[A-Za-z0-9_-]`. |
@@ -270,6 +271,6 @@ Delete the Workers when the evaluation is finished:
 
 ```bash
 for s in s1-case1 s1-case2 s1-case3 s2-case1 s2-case2 s2-case3; do
-  npx wrangler delete --name "llm-auth-$s"
+  bunx wrangler delete --name "llm-auth-$s"
 done
 ```
