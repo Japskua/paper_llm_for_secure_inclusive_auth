@@ -90,8 +90,19 @@ can happen. The isolation costs nothing beyond the instances themselves.
 
 ## Deploying
 
-Requirements: a Cloudflare account with Workers **paid** plan (Containers is not
-on the free tier), Node.js, and `wrangler` logged in.
+### Prerequisites
+
+| | Why |
+|---|---|
+| **Workers Paid plan**, $5/month | Containers is not on the free tier |
+| **Docker running locally** | `wrangler deploy` builds the image on your machine and pushes it to Cloudflare's registry. It is not built in the cloud. |
+| **Node.js** | for `npx wrangler` |
+
+On an Apple-silicon Mac, Docker builds arm64 by default while Cloudflare runs
+linux/amd64. The Dockerfile pins `--platform=linux/amd64` so this is handled;
+the first build is slower because it runs under emulation.
+
+### Deploy one first
 
 ```bash
 cd human_evaluation_package/deploy_cloudflare
@@ -99,8 +110,14 @@ npm install
 npx wrangler login
 
 ./deploy.sh --dry-run      # render the six configs, print the artifact hashes
-./deploy.sh                # deploy all six
-./deploy.sh s2_case3       # or just one
+./deploy.sh s2_case3       # one artifact, to shake out account-level problems
+```
+
+Check it, then do the rest:
+
+```bash
+curl https://llm-auth-s2-case3.<subdomain>.workers.dev/healthz
+./deploy.sh                # all six
 ```
 
 This creates six Workers:
@@ -189,3 +206,32 @@ proxy is in front of them.
 > configuration are written from the current Containers documentation but have
 > not been run against a live account. Deploy one artifact first and walk it
 > end to end before sending anything to a judge.
+
+## If a deploy fails
+
+| Symptom | Cause and fix |
+|---|---|
+| `Cannot connect to the Docker daemon` | Docker is not running. Start Docker Desktop and retry. |
+| `containers` rejected, or a billing error | Account is on the Workers free plan. Containers needs the $5/month paid plan. |
+| Image pushes, container never becomes healthy | Check `npx wrangler tail llm-auth-s2-case3`. The entrypoint prints the artifact name, its SHA-256 and `artifact is serving`; if that last line is missing, the artifact itself failed to boot. |
+| `exec format error` in the container log | An arm64 image reached the platform. Confirm `--platform=linux/amd64` is still on the `FROM` line and rebuild with `--no-cache`. |
+| Container is OOM-killed | Raise `instance_type` from `basic` (1 GiB) to `standard-1` (4 GiB) in `wrangler.template.jsonc` and redeploy. |
+| Judge sees the landing page instead of the app | The link is missing `?judge=<id>`, or the ID has characters outside `[A-Za-z0-9_-]`. |
+| Every POST returns 403 | The proxy is not in front, or is not rewriting `Origin`. Compare against the local check above, which reproduces the same conditions. |
+| First request after a break is slow | Container cold start, 1–3 seconds. Expected; `sleepAfter` is 30 minutes. |
+
+### Cost
+
+Six Workers, one container instance per judge per artifact, each sleeping after
+30 minutes idle. The paid plan includes 25 GiB-hours of memory and 375
+vCPU-minutes per month. A judge working through all six artifacts for an hour
+uses roughly 6 instance-hours at `basic` (1 GiB, ¼ vCPU) — about 6 GiB-hours and
+90 vCPU-minutes. Two or three judges therefore fit inside the included
+allowance; beyond that the overage is cents. Delete the Workers when the
+evaluation is finished:
+
+```bash
+for s in s1-case1 s1-case2 s1-case3 s2-case1 s2-case2 s2-case3; do
+  npx wrangler delete --name "llm-auth-$s"
+done
+```
