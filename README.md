@@ -33,6 +33,20 @@ different aggregation.
 > **[final_evaluations/results_v2/README.md](final_evaluations/results_v2/README.md)**.
 > Anyone analysing the 2026 data should start there.
 
+## Where to start
+
+| If you are… | Start here |
+|---|---|
+| reviewing the paper | [Headline Findings](#headline-findings), then `final_evaluations/results_v2/cross_study/report_all.txt` |
+| re-analysing the data | [`final_evaluations/results_v2/README.md`](final_evaluations/results_v2/README.md) — standalone, needs nothing else |
+| reproducing the experiment | [Replicating the Experiment](#replicating-the-experiment) |
+| looking at what the model built | [`best_run_screenshots/`](best_run_screenshots/), or run one artifact — see [Quick Start](#quick-start) |
+| running the human evaluation | [`human_evaluation_package/README.md`](human_evaluation_package/README.md) |
+| citing or archiving this | [PUBLISHING.md](PUBLISHING.md) |
+
+Every number in the paper is regenerated from the raw records by
+`report.py` and `build_workbook.py`; no figure is transcribed by hand.
+
 ## Related Publication
 
 TBA
@@ -48,7 +62,7 @@ TBA
 - [Instrumentation and Threats to Validity](#instrumentation-and-threats-to-validity)
 - [Verifying Generated Artifacts](#verifying-generated-artifacts)
 - [Evaluation Data](#evaluation-data)
-- [Human Evaluation Data](#human-evaluation-data)
+- [Human Evaluation](#human-evaluation)
 - [Software Dependencies](#software-dependencies)
 - [Citation](#citation)
 - [License](#license)
@@ -185,12 +199,21 @@ Full statistics, effect sizes, reliability and every exclusion:
 │       ├── mfa_enrolment_banking/       judgements, CSVs, analysis/
 │       └── cross_study/                 combined tables, all_results.xlsx
 │
+├── best_run_screenshots/                the 6 best artifacts, step by step,
+│                                        for sharing without running anything
+│
+├── human_evaluation_package/            HUMAN EVAL: the 6 best artifacts
+│   ├── source_code/                     for the security experts to read
+│   ├── source_code_blinded/             same six, unlabelled, + separate key
+│   └── deploy_cloudflare/               for the inclusivity experts to click
+│
 ├── workspace/                           2025 artifacts (archival)
 │   └── password_recovery_health/<case>/legacy_single_run_gpt4o/
 ├── screenshots/                         2025 screenshots (archival)
 │
-├── human_evaluations/                   HUMAN EVAL: expert assessments
+├── human_evaluations/                   2025 expert assessment results
 ├── survey_questionnaires/               the PDF instruments used
+├── PUBLISHING.md                        how this repo is archived to Zenodo
 │
 └── app/                                 pipeline implementation
     ├── cli.py, constants.py
@@ -695,9 +718,44 @@ different conditions:
 > Inclusivity may be compared between the stories at the **overall score** level
 > only. Construct-level comparison across stories is meaningless.
 
-## Human Evaluation Data
+## Human Evaluation
 
-In addition to LLM-based evaluation, human experts assessed the 2025 artifacts.
+### The 2026 package
+
+`human_evaluation_package/` holds the six best-scoring artifacts — one per case
+per user story — prepared for expert review. Two evaluations run against the
+same six artifacts:
+
+| Evaluation | What the expert gets | How |
+|---|---|---|
+| Security | the source code | `human_evaluation_package/source_code/` |
+| Inclusivity | a live, clickable application | `human_evaluation_package/deploy_cloudflare/` |
+
+All six source files are byte-identical to model output, with SHA-256 sums in
+`source_code/MANIFEST.csv` verified against the generation manifests. A blinded
+copy of the set (`artifact_A.ts` … `artifact_F.ts`, key held separately) is
+provided for experts scoring more than one artifact, since the descriptive
+filenames otherwise disclose the experimental condition.
+
+The live applications run as **Cloudflare Containers**, not Pages: the artifacts
+are Bun servers using `Bun.serve`, `Bun.password`, `node:fs` and `node:crypto`,
+none of which exist on the Workers runtime. Each judge is routed to a private
+container instance, because the artifacts hold state in process memory and
+several key it globally — on a shared instance one judge's MFA enrolment is
+visible to the next, and five failed sign-ins lock the demo account for
+everyone. Two deployment accommodations are documented in
+`human_evaluation_package/deploy_cloudflare/README.md` and must be disclosed
+alongside any result: a self-signed certificate on the container loopback, and
+rewriting of `Host`/`Origin`/`Referer` so that the three artifacts which pin
+their origin to `localhost` will accept requests from a public hostname. No
+`app.ts` is modified.
+
+`best_run_screenshots/` holds the same six artifacts photographed step by step,
+for readers who want to see them without deploying anything.
+
+### The 2025 expert assessment
+
+Human experts assessed the 2025 artifacts.
 
 ### Survey Instruments
 
@@ -763,7 +821,14 @@ See `pyproject.toml` for the complete list.
 
 ## Citation
 
-If you use this dataset in your research, please cite:
+Archived on Zenodo at each tagged release. Cite the **concept DOI**, which
+always resolves to the newest version. See [PUBLISHING.md](PUBLISHING.md) for
+how the archive is produced and how to update the DOI once minted.
+
+Machine-readable metadata: [CITATION.cff](CITATION.cff) and
+[.zenodo.json](.zenodo.json).
+
+For the paper:
 
 ```bibtex
 TBA
@@ -777,7 +842,9 @@ TBA
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). This covers the pipeline, the analysis scripts and
+the documentation. The generated artifacts under `generations/` and
+`workspace/` are model output, reproduced unmodified as the object of study.
 
 ## Contact
 
