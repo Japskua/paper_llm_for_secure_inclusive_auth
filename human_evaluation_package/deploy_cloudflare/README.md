@@ -214,10 +214,16 @@ Built and run as a real `linux/amd64` container image:
   `batch_manifest.json`;
 - image 259 MB, 265 MB resident while serving.
 
-> **Not yet deployed to Cloudflare.** The Worker routing, the per-judge
-> container naming and the wrangler configuration are written from the current
-> Containers documentation and have not been run against a live account. Deploy
-> one artifact first and walk it end to end before sending anything to a judge.
+**Deployed and verified in production on 2026-08-14.** All six Workers are live
+at `https://llm-auth-<slug>.japskua.workers.dev`. Each returns `/healthz` naming
+its artifact, and each serves page bodies byte-identical to the same artifact run
+locally. A full journey was completed on `s2-case3` over the public URL — sign
+in, enrol, confirm the OTP, receive eight recovery codes, use one — and a second
+evaluator ID opened afterwards saw a clean, un-enrolled application. The origin
+rewrite was confirmed on `s2-case2`, the strictest of the six, which returns 200
+through the proxy where a direct request from the same public origin returns 403.
+
+Judge links and the coordinator's runbook: [`../JUDGE_LINKS.md`](../JUDGE_LINKS.md).
 
 ## If a deploy fails
 

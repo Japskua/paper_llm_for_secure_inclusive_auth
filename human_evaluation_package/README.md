@@ -90,10 +90,11 @@ original requirements.
 
 ## B — Live applications for inclusivity evaluation
 
-`deploy_cloudflare/` puts all six on public URLs as Cloudflare Containers, with
-a private instance per judge. See
-[`deploy_cloudflare/README.md`](deploy_cloudflare/README.md) for the deployment
-itself; what follows is what the judges need.
+All six are **live** at `https://llm-auth-<slug>.japskua.workers.dev`, deployed
+as Cloudflare Containers with a private instance per judge.
+
+- Links to send out, and the coordinator's runbook: [`JUDGE_LINKS.md`](JUDGE_LINKS.md)
+- How the deployment works: [`deploy_cloudflare/README.md`](deploy_cloudflare/README.md)
 
 ### Each judge gets six links and one ID
 
