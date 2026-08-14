@@ -1,6 +1,7 @@
 # Runs one evaluated artifact, unmodified, behind the plain-HTTP port that
 # Cloudflare Containers reaches. Which artifact is chosen at start time by the
 # ARTIFACT environment variable, set by the Worker.
+#
 # Cloudflare runs containers on linux/amd64. Pinned explicitly so that building
 # on an Apple-silicon workstation produces an image the platform can run,
 # instead of an arm64 image that fails only after it has been pushed.

@@ -201,11 +201,23 @@ All six were verified this way: each boots and serves 200 through the proxy, and
 the two origin-pinned artifacts accept POSTs from a public origin only when the
 proxy is in front of them.
 
-> Not yet deployed to Cloudflare. The container contents, the proxy and the
-> entrypoint are tested locally; the Worker routing and the wrangler
-> configuration are written from the current Containers documentation but have
-> not been run against a live account. Deploy one artifact first and walk it
-> end to end before sending anything to a judge.
+### What has and has not been verified
+
+Built and run as a real `linux/amd64` container image:
+
+- all six artifacts boot and serve HTTP 200 through the proxy;
+- `uname -m` reports `x86_64`, so the emulated build produces the architecture
+  Cloudflare runs;
+- a POST from a public origin returns 200 inside the container, where the same
+  request straight to the artifact returns 403;
+- each artifact's SHA-256 is printed at startup and matches
+  `batch_manifest.json`;
+- image 259 MB, 265 MB resident while serving.
+
+> **Not yet deployed to Cloudflare.** The Worker routing, the per-judge
+> container naming and the wrangler configuration are written from the current
+> Containers documentation and have not been run against a live account. Deploy
+> one artifact first and walk it end to end before sending anything to a judge.
 
 ## If a deploy fails
 
@@ -222,13 +234,39 @@ proxy is in front of them.
 
 ### Cost
 
-Six Workers, one container instance per judge per artifact, each sleeping after
-30 minutes idle. The paid plan includes 25 GiB-hours of memory and 375
-vCPU-minutes per month. A judge working through all six artifacts for an hour
-uses roughly 6 instance-hours at `basic` (1 GiB, ¼ vCPU) — about 6 GiB-hours and
-90 vCPU-minutes. Two or three judges therefore fit inside the included
-allowance; beyond that the overage is cents. Delete the Workers when the
-evaluation is finished:
+**Expect $5–10 in total for a two-week evaluation.** Almost all of it is the
+$5/month plan fee; the container usage itself lands in the range of pocket
+change.
+
+Containers bill for every 10 ms they are *actively running*, at the allocated
+instance size. `basic` is 1 GiB memory, ¼ vCPU, 4 GB disk, and the Workers Paid
+plan includes 25 GiB-hours of memory, 375 vCPU-minutes and 200 GB-hours of disk
+each month.
+
+The unit that costs money is an **instance-hour**: one judge, one artifact, from
+their first request until `sleepAfter` (30 minutes) elapses. A judge who spends
+15 minutes on an artifact therefore consumes about 45 minutes — the 30-minute
+idle tail dominates, not the work.
+
+| Scenario | Instance-hours | Usage cost | Total incl. plan |
+|---|---|---|---|
+| 5 judges × 6 artifacts, one sitting each | ~27 | ~$0.07 | **~$5** |
+| 10 judges, two sittings each, longer sessions | ~100 | ~$2 | **~$7** |
+
+Sanity check from the built image: 259 MB on disk, 265 MB resident while
+serving. `basic` is comfortable, and disk never approaches its allowance.
+
+Two things that actually affect the bill more than usage does:
+
+- **The plan is monthly.** A two-week window that straddles a billing boundary
+  is charged twice. Starting early in a billing month is worth more than any
+  tuning below.
+- **`sleepAfter`.** Lowering it from `30m` to `10m` in `worker/index.ts` roughly
+  halves instance-hours, at the price of more 1–3 second cold starts for judges
+  who pause to fill in the questionnaire. Given the numbers above, leave it at
+  30 minutes — judge experience is worth more than two dollars.
+
+Delete the Workers when the evaluation is finished:
 
 ```bash
 for s in s1-case1 s1-case2 s1-case3 s2-case1 s2-case2 s2-case3; do
