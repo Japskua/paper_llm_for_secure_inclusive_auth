@@ -90,15 +90,67 @@ original requirements.
 
 ## B — Live applications for inclusivity evaluation
 
-*Hosting is being set up; this section will carry the six URLs, the demo
-credentials, and the walkthrough instructions for experts.*
+`deploy_cloudflare/` puts all six on public URLs as Cloudflare Containers, with
+a private instance per judge. See
+[`deploy_cloudflare/README.md`](deploy_cloudflare/README.md) for the deployment
+itself; what follows is what the judges need.
 
-Note for whoever configures it: all six keep their state **in process memory**,
-and several key it globally rather than per session. Two experts using the same
-instance at the same time will interfere with each other — one can enrol MFA or
-consume the backup codes for the other, and five failed sign-ins locks the
-shared demo account for everyone for ten minutes. Each expert needs their own
-instance, or a reset between sessions.
+### Each judge gets six links and one ID
+
+```
+https://llm-auth-s1-case1.<subdomain>.workers.dev/?judge=evaluator_3
+https://llm-auth-s1-case2.<subdomain>.workers.dev/?judge=evaluator_3
+https://llm-auth-s1-case3.<subdomain>.workers.dev/?judge=evaluator_3
+https://llm-auth-s2-case1.<subdomain>.workers.dev/?judge=evaluator_3
+https://llm-auth-s2-case2.<subdomain>.workers.dev/?judge=evaluator_3
+https://llm-auth-s2-case3.<subdomain>.workers.dev/?judge=evaluator_3
+```
+
+The `?judge=` part matters. Each ID gets its own running copy, so nothing a
+judge does can affect another judge, and vice versa. Without it the link shows a
+page asking for the assigned URL.
+
+### Instructions to give a judge
+
+1. **Use a phone, or a narrow browser window (~390px).** These are mobile web
+   applications and were generated, captured and scored at that width.
+2. **Open one link at a time and complete the whole journey** before moving on.
+   Story 1 is recovering a forgotten password; story 2 is enrolling in
+   multi-factor authentication.
+3. **All codes are simulated.** One-time passcodes, reset codes, authenticator
+   secrets and backup codes are shown on screen and printed to the browser
+   console — there is no real email or SMS. Every application states its own
+   demo account details on the first screen.
+4. **The first load after a pause takes a second or two** while the instance
+   wakes. This is the hosting, not the application, and should not be scored.
+5. Score with `survey_questionnaires/inclusivity_evaluation_survey.pdf`.
+6. If an application gets into a state you cannot leave, tell the coordinator —
+   a fresh ID gives a clean copy. Do not swap to another judge's link.
+
+Demo accounts, for reference:
+
+| Artifact | Email | Other |
+|---|---|---|
+| story 2, case 1 | `marcus@example.test` | password `Marcus!2025`, phone `+15551234567` |
+| story 2, case 2 | `marcus@northstar.demo` | phone `+15550123456` |
+| story 2, case 3 | `marcus@example.com` | — |
+
+Story 1's three each state their own account on screen.
+
+### Present them in a different order to each judge
+
+The URLs say which case each artifact is. A judge who always works 1 → 2 → 3
+may score the later ones differently for that reason alone.
+
+### One deployment detail that must reach the write-up
+
+Three of the six accept state-changing requests only from a `localhost` origin,
+two of them with no configuration override. To serve them from a public URL, the
+deployment presents each request to the artifact as though it came from
+`https://localhost:8443`. The artifacts themselves are unmodified and their
+origin checks are intact in the source the security experts read — but the
+inclusivity evaluation runs with that check satisfied externally rather than
+genuinely. `deploy_cloudflare/README.md` documents exactly what is rewritten.
 
 ## Provenance
 

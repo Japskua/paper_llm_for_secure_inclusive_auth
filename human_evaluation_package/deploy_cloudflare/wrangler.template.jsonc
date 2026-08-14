@@ -1,0 +1,32 @@
+// Template. deploy.sh substitutes __SLUG__, __ARTIFACT__ and __LABEL__ and
+// writes wrangler.<slug>.jsonc, one Worker per evaluated artifact, so each gets
+// its own clean URL.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "__SLUG__",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  "vars": {
+    "ARTIFACT": "__ARTIFACT__",
+    "ARTIFACT_LABEL": "__LABEL__"
+  },
+
+  "containers": [
+    {
+      "class_name": "EvalApp",
+      "image": "./Dockerfile",
+      // One instance per judge. Raise if more than 20 evaluators work at once.
+      "max_instances": 20,
+      "instance_type": "basic"
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [{ "name": "EVAL_APP", "class_name": "EvalApp" }]
+  },
+
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["EvalApp"] }]
+}
