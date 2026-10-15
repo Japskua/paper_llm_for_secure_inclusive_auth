@@ -11,27 +11,14 @@ code.
 **The question.** If you ask an LLM to make code accessible to a user with a
 cognitive condition, does the security of that code suffer?
 
-**Two collections of data, gathered a year apart.**
+Two user stories, three cases each, ten independent generations per case:
+**60 artifacts**, each judged by seven LLMs, three times, on security and on
+inclusivity, for **2,457 judgements**. The six best artifacts were also rated by
+human experts.
 
-| | `final_evaluations/results/` | `final_evaluations/results_v2/` |
-|---|---|---|
-| Collected | Sep 2025 – Feb 2026 | Aug 2026 |
-| Design | 1 generation per case | **10 generations per case** |
-| User stories | 1 | **2** |
-| Artifacts | 3 | **60** |
-| LLM judges | 5, scored once, by hand | **7, scored 3× each, scripted** |
-| Judgements | 30 | **2,457** |
-| Status | archival — as submitted | **current — use for the revision** |
-
-The second collection exists because reviewers pointed out, correctly, that a
-single generation per case cannot separate a real effect from run-to-run
-variance. It is not a correction of the first; it is a larger, independent
-experiment. **Do not pool them** — different generator, different judge panel,
-different aggregation.
-
-> `results_v2/` carries its own complete, standalone documentation:
+> The LLM evaluation data has its own complete, standalone documentation:
 > **[final_evaluations/results_v2/README.md](final_evaluations/results_v2/README.md)**.
-> Anyone analysing the 2026 data should start there.
+> Anyone analysing that data should start there.
 
 ## Where to start
 
@@ -41,6 +28,7 @@ different aggregation.
 | re-analysing the data | [`final_evaluations/results_v2/README.md`](final_evaluations/results_v2/README.md) — standalone, needs nothing else |
 | reproducing the experiment | [Replicating the Experiment](#replicating-the-experiment) |
 | looking at what the model built | [`best_run_screenshots/`](best_run_screenshots/), or run one artifact — see [Quick Start](#quick-start) |
+| comparing human and LLM ratings | [`human_evaluations/`](human_evaluations/) and [`llm_evaluation_scores_computed/`](llm_evaluation_scores_computed/) — read the latter's README first |
 | running the human evaluation | [`human_evaluation_package/README.md`](human_evaluation_package/README.md) |
 | citing or archiving this | [PUBLISHING.md](PUBLISHING.md) |
 
@@ -89,9 +77,9 @@ structure section by section — same purpose paragraph, same use-case format,
 same five OWASP headings, same deliverables — so a difference between the
 stories cannot be attributed to prompt style.
 
-Both stories share identical security requirements structure, based on five
-OWASP Top 10 (2021) categories: A01 Broken Access Control, A02 Cryptographic
-Failures, A03 Injection, A05 Security Misconfiguration, A07 Identification and
+Both stories share an identical security requirements structure, covering
+five OWASP Top 10:2025 categories: A01 Broken Access Control, A02 Security
+Misconfiguration, A04 Cryptographic Failures, A05 Injection, and A07
 Authentication Failures.
 
 The six input documents — the only thing that differs between conditions:
@@ -113,7 +101,7 @@ distinguishes case 1 from case 2.
 
 ## Headline Findings
 
-From the 2026 repeated-runs collection. Case medians, artifact score on a 1–5
+Case medians, artifact score on a 1–5
 scale:
 
 | | Case 1 | Case 2 | Case 3 |
@@ -167,7 +155,7 @@ Full statistics, effect sizes, reliability and every exclusion:
 ├── build_workbook.py                    STAGE 4: bundle into all_results.xlsx
 ├── run.py                               single generation, no batch
 │
-├── generations/                         OUTPUT: the 2026 artifacts (60 runs)
+├── generations/                         OUTPUT: the 60 generated artifacts
 │   └── <story>/
 │       ├── batch_manifest.json          model, snapshot, cost, hashes, per run
 │       ├── capture_summary.json         screenshot counts per run
@@ -186,15 +174,13 @@ Full statistics, effect sizes, reliability and every exclusion:
 │           └── PASS_MARKER              Evaluator agent accepted the artifact
 │
 ├── final_evaluations/                   EVALUATION
-│   ├── README.md                        the two result sets, explained
-│   ├── judge_panel.json                 2026 panel + rejected candidates
+│   ├── README.md                        rubrics and results, explained
+│   ├── judge_panel.json                 judge panel + rejected candidates
 │   ├── evaluation_rubrics/
 │   │   ├── {security,inclusivity}_eval_case_{1,2,3}.md      story 1
 │   │   └── mfa_enrolment_banking/…                          story 2
-│   ├── results/                         2025 single-run scores (archival)
-│   └── results_v2/                      2026 repeated-runs data (current)
+│   └── results_v2/                      LLM evaluation data
 │       ├── README.md                    ← standalone analysis guide
-│       ├── HANDOVER_EMAIL.md            cover note for collaborators
 │       ├── password_recovery_health/    judgements, CSVs, analysis/
 │       ├── mfa_enrolment_banking/       judgements, CSVs, analysis/
 │       └── cross_study/                 combined tables, all_results.xlsx
@@ -207,12 +193,9 @@ Full statistics, effect sizes, reliability and every exclusion:
 │   ├── source_code_blinded/             same six, unlabelled, + separate key
 │   └── deploy_cloudflare/               for the inclusivity experts to click
 │
-├── workspace/                           2025 artifacts (archival)
-│   └── password_recovery_health/<case>/legacy_single_run_gpt4o/
-├── screenshots/                         2025 screenshots (archival)
-│
-├── human_evaluations/                   2025 expert assessment results
-├── survey_questionnaires/               the PDF instruments used
+├── human_evaluations/                   HUMAN EVAL: expert ratings of the 6 best artifacts
+├── llm_evaluation_scores_computed/      LLM ratings of the same 6, laid out for comparison
+├── survey_questionnaires/               the two survey instruments, as PDFs
 ├── PUBLISHING.md                        how this repo is archived to Zenodo
 │
 └── app/                                 pipeline implementation
@@ -560,8 +543,8 @@ stories. The judgement scores are: same rubrics, same panel, same protocol.
 ### Changes to the Pipeline
 
 The generation loop was hardened for unattended batch execution. Two changes
-alter behaviour relative to the pipeline that produced the 2025 single-run
-artifacts, and are noted here for transparency:
+alter behaviour relative to the earlier version of the pipeline, and are noted
+here for transparency:
 
 1. **`NEW_TASKS` parsing.** The original parser accepted only `-`, `1.`, `2.`
    and `3.` line prefixes and stopped at the first blank line, so tasks numbered
@@ -637,7 +620,7 @@ that point and are recorded as partial rather than dropped.
 
 ## Evaluation Data
 
-### `final_evaluations/results_v2/` — current
+### `final_evaluations/results_v2/`
 
 60 artifacts, 7 judges, 2 tracks, 3 repeats: **2,457 judgements, 36,855 item
 scores.** Fully documented in
@@ -646,7 +629,7 @@ which covers the panel and why each model was chosen, the scoring protocol,
 item→construct mapping, reverse coding, every exclusion, the record schema, CSV
 columns and the statistical methods.
 
-The 2026 judge panel — one model per lab, each verified to accept image input
+The judge panel — one model per lab, each verified to accept image input
 and return parseable structured scores:
 
 | Judge | Lab |
@@ -662,47 +645,30 @@ and return parseable structured scores:
 Selection criteria and rejected candidates, with reasons, are in
 `final_evaluations/judge_panel.json`.
 
-### `final_evaluations/results/` — archival
-
-The 2025 single-run scores, five evaluator LLMs (GPT-5, Claude Sonnet 4.5,
-Gemini 2.5 Pro, Mistral Medium 3.1, DeepSeek 3.2), one file of 15 scores each:
-
-```
-final_evaluations/results/{security|inclusivity}/case_{1|2|3}/case_{N}_{model}.txt
-```
-
-The artifacts those scores describe are in
-`workspace/password_recovery_health/<case>/legacy_single_run_gpt4o/`, and their
-screenshots in `screenshots/<case>/`. Despite the directory name, the recorded
-token pricing shows these were generated with `openai/gpt-5`; the name comes
-from a stale `.env` example corrected in commit `2c980c3`.
-
-Generation metrics for those three artifacts:
-
-| Case | Iterations | Input tokens | Output tokens | Cost (USD) |
-|------|------------|--------------|---------------|------------|
-| 1 | 4 | 87,179 | 94,459 | $1.05 |
-| 2 | 2 | 35,793 | 41,730 | $0.46 |
-| 3 | 3 | 84,923 | 84,503 | $0.95 |
-
 ### Rubrics
 
 15 items each, five constructs of three, on a 1–5 Likert scale.
 
-**Security — identical across both stories and both collections**, so security
-is comparable throughout:
+**Security — identical across both stories**, so security is comparable
+throughout. Five OWASP Top 10:2025 categories, three items each. In the LLM
+rubric they appear in this item order:
 
-| Construct | Items |
-|---|---|
-| A01:2021 Broken Access Control | 1–3 |
-| A02:2021 Cryptographic Failures | 4–6 |
-| A03:2021 Injection / XSS | 7–9 |
-| A05:2021 Security Misconfiguration | 10–12 |
-| A07:2021 Identification and Authentication Failures | 13–15 |
+| OWASP Top 10:2025 category | LLM rubric items | Human survey items |
+|---|---|---|
+| A01:2025 Broken Access Control | 1–3 | 1–3 |
+| A04:2025 Cryptographic Failures | 4–6 | 7–9 |
+| A05:2025 Injection | 7–9 | 10–12 |
+| A02:2025 Security Misconfiguration | 10–12 | 4–6 |
+| A07:2025 Authentication Failures | 13–15 | 13–15 |
 
 Items 2 and 3 are reverse-worded — agreeing means the system is *less* secure —
 and are inverted (`6 − x`) before aggregation in `results_v2/`. The rule is the
 same in both stories by design.
+
+The **human** security survey covers the same five categories but orders them
+by category number, and words its items differently, with none reverse-worded.
+Compare the two by category, not by item number. See
+[Human Evaluation](#human-evaluation) before comparing.
 
 **Inclusivity — the dimensions differ by story**, because the stories target
 different conditions:
@@ -720,10 +686,10 @@ different conditions:
 
 ## Human Evaluation
 
-### The 2026 package
+### The evaluation package
 
-`human_evaluation_package/` holds the six best-scoring artifacts — one per case
-per user story — prepared for expert review. Two evaluations run against the
+`human_evaluation_package/` holds the six best-scoring artifacts, one per case
+per user story, prepared for expert review. Two evaluations run against the
 same six artifacts:
 
 | Evaluation | What the expert gets | How |
@@ -739,11 +705,11 @@ filenames otherwise disclose the experimental condition.
 
 The live applications run as **Cloudflare Containers**, not Pages: the artifacts
 are Bun servers using `Bun.serve`, `Bun.password`, `node:fs` and `node:crypto`,
-none of which exist on the Workers runtime. Each judge is routed to a private
-container instance, because the artifacts hold state in process memory and
-several key it globally — on a shared instance one judge's MFA enrolment is
-visible to the next, and five failed sign-ins lock the demo account for
-everyone. Two deployment accommodations are documented in
+none of which exist on the Workers runtime. Each `?judge=<id>` value gets its
+own container instance. This matters because the artifacts hold state in
+process memory, and several key it globally: on a shared instance, one judge's
+MFA enrolment is visible to the next, and five failed sign-ins lock the demo
+account for everyone. Two deployment accommodations are documented in
 `human_evaluation_package/deploy_cloudflare/README.md` and must be disclosed
 alongside any result: a self-signed certificate on the container loopback, and
 rewriting of `Host`/`Origin`/`Referer` so that the three artifacts which pin
@@ -753,56 +719,51 @@ their origin to `localhost` will accept requests from a public hostname. No
 `best_run_screenshots/` holds the same six artifacts photographed step by step,
 for readers who want to see them without deploying anything.
 
-### The 2025 expert assessment
+### Results
 
-Human experts assessed the 2025 artifacts.
+Ten security experts and ten inclusivity experts rated the six artifacts,
+15 items per artifact, through [Webropol](https://webropol.com/) surveys.
 
-### Survey Instruments
+| | Folder | Contents |
+|---|---|---|
+| Survey instruments | [`survey_questionnaires/`](survey_questionnaires/) | Inclusivity survey (15 pp.) and security survey (14 pp.), as PDF exports |
+| Human ratings | [`human_evaluations/`](human_evaluations/) | 10 evaluators × 15 items × 6 artifacts per track, plus years of experience |
+| LLM ratings of the same six | [`llm_evaluation_scores_computed/`](llm_evaluation_scores_computed/) | 6 judges × 3 repeats × 5 constructs, in the same layout as the human files |
 
-`survey_questionnaires/` contains the PDF forms used for data collection:
+| Panel | Evaluators | Years of experience, mean (SD) |
+|---|---|---|
+| Inclusivity | 10 | 8.7 (5.1) |
+| Security | 10 | 6.6 (3.7) |
 
-| File | Pages | Purpose |
-|------|-------|---------|
-| `inclusivity_evaluation_survey.pdf` | 8 | Cognitive accessibility assessment instrument |
-| `security_evaluation_survey.pdf` | 8 | OWASP-based security assessment instrument |
+**What the evaluators saw.** Security experts read each artifact's source code
+from the public repository
+[`LLM4Code-inclusivitysecurity/securityevaluation`](https://github.com/LLM4Code-inclusivitysecurity/securityevaluation).
+All six files there are byte-identical to `human_evaluation_package/source_code/`.
+Inclusivity experts used the live Cloudflare deployments. Both surveys name the
+case and its inclusivity level in each section, so evaluators were not blind to
+the condition.
 
-### Human Expert Results
+**Before comparing human and LLM ratings**, read
+[`llm_evaluation_scores_computed/README.md`](llm_evaluation_scores_computed/README.md):
 
-| File | Evaluators | Background |
-|------|------------|------------|
-| `inclusivity_evaluation_results.xlsx` | 5 | Software engineers, researchers, HR professionals |
-| `security_evaluation_results.xlsx` | 8 | Security engineers, malware researchers, developers |
+- The LLM file labels its security columns A01, A02, A04, A05, A07 in
+  sequence, but the columns follow the LLM rubric's item order (table above),
+  so three labels do not match their contents. The README has the correct
+  pairing.
+- For user story 2, the LLM judges scored dyslexia-specific dimensions, while
+  the human evaluators scored the attention / memory / comprehension /
+  decision-making / learning set for both stories. Compare story-2 inclusivity
+  at the overall-score level only.
 
-**Inclusivity experts (n=5)**
+**Shared instances.** The inclusivity survey gave two links per case, so
+several evaluators used the same application instance. Account state —
+completed enrolment, used backup codes, lockouts — could therefore carry over
+from one evaluator to the next. See `survey_questionnaires/README.md`.
 
-| Role | Experience |
-|------|------------|
-| Software Engineer | 9 years |
-| Human Resource Manager | 4 years |
-| Lecturer | 5 years |
-| Junior Researcher | 1 year |
-| Project Researcher | 10 years |
-
-**Security experts (n=8)**
-
-| Role | Experience |
-|------|------------|
-| Web Developer | 1 year |
-| Full Stack Developer | 3 years |
-| Vulnerability Management Trainee | 2 years |
-| Senior Cyber Security Engineer | 4 years |
-| Security Researcher | 1 year |
-| Malware Researcher | 4 years |
-| Senior Malware Researcher | 5 years |
-| Lecturer (Information Security) | 5 years |
-
-Each results file contains raw per-evaluator scores per item, a case breakdown,
-and average / median / variance / standard deviation.
-
-**Candidates for a repeat human evaluation.** `report.py` ranks all 60 of the
-2026 artifacts and names the best per case, so a human panel can be given a
-defensible selection rather than a hand-picked one:
-`final_evaluations/results_v2/cross_study/05_best_run_per_case.csv`.
+**How the six were chosen.** `report.py` ranks all 60 artifacts and names the
+highest combined LLM score per case:
+`final_evaluations/results_v2/cross_study/05_best_run_per_case.csv`. That
+gives a reproducible selection rather than a hand-picked one.
 
 ## Software Dependencies
 
@@ -856,13 +817,5 @@ the Zenodo record page.
 ## License
 
 MIT — see [LICENSE](LICENSE). This covers the pipeline, the analysis scripts and
-the documentation. The generated artifacts under `generations/` and
-`workspace/` are model output, reproduced unmodified as the object of study.
-
-## Contact
-
-TBA
-
-## Acknowledgments
-
-TBA
+the documentation. The generated artifacts under `generations/` are model
+output, reproduced unmodified as the object of study.

@@ -138,8 +138,9 @@ The scored artifacts are in
 `../workspace/password_recovery_health/<case>/legacy_single_run_gpt4o/`. Despite
 the directory name, the recorded token pricing in `tokens_summary.json` is
 GPT-5's — the name comes from a stale `OPENROUTER_MODEL=openai/gpt-4o` example in
-the root README, corrected in commit `2c980c3`. Screenshots are in
-`../screenshots/<case>/`.
+the root README, corrected in commit `2c980c3`. Their screenshots are no longer in the
+working tree; they remain in the `v.1.0.1` release
+([Zenodo](https://doi.org/10.5281/zenodo.18472958)).
 
 ## LLM Evaluators
 
@@ -213,7 +214,7 @@ Both survive it — see below.
 ## Usage Notes
 
 - Security evaluations used the full source code (`app.ts`)
-- Inclusivity evaluations used UI screenshots from `screenshots/`
+- Inclusivity evaluations used UI screenshots of each artifact (archived in `v.1.0.1`)
 - All evaluations were run in isolated sessions to prevent context contamination
 - Evaluators were instructed to reply with numeric scores only, no explanations
 

@@ -52,9 +52,6 @@ run records the dated snapshot the provider actually served
 ```
 results_v2/
 ├── README.md                        this file
-├── HANDOVER_EMAIL.md                cover note written for colleagues receiving
-│                                    this directory as a zip — a 2-page version
-│                                    of what follows
 ├── <study>/
 │   ├── security/<case>/<run>/<judge>/repeat_N.json     one judgement each
 │   ├── inclusivity/<case>/<run>/<judge>/repeat_N.json
