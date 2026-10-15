@@ -50,6 +50,11 @@ The seventh panel member, `openai/gpt-5.6-sol`, is left out because it comes
 from the same lab as the model that generated the code. That matches the
 primary analysis.
 
+> **Note on the judge panel.** Initially, the evaluation was run with seven
+> judges. Based on discussions with academic reviewers, the GPT judge
+> (`openai/gpt-5.6-sol`) scores were not included in the final evaluation.
+> Its judgements remain in the dataset for transparency.
+
 ### One value
 
 Each cell in rows 4–9 is **one judge's mean over the three items of one

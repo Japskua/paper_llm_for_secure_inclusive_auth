@@ -113,13 +113,18 @@ candidates and reasons, in `../judge_panel.json`.
 
 | Judge | Lab | Role vs the 2025 panel |
 |-------|-----|------------------------|
-| `openai/gpt-5.6-sol` | OpenAI | succeeds GPT-5 — **generator's own lab, see §7** |
+| `openai/gpt-5.6-sol` | OpenAI | succeeds GPT-5 — **generator's own lab; not included in the final evaluation, see §7** |
 | `anthropic/claude-opus-5` | Anthropic | succeeds Claude Sonnet 4.5 |
 | `google/gemini-3.6-flash` | Google | succeeds Gemini 2.5 Pro |
 | `mistralai/mistral-medium-3-5` | Mistral | succeeds Mistral Medium 3.1 |
 | `x-ai/grok-4.5` | xAI | replaces DeepSeek 3.2 |
 | `qwen/qwen3.8-max` | Alibaba | added |
 | `moonshotai/kimi-k3` | Moonshot AI | added |
+
+> **Note on the judge panel.** Initially, the evaluation was run with seven
+> judges. Based on discussions with academic reviewers, the GPT judge
+> (`openai/gpt-5.6-sol`) scores were not included in the final evaluation.
+> Its judgements remain in the dataset for transparency.
 
 **Why the panel changed from 2025.** DeepSeek is now text-only and cannot score
 a screenshot-based rubric; keeping it would give 7 security judges and 6

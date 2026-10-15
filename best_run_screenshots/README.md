@@ -49,6 +49,11 @@ Artifact score on a 1–5 scale: the median across the independent judges of eac
 judge's mean over 3 repeats. The generator's own lab (OpenAI) is excluded, as is
 one judge that failed the discrimination check on story 1's security track.
 
+> **Note on the judge panel.** Initially, the evaluation was run with seven
+> judges. Based on discussions with academic reviewers, the GPT judge
+> (`openai/gpt-5.6-sol`) scores were not included in the final evaluation.
+> Its judgements remain in the dataset for transparency.
+
 | Story | Case | Run | Security | Inclusivity |
 |-------|------|-----|----------|-------------|
 | 1 | 1 no spec | `run_04` | 3.978 | 3.289 |

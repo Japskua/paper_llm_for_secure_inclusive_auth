@@ -16,6 +16,11 @@ Two user stories, three cases each, ten independent generations per case:
 inclusivity, for **2,457 judgements**. The six best artifacts were also rated by
 human experts.
 
+> **Note on the judge panel.** Initially, the evaluation was run with seven
+> judges. Based on discussions with academic reviewers, the GPT judge
+> (`openai/gpt-5.6-sol`) scores were not included in the final evaluation.
+> Its judgements remain in the dataset for transparency.
+
 > The LLM evaluation data has its own complete, standalone documentation:
 > **[final_evaluations/results_v2/README.md](final_evaluations/results_v2/README.md)**.
 > Anyone analysing that data should start there.
@@ -634,13 +639,18 @@ and return parseable structured scores:
 
 | Judge | Lab |
 |---|---|
-| `openai/gpt-5.6-sol` | OpenAI — generator's own lab, analysed as a separate stratum |
+| `openai/gpt-5.6-sol` | OpenAI — generator's own lab; not included in the final evaluation |
 | `anthropic/claude-opus-5` | Anthropic |
 | `google/gemini-3.6-flash` | Google |
 | `mistralai/mistral-medium-3-5` | Mistral AI |
 | `x-ai/grok-4.5` | xAI |
 | `qwen/qwen3.8-max` | Alibaba |
 | `moonshotai/kimi-k3` | Moonshot AI |
+
+> **Note on the judge panel.** Initially, the evaluation was run with seven
+> judges. Based on discussions with academic reviewers, the GPT judge
+> (`openai/gpt-5.6-sol`) scores were not included in the final evaluation.
+> Its judgements remain in the dataset for transparency.
 
 Selection criteria and rejected candidates, with reasons, are in
 `final_evaluations/judge_panel.json`.
