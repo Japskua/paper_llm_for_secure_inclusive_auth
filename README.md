@@ -1,6 +1,6 @@
 # Experimental Dataset: Security and Inclusivity in LLM-Generated Code
 
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXXX-blue)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18472957.svg)](https://doi.org/10.5281/zenodo.18472957)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 
@@ -821,9 +821,9 @@ See `pyproject.toml` for the complete list.
 
 ## Citation
 
-Archived on Zenodo at each tagged release. Cite the **concept DOI**, which
-always resolves to the newest version. See [PUBLISHING.md](PUBLISHING.md) for
-how the archive is produced and how to update the DOI once minted.
+Archived on Zenodo at each tagged release: **[10.5281/zenodo.18472957](https://doi.org/10.5281/zenodo.18472957)**.
+Cite this **concept DOI**, which always resolves to the newest version. See [PUBLISHING.md](PUBLISHING.md) for
+how each release is archived.
 
 Machine-readable metadata: [CITATION.cff](CITATION.cff) and
 [.zenodo.json](.zenodo.json).
@@ -837,8 +837,21 @@ TBA
 For the dataset:
 
 ```bibtex
-TBA
+@dataset{naqvi_2026_llm_secure_inclusive_auth,
+  author    = {Naqvi, Bilal and Parkkila, Janne and Shahid, Waleed Bin and Afzal, Hammad},
+  title     = {Experimental Dataset for Evaluating Security and Inclusivity
+               in {LLM}-Generated Code},
+  year      = {2026},
+  publisher = {Zenodo},
+  version   = {v.2.0.0},
+  doi       = {10.5281/zenodo.18472957},
+  url       = {https://doi.org/10.5281/zenodo.18472957}
+}
 ```
+
+The DOI above is the **concept DOI** and always resolves to the newest version.
+To cite the exact numbers in a given release, use that version's own DOI from
+the Zenodo record page.
 
 ## License
 

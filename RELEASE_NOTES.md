@@ -1,4 +1,4 @@
-# v2.0.0 — repeated-runs study, two user stories
+# v.2.0.0 — repeated-runs study, two user stories
 
 Answers the reviewers' objection that a single generation per case cannot
 separate a real effect from run-to-run variance.

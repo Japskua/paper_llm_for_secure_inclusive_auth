@@ -1,7 +1,12 @@
-# Publishing this repository and minting a DOI
+# Publishing this repository on Zenodo
 
-How this dataset is archived to Zenodo and cited in the paper. Follow it in
-order; the DOI cannot exist before the first release.
+How this dataset is archived to Zenodo and cited in the paper.
+
+| | |
+|---|---|
+| Zenodo record | <https://doi.org/10.5281/zenodo.18472957> |
+| **Concept DOI** — cite this | `10.5281/zenodo.18472957`, always resolves to the newest version |
+| Versions | `v.1.0.1` (2026-02-03, the 2025 single-run study) · `v.2.0.0` (2026-10-15, the repeated-runs study) |
 
 ## What gets archived
 
@@ -21,17 +26,18 @@ Not archived, deliberately: `.venv/`, `node_modules/`, `.env`, and TLS
 certificates (`certs/`, `*.pem`). Certificates are local development artefacts
 and are regenerated with `mkcert` — see the root README.
 
-## One-time setup
+## Zenodo–GitHub link
 
-1. Sign in at <https://zenodo.org> with the GitHub account that owns the
-   repository, or link the accounts under **Account → Linked accounts → GitHub**.
-2. Open <https://zenodo.org/account/settings/github/> and switch
-   **`Japskua/paper_llm_for_secure_inclusive_auth`** to **On**.
-   Zenodo now watches for GitHub releases. Releases created *before* this switch
-   are not archived, so do this first.
-3. Confirm `.zenodo.json` in the repository root is current. It supplies the
-   title, authors, affiliations, keywords, licence and description, so nothing
-   has to be typed into the Zenodo web form.
+Already in place: `v.1.0.1` was archived automatically, so every new GitHub
+release becomes a new version under the same concept DOI. Nothing needs setting
+up. If archiving ever stops, check that
+**`Japskua/paper_llm_for_secure_inclusive_auth`** is still switched **On** at
+<https://zenodo.org/account/settings/github/>.
+
+`.zenodo.json` supplies the title, authors, affiliations, keywords, licence and
+description, so nothing is typed into the Zenodo web form. Author names follow
+the form already on the record (e.g. `Shahid, Waleed Bin`); keep them identical
+across versions.
 
 ## Making a release
 
@@ -43,37 +49,23 @@ uv run python report.py                 # regenerates every cross-study table
 uv run python build_workbook.py         # regenerates all_results.xlsx
 git status --short                      # must be clean
 
-git tag -a v2.0.0 -m "Two user stories, 10 runs per case, 7-judge panel"
-git push origin v2.0.0
-gh release create v2.0.0 \
-  --title "v2.0.0 — repeated-runs study, two user stories" \
+# Tags follow the existing form: v.MAJOR.MINOR.PATCH
+git tag -a v.2.0.0 -m "Two user stories, 10 runs per case, 7-judge panel"
+git push origin v.2.0.0
+gh release create v.2.0.0 \
+  --title "v.2.0.0 — repeated-runs study, two user stories" \
   --notes-file RELEASE_NOTES.md
 ```
 
-Zenodo picks the release up within a few minutes and mints two DOIs:
+Zenodo picks the release up within a few minutes and adds it as a new version,
+with its own **version DOI**, under the existing concept DOI. Nothing in the
+repository needs updating afterwards: the README badge, `CITATION.cff` and the
+BibTeX all use the concept DOI.
 
-- a **concept DOI** that always resolves to the newest version — **cite this one
-  in the paper**;
-- a **version DOI** for this exact release, for anyone reproducing the specific
-  numbers.
+For the paper's data availability statement:
 
-## After the DOI exists
-
-1. Replace the placeholder badge at the top of `README.md`:
-
-   ```markdown
-   [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
-   ```
-
-   Use the **concept** DOI.
-2. Add `doi:` and `identifiers:` to `CITATION.cff`, and fill in the `TBA`
-   citation blocks in `README.md` and `final_evaluations/README.md`.
-3. Commit as `Add Zenodo DOI` — it does **not** need a new release. The archived
-   snapshot keeps the placeholder; that is normal and harmless.
-4. Add to the paper's data availability statement:
-
-   > The complete dataset, generation pipeline and analysis scripts are openly
-   > available at <https://doi.org/10.5281/zenodo.XXXXXXX>.
+> The complete dataset, generation pipeline and analysis scripts are openly
+> available at <https://doi.org/10.5281/zenodo.18472957>.
 
 ## Versioning
 
@@ -92,5 +84,6 @@ version — reviewers may already have cited it.
 - [ ] no API keys anywhere: `git grep -nE "sk-or-|sk-[A-Za-z0-9]{20,}"` is empty
 - [ ] `final_evaluations/results_v2/README.md` matches the data it describes
 - [ ] `human_evaluation_package/source_code/MANIFEST.csv` hashes still verify
-- [ ] `CITATION.cff` version and `date-released` updated
-- [ ] `.zenodo.json` version updated to match the tag
+- [ ] `CITATION.cff` `version` and `date-released` updated, in `v.X.Y.Z` form
+- [ ] `.zenodo.json` `version` matches the tag exactly
+- [ ] author names unchanged from the previous version
