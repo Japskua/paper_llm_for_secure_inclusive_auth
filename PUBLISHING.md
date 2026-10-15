@@ -6,7 +6,7 @@ How this dataset is archived to Zenodo and cited in the paper.
 |---|---|
 | Zenodo record | <https://doi.org/10.5281/zenodo.18472957> |
 | **Concept DOI** — cite this | `10.5281/zenodo.18472957`, always resolves to the newest version |
-| Versions | `v.1.0.1` (2026-02-03, the 2025 single-run study) · `v.2.0.0` (2026-10-15, the repeated-runs study) |
+| Versions | `v.1.0.1` (2026-02-03, the 2025 single-run study) · `v.2.0.0` (2026-10-15, the repeated-runs study) · `v.2.0.1` (2026-10-15, human evaluation results added) |
 
 ## What gets archived
 

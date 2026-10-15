@@ -1,3 +1,41 @@
+# v.2.0.1 — human evaluation results
+
+Adds the human expert evaluation of the six best artifacts, and brings the
+documentation in line with it. No LLM-generated artifact, LLM judgement or
+LLM statistic has changed since v.2.0.0.
+
+## Added
+
+- **`human_evaluations/`** — ratings from 10 inclusivity experts and 10
+  security experts: 15 items × 6 artifacts each, with years of experience.
+- **`llm_evaluation_scores_computed/`** — the LLM judges' scores for the same
+  six artifacts, in the same layout as the human files, for direct comparison.
+  The README explains how to pair its columns with the human data. Three
+  security column labels do not match their contents, and story-2 inclusivity
+  uses dyslexia-specific dimensions.
+- **`survey_questionnaires/`** — updated survey instruments: six cases across
+  both user stories, OWASP Top 10:2025.
+
+## Changed
+
+- Security categories are reported as **OWASP Top 10:2025** throughout the
+  documentation. The rubric files the LLM judges scored, and the construct
+  identifiers in the CSVs, are unchanged, because every judgement records the
+  SHA-256 hash of the rubric it used.
+- **Judge panel.** The evaluation was initially run with seven judges. Based on
+  discussions with academic reviewers, the GPT judge (`openai/gpt-5.6-sol`)
+  scores are not included in the final evaluation. Its judgements remain in the
+  dataset for transparency.
+- The main README now describes this study only. The earlier single-run
+  collection remains available in release `v.1.0.1`.
+
+## Removed
+
+- `screenshots/` (outdated) — superseded by `best_run_screenshots/`.
+- `final_evaluations/results_v2/HANDOVER_EMAIL.md`.
+
+---
+
 # v.2.0.0 — repeated-runs study, two user stories
 
 Answers the reviewers' objection that a single generation per case cannot
